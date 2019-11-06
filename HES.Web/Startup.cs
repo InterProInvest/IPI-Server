@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
 using System.IO;
@@ -183,6 +184,12 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Develop", "RequireAdministratorRole");
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // Register the Swagger generator
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HES API", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -240,6 +247,15 @@ namespace HES.Web
                 routes.MapHub<AppHub>("/appHub");
                 routes.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
             });
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HES API V1");
+            });
+
             app.UseMvc();
             app.UseCookiePolicy();
 

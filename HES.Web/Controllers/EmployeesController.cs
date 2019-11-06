@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
 {
@@ -16,25 +15,34 @@ namespace HES.Web.Controllers
     [ApiController]
     public class EmployeesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IEmployeeService _employeeService;
 
-        public EmployeesController(ApplicationDbContext context)
+        public EmployeesController(IEmployeeService employeeService)
         {
-            _context = context;
+            _employeeService = employeeService;
         }
 
-        // GET: api/Employees
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
-            return await _context.Employees.ToListAsync();
+            return await _employeeService
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .ToListAsync();
         }
 
-        // GET: api/Employees/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Employee>> GetEmployee(string id)
         {
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _employeeService
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Department)
+                .Include(e => e.Position)
+                .Include(e => e.Devices).ThenInclude(e => e.DeviceAccessProfile)
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (employee == null)
             {
@@ -44,65 +52,53 @@ namespace HES.Web.Controllers
             return employee;
         }
 
-        // PUT: api/Employees/5
+        [HttpPost]
+        public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
+        {
+            try
+            {
+                await _employeeService.CreateEmployeeAsync(employee);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
+        }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(string id, Employee employee)
+        public async Task<IActionResult> EditEmployee(string id, Employee employee)
         {
             if (id != employee.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(employee).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _employeeService.EditEmployeeAsync(employee);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!EmployeeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest(new { error = ex.Message });
             }
 
             return NoContent();
         }
 
-        // POST: api/Employees
-        [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(Employee employee)
-        {
-            _context.Employees.Add(employee);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
-        }
-
-        // DELETE: api/Employees/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Employee>> DeleteEmployee(string id)
         {
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _employeeService.GetByIdAsync(id);
             if (employee == null)
             {
                 return NotFound();
             }
 
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
+            await _employeeService.DeleteEmployeeAsync(id);
 
             return employee;
-        }
-
-        private bool EmployeeExists(string id)
-        {
-            return _context.Employees.Any(e => e.Id == id);
         }
     }
 }
