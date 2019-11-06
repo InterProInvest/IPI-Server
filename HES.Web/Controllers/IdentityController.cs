@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace HES.Web.Controllers
 {
     [AllowAnonymous]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class IdentityController : ControllerBase
     {
@@ -25,7 +25,75 @@ namespace HES.Web.Controllers
             _logger = logger;
         }
 
-        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> Login(AuthModel authModel)
+        {
+            if (authModel == null)
+            {
+                _logger.LogWarning("AuthModel is null");
+                return BadRequest(new { error = "CredentialsNullException" });
+            }
+
+            // Find user
+            var user = await _userManager.FindByEmailAsync(authModel.Email);
+            if (user == null)
+            {
+                _logger.LogWarning($"[API] User {authModel.Email} not found");
+                return Unauthorized(new { error = "UserNotFoundException" });
+            }
+
+            // Verify password
+            var passwordResult = await _signInManager.PasswordSignInAsync(authModel.Email, authModel.Password, false, lockoutOnFailure: true);
+            if (passwordResult.Succeeded)
+            {
+                _logger.LogInformation($"User {authModel.Email} succeeded auth via API");
+
+                return Ok();
+            }
+
+            // Verify two factor
+            if (passwordResult.RequiresTwoFactor)
+            {
+                if (string.IsNullOrWhiteSpace(authModel.Otp))
+                {
+                    return Unauthorized(new { error = "TwoFactorRequiredException" });
+                }
+
+                var authenticatorCode = authModel.Otp.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+                var twoFactorResult = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
+
+                if (twoFactorResult.Succeeded)
+                {
+                    _logger.LogInformation($"User {authModel.Email} succeeded auth via API with 2FA");
+
+                    return Ok();
+                }
+                else if (twoFactorResult.IsLockedOut)
+                {
+                    _logger.LogWarning($"User {user.Email} account locked out.");
+                    return Unauthorized(new { error = "UserIsLockedoutException" });
+                }
+                else
+                {
+                    _logger.LogWarning($"Invalid authenticator code entered for user {user.Email}.");
+                    return Unauthorized(new { error = "InvalidAuthenticatorCodeException" });
+                }
+            }
+
+            // Is locked out
+            if (passwordResult.IsLockedOut)
+            {
+                _logger.LogWarning($"User account {user.Email} locked out.");
+                return Unauthorized(new { error = "UserIsLockedoutException" });
+            }
+            else
+            {
+                _logger.LogError($"User {user.Email} unauthorized.");
+                return Unauthorized(new { error = "UnauthorizedException" });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> AuthN(AuthModel authModel)
         {

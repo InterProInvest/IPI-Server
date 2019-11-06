@@ -19,7 +19,7 @@ namespace HES.Web.Controllers
         }
 
         [AcceptVerbs("Get", "Post")]
-        public async Task<IActionResult> VerifyEmailAsync([Bind(Prefix = "Employee.Email")]string email, [Bind(Prefix = "Employee.Id")]string id)
+        public async Task<IActionResult> VerifyEmail([Bind(Prefix = "Employee.Email")]string email, [Bind(Prefix = "Employee.Id")]string id)
         {
             var employee = await _employeeService.Query().FirstOrDefaultAsync(e => e.Email == email && e.Id != id);
 
