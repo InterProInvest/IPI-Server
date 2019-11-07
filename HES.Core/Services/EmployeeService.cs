@@ -20,7 +20,7 @@ namespace HES.Core.Services
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IDeviceAccountService _deviceAccountService;
         private readonly ISharedAccountService _sharedAccountService;
-        private readonly IProximityDeviceService _workstationProximityDeviceService;
+        private readonly IProximityDeviceService _proximityDeviceService;
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
@@ -42,8 +42,7 @@ namespace HES.Core.Services
             _deviceTaskService = deviceTaskService;
             _deviceAccountService = deviceAccountService;
             _sharedAccountService = sharedAccountService;
-            _workstationProximityDeviceService = workstationProximityDeviceService;
-
+            _proximityDeviceService = workstationProximityDeviceService;
             _workstationEventRepository = workstationEventRepository;
             _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
@@ -65,6 +64,18 @@ namespace HES.Core.Services
         public async Task<Employee> GetByIdAsync(dynamic id)
         {
             return await _employeeRepository.GetByIdAsync(id);
+        }
+
+        public async Task<Employee> GetEmployeeWithIncludeAsync(string id)
+        {
+            return await _employeeRepository
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Department)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .ThenInclude(e => e.DeviceAccessProfile)
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public async Task<Employee> CreateEmployeeAsync(Employee employee)
@@ -117,6 +128,110 @@ namespace HES.Core.Services
         public async Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate)
         {
             return await _employeeRepository.ExistAsync(predicate);
+        }
+
+        #endregion
+
+        #region Device
+
+        public async Task AddDeviceAsync(string employeeId, string[] devices)
+        {
+            if (employeeId == null)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+
+            if (devices == null)
+            {
+                throw new ArgumentNullException(nameof(devices));
+            }
+
+            _dataProtectionService.Validate();
+
+            var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            if (employee == null)
+            {
+                throw new Exception("Employee not found");
+            }
+
+            foreach (var deviceId in devices)
+            {
+                var device = await _deviceService.GetByIdAsync(deviceId);
+                if (device != null)
+                {
+                    if (device.EmployeeId == null)
+                    {
+                        var masterPassword = GenerateMasterPassword();
+
+                        device.EmployeeId = employeeId;
+                        await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
+
+                        await _deviceTaskService.AddTaskAsync(new DeviceTask
+                        {
+                            Password = _dataProtectionService.Protect(masterPassword),
+                            Operation = TaskOperation.Link,
+                            CreatedAt = DateTime.UtcNow,
+                            DeviceId = device.Id
+                        });
+                    }
+                }
+            }
+        }
+
+        public async Task RemoveDeviceAsync(string employeeId, string deviceId)
+        {
+            if (employeeId == null)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+
+            if (deviceId == null)
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            _dataProtectionService.Validate();
+
+            var device = await _deviceService.GetByIdAsync(deviceId);
+            if (device == null)
+            {
+                throw new Exception($"Device not found");
+            }
+
+            if (device.EmployeeId != employeeId)
+            {
+                throw new Exception($"Device {deviceId} not linked to employee");
+            }
+
+            // Remove all tasks
+            await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+
+            // Remove all accounts
+            await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
+
+            // Remove proximity device
+            var allProximityDevices = await _proximityDeviceService
+                .Query()
+                .Where(w => w.DeviceId == deviceId)
+                .ToListAsync();
+            await _proximityDeviceService.DeleteRangeProximityDevicesAsync(allProximityDevices);
+
+            // Remove employee from device
+            device.EmployeeId = null;
+            device.PrimaryAccountId = null;
+            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId" });
+
+            if (device.MasterPassword != null)
+            {
+                // Add Task remove device
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
+                {
+                    Password = _dataProtectionService.Protect(device.MasterPassword),
+                    CreatedAt = DateTime.UtcNow,
+                    Operation = TaskOperation.Wipe,
+                    DeviceId = device.Id
+                });
+            }
         }
 
         #endregion
@@ -365,85 +480,31 @@ namespace HES.Core.Services
 
         #endregion
 
-        #region Device
-
-        public async Task AddDeviceAsync(string employeeId, string[] selectedDevices)
-        {
-            _dataProtectionService.Validate();
-
-            var employee = await _employeeRepository.GetByIdAsync(employeeId);
-            if (employee == null)
-                throw new Exception("Employee not found");
-
-            foreach (var deviceId in selectedDevices)
-            {
-                var device = await _deviceService.GetByIdAsync(deviceId);
-                if (device == null)
-                    throw new Exception($"Device not found, ID: {deviceId}");
-
-                if (device.EmployeeId != null)
-                    throw new Exception($"Device {deviceId} already linked to another employee");
-
-                var masterPassword = GenerateMasterPassword();
-
-                device.EmployeeId = employeeId;
-                await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
-
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    Password = _dataProtectionService.Protect(masterPassword),
-                    Operation = TaskOperation.Link,
-                    CreatedAt = DateTime.UtcNow,
-                    DeviceId = device.Id
-                });
-            }
-        }
-
-        public async Task RemoveDeviceAsync(string employeeId, string deviceId)
-        {
-            _dataProtectionService.Validate();
-
-            var device = await _deviceService.GetByIdAsync(deviceId);
-            if (device == null)
-                throw new Exception($"Device not found, ID: {deviceId}");
-
-            if (device.EmployeeId != employeeId)
-                throw new Exception($"Device {deviceId} not linked to employee");
-
-            // Remove all tasks
-            await _deviceTaskService.RemoveAllTasksAsync(deviceId);
-
-            // Remove all accounts
-            await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
-
-            // Remove proximity device
-            var allProximityDevices = await _workstationProximityDeviceService
-                .Query()
-                .Where(w => w.DeviceId == deviceId)
-                .ToListAsync();
-            await _workstationProximityDeviceService.DeleteRangeProximityDevicesAsync(allProximityDevices);
-
-            // Remove employee from device
-            device.EmployeeId = null;
-            device.PrimaryAccountId = null;
-            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId" });
-
-            if (device.MasterPassword != null)
-            {
-                // Add Task remove device
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    Password = _dataProtectionService.Protect(device.MasterPassword),
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Wipe,
-                    DeviceId = device.Id
-                });
-            }
-        }
-
-        #endregion
-
         #region Account
+
+        public async Task<List<DeviceAccount>> GetDeviceAccountsAsync(string employeeId)
+        {
+            return await _deviceAccountService
+                .Query()
+                .Include(d => d.Device)
+                .Include(d => d.Employee)
+                .Include(d => d.SharedAccount)
+                .Where(e => e.EmployeeId == employeeId &&
+                            e.Deleted == false &&
+                            e.Name != SamlIdentityProvider.DeviceAccountName)
+                .ToListAsync();
+        }
+
+        public async Task<DeviceAccount> GetDeviceAccountWithIncludeAsync(string deviceAccountId)
+        {
+            return await _deviceAccountService
+                .Query()
+                .Include(d => d.Device)
+                .Include(d => d.Employee)
+                .Include(d => d.SharedAccount)
+                .Where(e => e.Id == deviceAccountId && e.Deleted == false)
+                .FirstOrDefaultAsync();
+        }
 
         public async Task SetPrimaryAccount(string deviceId, string deviceAccountId)
         {
@@ -740,24 +801,23 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task AddSharedAccount(string employeeId, string sharedAccountId, string[] selectedDevices)
+        public async Task AddSharedAccount(string employeeId, string sharedAccountId, string[] devicesIds)
         {
-            _dataProtectionService.Validate();
-
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
 
             if (sharedAccountId == null)
                 throw new ArgumentNullException(nameof(sharedAccountId));
 
-            if (selectedDevices == null)
-                throw new ArgumentNullException(nameof(selectedDevices));
+            if (devicesIds == null)
+                throw new ArgumentNullException(nameof(devicesIds));
 
+            _dataProtectionService.Validate();
 
             List<DeviceAccount> accounts = new List<DeviceAccount>();
             List<DeviceTask> tasks = new List<DeviceTask>();
 
-            foreach (var deviceId in selectedDevices)
+            foreach (var deviceId in devicesIds)
             {
                 // Get Shared Account
                 var sharedAccount = await _sharedAccountService.GetByIdAsync(sharedAccountId);
@@ -890,7 +950,7 @@ namespace HES.Core.Services
             await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
 
             // Remove all proximity
-            await _workstationProximityDeviceService.RemoveAllProximityAsync(deviceId);
+            await _proximityDeviceService.RemoveAllProximityAsync(deviceId);
 
             // Remove employee
             await _deviceService.RemoveEmployeeAsync(deviceId);

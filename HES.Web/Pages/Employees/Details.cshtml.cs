@@ -75,32 +75,19 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Employee = await _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .Include(e => e.Devices).ThenInclude(e => e.DeviceAccessProfile)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            Employee = await _employeeService.GetEmployeeWithIncludeAsync(id);
 
             if (Employee == null)
             {
-                _logger.LogWarning("Employee == null");
+                _logger.LogWarning($"{nameof(Employee)} is null");
                 return NotFound();
             }
 
-            DeviceAccounts = await _deviceAccountService
-                .Query()
-                .Include(d => d.Device)
-                .Include(d => d.Employee)
-                .Include(d => d.SharedAccount)
-                .Where(e => e.EmployeeId == Employee.Id)
-                .Where(d => d.Deleted == false && d.Name != SamlIdentityProvider.DeviceAccountName)
-                .ToListAsync();
+            DeviceAccounts = await _employeeService.GetDeviceAccountsAsync(Employee.Id);
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
 
