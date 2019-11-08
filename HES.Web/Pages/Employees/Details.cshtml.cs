@@ -286,7 +286,7 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.SetPrimaryAccount(deviceId, accountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
-                SuccessMessage = "Primary account changed and will be recorded when the device is connected to the server.";
+                SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
             {

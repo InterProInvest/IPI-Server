@@ -105,14 +105,12 @@ namespace HES.Core.Services
                 {
                     // Add new session
                     await AddSessionAsync(workstationEventDto);
-                    _logger.LogDebug($"[NEW Session][{workstationEventDto.WorkstationId}] SessionId:{workstationEventDto.WorkstationSessionId} EventId:{workstationEventDto.EventId} UserSession:{workstationEventDto.UserSession} Date:{workstationEventDto.Date}");
                 }
                 else
                 {
                     // Reopen session
                     session.EndDate = null;
                     await UpdateSessionAsync(session);
-                    _logger.LogDebug($"[UPDATE Session][{workstationEventDto.WorkstationId}] SessionId:{workstationEventDto.WorkstationSessionId} EventId:{workstationEventDto.EventId} UserSession:{workstationEventDto.UserSession} Date:{workstationEventDto.Date}");
 
                 }
             }
@@ -123,7 +121,6 @@ namespace HES.Core.Services
                  workstationEventDto.WorkstationSessionId != null)
             {
                 await CloseSessionAsync(workstationEventDto.WorkstationId);
-                _logger.LogDebug($"[UPDATE Session][{workstationEventDto.WorkstationId}] SessionId:{workstationEventDto.WorkstationSessionId} EventId:{workstationEventDto.EventId} UserSession:{workstationEventDto.UserSession} Date:{workstationEventDto.Date}");
             }
         }
 
@@ -140,13 +137,12 @@ namespace HES.Core.Services
                 {
                     session.EndDate = DateTime.UtcNow;
                     await UpdateSessionAsync(session);
-                    _logger.LogDebug($"[CLOSE Session] [{session.WorkstationId}] UserSession:{session.UserSession}");
                 }
 
                 var sessionsCount = sessions.Count;
                 if (sessionsCount > 1)
                 {
-                    _logger.LogCritical($"[{workstationId}] {sessionsCount} sessions were closed, something went wrong");
+                    _logger.LogCritical($"[{workstationId}] {sessionsCount} sessions were closed. id:{string.Join(" id:", sessions.SelectMany(s => s.Id).ToArray())}");
                 }
             }
         }
