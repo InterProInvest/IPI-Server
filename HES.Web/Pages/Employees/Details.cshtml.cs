@@ -91,6 +91,7 @@ namespace HES.Web.Pages.Employees
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
 
+            #region Idp
             var user = await _userManager.FindByEmailAsync(Employee.Email);
             if (user != null)
             {
@@ -102,19 +103,14 @@ namespace HES.Web.Pages.Employees
             }
 
             SamlIdentityProviderEnabled = await _samlIdentityProviderService.GetStatusAsync();
+            #endregion
 
             return Page();
         }
 
         public async Task<IActionResult> OnGetUpdateTableAsync(string id)
         {
-            Employee = await _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .Include(e => e.Devices).ThenInclude(e => e.DeviceAccessProfile)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            Employee = await _employeeService.GetEmployeeWithIncludeAsync(id);
 
             DeviceAccounts = await _deviceAccountService
                 .Query()

@@ -39,12 +39,7 @@ namespace HES.Web.Controllers
         [HttpGet]
         public async Task<ActionResult<IList<Employee>>> GetEmployees()
         {
-            return await _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.Devices)
-                .ToListAsync();
+            return await _employeeService.GetAllEmployees();
         }
 
         [HttpGet("{id}")]

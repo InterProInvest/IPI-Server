@@ -76,7 +76,7 @@ namespace HES.Core.Services
 
         public async Task<int> GetEmployeesCount()
         {
-            return await _employeeService.GetCountAsync();
+            return await _employeeService.Query().CountAsync();
         }
 
         public async Task<int> GetEmployeesOpenedSessionsCount()

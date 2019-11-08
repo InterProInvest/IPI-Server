@@ -56,14 +56,58 @@ namespace HES.Core.Services
             return _employeeRepository.Query();
         }
 
-        public async Task<int> GetCountAsync()
-        {
-            return await _employeeRepository.GetCountAsync();
-        }
-
         public async Task<Employee> GetByIdAsync(dynamic id)
         {
             return await _employeeRepository.GetByIdAsync(id);
+        }
+
+        public async Task<List<Employee>> GetAllEmployees()
+        {
+            return await _employeeRepository
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .ToListAsync();
+        }
+
+        public async Task<List<Employee>> GetFilteredEmployees(EmployeeFilter employeeFilter)
+        {
+            var filter = _employeeRepository
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .AsQueryable();
+
+            if (employeeFilter.CompanyId != null)
+            {
+                filter = filter.Where(w => w.Department.Company.Id == employeeFilter.CompanyId);
+            }
+            if (employeeFilter.DepartmentId != null)
+            {
+                filter = filter.Where(w => w.DepartmentId == employeeFilter.DepartmentId);
+            }
+            if (employeeFilter.PositionId != null)
+            {
+                filter = filter.Where(w => w.PositionId == employeeFilter.PositionId);
+            }
+            if (employeeFilter.DevicesCount != null)
+            {
+                filter = filter.Where(w => w.Devices.Count() == employeeFilter.DevicesCount);
+            }
+            if (employeeFilter.StartDate != null && employeeFilter.EndDate != null)
+            {
+                filter = filter.Where(w => w.LastSeen.HasValue
+                                        && w.LastSeen.Value >= employeeFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
+                                        && w.LastSeen.Value <= employeeFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+            }
+
+            return await filter
+                .OrderBy(e => e.FirstName)
+                .ThenBy(e => e.LastName)
+                .Take(employeeFilter.Records)
+                .ToListAsync();
         }
 
         public async Task<Employee> GetEmployeeWithIncludeAsync(string id)
@@ -71,7 +115,6 @@ namespace HES.Core.Services
             return await _employeeRepository
                 .Query()
                 .Include(e => e.Department.Company)
-                .Include(e => e.Department)
                 .Include(e => e.Position)
                 .Include(e => e.Devices)
                 .ThenInclude(e => e.DeviceAccessProfile)
