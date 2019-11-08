@@ -283,6 +283,38 @@ namespace HES.Web.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateWorkstationAccount(WorkstationAccountDto workstationAccountDto)
+        {
+            try
+            {
+                await _employeeService.CreateWorkstationAccountAsync(workstationAccountDto.WorkstationAccount, workstationAccountDto.EmployeeId, workstationAccountDto.DeviceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> SetAsWorkstationAccount(string deviceId, string deviceAccountId)
+        {
+            try
+            {
+                await _employeeService.SetPrimaryAccount(deviceId, deviceAccountId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+
+            return Ok();
+        }
+
         #endregion
     }
 }

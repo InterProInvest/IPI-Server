@@ -509,19 +509,31 @@ namespace HES.Core.Services
         public async Task SetPrimaryAccount(string deviceId, string deviceAccountId)
         {
             if (deviceId == null)
+            {
                 throw new ArgumentNullException(nameof(deviceId));
+            }
 
             if (deviceAccountId == null)
+            {
                 throw new ArgumentNullException(nameof(deviceAccountId));
+            }
 
             var device = await _deviceService.GetByIdAsync(deviceId);
             if (device == null)
+            {
                 throw new Exception($"Device not found, ID: {deviceId}");
+            }
 
-            // Update Device Account
             var deviceAccount = await _deviceAccountService.GetByIdAsync(deviceAccountId);
             if (deviceAccount == null)
+            {
                 throw new Exception($"DeviceAccount not found, ID: {deviceAccountId}");
+            }
+
+            if (deviceAccount.Status != AccountStatus.Done)
+            {
+                throw new Exception("Set as windows account only when the status is completed.");
+            }
 
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
