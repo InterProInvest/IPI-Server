@@ -15,15 +15,21 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
     public class IndexModel : PageModel
     {
         private readonly IWorkstationSessionService _workstationSessionService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IOrgStructureService _orgStructureService;
         public IList<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
         public IList<SummaryByEmployees> SummaryByEmployees { get; set; }
         public IList<SummaryByDepartments> SummaryByDepartments { get; set; }
         public IList<SummaryByWorkstations> SummaryByWorkstations { get; set; }
         public SummaryFilter SummaryFilter { get; set; }
 
-        public IndexModel(IWorkstationSessionService workstationSessionService)
+        public IndexModel(IWorkstationSessionService workstationSessionService,
+                            IEmployeeService employeeService,
+                            IOrgStructureService orgStructureService)
         {
             _workstationSessionService = workstationSessionService;
+            _employeeService = employeeService;
+            _orgStructureService = orgStructureService;
         }
 
         public async Task OnGet()
@@ -55,8 +61,8 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
                 .AsNoTracking()
                 .ToListAsync();
 
-            ViewData["Employees"] = new SelectList(await _workstationSessionService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _workstationSessionService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
@@ -364,7 +370,7 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
 
         public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
         {
-            return new JsonResult(await _workstationSessionService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
+            return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
         }
     }
 }

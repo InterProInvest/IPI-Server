@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using System.Collections.Generic;
+using Hideez.SDK.Communication.HES.DTO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,14 +7,8 @@ namespace HES.Core.Interfaces
 {
     public interface IWorkstationEventService
     {
-        IQueryable<WorkstationEvent> WorkstationEventQuery();
-        IQueryable<Workstation> WorkstationQuery();
-        IQueryable<Device> DeviceQuery();
-        IQueryable<Employee> EmployeeQuery();
-        IQueryable<Company> CompanyQuery();
-        IQueryable<Department> DepartmentQuery();
-        IQueryable<DeviceAccount> DeviceAccountQuery();
+        IQueryable<WorkstationEvent> Query();
         Task AddEventAsync(WorkstationEvent workstationEvent);
-        Task<IEnumerable<WorkstationEvent>> AddEventsRangeAsync(IList<WorkstationEvent> workstationEvents);
+        Task AddEventDtoAsync(WorkstationEventDto workstationEventDto);
     }
 }

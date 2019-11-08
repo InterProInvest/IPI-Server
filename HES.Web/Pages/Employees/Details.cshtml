@@ -32,325 +32,53 @@
     </div>
 </div>
 
-@* Devices tables *@
-@foreach (var device in Model.Employee.Devices)
-{
-    <div class="row align-items-center m-0">
-        <div class="row align-items-center sub-details-card">
-            <div class="col-auto pr-1">
-                <h3 class="text-navyblue m-0">Device @device.Id</h3>
-            </div>
-            <div class="col-auto p-1">
-                <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img src="~/svg/action/more.svg" />
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-left shadow" aria-labelledby="dropdownMenuLink">
-                        <a class="dropdown-item open-modal-dialog" data-id="@device.Id" data-action="DeleteDevice" data-title="Delete device">
-                            <img src="~/svg/action/delete.svg" />
-                            Delete
-                        </a>
-                    </div>
+@*SAML IdP*@
+<div class="@((Model.SamlIdentityProviderEnabled == true && Model.Employee.Devices.Count > 0) ? "" : "d-none")">
+    <h4 class="text-navyblue mb-2 mt-3">SAML IdP Account</h4>
+    <form method="post" class="samlidp-card">
+        <input type="hidden" asp-for="Employee.Id" />
+        <input type="hidden" asp-for="Employee.Email" />
+        <input type="hidden" asp-for="Employee.FirstName" />
+        <input type="hidden" asp-for="Employee.LastName" />
+        <div class="d-flex flex-row">
+            <div class="d-inline-flex align-self-center mr-3">
+                <label class="control-label mb-0 mr-2">Enable</label>
+                <div class="custom-control custom-switch">
+                    <input id="idpEnabled" type="checkbox" class="custom-control-input" checked="@Model.UserSamlIdpEnabled">
+                    <label class="custom-control-label" for="idpEnabled"></label>
                 </div>
             </div>
-            <div class="col-auto pl-0 pr-2">
-                <button id="show_popover_@device.Id" class="btn popover-btn p-0">
-                    <img src="~/svg/action/info.svg" />
-                </button>
-                <div id="popover_@device.Id" class="popover-panel-top-right shadow-sm custom-popover">
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.Id)</div>
-                        <div class="col">@Html.DisplayFor(model => device.Id)</div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.MAC)</div>
-                        <div class="col">@Html.DisplayFor(model => device.MAC)</div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.Model)</div>
-                        <div class="col">@Html.DisplayFor(model => device.Model)</div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.RFID)</div>
-                        <div class="col">@Html.DisplayFor(model => device.RFID)</div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.Battery)</div>
-                        <div class="col">
-                            @if (device.Battery >= 1)
-                            {
-                                <img src="~/svg/device/battery_full.svg" />
-                            }
-                            else
-                            {
-                                <img src="~/svg/device/battery_20.svg" />
-                            }
-                        </div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.Firmware)</div>
-                        <div class="col">@Html.DisplayFor(model => device.Firmware)</div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill text-nowrap font-weight-bold">@Html.DisplayNameFor(model => device.DeviceAccessProfile)</div>
-                        <div class="col">@Html.DisplayFor(model => device.DeviceAccessProfile.Name)</div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.State)</div>
-                        <div class="col">
-                            @switch (device.State)
-                            {
-                                case Core.Entities.DeviceState.OK:
-                                    @if (device.IsOnline)
-                                    {
-                                        <span class="badge badge-success">Connected</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge badge-light">@Html.DisplayFor(model => device.State)</span>
-                                    }
-                                    break;
-                                case Core.Entities.DeviceState.Locked:
-                                    <span class="badge badge-danger">@Html.DisplayFor(model => device.State)</span>
-                                    break;
-                                case Core.Entities.DeviceState.PendingUnlock:
-                                    <span class="badge badge-warning">@Html.DisplayFor(model => device.State)</span>
-                                    break;
-                                case Core.Entities.DeviceState.Disabled:
-                                    <span class="badge badge-dark">@Html.DisplayFor(model => device.State)</span>
-                                    break;
-                            }
-                        </div>
-                    </div>
-                    <div class="m-0 d-flex flex-row">
-                        <div class="col flex-fill font-weight-bold">@Html.DisplayNameFor(model => device.LastSynced)</div>
-                        <div class="col text-nowrap">
-                            @if (device.LastSynced != null)
-                            {
-                                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)device.LastSynced, TimeZoneInfo.Local)
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col p-0"></div>
-        </div>
-    </div>
-    
-    @*DeviceAccounts title*@
-    <div class="row align-items-center m-1">
-        <div class="col-auto p-1">
-            <h4 class="text-navyblue m-0">Accounts</h4>
-        </div>
-        <div class="col"></div>
-        <div class="col-auto p-1">
-            <div class="form-group has-search-right m-0">
-                <div class="form-control-feedback">
-                    <img class="img-size" src="~/svg/action/search.svg" />
-                </div>
-                <input id="searchbox_@device.Id" type="text" class="form-control" placeholder="Search">
-            </div>
-        </div>
-    </div>
-    @*DeviceAccounts table*@
-    <table id="@device.Id" class="table display table table-hover border rounded w-100">
-        <thead>
-            <tr>
-                <th class="d-none"></th>
-                <th data-priority="1">
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].Urls)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].Apps)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].Login)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].Type)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].Status)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].LastSyncedAt)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].CreatedAt)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].UpdatedAt)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].PasswordUpdatedAt)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeviceAccounts[0].OtpUpdatedAt)
-                </th>
-                <th class="table-col-menu" data-priority="2"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.DeviceAccounts.Where(e => e.EmployeeId == Model.Employee.Id).Where(d => d.DeviceId == device.Id))
-            {
-                <tr>
-                    <td class="d-none"></td>
-                    <td style="vertical-align:middle">
-                        @if (device.PrimaryAccountId == item.Id)
-                        {
-                            <span class="badge badge-success custom-badge" data-toggle="tooltip" data-placement="bottom" title="Primary account">
-                                @Html.DisplayFor(modelItem => item.Name)
-                            </span>
-                        }
-                        else
-                        {
-                            @Html.DisplayFor(modelItem => item.Name)
-                        }
-                    </td>
-                    <td style="white-space: normal">
-                        @{
-                            if (item.Urls != null)
-                            {
-                                foreach (var urls in item.Urls.Split(';'))
-                                {
-                                    <span style="white-space: pre-line">@urls</span>
-                                }
-                            }
-                        }
-                    </td>
-                    <td style="white-space: normal">
-                        @{
-                            if (item.Apps != null)
-                            {
-                                foreach (var apps in item.Apps.Split(';'))
-                                {
-                                    <span style="white-space: pre-line">@apps</span>
 
-                                }
-                            }
-                        }
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Login)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Type)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Status)
-                    </td>
-                    <td>
-                        @if (item.LastSyncedAt != null)
-                        {
-                            @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.LastSyncedAt, TimeZoneInfo.Local)
-                        }
-                    </td>
-                    <td>
-                        @if (item.CreatedAt != null)
-                        {
-                            @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
-                        }
-                    </td>
-                    <td>
-                        @if (item.UpdatedAt != null)
-                        {
-                            @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.UpdatedAt, TimeZoneInfo.Local)
-                        }
-                    </td>
-                    <td>
-                        @{
-                            var pwd = (DateTime.UtcNow.Date - item.PasswordUpdatedAt.Date).TotalDays;
-                            if (pwd == 1)
-                            {
-                                var text = $"{pwd} day";
-                                @text
-                            }
-                            else
-                            {
-                                var text = $"{pwd} days";
-                                @text
-                            }
-                        }
-                    </td>
-                    <td>
-                        @{
-                            if (item.OtpUpdatedAt != null)
-                            {
-                                var otp = (DateTime.UtcNow.Date - item.OtpUpdatedAt?.Date)?.TotalDays;
-                                if (otp == 1)
-                                {
-                                    var text = $"{otp} day";
-                                    @text
-                                }
-                                else
-                                {
-                                    var text = $"{otp} days";
-                                    @text
-                                }
-                            }
-                        }
-                    </td>
-                    <td>
-                        <div class="dropdown no-arrow">
-                            <a class="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img src="~/svg/action/more.svg" />
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                                @if (item.Type == Core.Entities.AccountType.Personal && item.Status != Core.Entities.AccountStatus.Removing)
-                                {
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccount" data-title="Edit personal account">
-                                        <img src="~/svg/action/edit.svg" />
-                                        Edit
-                                    </a>
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountPwd" data-title="Edit personal account password">
-                                        <img src="~/svg/action/password.svg" />
-                                        Edit password
-                                    </a>
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountOtp" data-title="Edit personal account OTP">
-                                        <img src="~/svg/action/otp.svg" />
-                                        Edit OTP
-                                    </a>
-                                }
-                                @if (item.Type == Core.Entities.AccountType.Personal && (item.Status == Core.Entities.AccountStatus.Updating || item.Status == Core.Entities.AccountStatus.Removing))
-                                {
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UndoChanges" data-title="Undo changes">
-                                        <img src="~/svg/action/undo.svg" />
-                                        Undo changes
-                                    </a>
-                                }
-                                else
-                                {
-                                    if (device.PrimaryAccountId != item.Id)
-                                    {
-                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Primary account">
-                                            <img src="~/svg/action/star.svg" />
-                                            Set as primary account
-                                        </a>
-                                    }
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteAccount" data-title="Delete account">
-                                        <img src="~/svg/action/delete.svg" />
-                                        Delete
-                                    </a>
-                                }
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+            @if (!Model.UserSamlIdpEnabled)
+            {
+                <div id="device_group" class="d-none mr-3">
+                    <select class="form-control" asp-for="Employee.CurrentDevice" asp-items="ViewBag.Devices"></select>
+                </div>
             }
-        </tbody>
-    </table>
-    <div class="row mt-2">
-        <div class="col d-flex justify-content-center justify-content-lg-start align-items-center mb-1 text-nowrap">
-            <span class="d-flex align-items-center mr-1 text-navyblue">Show entries</span>
-            <div id="entries_place_@device.Id"></div>
+            else
+            {
+                <div class="mr-3">
+                    <input type="submit" value="Reset password" class="btn btn-primary" asp-page-handler="ResetSamlIdentityProvider" />
+                </div>
+            }
+            <div>
+                @if (!Model.UserSamlIdpEnabled)
+                {
+                    <input id="idpSaveBtn" type="submit" value="Save" class="btn btn-primary d-none" asp-page-handler="EnableSamlIdentityProvider" />
+                }
+                else
+                {
+                    <input id="idpSaveBtn" type="submit" value="Save" class="btn btn-primary d-none" asp-page-handler="DisableSamlIdentityProvider" />
+                }
+            </div>
         </div>
-        <div id="showing_place_@device.Id" class="col d-flex justify-content-center align-items-center mb-1 text-navyblue text-nowrap"></div>
-        <div id="pagination_place_@device.Id" class="col d-flex justify-content-center justify-content-lg-end align-items-center mb-1"></div>
-    </div>
-}
+    </form>
+</div>
+
+@* Devices tables *@
+<div id="employeeDeviceAccounts">
+    <partial name="_EmployeeDeviceAccounts" />
+</div>
 
 @* Modal *@
 <div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
@@ -375,6 +103,7 @@
 
 @section Scripts{
     <script src="~/js/custom-popover.js"></script>
+    <script src="~/lib/signalr/signalr.js"></script>
     <script>
         // Open modal dialog
         $(document).on('click', '.open-modal-dialog', function () {
@@ -407,9 +136,6 @@
                     $('form').removeData('unobtrusiveValidation');
                     $.validator.unobtrusive.parse('form');
 
-                    // Enable tags
-                    $("input[data-role=tagsinput], select[multiple][data-role=tagsinput]").tagsinput();
-
                     // Set disabled
                     if ($('#SharedAccountUrls').prop('disabled')) {
                         $(".bootstrap-tagsinput > input").prop("disabled", true);
@@ -430,10 +156,8 @@
             $.getJSON('/Employees/Details?handler=JsonSharedAccount', { id: id },
                 function (data) {
                     $('#SharedAccountName').val(data.name);
-                    $('#SharedAccountUrls').tagsinput('removeAll');
-                    $('#SharedAccountUrls').tagsinput('add', data.urls);
-                    $('#SharedAccountApps').tagsinput('removeAll');
-                    $('#SharedAccountApps').tagsinput('add', data.apps);
+                    $('#SharedAccountUrls').val(data.urls);
+                    $('#SharedAccountApps').val(data.apps);
                     $('#SharedAccountLogin').val(data.login);
                 });
         }
@@ -443,10 +167,8 @@
             $.getJSON('/Employees/Details?handler=JsonTemplate', { id: id },
                 function (data) {
                     $('#PersonalAccName').val(data.name);
-                    $('#PersonalAccUrls').tagsinput('removeAll');
-                    $('#PersonalAccUrls').tagsinput('add', data.urls);
-                    $('#PersonalAccApps').tagsinput('removeAll');
-                    $('#PersonalAccApps').tagsinput('add', data.apps);
+                    $('#PersonalAccUrls').val(data.urls);
+                    $('#PersonalAccApps').val(data.apps);
                 });
         }
 
@@ -465,42 +187,60 @@
         }
 
         // Set DataTables
-        $("table").each(function () {
-            var currentTable = $(this);
-            var currentId = currentTable.attr('id');
+        SetDT();
+        function SetDT() {
+            $("table").each(function () {
+                var currentTable = $(this);
+                var currentId = currentTable.attr('id');
 
-            if (currentId != 'undefined') {
-                if (currentId.substr(0, 5) =='title') {
-                    $('#' + currentId).DataTable({
-                        responsive: true,
-                        "paging": false,
-                        "ordering": false,
-                        "info": false
-                    });
-                }
-                else {
+                if (currentId != 'undefined') {
                     $('#' + currentId).DataTable({
                         responsive: true,
                         "order": [[1, "asc"]],
                         "columnDefs": [
-                            { "orderable": false, "targets": [0,12] }
+                            { "orderable": false, "targets": [0, 12] }
                         ]
                     });
-                }
 
-                var dataTable = $('#' + currentId).dataTable();
-                // Search box
-                $('#searchbox_' + currentId).keyup(function () {
-                    dataTable.fnFilter(this.value);
-                });
-                $('.dataTables_filter').addClass('d-none');
-                // Length
-                $('#entries_place_' + currentId).html($('.dataTables_length select').removeClass('custom-select-sm form-control-sm'));
-                $('.dataTables_length').addClass('d-none');
-                // Info
-                $('#showing_place_' + currentId).html($('#' + currentId + '_info'));
-                // Paginate
-                $('#pagination_place_' + currentId).html($('#' + currentId + '_paginate'));
+                    var dataTable = $('#' + currentId).dataTable();
+                    // Search box
+                    $('#searchbox_' + currentId).keyup(function () {
+                        dataTable.fnFilter(this.value);
+                    });
+                    $('.dataTables_filter').addClass('d-none');
+                    // Length
+                    $('#entries_place_' + currentId).html($('.dataTables_length select').removeClass('custom-select-sm form-control-sm'));
+                    $('.dataTables_length').addClass('d-none');
+                    // Info
+                    $('#showing_place_' + currentId).html($('#' + currentId + '_info'));
+                    // Paginate
+                    $('#pagination_place_' + currentId).html($('#' + currentId + '_paginate'));
+                }
+            });
+        }
+
+        // SAML IdP
+        $(document).on("change", "#idpEnabled", function () {
+
+            var enabled = '@Model.UserSamlIdpEnabled';
+
+            if (enabled === 'False') {
+                if (this.checked) {
+                    $('#device_group').removeClass('d-none');
+                    $('#idpSaveBtn').removeClass('d-none');
+                }
+                else {
+                    $('#device_group').addClass('d-none');
+                    $('#idpSaveBtn').addClass('d-none');
+                }
+            }
+            else {
+                if (this.checked) {
+                    $('#idpSaveBtn').addClass('d-none');
+                }
+                else {
+                    $('#idpSaveBtn').removeClass('d-none');
+                }
             }
         });
 
@@ -517,8 +257,31 @@
             $('.breadcrumb').append('<li class="breadcrumb-item"><a href="/Employees">Employees</a></li>');
             $('.breadcrumb').append('<li class="breadcrumb-item active">@Model.Employee.FullName</li>');
         });
+
+        // Get url parameter by name
+        function GetUrlParam (name) {
+            var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+            return results[1] || 0;
+        }
+
+        // SignalR
+        var connection = new signalR.HubConnectionBuilder().withUrl("/employeeDetailsHub").build();
+        connection.start();
+        connection.on("UpdateTable", function (id) {
+            var currentId = GetUrlParam('id');
+            if (currentId == id) {
+                $.ajax({
+                    url: "/Employees/Details?handler=UpdateTable",
+                    type: "Get",
+                    data: { id: id },
+                    async: true,
+                    success: function (response) {
+                        $("#employeeDeviceAccounts").html(response);
+                        SetDT();
+                    }
+                });
+            }
+        });
     </script>
-    <script src="~/lib/signalr/signalr.js"></script>
-    <script src="~/lib/signalr/employee.details.js"></script>
     <partial name="_ValidationScriptsPartial" />
 }

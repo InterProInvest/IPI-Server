@@ -1,6 +1,6 @@
-﻿using HES.Core.Interfaces;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
 using HES.Core.Services;
-using HES.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

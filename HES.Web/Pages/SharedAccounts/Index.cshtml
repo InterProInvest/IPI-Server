@@ -109,10 +109,13 @@
                                 <img src="~/svg/action/password.svg" />
                                 Edit password
                             </a>
-                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditSharedAccountOtp" data-title="Edit shared account OTP">
-                                <img src="~/svg/action/otp.svg" />
-                                Edit OTP
-                            </a>
+                            @if (item.Kind != AccountKind.Workstation)
+                            {
+                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditSharedAccountOtp" data-title="Edit shared account OTP">
+                                    <img src="~/svg/action/otp.svg" />
+                                    Edit OTP
+                                </a>
+                            }
                             <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteSharedAccount" data-title="Delete shared account">
                                 <img src="~/svg/action/delete.svg" />
                                 Delete
@@ -203,9 +206,6 @@
                     $('form').removeData('validator');
                     $('form').removeData('unobtrusiveValidation');
                     $.validator.unobtrusive.parse('form');
-
-                    // Enable tags
-                    $("input[data-role=tagsinput], select[multiple][data-role=tagsinput]").tagsinput();
                 }
             });
         });

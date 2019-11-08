@@ -4,7 +4,8 @@
 
 <form method="post" class="text-right">
     <input type="hidden" asp-for="Device.Id" />
-    <input type="hidden" asp-for="Device.EmployeeId" />
+    <input type="hidden" asp-for="Device.Employee.Id" />
+    <input type="hidden" asp-for="Device.Employee.Email" />
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
     <input type="submit" value="Delete" class="btn btn-danger" asp-page-handler="DeleteDevice" />
 </form>

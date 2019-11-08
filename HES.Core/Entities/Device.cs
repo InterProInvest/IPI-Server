@@ -1,4 +1,4 @@
-﻿using HES.Core.Hubs;
+﻿using HES.Core.Services;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -22,7 +22,6 @@ namespace HES.Core.Entities
         public string AcceessProfileId { get; set; }
         public string MasterPassword { get; set; }
         public DateTime ImportedAt { get; set; }
-        public bool UsePin { get; set; }
 
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
@@ -31,7 +30,7 @@ namespace HES.Core.Entities
         public DeviceAccessProfile DeviceAccessProfile { get; set; }
 
         [NotMapped]
-        public bool IsOnline => AppHub.IsDeviceConnectedToHost(Id);
+        public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);
     }
 
     public enum DeviceState
@@ -39,6 +38,7 @@ namespace HES.Core.Entities
         OK,
         Locked,
         PendingUnlock,
-        Disabled
+        Disabled,
+        Error
     }
 }

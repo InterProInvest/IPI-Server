@@ -5,12 +5,7 @@
         <h1 class="text-navyblue">Device Access Profiles</h1>
     </div>
     <div class="col" id="loading"></div>
-    <div class="col-auto">
-        @*<button class="btn btn-light p-0" data-toggle="collapse" data-target="#filter-collapse" title="Filter">
-                <img style="width:32px;height:32px;" src="~/svg/action/filter.svg" />
-            </button>
-        *@
-    </div>
+    <div class="col-auto"></div>
     <div class="col-auto p-1">
         <div class="form-group has-search-right m-0">
             <div class="form-control-feedback">
@@ -46,9 +41,9 @@
     <tbody>
         @foreach (var item in Model.DeviceAccessProfiles)
         {
-            <tr data-id="@item.Id" data-action="DetailsProfile" data-title="Device access profile">
+            <tr data-id="@item.Id" class="row-dblclick">
                 <td class="d-none"></td>
-                <td>
+                <td class="cell-ellipsis">
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
@@ -70,16 +65,12 @@
                             <img src="~/svg/action/more.svg" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DetailsProfile" data-title="Device access profile">
-                                <img src="~/svg/action/details.svg" />
-                                Details
+                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditProfile" data-title="Edit device access profile">
+                                <img src="~/svg/action/edit.svg" />
+                                Edit
                             </a>
                             @if (item.Id != "default")
                             {
-                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditProfile" data-title="Edit device access profile">
-                                    <img src="~/svg/action/edit.svg" />
-                                    Edit
-                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteProfile" data-title="Delete device access profile">
                                     <img src="~/svg/action/delete.svg" />

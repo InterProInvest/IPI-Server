@@ -21,9 +21,6 @@
                 <th class="text-center align-middle">
                     New Channel
                 </th>
-                <th class="text-center align-middle">
-                    New Link
-                </th>
             </tr>
         </thead>
         <tbody>
@@ -32,27 +29,21 @@
                     Button
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox" title="Request the device button confirmation for connecting the device to the computer for the first time.">
                         <input type="checkbox" class="custom-control-input" id="ButtonBonding" asp-for="DeviceAccessProfile.ButtonBonding">
                         <label class="custom-control-label" for="ButtonBonding"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox " title="Request the device button confirmation for connecting the device to the computer that is already bonded with the computer. ">
                         <input type="checkbox" class="custom-control-input" id="ButtonConnection" asp-for="DeviceAccessProfile.ButtonConnection">
                         <label class="custom-control-label" for="ButtonConnection"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox" title="Request the device button confirmation when an application is getting access to the device’s storage.">
                         <input type="checkbox" class="custom-control-input" id="ButtonNewChannel" asp-for="DeviceAccessProfile.ButtonNewChannel">
                         <label class="custom-control-label" for="ButtonNewChannel"></label>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="ButtonNewLink" asp-for="DeviceAccessProfile.ButtonNewLink">
-                        <label class="custom-control-label" for="ButtonNewLink"></label>
                     </div>
                 </td>
             </tr>
@@ -61,56 +52,44 @@
                     PIN
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox" title="Request the PIN-code for connecting the device to the computer for the first time.">
                         <input type="checkbox" class="custom-control-input" id="PinBonding" asp-for="DeviceAccessProfile.PinBonding">
                         <label class="custom-control-label" for="PinBonding"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox" title="Request the PIN-code for connecting the device to the computer that is already bonded with the computer.">
                         <input type="checkbox" class="custom-control-input" id="PinConnection" asp-for="DeviceAccessProfile.PinConnection">
                         <label class="custom-control-label" for="PinConnection"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox" title="Request the PIN-code when an application is getting access to the device’s storage.">
                         <input type="checkbox" class="custom-control-input" id="PinNewChannel" asp-for="DeviceAccessProfile.PinNewChannel">
                         <label class="custom-control-label" for="PinNewChannel"></label>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="PinNewLink" asp-for="DeviceAccessProfile.PinNewLink">
-                        <label class="custom-control-label" for="PinNewLink"></label>
                     </div>
                 </td>
             </tr>
             <tr>
                 <td>
-                    Master-key
+                    Server Confirmation
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="MasterKeyBonding" asp-for="DeviceAccessProfile.MasterKeyBonding">
+                    <div class="custom-control custom-checkbox" title="Require the server confirmation for connecting the device to the computer for the first time.">
+                        <input type="checkbox" class="custom-control-input" id="MasterKeyBonding" checked="checked" disabled>
                         <label class="custom-control-label" for="MasterKeyBonding"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
+                    <div class="custom-control custom-checkbox" title="Require the server confirmation for connecting the device to the computer that is already bonded with the computer.">
                         <input type="checkbox" class="custom-control-input" id="MasterKeyConnection" asp-for="DeviceAccessProfile.MasterKeyConnection">
                         <label class="custom-control-label" for="MasterKeyConnection"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="MasterKeyNewChannel" asp-for="DeviceAccessProfile.MasterKeyNewChannel">
+                    <div class="custom-control custom-checkbox" title="Require the server confirmation when an application is getting access to the device’s storage.">
+                        <input type="checkbox" class="custom-control-input" id="MasterKeyNewChannel" asp-for="DeviceAccessProfile.MasterKeyNewChannel" value="false" disabled>
                         <label class="custom-control-label" for="MasterKeyNewChannel"></label>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="MasterKeyNewLink" asp-for="DeviceAccessProfile.MasterKeyNewLink">
-                        <label class="custom-control-label" for="MasterKeyNewLink"></label>
                     </div>
                 </td>
             </tr>
@@ -126,8 +105,8 @@
                 <td>
                     PIN expiration
                 </td>
-                <td class="text-center pl-1 pr-1">
-                    <input id="pin_expiration" style="width:200px" asp-for="DeviceAccessProfile.PinExpirationConverted" type="text" data-slider-min="1" data-slider-max="107" data-slider-step="1" data-slider-value="1" />
+                <td class="text-center pl-1 pr-1" title="After PIN code is expired, the device storage will be locked until the user enters the PIN again.">
+                    <input id="pin_expiration" type="range" class="custom-range" min="1" max="107" step="1" value="1" asp-for="DeviceAccessProfile.PinExpirationConverted">
                 </td>
                 <td class="text-center pin-settings-value">
                     <h6 id="pin_expiration_value"></h6>
@@ -138,7 +117,7 @@
                     PIN length
                 </td>
                 <td class="text-center pl-1 pr-1">
-                    <input id="pin_length" style="width:200px" asp-for="DeviceAccessProfile.PinLength" type="text" data-slider-min="4" data-slider-max="8" data-slider-step="1" data-slider-value="4" />
+                    <input id="pin_length" type="range" class="custom-range" min="4" max="8" step="1" value="4" asp-for="DeviceAccessProfile.PinLength">
                 </td>
                 <td class="text-center pin-settings-value">
                     <h6 id="pin_length_value"></h6>
@@ -146,35 +125,13 @@
             </tr>
             <tr>
                 <td>
-                    PIN try count
+                    PIN incorrect entry
                 </td>
-                <td class="text-center pl-1 pr-1">
-                    <input id="pin_try_count" style="width:200px" asp-for="DeviceAccessProfile.PinTryCount" type="text" data-slider-min="3" data-slider-max="200" data-slider-step="1" data-slider-value="3" />
+                <td class="text-center pl-1 pr-1" title="Maximum number of incorrect PIN code entering. After the number of entries is exceeded, the device is locked.">
+                    <input id="pin_try_count" type="range" class="custom-range" min="3" max="10" step="1" value="1" asp-for="DeviceAccessProfile.PinTryCount">
                 </td>
                 <td class="text-center pin-settings-value">
                     <h6 id="pin_try_count_value"></h6>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Master-key expiration
-                </td>
-                <td class="text-center pl-1 pr-1">
-                    <input id="masterkey_expiration" style="width:200px" asp-for="DeviceAccessProfile.MasterKeyExpirationConverted" type="text" data-slider-min="1" data-slider-max="107" data-slider-step="1" data-slider-value="1" />
-                </td>
-                <td class="text-center pin-settings-value">
-                    <h6 id="masterkey_expiration_value"></h6>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Button expiration
-                </td>
-                <td class="text-center pl-1 pr-1">
-                    <input id="button_expiration" style="width:200px" asp-for="DeviceAccessProfile.ButtonExpiration" type="text" data-slider-min="1" data-slider-max="15" data-slider-step="1" data-slider-value="1" />
-                </td>
-                <td class="text-center pin-settings-value">
-                    <h6 id="button_expiration_value"></h6>
                 </td>
             </tr>
         </tbody>

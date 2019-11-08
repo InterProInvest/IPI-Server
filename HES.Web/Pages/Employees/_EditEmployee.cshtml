@@ -15,7 +15,7 @@
     </div>
     <div class="form-group">
         <label asp-for="Employee.Email" class="control-label text-gray"></label>
-        <input asp-for="Employee.Email" class="form-control text-navyblue" />
+        <input id="email" asp-for="Employee.Email" class="form-control text-navyblue" />
         <span asp-validation-for="Employee.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
@@ -44,6 +44,8 @@
     </div>
 </form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+<script>
+    $(function () {
+        $('#email').blur();
+    });
+</script>

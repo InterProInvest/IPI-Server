@@ -14,15 +14,15 @@ namespace HES.Web.Pages.Workstations
     public class DetailsModel : PageModel
     {
         private readonly IWorkstationService _workstationService;
-        private readonly IWorkstationProximityDeviceService _workstationProximityDeviceService;
+        private readonly IProximityDeviceService _workstationProximityDeviceService;
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
         private readonly ILogger<DetailsModel> _logger;
 
-        public IList<WorkstationProximityDevice> WorkstationProximityDevices { get; set; }
+        public IList<ProximityDevice> WorkstationProximityDevices { get; set; }
         public IList<Device> Devices { get; set; }
         public Workstation Workstation { get; set; }
-        public WorkstationProximityDevice WorkstationProximityDevice { get; set; }
+        public ProximityDevice WorkstationProximityDevice { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Workstations
         public string ErrorMessage { get; set; }
 
         public DetailsModel(IWorkstationService workstationService,
-                            IWorkstationProximityDeviceService workstationProximityDeviceService,
+                            IProximityDeviceService workstationProximityDeviceService,
                             IEmployeeService employeeService,
                             IDeviceService deviceService,
                             ILogger<DetailsModel> logger)
@@ -51,7 +51,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             Workstation = await _workstationService
-                .WorkstationQuery()
+                .Query()
                 .Include(c => c.Department.Company)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
@@ -85,7 +85,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             Workstation = await _workstationService
-            .WorkstationQuery()
+            .Query()
             .FirstOrDefaultAsync(m => m.Id == id);
 
             if (Workstation == null)
@@ -171,7 +171,7 @@ namespace HES.Web.Pages.Workstations
             return Partial("_EditProximitySettings", this);
         }
 
-        public async Task<IActionResult> OnPostEditProximitySettingsAsync(WorkstationProximityDevice WorkstationProximityDevice)
+        public async Task<IActionResult> OnPostEditProximitySettingsAsync(ProximityDevice WorkstationProximityDevice)
         {
             var id = WorkstationProximityDevice.WorkstationId;
             if (!ModelState.IsValid)
@@ -217,7 +217,7 @@ namespace HES.Web.Pages.Workstations
             return Partial("_DeleteProximityDevice", this);
         }
 
-        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(WorkstationProximityDevice WorkstationProximityDevice)
+        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(ProximityDevice WorkstationProximityDevice)
         {
             if (WorkstationProximityDevice == null)
             {

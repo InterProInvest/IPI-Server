@@ -13,7 +13,8 @@ namespace HES.Web.Pages.Settings.Positions
 {
     public class IndexModel : PageModel
     {
-        private readonly ISettingsService _settingsService;
+        private readonly IOrgStructureService _orgStructureService;
+        private readonly IEmployeeService _employeeService;
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Position> Positions { get; set; }
@@ -26,15 +27,16 @@ namespace HES.Web.Pages.Settings.Positions
         [TempData]
         public string ErrorMessage { get; set; }
 
-        public IndexModel(ISettingsService settingsService, ILogger<IndexModel> logger)
+        public IndexModel(IOrgStructureService orgStructureService, IEmployeeService employeeService, ILogger<IndexModel> logger)
         {
-            _settingsService = settingsService;
+            _orgStructureService = orgStructureService;
+            _employeeService = employeeService;
             _logger = logger;
         }
 
         public async Task OnGetAsync()
         {
-            Positions = await _settingsService
+            Positions = await _orgStructureService
                 .PositionQuery()
                 .OrderBy(p => p.Name)
                 .ToListAsync();
@@ -57,7 +59,7 @@ namespace HES.Web.Pages.Settings.Positions
 
             try
             {
-                await _settingsService.CreatePositionAsync(Position);
+                await _orgStructureService.CreatePositionAsync(Position);
                 SuccessMessage = $"Position created.";
             }
             catch (Exception ex)
@@ -77,7 +79,7 @@ namespace HES.Web.Pages.Settings.Positions
                 return NotFound();
             }
 
-            Position = await _settingsService.PositionQuery().FirstOrDefaultAsync(m => m.Id == id);
+            Position = await _orgStructureService.PositionQuery().FirstOrDefaultAsync(m => m.Id == id);
 
             if (Position == null)
             {
@@ -98,7 +100,7 @@ namespace HES.Web.Pages.Settings.Positions
 
             try
             {
-                await _settingsService.EditPositionAsync(Position);
+                await _orgStructureService.EditPositionAsync(Position);
                 SuccessMessage = $"Position updated.";
             }
             catch (Exception ex)
@@ -118,7 +120,7 @@ namespace HES.Web.Pages.Settings.Positions
                 return NotFound();
             }
 
-            Position = await _settingsService.PositionQuery().FirstOrDefaultAsync(m => m.Id == id);
+            Position = await _orgStructureService.PositionQuery().FirstOrDefaultAsync(m => m.Id == id);
 
             if (Position == null)
             {
@@ -126,7 +128,7 @@ namespace HES.Web.Pages.Settings.Positions
                 return NotFound();
             }
 
-            HasForeignKey = await _settingsService.EmployeeQuery().AnyAsync(x => x.PositionId == id);
+            HasForeignKey = await _employeeService.Query().AnyAsync(x => x.PositionId == id);
 
             return Partial("_DeletePosition", this);
         }
@@ -141,7 +143,7 @@ namespace HES.Web.Pages.Settings.Positions
 
             try
             {
-                await _settingsService.DeletePositionAsync(id);
+                await _orgStructureService.DeletePositionAsync(id);
                 SuccessMessage = $"Position deleted.";
             }
             catch (Exception ex)
@@ -155,7 +157,7 @@ namespace HES.Web.Pages.Settings.Positions
 
         public async Task<JsonResult> OnGetJsonPositionAsync()
         {
-            return new JsonResult(await _settingsService.PositionQuery().OrderBy(c => c.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync());
         }
 
         #endregion

@@ -1,10 +1,8 @@
 ﻿@model HES.Web.Pages.Settings.DeviceAccessProfiles.IndexModel
 
 <div class="form-group">
-    <label asp-for="DeviceAccessProfile.Name" class="control-label text-gray"></label>
-    <input asp-for="DeviceAccessProfile.Name" class="form-control text-navyblue readonly-white" readonly />
+    <h4 class="text-navyblue text-truncate">@Model.DeviceAccessProfile.Name</h4>
 </div>
-
 <label class="text-gray">Authorization parameters</label>
 <table class="table border rounded w-100 disable-selection">
     <thead>
@@ -19,9 +17,6 @@
             <th class="text-center align-middle">
                 New Channel
             </th>
-            <th class="text-center align-middle">
-                New Link
-            </th>
         </tr>
     </thead>
     <tbody>
@@ -30,28 +25,34 @@
                 Button
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="ButtonBonding" checked="@Model.DeviceAccessProfile.ButtonBonding" disabled>
-                    <label class="custom-control-label" for="ButtonBonding"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.ButtonBonding)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="ButtonConnection" checked="@Model.DeviceAccessProfile.ButtonConnection" disabled>
-                    <label class="custom-control-label" for="ButtonConnection"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.ButtonConnection)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="ButtonNewChannel" checked="@Model.DeviceAccessProfile.ButtonNewChannel" disabled>
-                    <label class="custom-control-label" for="ButtonNewChannel"></label>
-                </div>
-            </td>
-            <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="ButtonNewLink" checked="@Model.DeviceAccessProfile.ButtonNewLink" disabled>
-                    <label class="custom-control-label" for="ButtonNewLink"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.ButtonNewChannel)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
         </tr>
         <tr>
@@ -59,125 +60,90 @@
                 PIN
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="PinBonding" checked="@Model.DeviceAccessProfile.PinBonding" disabled>
-                    <label class="custom-control-label" for="PinBonding"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.PinBonding)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="PinConnection" checked="@Model.DeviceAccessProfile.PinConnection" disabled>
-                    <label class="custom-control-label" for="PinConnection"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.PinConnection)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="PinNewChannel" checked="@Model.DeviceAccessProfile.PinNewChannel" disabled>
-                    <label class="custom-control-label" for="PinNewChannel"></label>
-                </div>
-            </td>
-            <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="PinNewLink" checked="@Model.DeviceAccessProfile.PinNewLink" disabled>
-                    <label class="custom-control-label" for="PinNewLink"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.PinNewChannel)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
         </tr>
         <tr>
             <td>
-                Master-key
+                Server Confirmation
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="MasterKeyBonding" checked="@Model.DeviceAccessProfile.MasterKeyBonding" disabled>
-                    <label class="custom-control-label" for="MasterKeyBonding"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.MasterKeyBonding)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="MasterKeyConnection" checked="@Model.DeviceAccessProfile.MasterKeyConnection" disabled>
-                    <label class="custom-control-label" for="MasterKeyConnection"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.MasterKeyConnection)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
             <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="MasterKeyNewChannel" checked="@Model.DeviceAccessProfile.MasterKeyNewChannel" disabled>
-                    <label class="custom-control-label" for="MasterKeyNewChannel"></label>
-                </div>
-            </td>
-            <td class="text-center">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="MasterKeyNewLink" checked="@Model.DeviceAccessProfile.MasterKeyNewLink" disabled>
-                    <label class="custom-control-label" for="MasterKeyNewLink"></label>
-                </div>
+                @if (@Model.DeviceAccessProfile.MasterKeyNewChannel)
+                {
+                    <span class="badge badge-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge badge-secondary">No</span>
+                }
             </td>
         </tr>
     </tbody>
 </table>
-
-<label class="text-gray">PIN settings</label>
-<table class="table border rounded w-100 disable-selection">
-    <thead>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                PIN expiration
-            </td>
-            <td class="text-center pl-1 pr-1">
-                <input id="pin_expiration" style="width:200px" asp-for="DeviceAccessProfile.PinExpirationConverted" type="text" data-slider-min="1" data-slider-max="107" data-slider-step="1" data-slider-value="@Model.DeviceAccessProfile.PinExpirationConverted" data-slider-enabled="false" />
-            </td>
-            <td class="text-center pin-settings-value">
-                <h6 id="pin_expiration_value"></h6>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                PIN length
-            </td>
-            <td class="text-center pl-1 pr-1">
-                <input id="pin_length" style="width:200px" asp-for="DeviceAccessProfile.PinLength" type="text" data-slider-min="4" data-slider-max="8" data-slider-step="1" data-slider-value="@Model.DeviceAccessProfile.PinLength" data-slider-enabled="false" />
-            </td>
-            <td class="text-center pin-settings-value">
-                <h6 id="pin_length_value"></h6>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                PIN try count
-            </td>
-            <td class="text-center pl-1 pr-1">
-                <input id="pin_try_count" style="width:200px" asp-for="DeviceAccessProfile.PinTryCount" type="text" data-slider-min="3" data-slider-max="200" data-slider-step="1" data-slider-value="@Model.DeviceAccessProfile.PinTryCount" data-slider-enabled="false" />
-            </td>
-            <td class="text-center pin-settings-value">
-                <h6 id="pin_try_count_value"></h6>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Master Key expiration
-            </td>
-            <td class="text-center pl-1 pr-1">
-                <input id="masterkey_expiration" style="width:200px" asp-for="DeviceAccessProfile.MasterKeyExpirationConverted" type="text" data-slider-min="1" data-slider-max="107" data-slider-step="1" data-slider-value="@Model.DeviceAccessProfile.PinExpirationConverted" data-slider-enabled="false" />
-            </td>
-            <td class="text-center pin-settings-value">
-                <h6 id="masterkey_expiration_value"></h6>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Button expiration
-            </td>
-            <td class="text-center pl-1 pr-1">
-                <input id="button_expiration" style="width:200px" asp-for="DeviceAccessProfile.ButtonExpiration" type="text" data-slider-min="1" data-slider-max="15" data-slider-step="1" data-slider-value="@Model.DeviceAccessProfile.ButtonExpiration" data-slider-enabled="false" />
-            </td>
-            <td class="text-center pin-settings-value">
-                <h6 id="button_expiration_value"></h6>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-<div class="form-group m-0 text-right">
+<div class="form-group">
+    <label class="text-gray">PIN settings</label>
+    <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            PIN expiration
+            <span class="badge badge-primary">@Model.DeviceAccessProfile.PinExpirationString</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            PIN length
+            <span class="badge badge-primary">@Model.DeviceAccessProfile.PinLength</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            PIN incorrect entry
+            <span class="badge badge-primary">@Model.DeviceAccessProfile.PinTryCount</span>
+        </li>
+    </ul>
+</div>
+<div class="text-right">
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 </div>

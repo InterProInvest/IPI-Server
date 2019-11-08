@@ -19,25 +19,20 @@ namespace HES.Core.Entities
         public bool ButtonBonding { get; set; }
         public bool ButtonConnection { get; set; }
         public bool ButtonNewChannel { get; set; }
-        public bool ButtonNewLink { get; set; }
         public bool PinBonding { get; set; }
         public bool PinConnection { get; set; }
         public bool PinNewChannel { get; set; }
-        public bool PinNewLink { get; set; }
-        public bool MasterKeyBonding { get; set; }
+        public bool MasterKeyBonding { get; set; } = true;
         public bool MasterKeyConnection { get; set; }
         public bool MasterKeyNewChannel { get; set; }
-        public bool MasterKeyNewLink { get; set; }
         public int PinExpiration { get; set; }
         public int PinLength { get; set; }
         public int PinTryCount { get; set; }
-        public int MasterKeyExpiration { get; set; }
-        public int ButtonExpiration { get; set; }
 
         /// <summary>
         /// logic min value: 1, max value: 107
         /// minutes: 1-59
-        /// hours: 60-107 (value - 59) = hrs
+        /// hours: 60-107 -> (value - 59) = hrs
         /// </summary>
         [NotMapped]
         public int PinExpirationConverted
@@ -52,23 +47,16 @@ namespace HES.Core.Entities
                 PinExpiration = value <= 59 ? value * 60 : (value - 59) * 3600;
             }
         }
-        /// <summary>
-        /// logic min value: 1, max value: 107
-        /// minutes: 1-59
-        /// hours: 60-107 (value - 59) = hrs
-        /// </summary>
+
         [NotMapped]
-        public int MasterKeyExpirationConverted
+        public string PinExpirationString
         {
             get
             {
-                var prop = MasterKeyExpiration / 60;
-                return prop <= 59 ? prop : (prop / 60) + 59;
+                var prop = PinExpiration / 60;
+                return prop <= 59 ? ($"{prop} min") : ($"{(prop / 60) + 59} hrs");
             }
-            set
-            {
-                MasterKeyExpiration = value <= 59 ? value * 60 : (value - 59) * 3600;
-            }
+
         }
     }
 }

@@ -7,6 +7,7 @@ namespace HES.Core.Entities
     {
         [Key]
         public string Id { get; set; }
+        [Required]
         [Display(Name = "Company")]
         public string CompanyId { get; set; }
         [Required]

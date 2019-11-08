@@ -1,18 +1,11 @@
-﻿using HES.Core.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using HES.Core.Entities;
+using Hideez.SDK.Communication.Remote;
 
 namespace HES.Core.Interfaces
 {
     public interface IRemoteTaskService
     {
-        Task AddTaskAsync(DeviceTask deviceTask);
-        Task AddRangeAsync(IList<DeviceTask> deviceTasks);
-
-        Task UndoLastTaskAsync(string accountId);
-        Task RemoveDeviceAsync(Device device);
-
-        void StartTaskProcessing(string deviceId);
-        void StartTaskProcessing(IList<string> deviceIdList);
+        Task ExecuteRemoteTasks(string deviceId, RemoteDevice remoteDevice, TaskOperation operation);
     }
 }

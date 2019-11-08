@@ -28,31 +28,38 @@ namespace HES.Core.Services
             public string RegisteredUserId { get; set; }
         }
 
-        private readonly IAesCryptography _aes;
         private readonly IAsyncRepository<Device> _deviceRepository;
-        private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
+        private readonly IDeviceTaskService _deviceTaskService;
         private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
         private readonly IWorkstationEventService _workstationEventService;
-        private readonly IRemoteTaskService _remoteTaskService;
+        private readonly IAesCryptographyService _aesService;
 
-        public DeviceService(IAesCryptography aes,
-                             IAsyncRepository<Device> deviceRepository,
-                             IAsyncRepository<DeviceTask> deviceTaskRepository,
+        public DeviceService(IAsyncRepository<Device> deviceRepository,
+                             IDeviceTaskService deviceTaskService,
                              IDeviceAccessProfilesService deviceAccessProfilesService,
                              IWorkstationEventService workstationEventService,
-                             IRemoteTaskService remoteTaskService)
+                             IAesCryptographyService aesService)
         {
-            _aes = aes;
             _deviceRepository = deviceRepository;
-            _deviceTaskRepository = deviceTaskRepository;
+            _deviceTaskService = deviceTaskService;
             _deviceAccessProfilesService = deviceAccessProfilesService;
             _workstationEventService = workstationEventService;
-            _remoteTaskService = remoteTaskService;
+            _aesService = aesService;
         }
 
         public IQueryable<Device> Query()
         {
             return _deviceRepository.Query();
+        }
+
+        public async Task<int> GetCountAsync()
+        {
+            return await _deviceRepository.GetCountAsync();
+        }
+
+        public async Task<int> GetFreeDevicesCount()
+        {
+            return await _deviceRepository.Query().Where(d => d.EmployeeId == null).CountAsync();
         }
 
         public async Task<Device> GetByIdAsync(dynamic id)
@@ -66,7 +73,7 @@ namespace HES.Core.Services
             IList<Device> devicesImported = null;
             string message = null;
 
-            var objects = _aes.DecryptObject<List<MyHideezDevice>>(fileContent, Encoding.Unicode.GetBytes(key));
+            var objects = _aesService.DecryptObject<List<MyHideezDevice>>(fileContent, Encoding.Unicode.GetBytes(key));
             if (objects.Count > 0)
             {
                 // Get all exists devices
@@ -82,15 +89,15 @@ namespace HES.Core.Services
                     MAC = d.MAC,
                     Model = d.Model,
                     RFID = d.RFID,
-                    Battery = 1,
+                    Battery = 100,
                     Firmware = "3.0.0",
                     LastSynced = null,
                     EmployeeId = null,
                     PrimaryAccountId = null,
                     MasterPassword = null,
                     AcceessProfileId = "default",
-                    ImportedAt = DateTime.UtcNow,
-                    UsePin = true
+                    ImportedAt = DateTime.UtcNow
+                    //UsePin = true
                 })
                 .ToList();
 
@@ -126,7 +133,12 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "RFID" });
         }
 
-        public async Task UpdateDevicePropAsync(string deviceId, int battery, string firmware, bool locked)
+        public async Task UpdateOnlyPropAsync(Device device, string[] properties)
+        {
+            await _deviceRepository.UpdateOnlyPropAsync(device, properties);
+        }
+
+        public async Task UpdateDeviceInfoAsync(string deviceId, int battery, string firmware, bool locked)
         {
             if (deviceId == null)
             {
@@ -141,59 +153,12 @@ namespace HES.Core.Services
 
             device.Battery = battery;
             device.Firmware = firmware;
-            device.State = locked == true ? DeviceState.Locked : DeviceState.OK;
+            //todo - add SetState(Device device, DeviceState newState)
+            if (device.State == DeviceState.OK && locked)
+                device.State = DeviceState.Locked;
             device.LastSynced = DateTime.UtcNow;
 
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "Battery", "Firmware", "State", "LastSynced" });
-        }
-
-        public async Task UpdateProfileAsync(string[] devicesId, string profileId)
-        {
-            if (devicesId == null)
-            {
-                throw new NullReferenceException(nameof(devicesId));
-            }
-            if (profileId == null)
-            {
-                throw new NullReferenceException(nameof(profileId));
-            }
-
-            var profile = await _deviceAccessProfilesService.GetByIdAsync(profileId);
-            if (profileId == null)
-            {
-                throw new Exception("Profile not found");
-            }
-
-            foreach (var deviceId in devicesId)
-            {
-                var device = await _deviceRepository.GetByIdAsync(deviceId);
-                if (device == null)
-                {
-                    throw new Exception($"Device not found, ID: {deviceId}");
-                }
-
-                device.AcceessProfileId = profileId;
-                await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
-
-                if (device.EmployeeId != null)
-                {
-                    // Delete all previous tasks for update profile
-                    var allProfileTasks = await _deviceTaskRepository
-                        .Query()
-                        .Where(t => t.DeviceId == deviceId && t.Operation == TaskOperation.Profile)
-                        .ToListAsync();
-                    await _deviceTaskRepository.DeleteRangeAsync(allProfileTasks);
-                    // Add task for update profile
-                    await _remoteTaskService.AddTaskAsync(new DeviceTask
-                    {
-                        Operation = TaskOperation.Profile,
-                        CreatedAt = DateTime.UtcNow,
-                        DeviceId = device.Id,
-                        Password = device.MasterPassword
-                    });
-                }
-            }
-            _remoteTaskService.StartTaskProcessing(devicesId);
         }
 
         public async Task UnlockPinAsync(string deviceId)
@@ -214,13 +179,7 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "State" });
 
             // Create task
-            await _remoteTaskService.AddTaskAsync(new DeviceTask
-            {
-                DeviceId = device.Id,
-                Password = device.MasterPassword,
-                Operation = TaskOperation.UnlockPin,
-                CreatedAt = DateTime.UtcNow
-            });
+            await _deviceTaskService.AddUnlockPinTaskAsync(device);
 
             // Add event
             await _workstationEventService.AddEventAsync(new WorkstationEvent
@@ -230,13 +189,102 @@ namespace HES.Core.Services
                 SeverityId = WorkstationEventSeverity.Info,
                 DeviceId = deviceId
             });
-
-            _remoteTaskService.StartTaskProcessing(deviceId);
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate)
         {
             return await _deviceRepository.ExistAsync(predicate);
         }
+
+        public async Task RemoveEmployeeAsync(string deviceId)
+        {
+            var device = await _deviceRepository.GetByIdAsync(deviceId);
+
+            device.EmployeeId = null;
+            device.PrimaryAccountId = null;
+            device.MasterPassword = null;
+            device.LastSynced = DateTime.UtcNow;
+
+            var properties = new List<string>()
+            {
+                "EmployeeId",
+                "PrimaryAccountId",
+                "MasterPassword",
+                "LastSynced"
+            };
+
+            await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
+        }
+
+        #region Profile
+
+        public async Task<string[]> GetDevicesByProfileAsync(string profileId)
+        {
+            var tasks = await _deviceTaskService
+                .Query()
+                .Where(d => d.Operation == TaskOperation.Wipe || d.Operation == TaskOperation.Link)
+                .Select(s => s.DeviceId)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var devicesIds = await _deviceRepository
+               .Query()
+               .Where(d => d.AcceessProfileId == profileId && d.EmployeeId != null && !tasks.Contains(d.Id))
+               .Select(s => s.Id)
+               .AsNoTracking()
+               .ToArrayAsync();
+
+            return devicesIds;
+        }
+
+        public async Task SetProfileAsync(string[] devicesId, string profileId)
+        {
+            if (devicesId == null)
+            {
+                throw new NullReferenceException(nameof(devicesId));
+            }
+            if (profileId == null)
+            {
+                throw new NullReferenceException(nameof(profileId));
+            }
+
+            var profile = await _deviceAccessProfilesService.GetByIdAsync(profileId);
+            if (profile == null)
+            {
+                throw new Exception("Profile not found");
+            }
+
+            foreach (var deviceId in devicesId)
+            {
+                var device = await _deviceRepository.GetByIdAsync(deviceId);
+                if (device != null)
+                {
+                    device.AcceessProfileId = profileId;
+                    await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
+
+                    if (device.EmployeeId != null)
+                    {
+                        // Delete all previous tasks for update profile
+                        await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
+                        // Add task for update profile
+                        await _deviceTaskService.AddProfileTaskAsync(device);
+                    }
+                }
+            }
+        }
+
+        public async Task<string[]> UpdateProfileAsync(string profileId)
+        {
+            var devicesId = await GetDevicesByProfileAsync(profileId);
+
+            if (devicesId.Length > 0)
+            {
+                await SetProfileAsync(devicesId, profileId);
+            }
+
+            return devicesId;
+        }
+
+        #endregion
     }
 }

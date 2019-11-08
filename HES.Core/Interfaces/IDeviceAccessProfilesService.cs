@@ -6,7 +6,7 @@ namespace HES.Core.Interfaces
 {
     public interface IDeviceAccessProfilesService
     {
-        IQueryable<DeviceAccessProfile> DeviceAccessProfilesQuery();
+        IQueryable<DeviceAccessProfile> Query();
         Task<DeviceAccessProfile> GetByIdAsync(dynamic id);
         Task CreateProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile);

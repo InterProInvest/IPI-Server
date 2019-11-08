@@ -1,6 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,7 +17,7 @@ namespace HES.Core.Services
             _deviceAccessProfileRepository = deviceAccessProfileRepository;
         }
 
-        public IQueryable<DeviceAccessProfile> DeviceAccessProfilesQuery()
+        public IQueryable<DeviceAccessProfile> Query()
         {
             return _deviceAccessProfileRepository.Query();
         }
@@ -30,7 +32,17 @@ namespace HES.Core.Services
             if (deviceAccessProfile == null)
             {
                 throw new ArgumentNullException(nameof(deviceAccessProfile));
-            }            
+            }
+
+            var profile = await _deviceAccessProfileRepository
+                .Query()
+                .Where(d => d.Name == deviceAccessProfile.Name)
+                .AnyAsync();
+
+            if (profile)
+            {
+                throw new Exception($"Name {deviceAccessProfile.Name} is already taken.");
+            }
 
             deviceAccessProfile.CreatedAt = DateTime.UtcNow;
             await _deviceAccessProfileRepository.AddAsync(deviceAccessProfile);
@@ -43,9 +55,14 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(deviceAccessProfile));
             }
 
-            if (deviceAccessProfile.Id == "default")
+            var profile = await _deviceAccessProfileRepository
+               .Query()
+               .Where(d => d.Name == deviceAccessProfile.Name && d.Id != deviceAccessProfile.Id)
+               .AnyAsync();
+
+            if (profile)
             {
-                throw new Exception("Cannot edit a default profile");
+                throw new Exception($"Name {deviceAccessProfile.Name} is already taken.");
             }
 
             deviceAccessProfile.UpdatedAt = DateTime.UtcNow;

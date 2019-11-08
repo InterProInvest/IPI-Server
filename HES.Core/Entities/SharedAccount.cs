@@ -20,6 +20,7 @@ namespace HES.Core.Entities
         public string OtpSecret { get; set; }
         [Display(Name = "OTP updated")]
         public DateTime? OtpSecretChangedAt { get; set; }
+        public AccountKind Kind { get; set; }
         public bool Deleted { get; set; }
 
         [NotMapped]

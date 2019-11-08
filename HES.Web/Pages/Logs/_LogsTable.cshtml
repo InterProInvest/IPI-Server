@@ -6,37 +6,37 @@
     int errorCount = 0;
     int fatalCount = 0;
 }
-<table id="logs" class="display table table-hover border rounded w-100" style="table-layout:fixed">
+<table id="logs" class="display table table-hover border rounded m-0 w-100" style="table-layout:fixed; margin:0px !important">
     <thead>
         <tr>
-            <th style="width: 180px">
-                @Html.DisplayNameFor(model => model.CurrentLog[0].Date)
+            <th style="width:170px;">
+                @Html.DisplayNameFor(model => model.SelectedLog[0].Date)
             </th>
-            <th style="width: 80px">
-                @Html.DisplayNameFor(model => model.CurrentLog[0].Level)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CurrentLog[0].Logger)
+            <th style="width:50px;">
+                @Html.DisplayNameFor(model => model.SelectedLog[0].Level)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CurrentLog[0].Message)
-            </th>
-            <th style="width: 80px">
-                @Html.DisplayNameFor(model => model.CurrentLog[0].Method)
+                @Html.DisplayNameFor(model => model.SelectedLog[0].Logger)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CurrentLog[0].Url)
+                @Html.DisplayNameFor(model => model.SelectedLog[0].Message)
+            </th>
+            <th style="width:60px;">
+                @Html.DisplayNameFor(model => model.SelectedLog[0].Method)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SelectedLog[0].Url)
             </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.CurrentLog)
+        @foreach (var item in Model.SelectedLog)
         {
             <tr>
-                <td style="width: 180px">
+                <td>
                     @Html.DisplayFor(modelItem => item.Date)
                 </td>
-                <td style="width: 80px">
+                <td>
                     @{
                         switch (item.Level)
                         {
@@ -69,7 +69,7 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Message)
                 </td>
-                <td style="width: 80px">
+                <td>
                     @Html.DisplayFor(modelItem => item.Method)
                 </td>
                 <td>

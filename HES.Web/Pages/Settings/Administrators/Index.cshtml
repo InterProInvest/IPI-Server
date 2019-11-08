@@ -37,9 +37,6 @@
                 @Html.DisplayNameFor(model => model.ApplicationUsers[0].Email)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ApplicationUsers[0].EmailConfirmed)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.ApplicationUsers[0].PhoneNumber)
             </th>
             <th>
@@ -57,13 +54,17 @@
                     @Html.DisplayFor(modelItem => item.Email)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.EmailConfirmed)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.PhoneNumber)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.TwoFactorEnabled)
+                    @if (item.TwoFactorEnabled)
+                    {
+                        <span class="badge badge-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary">No</span>
+                    }
                 </td>
                 <td>
                     <div class="dropdown no-arrow">
@@ -120,8 +121,9 @@
         var table_name = '#users';
         var table = $(table_name).DataTable({
             responsive: true,
+            "order": [[1, "asc"]],
             "columnDefs": [
-                { "orderable": false, "targets": [0,5] }
+                { "orderable": false, "targets": [0,4] }
             ]
         });
         var dataTable = $(table_name).dataTable();

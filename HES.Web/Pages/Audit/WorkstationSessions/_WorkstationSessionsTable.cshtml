@@ -72,10 +72,14 @@
                     @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.StartDate, TimeZoneInfo.Local)
                 </td>
                 <td>
-                    @if (item != null && item.EndDate != null)
+                    @if (item.EndDate != null)
                     {
                         <span class="d-none">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.EndDate, TimeZoneInfo.Local).Ticks</span>
                         @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.EndDate, TimeZoneInfo.Local)
+                    }
+                    else
+                    {
+                        <span class="badge badge-success">Active</span>
                     }
                 </td>
                 <td data-order="@item.Duration.Ticks">

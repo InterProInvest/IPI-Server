@@ -174,9 +174,7 @@
                     // Validation partial view
                     $('form').removeData('validator');
                     $('form').removeData('unobtrusiveValidation');
-                    $.validator.unobtrusive.parse('form');
-                    // Enable tags
-                    $("input[data-role=tagsinput], select[multiple][data-role=tagsinput]").tagsinput();
+                    $.validator.unobtrusive.parse('form');        
                 }
             });
         });

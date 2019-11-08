@@ -276,9 +276,8 @@
         });
 
         // Double click to details of workstation
-        $('#workstations tbody tr td:not(:first-child, :last-child)').dblclick(function () {
-            var currentRow = $(this).closest("tr");
-            window.location.href = window.location.origin + '/Workstations/Details?id=' + currentRow.data("id");
+        $(document).on('dblclick', '.row-dblclick', function () {
+            window.location.href = window.location.origin + '/Workstations/Details?id=' + $(this).data("id");
         });
 
         $(document).ready(function () {

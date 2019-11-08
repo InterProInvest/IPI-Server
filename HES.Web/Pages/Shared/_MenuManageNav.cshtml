@@ -1,120 +1,126 @@
 ﻿@using HES.Core.Interfaces
-@inject IAppVersionService AppVersionService
+@inject IAppService AppService
 
-<a class="navbar-brand mt-3 mb-3 w-100" asp-area="" asp-page="/Employees/Index">
-    <img class="icon-hideez" />
-</a>
+<div class="navigation-menu">
+    <div class="navigation-menu__body">
+        <a class="navbar-brand mt-3 mb-3 w-100" asp-area="" asp-page="/Dashboard/Index">
+            <img class="icon-hideez" />
+        </a>
 
-<ul class="nav nav-pills custom-pills flex-column" id="accordionSidebar">
-    @*
-         <li class="nav-item">
-            <a class="nav-link @MenuNavPages.DashboardNavClass(ViewContext)" asp-page="/Dashboard/Index">
-                <img class="icon-dashboard i-sidebar">
-                <span class="page_labels">Dashboard</span>
-            </a>
-        </li>
-    *@
-    <li class="nav-item">
-        <a class="nav-link @MenuNavPages.EmployeesNavClass(ViewContext)" asp-page="/Employees/Index">
-            <img class="icon-employees i-sidebar" />
-            <span class="page_labels">Employees</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @MenuNavPages.WorkstationsNavClass(ViewContext)" asp-page="/Workstations/Index">
-            <img class="icon-computers i-sidebar" />
-            <span class="page_labels">Workstations</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @MenuNavPages.SharedAccountsNavClass(ViewContext)" asp-page="/SharedAccounts/Index">
-            <img class="icon-shared-accounts i-sidebar" />
-            <span class="page_labels">Shared Accounts</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @MenuNavPages.TemplatesNavClass(ViewContext)" asp-page="/Templates/Index">
-            <img class="icon-templates i-sidebar" />
-            <span class="page_labels">Templates</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @MenuNavPages.DevicesNavClass(ViewContext)" asp-page="/Devices/Index">
-            <img class="icon-devices i-sidebar" />
-            <span class="page_labels">Devices</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link collapsed aria-exp @MenuNavPages.AuditNavClass(ViewContext)" data-toggle="collapse" href="#collapseAudit" role="button" aria-expanded="false" aria-controls="collapseAudit">
-            <img class="icon-audit i-sidebar" />
-            <span class="page_labels">Audit</span>
-            <img class="icon-arrow i-sidebar" />
-        </a>
-        <div class="collapse shadow sidebar-settings" id="collapseAudit">
-            <div class="card card-body border-navyblue">
-                <ul class="nav nav-pills flex-column expand-pills">
-                    <li class="nav-item">
-                        <a class="nav-link @AuditNavPages.WorkstationEventsNavClass(ViewContext)" asp-page="/Audit/WorkstationEvents/Index">
-                            <span>Events</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @AuditNavPages.WorkstationSessionsNavClass(ViewContext)" asp-page="/Audit/WorkstationSessions/Index">
-                            <span>Sessions</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @AuditNavPages.WorkstationSummariesNavClass(ViewContext)" asp-page="/Audit/WorkstationSummaries/Index">
-                            <span>Summaries</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link collapsed aria-exp @MenuNavPages.SettingsNavClass(ViewContext)" data-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="false" aria-controls="collapseSettings">
-            <img class="icon-settings i-sidebar" />
-            <span class="page_labels">Settings</span>
-            <img class="icon-arrow i-sidebar" />
-        </a>
-        <div class="collapse shadow sidebar-settings" id="collapseSettings">
-            <div class="card card-body border-navyblue">
-                <ul class="nav nav-pills flex-column expand-pills">
-                    <li class="nav-item">
-                        <a class="nav-link @SettingsNavPages.AdministratorsNavClass(ViewContext)" asp-page="/Settings/Administrators/Index">
-                            <span>Administrators</span>
-                        </a>
-                    </li>
-                    @*<li class="nav-item">
-                            <a class="nav-link @SettingsNavPages.DataProtectionNavClass(ViewContext)" asp-page="/Settings/DataProtection/Index">
-                                <span>Data Protection</span>
-                            </a>
-                        </li>
-                    *@
-                    <li class="nav-item">
-                        <a class="nav-link @SettingsNavPages.DeviceAccessProfilesNavClass(ViewContext)" asp-page="/Settings/DeviceAccessProfiles/Index">
-                            <span>Device Access Profiles</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @SettingsNavPages.OrgStructureNavClass(ViewContext)" asp-page="/Settings/OrgStructure/Index">
-                            <span>OrgStructure</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @SettingsNavPages.PositionsNavClass(ViewContext)" asp-page="/Settings/Positions/Index">
-                            <span>Positions</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </li>
-</ul>
+        <ul class="nav nav-pills custom-pills flex-column" id="accordionSidebar">
+            <li class="nav-item">
+                <a class="nav-link @MenuNavPages.DashboardNavClass(ViewContext)" asp-page="/Dashboard/Index">
+                    <img class="icon-dashboard i-sidebar">
+                    <span class="page_labels">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @MenuNavPages.EmployeesNavClass(ViewContext)" asp-page="/Employees/Index">
+                    <img class="icon-employees i-sidebar" />
+                    <span class="page_labels">Employees</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @MenuNavPages.WorkstationsNavClass(ViewContext)" asp-page="/Workstations/Index">
+                    <img class="icon-computers i-sidebar" />
+                    <span class="page_labels">Workstations</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @MenuNavPages.SharedAccountsNavClass(ViewContext)" asp-page="/SharedAccounts/Index">
+                    <img class="icon-shared-accounts i-sidebar" />
+                    <span class="page_labels">Shared Accounts</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @MenuNavPages.TemplatesNavClass(ViewContext)" asp-page="/Templates/Index">
+                    <img class="icon-templates i-sidebar" />
+                    <span class="page_labels">Templates</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @MenuNavPages.DevicesNavClass(ViewContext)" asp-page="/Devices/Index">
+                    <img class="icon-devices i-sidebar" />
+                    <span class="page_labels">Devices</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed aria-exp @MenuNavPages.AuditNavClass(ViewContext)" data-toggle="collapse" href="#collapseAudit" role="button" aria-expanded="false" aria-controls="collapseAudit">
+                    <img class="icon-audit i-sidebar" />
+                    <span class="page_labels">Audit</span>
+                    <img class="icon-arrow i-sidebar" />
+                </a>
+                <div class="collapse shadow sidebar-settings" id="collapseAudit">
+                    <div class="card card-body border-navyblue">
+                        <ul class="nav nav-pills flex-column expand-pills">
+                            <li class="nav-item">
+                                <a class="nav-link @AuditNavPages.WorkstationEventsNavClass(ViewContext)" asp-page="/Audit/WorkstationEvents/Index">
+                                    <span>Events</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @AuditNavPages.WorkstationSessionsNavClass(ViewContext)" asp-page="/Audit/WorkstationSessions/Index">
+                                    <span>Sessions</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @AuditNavPages.WorkstationSummariesNavClass(ViewContext)" asp-page="/Audit/WorkstationSummaries/Index">
+                                    <span>Summaries</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed aria-exp @MenuNavPages.SettingsNavClass(ViewContext)" data-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="false" aria-controls="collapseSettings">
+                    <img class="icon-settings i-sidebar" />
+                    <span class="page_labels">Settings</span>
+                    <img class="icon-arrow i-sidebar" />
+                </a>
+                <div class="collapse shadow sidebar-settings" id="collapseSettings">
+                    <div class="card card-body border-navyblue">
+                        <ul class="nav nav-pills flex-column expand-pills">
+                            <li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.AdministratorsNavClass(ViewContext)" asp-page="/Settings/Administrators/Index">
+                                    <span>Administrators</span>
+                                </a>
+                            </li>
+                            @*<li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.DataProtectionNavClass(ViewContext)" asp-page="/Settings/DataProtection/Index">
+                                    <span>Data Protection</span>
+                                </a>
+                            </li>*@
+                            <li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.DeviceAccessProfilesNavClass(ViewContext)" asp-page="/Settings/DeviceAccessProfiles/Index">
+                                    <span>Device Access Profiles</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.OrgStructureNavClass(ViewContext)" asp-page="/Settings/OrgStructure/Index">
+                                    <span>OrgStructure</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.PositionsNavClass(ViewContext)" asp-page="/Settings/Positions/Index">
+                                    <span>Positions</span>
+                                </a>
+                            </li>
+                            @*<li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.IdentityProviderNavClass(ViewContext)" asp-page="/Settings/IdentityProvider/Index">
+                                    <span>SAML IdP</span>
+                                </a>
+                            </li>*@
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
 
-<div class="copyright text-center">
-    <span class="d-block">© 2019 Hideez Group Inc.</span>
-    <span class="d-block">Hideez Enterprise Server</span>
-    <span class="d-block">Version: @AppVersionService.Version</span>
+    <div class="navigation-menu__footer copyright">
+        <span class="d-block">© 2019 Hideez Group Inc.</span>
+        <span class="d-block">Hideez Enterprise Server</span>
+        <span class="d-block">Version: @AppService.Version</span>
+    </div>
 </div>

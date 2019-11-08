@@ -260,7 +260,7 @@
         // Submit org structure form
         $(document).on('submit', '#orgStructureForm', function (e) {
             e.preventDefault();
-  
+
             var id = $(this).data("id");
             var action = $(this).data("action");
 
@@ -350,6 +350,19 @@
             $('.orgstructure-popover').popover('hide');
         });
 
+        // Enable Department
+        function EnableOrDisableDepartment() {
+            var length = $('#companies > option').length;
+            if (length > 0) {
+                $('#add_position_btn').prop("disabled", false);
+                $('#add_position_btn').prop("title", "");
+            }
+            else {
+                $('#add_position_btn').prop("disabled", true);
+                $('#add_position_btn').prop("title", "Add company first");
+            }
+        }
+
         // Dropdown Company
         function GetCompany(current) {
             $.getJSON('/Employees?handler=JsonCompany',
@@ -370,6 +383,10 @@
 
         // Dropdown Department
         function GetDepartment(id, current) {
+            EnableOrDisableDepartment();
+            if (typeof id == 'undefined'|| id === '') {
+                return;
+            }
             $.getJSON('/Employees?handler=JsonDepartment', { id: id },
                 function (data) {
                     var dep = "";
@@ -379,7 +396,7 @@
                     var subList = $("#departments");
                     subList.empty();
                     subList.append(dep);
-                    $('#addDepartments').attr('data-id', id);
+                    $('#add_position_btn').attr('data-id', id);
 
                     if (typeof current != 'undefined') {
                         $("#departments option:contains(" + current + ")").attr('selected', 'selected');
@@ -451,9 +468,8 @@
         //#endregion
 
         // Double click to details of employee
-        $('#employees tbody tr td:not(:first-child, :last-child)').dblclick(function () {
-            var currentRow = $(this).closest("tr");
-            window.location.href = window.location.origin + '/Employees/Details?id=' + currentRow.data("id");
+        $(document).on('dblclick', '.row-dblclick', function () {
+            window.location.href = window.location.origin + '/Employees/Details?id=' + $(this).data("id");
         });
 
         // Ready

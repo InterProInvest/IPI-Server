@@ -59,13 +59,13 @@
     <tbody>
         @foreach (var item in Model.Employees)
         {
-            <tr data-id="@item.Id">
+            <tr data-id="@item.Id" class="row-dblclick">
                 <td class="d-none"></td>
                 <td>
                     @Html.DisplayFor(modelItem => item.FullName)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Email)
+                    @item.Email
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.PhoneNumber)

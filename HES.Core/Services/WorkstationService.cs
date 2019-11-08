@@ -1,49 +1,41 @@
-﻿using HES.Core.Entities;
-using HES.Core.Hubs;
-using HES.Core.Interfaces;
-using Hideez.SDK.Communication.Workstation;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using HES.Core.Entities;
+using HES.Core.Interfaces;
+using Hideez.SDK.Communication.Workstation;
+using Microsoft.EntityFrameworkCore;
 
 namespace HES.Core.Services
 {
     public class WorkstationService : IWorkstationService
     {
         private readonly IAsyncRepository<Workstation> _workstationRepository;
-        private readonly IAsyncRepository<Company> _companyRepository;
-        private readonly IAsyncRepository<Department> _departmentRepository;
 
-        public WorkstationService(IAsyncRepository<Workstation> workstationRepository,
-                                  IAsyncRepository<Company> companyRepository,
-                                  IAsyncRepository<Department> departmentRepository,
-                                  IWorkstationProximityDeviceService workstationProximityDeviceService)
+        public WorkstationService(IAsyncRepository<Workstation> workstationRepository)
         {
             _workstationRepository = workstationRepository;
-            _companyRepository = companyRepository;
-            _departmentRepository = departmentRepository;
         }
 
-        public IQueryable<Workstation> WorkstationQuery()
+        public IQueryable<Workstation> Query()
         {
             return _workstationRepository.Query();
         }
 
-        public IQueryable<Company> CompanyQuery()
+        public async Task<int> GetCountAsync()
         {
-            return _companyRepository.Query();
-        }
-
-        public IQueryable<Department> DepartmentQuery()
-        {
-            return _departmentRepository.Query();
+            return await _workstationRepository.GetCountAsync();
         }
 
         public async Task<Workstation> GetByIdAsync(dynamic id)
         {
             return await _workstationRepository.GetByIdAsync(id);
+        }
+
+        public Task<int> GetOnlineCountAsync()
+        {
+            return Task.FromResult(RemoteWorkstationConnectionsService.WorkstationsOnlineCount());
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Workstation, bool>> predicate)
@@ -103,7 +95,7 @@ namespace HES.Core.Services
             if (workstation == null)
                 throw new ArgumentNullException(nameof(workstation));
 
-            string[] properties = { "Approved", "RFID" };
+            string[] properties = { "DepartmentId", "Approved", "RFID" };
             await _workstationRepository.UpdateOnlyPropAsync(workstation, properties);
         }
 
@@ -117,8 +109,10 @@ namespace HES.Core.Services
                 throw new Exception("Workstation not found");
 
             workstation.Approved = false;
+            workstation.DepartmentId = null;
+            workstation.RFID = false;
 
-            string[] properties = { "Approved" };
+            string[] properties = { "Approved", "DepartmentId", "RFID" };
             await _workstationRepository.UpdateOnlyPropAsync(workstation, properties);
         }
 
@@ -136,7 +130,7 @@ namespace HES.Core.Services
         {
             var isEnabled = await GetRfidStateAsync(workstationId);
 
-            await AppHub.UpdateRfidIndicatorState(workstationId, isEnabled);
+            await RemoteWorkstationConnectionsService.UpdateRfidIndicatorStateAsync(workstationId, isEnabled);
         }
     }
 }

@@ -3,7 +3,6 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
 using HES.Infrastructure;
-using HES.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -71,62 +70,54 @@ namespace HES.Web
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
 
+            services.AddScoped<IDashboardService, DashboardService>();
+
             services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IWorkstationService, WorkstationService>();
-            services.AddScoped<IWorkstationEventService, WorkstationEventService>();
+
             services.AddScoped<IWorkstationSessionService, WorkstationSessionService>();
-            services.AddScoped<IWorkstationProximityDeviceService, WorkstationProximityDeviceService>();
+
             services.AddScoped<IDeviceService, DeviceService>();
+            services.AddScoped<IDeviceTaskService, DeviceTaskService>();
             services.AddScoped<IDeviceAccountService, DeviceAccountService>();
+            services.AddScoped<IDeviceAccessProfilesService, DeviceAccessProfilesService>();
+
+            services.AddScoped<IWorkstationService, WorkstationService>();
+            services.AddScoped<IProximityDeviceService, ProximityDeviceService>();
+            services.AddScoped<IWorkstationEventService, WorkstationEventService>();
+
             services.AddScoped<ISharedAccountService, SharedAccountService>();
             services.AddScoped<ITemplateService, TemplateService>();
-            services.AddScoped<ISettingsService, SettingsService>();
+
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
-            services.AddScoped<IDeviceAccessProfilesService, DeviceAccessProfilesService>();
-            services.AddTransient<IAppVersionService, AppVersionService>();
-            services.AddSingleton<IRemoteTaskService, RemoteTaskService>(s =>
-            {
-                var scope = s.CreateScope();
-                var deviceAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceAccount>>();
-                var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
-                var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
-                var logger = scope.ServiceProvider.GetService<ILogger<RemoteTaskService>>();
-                var dataProtectionRepository = scope.ServiceProvider.GetService<IDataProtectionService>();
-                var deviceAccessProfilesService = scope.ServiceProvider.GetService<IDeviceAccessProfilesService>();
-                var hubContext = scope.ServiceProvider.GetService<IHubContext<EmployeeDetailsHub>>();
-                return new RemoteTaskService(deviceAccountRepository,
-                                            deviceTaskRepository,
-                                            deviceRepository,
-                                            logger,
-                                            dataProtectionRepository,
-                                            deviceAccessProfilesService,
-                                            hubContext);
-            });
+            services.AddScoped<IOrgStructureService, OrgStructureService>();
+            services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
+            services.AddScoped<IAppService, AppService>();
+            services.AddScoped<ILogViewerService, LogViewerService>();
+            services.AddTransient<IAesCryptographyService, AesCryptographyService>();
+
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
-                var dataProtectionRepository = scope.ServiceProvider.GetService<IAsyncRepository<AppSettings>>();
-                var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
-                var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
+                var dataProtectionRepository = scope.ServiceProvider.GetService<IAsyncRepository<DataProtection>>();
                 var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
+                var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
+                var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
                 var dataProtectionProvider = scope.ServiceProvider.GetService<IDataProtectionProvider>();
-                var notificationService = scope.ServiceProvider.GetService<INotificationService>();
                 var logger = scope.ServiceProvider.GetService<ILogger<DataProtectionService>>();
-                return new DataProtectionService(dataProtectionRepository, deviceRepository, deviceTaskRepository, sharedAccountRepository, dataProtectionProvider, notificationService, logger);
-            });
-            services.AddSingleton<INotificationService, NotificationService>(s =>
-            {
-                var scope = s.CreateScope();
-                var logger = scope.ServiceProvider.GetService<ILogger<NotificationService>>();
-                var notificationRepository = scope.ServiceProvider.GetService<IAsyncRepository<Notification>>();
-                return new NotificationService(logger, notificationRepository);
+                return new DataProtectionService(dataProtectionRepository,
+                                                 deviceRepository,
+                                                 deviceTaskRepository,
+                                                 sharedAccountRepository,
+                                                 dataProtectionProvider,
+                                                 logger);
             });
 
-            // Crypto
-            services.AddTransient<IAesCryptography, AesCryptography>();
-            // Email
-            services.AddSingleton<IEmailSender, EmailSender>(i =>
-                 new EmailSender(
+            services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
+            services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
+            services.AddScoped<IRemoteTaskService, RemoteTaskService>();
+            
+            services.AddSingleton<IEmailSenderService, EmailSenderService>(i =>
+                 new EmailSenderService(
                      Configuration["EmailSender:Host"],
                      Configuration.GetValue<int>("EmailSender:Port"),
                      Configuration.GetValue<bool>("EmailSender:EnableSSL"),
@@ -150,7 +141,6 @@ namespace HES.Web
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredUniqueChars = 0;
                 options.Password.RequireNonAlphanumeric = false;
-
             });
 
             // Database
@@ -163,20 +153,34 @@ namespace HES.Web
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            // Auth policy
+            services.AddAuthorization(config =>
+            {
+                config.AddPolicy("RequireAdministratorRole",
+                    policy => policy.RequireRole("Administrator"));
+                config.AddPolicy("RequireUserRole",
+                    policy => policy.RequireRole("User"));
+            });
+
             // Mvc
             services.AddMvc()
                 .AddRazorPagesOptions(options =>
                 {
-                    options.Conventions.AddPageRoute("/Employees/Index", "");
-                    options.Conventions.AuthorizeFolder("/Employees");
-                    options.Conventions.AuthorizeFolder("/Workstations");
-                    options.Conventions.AuthorizeFolder("/SharedAccounts");
-                    options.Conventions.AuthorizeFolder("/Templates");
-                    options.Conventions.AuthorizeFolder("/Devices");
-                    options.Conventions.AuthorizeFolder("/Audit");
-                    options.Conventions.AuthorizeFolder("/Settings");
-                    options.Conventions.AuthorizeFolder("/Logs");
-                    options.Conventions.AuthorizeFolder("/Notifications");
+                    options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeAreaFolder("Identity", "/Account/External");
+
+                    options.Conventions.AddPageRoute("/Dashboard/Index", "");
+                    options.Conventions.AuthorizeFolder("/Dashboard", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Employees", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Devices", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Notifications", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Develop", "RequireAdministratorRole");
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -195,6 +199,8 @@ namespace HES.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseStatusCodePages();
 
             var supportedCultures = new[]
             {
@@ -236,7 +242,6 @@ namespace HES.Web
             });
             app.UseMvc();
             app.UseCookiePolicy();
-            app.UseStatusCodePages("text/html", "<h1>HTTP status code {0}</h1>");
 
             using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {

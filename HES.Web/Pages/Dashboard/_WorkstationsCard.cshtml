@@ -1,0 +1,51 @@
+﻿@model HES.Web.Pages.Dashboard.IndexModel
+<div class="dashboard-card">
+    <div class="dashboard-card__title">
+        Workstations
+    </div>
+    @if (Model.WorkstationsNotify.Count() > 0)
+    {
+        <div class="dashboard-card-notify-header">
+            <div class="dashboard-card-notify-logo">
+                <img class="dashboard-card-notify dashboard-card-logo__img" src="~/svg/dashboard/workstations.svg" />
+            </div>
+            <div class="dashboard-card-list-wrapper">
+                <div class="list-group list-group-horizontal-lines dashboard-card-list">
+                    @foreach (var item in Model.WorkstationsNotify)
+                    {
+                        <a asp-page="@item.Page" asp-page-handler="@item.Handler" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span class="text-navyblue">@item.Message</span>
+                            <span class="badge badge-danger badge-pill">@item.Count</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-card-body">
+            <div class="dashboard-card-wrapper border-right">
+                <div class="dashboard-card-info__text font-weight-bold">@Model.RegisteredWorkstationsCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Workstations/Index">Registered</a></div>
+            </div>
+            <div class="dashboard-card-wrapper">
+                <div class="dashboard-card-info__text">@Model.WorkstationsOnlineCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Workstations/Index" asp-page-handler="Online">Online</a></div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="dashboard-card-logo">
+            <img class="dashboard-card-logo__img" src="~/svg/dashboard/workstations.svg" />
+        </div>
+        <div class="dashboard-card-body">
+            <div class="dashboard-card-wrapper border-right">
+                <div class="dashboard-card-info__text font-weight-bold">@Model.RegisteredWorkstationsCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Workstations/Index">Registered</a></div>
+            </div>
+            <div class="dashboard-card-wrapper">
+                <div class="dashboard-card-info__text">@Model.WorkstationsOnlineCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Workstations/Index" asp-page-handler="Online">Online</a></div>
+            </div>
+        </div>
+    }
+</div>

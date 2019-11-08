@@ -1,6 +1,6 @@
-﻿using HES.Core.Interfaces;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
 using HES.Infrastructure;
-using HES.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Settings.Administrators
         private readonly IApplicationUserService _applicationUserService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailSenderService _emailSender;
         private readonly ILogger<IndexModel> _logger;
 
         public IList<ApplicationUser> ApplicationUsers { get; set; }
@@ -42,7 +42,7 @@ namespace HES.Web.Pages.Settings.Administrators
         public IndexModel(IApplicationUserService applicationUserService,
                           UserManager<ApplicationUser> userManager,
                           SignInManager<ApplicationUser> signInManager,
-                          IEmailSender emailSender,
+                          IEmailSenderService emailSender,
                           ILogger<IndexModel> logger)
         {
             _applicationUserService = applicationUserService;
@@ -54,7 +54,7 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public async Task OnGetAsync()
         {
-            ApplicationUsers = await _applicationUserService.GetAllAsync();
+            ApplicationUsers = await _applicationUserService.GetOnlyAdministrators();
         }
 
         #region Invite
@@ -124,7 +124,7 @@ namespace HES.Web.Pages.Settings.Administrators
                 return Partial("_Error", this);
             }
 
-            ApplicationUser = await _applicationUserService.GetFirstOrDefaultAsync(id);
+            ApplicationUser = await _applicationUserService.GetByIdAsync(id);
 
             if (ApplicationUser == null)
             {
@@ -147,7 +147,7 @@ namespace HES.Web.Pages.Settings.Administrators
             {
                 var user = await _userManager.GetUserAsync(User);
 
-                await _applicationUserService.DelateAdminAsync(id);
+                await _applicationUserService.DeleteUserAsync(id);
 
                 if (user.Id == id)
                 {

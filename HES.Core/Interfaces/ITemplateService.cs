@@ -8,8 +8,8 @@ namespace HES.Core.Interfaces
 {
     public interface ITemplateService
     {
-        IQueryable<Template> TemplateQuery();
-        Task<Template> TemplateGetByIdAsync(dynamic id);
+        IQueryable<Template> Query();
+        Task<Template> GetByIdAsync(dynamic id);
         Task<Template> CreateTmplateAsync(Template entity);
         Task EditTemplateAsync(Template template);
         Task DeleteTemplateAsync(string id);

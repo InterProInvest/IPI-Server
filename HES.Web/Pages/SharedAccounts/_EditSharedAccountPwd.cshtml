@@ -11,14 +11,14 @@
         <h5 class="text-navyblue">@Model.SharedAccount.Name</h5>
     </div>
     <div class="form-group">
-        <label asp-for="Input.Password" class="text-gray"></label>
-        <input asp-for="Input.Password" class="form-control text-navyblue" />
-        <span asp-validation-for="Input.Password" class="text-danger"></span>
+        <label asp-for="AccountPassword.Password" class="text-gray"></label>
+        <input asp-for="AccountPassword.Password" class="form-control text-navyblue" />
+        <span asp-validation-for="AccountPassword.Password" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Input.ConfirmPassword" class="text-gray"></label>
-        <input asp-for="Input.ConfirmPassword" class="form-control text-navyblue" />
-        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+        <label asp-for="AccountPassword.ConfirmPassword" class="text-gray"></label>
+        <input asp-for="AccountPassword.ConfirmPassword" class="form-control text-navyblue" />
+        <span asp-validation-for="AccountPassword.ConfirmPassword" class="text-danger"></span>
     </div>
     <div class="form-group m-0 text-right">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>

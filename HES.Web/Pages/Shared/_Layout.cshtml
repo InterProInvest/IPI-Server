@@ -1,6 +1,4 @@
-﻿@using HES.Core.Interfaces
-@inject INotificationService NotificationService
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -11,12 +9,8 @@
     <!-- DataTables CSS -->
     <link href="~/lib/datatebles/dataTables.bootstrap4.css" rel="stylesheet" />
     <link href="~/lib/datatebles/responsive.bootstrap4.css" rel="stylesheet" />
-    <!-- Tags CSS -->
-    <link rel="stylesheet" href="~/lib/tagsinput/tagsinput.css" />
     <!-- DatePicker CSS -->
     <link href="~/lib/air-datepicker/datepicker.min.css" rel="stylesheet" />
-    <!-- Bootstrap Slider CSS -->
-    <link href="~/lib/bootstrap-slider/bootstrap-slider.min.css" rel="stylesheet" />
     <!-- Main CSS-->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
@@ -38,11 +32,6 @@
                     <ol class="breadcrumb"></ol>
                 </nav>
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a id="notification" class="nav-item nav-link " asp-area="" asp-page="/Notifications/Index">
-                            <img class="notification @(await NotificationService.GetNotifyStatusAsync() == true ? "notify" : "")" />
-                        </a>
-                    </li>
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-item nav-link dropdown-toggle" href="#" id="user-profile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img src="~/svg/account/round-account_circle.svg" />
@@ -81,14 +70,10 @@
     <script src="~/lib/datatebles/dataTables.bootstrap4.min.js"></script>
     <script src="~/lib/datatebles/dataTables.responsive.js"></script>
     <script src="~/lib/datatebles/dataTables.ip-adress.js"></script>
-    <!-- Tags JS -->
-    <script src="~/lib/tagsinput/tagsinput.js"></script>
     <!-- Bootstrap custom file input JS -->
     <script src="~/lib/bs-custom-file-input/bs-custom-file-input.js"></script>
     <!-- DatePicker JS -->
     <script src="~/lib/air-datepicker/datepicker.min.js"></script>
-    <!-- Bootstrap Slider JS -->
-    <script src="~/lib/bootstrap-slider/bootstrap-slider.min.js"></script>
     <!-- Main JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)

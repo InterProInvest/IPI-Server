@@ -1,0 +1,51 @@
+﻿@model HES.Web.Pages.Dashboard.IndexModel
+<div class="dashboard-card">
+    <div class="dashboard-card__title">
+        Devices
+    </div>
+    @if (Model.DevicesNotify.Count() > 0)
+    {
+        <div class="dashboard-card-notify-header">
+            <div class="dashboard-card-notify-logo">
+                <img class="dashboard-card-notify dashboard-card-logo__img" src="~/svg/dashboard/devices.svg" />
+            </div>
+            <div class="dashboard-card-list-wrapper">
+                <div class="list-group list-group-horizontal-lines dashboard-card-list">
+                    @foreach (var item in Model.DevicesNotify)
+                    {
+                        <a asp-page="@item.Page" asp-page-handler="@item.Handler" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span class="text-navyblue">@item.Message</span>
+                            <span class="badge badge-danger badge-pill">@item.Count</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-card-body">
+            <div class="dashboard-card-wrapper border-right">
+                <div class="dashboard-card-info__text font-weight-bold">@Model.RegisteredDevicesCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index">Registered</a></div>
+            </div>
+            <div class="dashboard-card-wrapper">
+                <div class="dashboard-card-info__text">@Model.FreeDevicesCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index" asp-page-handler="InReserve">In reserve</a></div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="dashboard-card-logo">
+            <img class="dashboard-card-logo__img" src="~/svg/dashboard/devices.svg" />
+        </div>
+        <div class="dashboard-card-body">
+            <div class="dashboard-card-wrapper border-right">
+                <div class="dashboard-card-info__text font-weight-bold">@Model.RegisteredDevicesCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index">Registered</a></div>
+            </div>
+            <div class="dashboard-card-wrapper">
+                <div class="dashboard-card-info__text">@Model.FreeDevicesCount</div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index" asp-page-handler="InReserve">In reserve</a></div>
+            </div>
+        </div>
+    }
+</div>

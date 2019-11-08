@@ -17,18 +17,35 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
     public class IndexModel : PageModel
     {
         private readonly IWorkstationSessionService _workstationSessionService;
+        private readonly IWorkstationService _workstationService;
+        private readonly IDeviceService _deviceService;
+        private readonly IDeviceAccountService _deviceAccountService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IOrgStructureService _orgStructureService;
+
         public IList<WorkstationSession> WorkstationSessions { get; set; }
         public WorkstationSessionFilter WorkstationSessionFilter { get; set; }
 
-        public IndexModel(IWorkstationSessionService workstationSessionService)
+        public IndexModel(IWorkstationSessionService workstationSessionService,
+                            IWorkstationService workstationService,
+                            IDeviceService deviceService,
+                            IDeviceAccountService deviceAccountService,
+                            IEmployeeService employeeService,
+                            IOrgStructureService orgStructureService)
         {
             _workstationSessionService = workstationSessionService;
+            _workstationService = workstationService;
+            _deviceService = deviceService;
+            _deviceAccountService = deviceAccountService;
+            _employeeService = employeeService;
+            _orgStructureService = orgStructureService;
+
         }
 
         public async Task OnGetAsync()
         {
             WorkstationSessions = await _workstationSessionService
-                .WorkstationSessionQuery()
+                .Query()
                 .Include(w => w.Workstation)
                 .Include(w => w.Device)
                 .Include(w => w.Employee)
@@ -39,12 +56,87 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
                 .ToListAsync();
 
             ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["Workstations"] = new SelectList(await _workstationSessionService.WorkstationQuery().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _workstationSessionService.DeviceQuery().ToListAsync(), "Id", "Id");
-            ViewData["Employees"] = new SelectList(await _workstationSessionService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _workstationSessionService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["Workstations"] = new SelectList(await _workstationService.Query().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.Query().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            
+
+            ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
+            ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
+        }
+
+        public async Task OnGetNonHideezUnlockAsync()
+        {
+            WorkstationSessions = await _workstationSessionService
+                .Query()
+                .Include(w => w.Workstation)
+                .Include(w => w.Device)
+                .Include(w => w.Employee)
+                .Include(w => w.Department.Company)
+                .Include(w => w.DeviceAccount)
+                .Where(w => w.StartDate >= DateTime.UtcNow.AddDays(-1) && w.UnlockedBy == Hideez.SDK.Communication.SessionSwitchSubject.NonHideez)
+                .OrderByDescending(w => w.StartDate)
+                .Take(500)
+                .ToListAsync();
+
+            ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            ViewData["Workstations"] = new SelectList(await _workstationService.Query().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.Query().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+
+            ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
+            ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
+        }
+
+        public async Task OnGetLongOpenSessionAsync()
+        {
+            WorkstationSessions = await _workstationSessionService
+                .Query()
+                .Include(w => w.Workstation)
+                .Include(w => w.Device)
+                .Include(w => w.Employee)
+                .Include(w => w.Department.Company)
+                .Include(w => w.DeviceAccount)
+                .Where(w => w.StartDate <= DateTime.UtcNow.AddHours(-12) && w.EndDate == null)
+                .OrderByDescending(w => w.StartDate)
+                .Take(500)
+                .ToListAsync();
+
+            ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            ViewData["Workstations"] = new SelectList(await _workstationService.Query().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.Query().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+
+            ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
+            ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
+        }
+
+        public async Task OnGetOpenedSessionsAsync()
+        {
+            WorkstationSessions = await _workstationSessionService
+                .Query()
+                .Include(w => w.Workstation)
+                .Include(w => w.Device)
+                .Include(w => w.Employee)
+                .Include(w => w.Department.Company)
+                .Include(w => w.DeviceAccount)
+                .Where(w => w.EndDate == null)
+                .OrderByDescending(w => w.StartDate)
+                .Take(500)
+                .ToListAsync();
+
+            ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            ViewData["Workstations"] = new SelectList(await _workstationService.Query().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.Query().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
@@ -52,7 +144,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
         public async Task<IActionResult> OnPostFilterWorkstationSessionsAsync(WorkstationSessionFilter WorkstationSessionFilter)
         {
             var filter = _workstationSessionService
-                .WorkstationSessionQuery()
+                .Query()
                 .Include(w => w.Workstation)
                 .Include(w => w.Device)
                 .Include(w => w.Employee)
@@ -112,21 +204,21 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
 
         public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
         {
-            return new JsonResult(await _workstationSessionService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
+            return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
         }
 
         public async Task<JsonResult> OnGetJsonDeviceAccountsAsync(string id)
         {
-            var currentAccounts = await _workstationSessionService
-                .DeviceAccountQuery()
+            var currentAccounts = await _deviceAccountService
+                .Query()
                 .Where(d => d.EmployeeId == id && d.Deleted == false)
                 .OrderBy(d => d.Name)
                 .ToListAsync();
 
             currentAccounts.Insert(0, new DeviceAccount() { Id = "active", Name = "Active" });
 
-            var deletedAccounts = await _workstationSessionService
-                          .DeviceAccountQuery()
+            var deletedAccounts = await _deviceAccountService
+                          .Query()
                           .Where(d => d.EmployeeId == id && d.Deleted == true)
                           .OrderBy(d => d.Name)
                           .ToListAsync();

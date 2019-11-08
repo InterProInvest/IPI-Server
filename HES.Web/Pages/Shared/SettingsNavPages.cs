@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 
 namespace HES.Web.Pages
 {
@@ -15,6 +15,8 @@ namespace HES.Web.Pages
 
         public static string Positions => "./Positions/Index";
 
+        public static string IdentityProvider => "./IdentityProvider/Index";
+
 
         public static string AdministratorsNavClass(ViewContext viewContext) => PageNavClass(viewContext, Administrators);
 
@@ -25,6 +27,8 @@ namespace HES.Web.Pages
         public static string OrgStructureNavClass(ViewContext viewContext) => PageNavClass(viewContext, OrgStructure);
 
         public static string PositionsNavClass(ViewContext viewContext) => PageNavClass(viewContext, Positions);
+
+        public static string IdentityProviderNavClass(ViewContext viewContext) => PageNavClass(viewContext, IdentityProvider);
 
 
         private static string PageNavClass(ViewContext viewContext, string page)

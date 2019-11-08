@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,21 +10,23 @@ namespace HES.Core.Entities
     {
         [Key]
         public string Id { get; set; }
+        [Required]
         [Display(Name = "First Name")]
-        [Required]
         public string FirstName { get; set; }
-        [Display(Name = "Last Name")]
         [Required]
+        [Display(Name = "Last Name")]
         public string LastName { get; set; }
+        [Remote(action: "VerifyEmailAsync", controller: "Validation", AdditionalFields = "Id")]
+        [EmailAddress]
         [Required]
         public string Email { get; set; }
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
+        [Required(ErrorMessage = "Field is required.")]
         [Display(Name = "Department")]
-        [Required]
         public string DepartmentId { get; set; }
+        [Required(ErrorMessage = "Field is required.")]
         [Display(Name = "Position")]
-        [Required]
         public string PositionId { get; set; }
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
@@ -43,5 +46,7 @@ namespace HES.Core.Entities
         [NotMapped]
         [Display(Name = "Department")]
         public string EmpDepartment => Department?.Name;
+        [NotMapped]
+        public string CurrentDevice { get; set; }
     }
 }

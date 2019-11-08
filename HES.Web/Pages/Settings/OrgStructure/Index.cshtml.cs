@@ -14,8 +14,9 @@ namespace HES.Web.Pages.Settings.OrgStructure
 {
     public class IndexModel : PageModel
     {
-        private readonly ISettingsService _settingsService;
+        private readonly IOrgStructureService _orgStructureService;
         private readonly IWorkstationService _workstationService;
+        private readonly IEmployeeService _employeeService;
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Company> Companies { get; set; }
@@ -31,24 +32,28 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [TempData]
         public string ErrorMessage { get; set; }
 
-        public IndexModel(ISettingsService settingsService, IWorkstationService workstationService, ILogger<IndexModel> logger)
+        public IndexModel(IOrgStructureService orgStructureService,
+                          IWorkstationService workstationService,
+                          IEmployeeService employeeService,
+                          ILogger<IndexModel> logger)
         {
-            _settingsService = settingsService;
+            _orgStructureService = orgStructureService;
             _workstationService = workstationService;
+            _employeeService = employeeService;
             _logger = logger;
         }
 
         public async Task OnGetAsync()
         {
-            Companies = await _settingsService.CompanyQuery().OrderBy(c => c.Name).ToListAsync();
-            Departments = await _settingsService.DepartmentQuery().Include(d => d.Company).OrderBy(c => c.Name).ToListAsync();
+            Companies = await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync();
+            Departments = await _orgStructureService.DepartmentQuery().Include(d => d.Company).OrderBy(c => c.Name).ToListAsync();
         }
 
         #region Company
 
         public async Task<JsonResult> OnGetJsonCompanyAsync()
         {
-            return new JsonResult(await _settingsService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
         }
 
         public IActionResult OnGetCreateCompany()
@@ -66,7 +71,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             try
             {
-                await _settingsService.CreateCompanyAsync(company);
+                await _orgStructureService.CreateCompanyAsync(company);
                 SuccessMessage = $"Company created.";
             }
             catch (Exception ex)
@@ -86,7 +91,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            Company = await _settingsService.CompanyQuery().FirstOrDefaultAsync(c => c.Id == id);
+            Company = await _orgStructureService.CompanyQuery().FirstOrDefaultAsync(c => c.Id == id);
 
             if (Company == null)
             {
@@ -107,7 +112,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             try
             {
-                await _settingsService.EditCompanyAsync(company);
+                await _orgStructureService.EditCompanyAsync(company);
                 SuccessMessage = $"Company updated.";
             }
             catch (Exception ex)
@@ -127,7 +132,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            Company = await _settingsService.CompanyQuery().FirstOrDefaultAsync(c => c.Id == id);
+            Company = await _orgStructureService.CompanyQuery().FirstOrDefaultAsync(c => c.Id == id);
 
             if (Company == null)
             {
@@ -135,7 +140,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            HasForeignKey = await _settingsService.DepartmentQuery().AnyAsync(x => x.CompanyId == id);
+            HasForeignKey = await _orgStructureService.DepartmentQuery().AnyAsync(x => x.CompanyId == id);
 
             return Partial("_DeleteCompany", this);
         }
@@ -150,7 +155,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             try
             {
-                await _settingsService.DeleteCompanyAsync(id);
+                await _orgStructureService.DeleteCompanyAsync(id);
                 SuccessMessage = $"Company deleted.";
             }
             catch (Exception ex)
@@ -168,7 +173,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task<IActionResult> OnGetCreateDepartment()
         {
-            ViewData["CompanyId"] = new SelectList(await _settingsService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             return Partial("_CreateDepartment", this);
         }
 
@@ -182,7 +187,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             try
             {
-                await _settingsService.CreateDepartmentAsync(department);
+                await _orgStructureService.CreateDepartmentAsync(department);
                 SuccessMessage = $"Department created.";
             }
             catch (Exception ex)
@@ -202,7 +207,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            Department = await _settingsService.DepartmentQuery().Include(d => d.Company).FirstOrDefaultAsync(m => m.Id == id);
+            Department = await _orgStructureService.DepartmentQuery().Include(d => d.Company).FirstOrDefaultAsync(m => m.Id == id);
 
             if (Department == null)
             {
@@ -210,7 +215,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _settingsService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             return Partial("_EditDepartment", this);
         }
 
@@ -224,7 +229,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             try
             {
-                await _settingsService.EditDepartmentAsync(department);
+                await _orgStructureService.EditDepartmentAsync(department);
                 SuccessMessage = $"Department updated.";
             }
             catch (Exception ex)
@@ -244,7 +249,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            Department = await _settingsService
+            Department = await _orgStructureService
                 .DepartmentQuery()
                 .Include(c => c.Company)
                 .FirstOrDefaultAsync(d => d.Id == id);
@@ -255,8 +260,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            HasForeignKey = await _settingsService.EmployeeQuery().AnyAsync(x => x.DepartmentId == id);
-            HasForeignKeyWorkstation = await _workstationService.WorkstationQuery().AnyAsync(x => x.DepartmentId == id);
+            HasForeignKey = await _employeeService.Query().AnyAsync(x => x.DepartmentId == id);
+            HasForeignKeyWorkstation = await _workstationService.Query().AnyAsync(x => x.DepartmentId == id);
 
             return Partial("_DeleteDepartment", this);
         }
@@ -271,7 +276,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             try
             {
-                await _settingsService.DeleteDepartmentAsync(id);
+                await _orgStructureService.DeleteDepartmentAsync(id);
                 SuccessMessage = $"Department deleted.";
             }
             catch (Exception ex)
@@ -285,7 +290,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
         {
-            return new JsonResult(await _settingsService.DepartmentQuery().Where(d => d.CompanyId == id).OrderBy(d => d.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).OrderBy(d => d.Name).ToListAsync());
         }
 
         #endregion

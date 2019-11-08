@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.Command;
 using Hideez.SDK.Communication.Remote;
-using Hideez.SDK.Communication.Utils;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
@@ -15,161 +11,123 @@ namespace HES.Core.Hubs
 {
     public class DeviceHub : Hub<IRemoteCommands>
     {
-        class PendingConnectionDescription
+        readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
+        readonly ILogger<DeviceHub> _logger;
+
+        public DeviceHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
+                         ILogger<DeviceHub> logger)
         {
-            public string DeviceId { get; }
-            public TaskCompletionSource<RemoteDevice> Tcs { get; } = new TaskCompletionSource<RemoteDevice>();
-
-            public PendingConnectionDescription(string deviceId)
-            {
-                DeviceId = deviceId;
-            }
-        }
-
-        static readonly ConcurrentDictionary<string, PendingConnectionDescription> _pendingConnections
-            = new ConcurrentDictionary<string, PendingConnectionDescription>();
-
-        static readonly ConcurrentDictionary<string, RemoteDevice> _connections
-            = new ConcurrentDictionary<string, RemoteDevice>();
-
-        private readonly IRemoteTaskService _remoteTaskService;
-        private readonly ILogger<DeviceHub> _logger;
-        
-        public DeviceHub(IRemoteTaskService remoteTaskService, ILogger<DeviceHub> logger)
-        {
-            _remoteTaskService = remoteTaskService;
+            _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _logger = logger;
         }
 
+        string GetWorkstationId()
+        {
+            if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
+                return (string)workstationId;
+            else
+            {
+                _logger.LogCritical("DeviceHub does not contain WorkstationId!");
+                throw new Exception("DeviceHub does not contain WorkstationId!");
+            }
+        }
+
+        string GetDeviceId()
+        {
+            if (Context.Items.TryGetValue("DeviceId", out object deviceId))
+                return (string)deviceId;
+            else
+            {
+                _logger.LogCritical("DeviceHub does not contain DeviceId!");
+                throw new Exception("DeviceHub does not contain DeviceId!");
+            }
+        }
+
+        // HUB connection is connected
         public override async Task OnConnectedAsync()
         {
-            var httpContext = Context.GetHttpContext();
-            string deviceId = httpContext.Request.Headers["DeviceId"].ToString();
-            string channel = httpContext.Request.Headers["DeviceChannel"].ToString();
-            byte channelNo = Convert.ToByte(channel);
-            Debug.WriteLine($"!!!!!!!!!!!!!!!!!!!!! OnConnectedAsync {deviceId}");
-
-
-            if (!string.IsNullOrWhiteSpace(deviceId))
+            try
             {
-                var device = new RemoteDevice(deviceId, Clients.Caller, null, null); // todo - implement ILog
+                var httpContext = Context.GetHttpContext();
+                string deviceId = httpContext.Request.Headers["DeviceId"].ToString();
+                string workstationId = httpContext.Request.Headers["WorkstationId"].ToString();
+                Debug.WriteLine($"!!!!!!!!!!!!!!!!!!!!! OnConnectedAsync {deviceId}:{workstationId}");
 
-                Context.Items.Add("DeviceId", deviceId);
-                Context.Items.Add("Device", device);
-
-                if (_connections.TryAdd(deviceId, device))
+                if (string.IsNullOrWhiteSpace(deviceId))
                 {
-                    var t = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await device.Verify(channelNo);
-                            if (_pendingConnections.TryGetValue(deviceId, out PendingConnectionDescription pendingConnection))
-                            {
-                                pendingConnection.Tcs.TrySetResult(device);
-                                _pendingConnections.TryRemove(deviceId, out PendingConnectionDescription removedPendingConnection);
-                            }
-
-                            _remoteTaskService.StartTaskProcessing(deviceId);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex.Message);
-                        }
-                    });
+                    _logger.LogCritical($"DeviceId cannot be empty");
                 }
+                else if (string.IsNullOrWhiteSpace(workstationId))
+                {
+                    _logger.LogCritical($"WorkstationId cannot be empty");
+                }
+                else
+                {
+                    Context.Items.Add("DeviceId", deviceId);
+                    Context.Items.Add("WorkstationId", workstationId);
+
+                    _remoteDeviceConnectionsService.OnDeviceHubConnected(deviceId, workstationId, Clients.Caller);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "DeviceHub.OnConnectedAsync error");
             }
 
             await base.OnConnectedAsync();
         }
 
+        // HUB connection is disconnected (OnDeviceDisconnected received in AppHub)
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!!!!!!!!!! OnDisconnectedAsync");
-
-            if (Context.Items.TryGetValue("DeviceId", out object deviceId))
-            {
-                RemoveDevice((string)deviceId);
-            }
-            else
-            {
-                Debug.Assert(false);
-                _logger.LogCritical("DeviceHub does not contain DeviceId!");
-            }
-
-            return base.OnDisconnectedAsync(exception);
-        }
-
-        public static RemoteDevice FindDevice(string id)
-        {
-            if (_connections.TryGetValue(id, out RemoteDevice device))
-                return device;
-
-            return null;
-        }
-
-        public static bool RemoveDevice(string id)
-        {
-            _pendingConnections.TryRemove(id, out PendingConnectionDescription removedPendingConnection);
-            return _connections.TryRemove(id, out RemoteDevice device);
-        }
-
-        private RemoteDevice GetDevice()
-        {
-            if (Context.Items.TryGetValue("Device", out object device))
-                return (RemoteDevice)device;
-            throw new Exception($"Cannot find device in the DeviceHub");
-        }
-
-        internal static async Task<RemoteDevice> WaitDeviceConnection(string id, int timeout)
-        {
-            var descr = _pendingConnections.AddOrUpdate(id, new PendingConnectionDescription(id), (deviceId, oldDescr) =>
-            {
-                return oldDescr;
-            });
-
             try
             {
-                var remoteDevice = await descr.Tcs.Task.TimeoutAfter(timeout);
-                return remoteDevice;
-            }
-            catch (TimeoutException)
-            {
-                descr.Tcs.TrySetException(new HideezException(HideezErrorCode.RemoteConnectionTimedOut));
+                Debug.WriteLine($"!!!!!!!!!!!!!!!!!!!!! OnDisconnectedAsync");
+
+                _remoteDeviceConnectionsService.OnDeviceHubDisconnected(GetDeviceId(), GetWorkstationId());
             }
             catch (Exception ex)
             {
-                descr.Tcs.TrySetException(ex);
+                _logger.LogCritical(ex, "DeviceHub.OnDisconnectedAsync error");
             }
-            finally
-            {
-                _pendingConnections.TryRemove(id, out PendingConnectionDescription removed);
-            }
-
-            return null;
+            return base.OnDisconnectedAsync(exception);
         }
 
-        public Task OnVerifyResponse(byte[] data)
+        // Gets a device from the context
+        RemoteDevice GetDevice()
+        {
+            var remoteDevice = _remoteDeviceConnectionsService.FindRemoteDevice(GetDeviceId(), GetWorkstationId());
+
+            if (remoteDevice == null)
+                throw new Exception($"Cannot find remote device in the DeviceHub");
+
+            return remoteDevice;
+        }
+
+        // Incoming request
+        public Task OnVerifyResponse(byte[] data, string error)
         {
             try
             {
-                RemoteDevice device = GetDevice();
-                device.OnVerifyResponse(data);
+                var device = GetDevice();
+                device.OnVerifyResponse(data, error);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
+                Debug.WriteLine(ex.Message);
                 throw new HubException(ex.Message);
             }
             return Task.CompletedTask;
         }
 
-        public Task OnCommandResponse(byte[] data)
+        // Incoming request
+        public Task OnCommandResponse(byte[] data, string error)
         {
             try
             {
-                RemoteDevice device = GetDevice();
-                device.OnCommandResponse(data);
+                var device = GetDevice();
+                device.OnCommandResponse(data, error);
             }
             catch (Exception ex)
             {

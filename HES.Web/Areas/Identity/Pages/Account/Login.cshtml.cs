@@ -1,4 +1,5 @@
-﻿using HES.Infrastructure;
+﻿using HES.Core.Entities;
+using HES.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace HES.Web.Areas.Identity.Pages.Account
@@ -16,10 +18,18 @@ namespace HES.Web.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<LoginModel> _logger;
-        readonly UserManager<ApplicationUser> _userManager;
-        readonly RoleManager<IdentityRole> _roleManager;
 
+        public IList<AuthenticationScheme> ExternalLogins { get; set; }
+        public string ReturnUrl { get; set; }
+
+        [BindProperty]
+        public InputModel Input { get; set; }
+        [TempData]
+        public string ErrorMessage { get; set; }
+        
         public LoginModel(SignInManager<ApplicationUser> signInManager,
                           ILogger<LoginModel> logger,
                           UserManager<ApplicationUser> userManager,
@@ -30,16 +40,6 @@ namespace HES.Web.Areas.Identity.Pages.Account
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
-        [BindProperty]
-        public InputModel Input { get; set; }
-
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
-        public string ReturnUrl { get; set; }
-
-        [TempData]
-        public string ErrorMessage { get; set; }
 
         public class InputModel
         {
@@ -84,6 +84,15 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation($"User {Input.Email} logged in.");
+
+                    var usersInRole = await _userManager.GetUsersInRoleAsync(ApplicationRoles.UserRole);
+                    var isUserRole = usersInRole.Any(u => u.NormalizedEmail == Input.Email.ToUpper());
+
+                    if (isUserRole)
+                    {
+                        return LocalRedirect("~/Identity/Account/External");
+                    }
+
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

@@ -14,19 +14,63 @@ namespace HES.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("HES.Core.Entities.AppSettings", b =>
+            modelBuilder.Entity("HES.Core.Entities.ApplicationUser", b =>
                 {
-                    b.Property<string>("Key")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Value");
+                    b.Property<int>("AccessFailedCount");
 
-                    b.HasKey("Key");
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken();
 
-                    b.ToTable("AppSettings");
+                    b.Property<string>("DeviceId");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256);
+
+                    b.Property<bool>("EmailConfirmed");
+
+                    b.Property<string>("FirstName");
+
+                    b.Property<string>("LastName");
+
+                    b.Property<bool>("LockoutEnabled");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("PasswordHash");
+
+                    b.Property<string>("PhoneNumber");
+
+                    b.Property<bool>("PhoneNumberConfirmed");
+
+                    b.Property<string>("SecurityStamp");
+
+                    b.Property<bool>("TwoFactorEnabled");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Company", b =>
@@ -42,12 +86,25 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("HES.Core.Entities.DataProtection", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Value");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtection");
+                });
+
             modelBuilder.Entity("HES.Core.Entities.Department", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("CompanyId");
+                    b.Property<string>("CompanyId")
+                        .IsRequired();
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -88,8 +145,6 @@ namespace HES.Infrastructure.Migrations
 
                     b.Property<int>("State");
 
-                    b.Property<bool>("UsePin");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AcceessProfileId");
@@ -108,11 +163,7 @@ namespace HES.Infrastructure.Migrations
 
                     b.Property<bool>("ButtonConnection");
 
-                    b.Property<int>("ButtonExpiration");
-
                     b.Property<bool>("ButtonNewChannel");
-
-                    b.Property<bool>("ButtonNewLink");
 
                     b.Property<DateTime>("CreatedAt");
 
@@ -120,11 +171,7 @@ namespace HES.Infrastructure.Migrations
 
                     b.Property<bool>("MasterKeyConnection");
 
-                    b.Property<int>("MasterKeyExpiration");
-
                     b.Property<bool>("MasterKeyNewChannel");
-
-                    b.Property<bool>("MasterKeyNewLink");
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -138,8 +185,6 @@ namespace HES.Infrastructure.Migrations
                     b.Property<int>("PinLength");
 
                     b.Property<bool>("PinNewChannel");
-
-                    b.Property<bool>("PinNewLink");
 
                     b.Property<int>("PinTryCount");
 
@@ -166,6 +211,8 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("EmployeeId");
 
                     b.Property<ushort>("IdFromDevice");
+
+                    b.Property<int>("Kind");
 
                     b.Property<DateTime?>("LastSyncedAt");
 
@@ -265,24 +312,6 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("Employees");
                 });
 
-            modelBuilder.Entity("HES.Core.Entities.Notification", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("CreatedAt");
-
-                    b.Property<string>("Message");
-
-                    b.Property<int>("NotifyId");
-
-                    b.Property<string>("Url");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("HES.Core.Entities.Position", b =>
                 {
                     b.Property<string>("Id")
@@ -296,6 +325,45 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("Positions");
                 });
 
+            modelBuilder.Entity("HES.Core.Entities.ProximityDevice", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("DeviceId");
+
+                    b.Property<int>("LockProximity");
+
+                    b.Property<int>("LockTimeout");
+
+                    b.Property<int>("UnlockProximity");
+
+                    b.Property<string>("WorkstationId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("WorkstationId");
+
+                    b.ToTable("ProximityDevices");
+                });
+
+            modelBuilder.Entity("HES.Core.Entities.SamlIdentityProvider", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<bool>("Enabled");
+
+                    b.Property<string>("Url")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SamlIdentityProvider");
+                });
+
             modelBuilder.Entity("HES.Core.Entities.SharedAccount", b =>
                 {
                     b.Property<string>("Id")
@@ -304,6 +372,8 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Apps");
 
                     b.Property<bool>("Deleted");
+
+                    b.Property<int>("Kind");
 
                     b.Property<string>("Login")
                         .IsRequired();
@@ -415,30 +485,6 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("WorkstationEvents");
                 });
 
-            modelBuilder.Entity("HES.Core.Entities.WorkstationProximityDevice", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("DeviceId");
-
-                    b.Property<int>("LockProximity");
-
-                    b.Property<int>("LockTimeout");
-
-                    b.Property<int>("UnlockProximity");
-
-                    b.Property<string>("WorkstationId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceId");
-
-                    b.HasIndex("WorkstationId");
-
-                    b.ToTable("WorkstationProximityDevices");
-                });
-
             modelBuilder.Entity("HES.Core.Entities.WorkstationSession", b =>
                 {
                     b.Property<string>("Id")
@@ -475,56 +521,6 @@ namespace HES.Infrastructure.Migrations
                     b.HasIndex("WorkstationId");
 
                     b.ToTable("WorkstationSessions");
-                });
-
-            modelBuilder.Entity("HES.Infrastructure.ApplicationUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("AccessFailedCount");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256);
-
-                    b.Property<bool>("EmailConfirmed");
-
-                    b.Property<bool>("LockoutEnabled");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256);
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256);
-
-                    b.Property<string>("PasswordHash");
-
-                    b.Property<string>("PhoneNumber");
-
-                    b.Property<bool>("PhoneNumberConfirmed");
-
-                    b.Property<string>("SecurityStamp");
-
-                    b.Property<bool>("TwoFactorEnabled");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasName("UserNameIndex");
-
-                    b.ToTable("AspNetUsers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -638,7 +634,8 @@ namespace HES.Infrastructure.Migrations
                 {
                     b.HasOne("HES.Core.Entities.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Device", b =>
@@ -687,6 +684,17 @@ namespace HES.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("HES.Core.Entities.ProximityDevice", b =>
+                {
+                    b.HasOne("HES.Core.Entities.Device", "Device")
+                        .WithMany()
+                        .HasForeignKey("DeviceId");
+
+                    b.HasOne("HES.Core.Entities.Workstation", "Workstation")
+                        .WithMany("ProximityDevices")
+                        .HasForeignKey("WorkstationId");
+                });
+
             modelBuilder.Entity("HES.Core.Entities.Workstation", b =>
                 {
                     b.HasOne("HES.Core.Entities.Department", "Department")
@@ -714,17 +722,6 @@ namespace HES.Infrastructure.Migrations
 
                     b.HasOne("HES.Core.Entities.Workstation", "Workstation")
                         .WithMany()
-                        .HasForeignKey("WorkstationId");
-                });
-
-            modelBuilder.Entity("HES.Core.Entities.WorkstationProximityDevice", b =>
-                {
-                    b.HasOne("HES.Core.Entities.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId");
-
-                    b.HasOne("HES.Core.Entities.Workstation", "Workstation")
-                        .WithMany("ProximityDevices")
                         .HasForeignKey("WorkstationId");
                 });
 
@@ -761,7 +758,7 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("HES.Infrastructure.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -769,7 +766,7 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("HES.Infrastructure.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -782,7 +779,7 @@ namespace HES.Infrastructure.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("HES.Infrastructure.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -790,7 +787,7 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("HES.Infrastructure.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

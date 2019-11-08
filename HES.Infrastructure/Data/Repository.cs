@@ -32,6 +32,11 @@ namespace HES.Infrastructure
             return await _context.Set<T>().FindAsync(id);
         }
 
+        public async Task<int> GetCountAsync()
+        {
+            return await _context.Set<T>().CountAsync<T>();
+        }
+
         public async Task<T> AddAsync(T entity)
         {
             _context.Set<T>().Add(entity);

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using HES.Core.Entities;
+using HES.Core.Entities.Models;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -14,121 +16,55 @@ namespace HES.Core.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly IAsyncRepository<Employee> _employeeRepository;
-        private readonly IAsyncRepository<Device> _deviceRepository;
-        private readonly IAsyncRepository<DeviceAccount> _deviceAccountRepository;
-        private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
-        private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
-        private readonly IAsyncRepository<Template> _templateRepository;
-        private readonly IAsyncRepository<Company> _companyRepository;
-        private readonly IAsyncRepository<Department> _departmentRepository;
-        private readonly IAsyncRepository<Position> _positionRepository;
+        private readonly IDeviceService _deviceService;
+        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IDeviceAccountService _deviceAccountService;
+        private readonly ISharedAccountService _sharedAccountService;
+        private readonly IProximityDeviceService _workstationProximityDeviceService;
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
-        private readonly IRemoteTaskService _remoteTaskService;
         private readonly IDataProtectionService _dataProtectionService;
+        private readonly ISamlIdentityProviderService _samlIdentityProviderService;
 
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
-                               IAsyncRepository<Device> deviceRepository,
-                               IAsyncRepository<DeviceAccount> deviceAccountRepository,
-                               IAsyncRepository<DeviceTask> deviceTaskRepository,
-                               IAsyncRepository<SharedAccount> sharedAccountRepository,
-                               IAsyncRepository<Template> templateRepository,
-                               IAsyncRepository<Company> companyRepository,
-                               IAsyncRepository<Department> departmentRepository,
-                               IAsyncRepository<Position> positionRepository,
+                               IDeviceService deviceService,
+                               IDeviceTaskService deviceTaskService,
+                               IDeviceAccountService deviceAccountService,
+                               ISharedAccountService sharedAccountService,
+                               IProximityDeviceService workstationProximityDeviceService,
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                IAsyncRepository<WorkstationSession> workstationSessionRepository,
-                               IRemoteTaskService remoteTaskService,
-                               IDataProtectionService dataProtectionService)
+                               IDataProtectionService dataProtectionService,
+                               ISamlIdentityProviderService samlIdentityProviderService)
         {
             _employeeRepository = employeeRepository;
-            _deviceRepository = deviceRepository;
-            _deviceAccountRepository = deviceAccountRepository;
-            _deviceTaskRepository = deviceTaskRepository;
-            _sharedAccountRepository = sharedAccountRepository;
-            _templateRepository = templateRepository;
-            _companyRepository = companyRepository;
-            _departmentRepository = departmentRepository;
-            _positionRepository = positionRepository;
+            _deviceService = deviceService;
+            _deviceTaskService = deviceTaskService;
+            _deviceAccountService = deviceAccountService;
+            _sharedAccountService = sharedAccountService;
+            _workstationProximityDeviceService = workstationProximityDeviceService;
+
             _workstationEventRepository = workstationEventRepository;
             _workstationSessionRepository = workstationSessionRepository;
-            _remoteTaskService = remoteTaskService;
             _dataProtectionService = dataProtectionService;
+            _samlIdentityProviderService = samlIdentityProviderService;
         }
 
-        public IQueryable<Employee> EmployeeQuery()
+        #region Employee
+
+        public IQueryable<Employee> Query()
         {
             return _employeeRepository.Query();
         }
 
-        public IQueryable<Device> DeviceQuery()
+        public async Task<int> GetCountAsync()
         {
-            return _deviceRepository.Query();
+            return await _employeeRepository.GetCountAsync();
         }
 
-        public IQueryable<DeviceAccount> DeviceAccountQuery()
-        {
-            return _deviceAccountRepository.Query();
-        }
-
-        public IQueryable<DeviceTask> DeviceTaskQuery()
-        {
-            return _deviceTaskRepository.Query();
-        }
-
-        public IQueryable<SharedAccount> SharedAccountQuery()
-        {
-            return _sharedAccountRepository.Query();
-        }
-
-        public IQueryable<Template> TemplateQuery()
-        {
-            return _templateRepository.Query();
-        }
-
-        public IQueryable<Company> CompanyQuery()
-        {
-            return _companyRepository.Query();
-        }
-
-        public IQueryable<Department> DepartmentQuery()
-        {
-            return _departmentRepository.Query();
-        }
-
-        public IQueryable<Position> PositionQuery()
-        {
-            return _positionRepository.Query();
-        }
-
-        public async Task<Employee> EmployeeGetByIdAsync(dynamic id)
+        public async Task<Employee> GetByIdAsync(dynamic id)
         {
             return await _employeeRepository.GetByIdAsync(id);
-        }
-
-        public async Task<Device> DeviceGetByIdAsync(dynamic id)
-        {
-            return await _deviceRepository.GetByIdAsync(id);
-        }
-
-        public async Task<DeviceAccount> DeviceAccountGetByIdAsync(dynamic id)
-        {
-            return await _deviceAccountRepository.GetByIdAsync(id);
-        }
-
-        public async Task<DeviceTask> DeviceTaskGetByIdAsync(dynamic id)
-        {
-            return await _deviceTaskRepository.GetByIdAsync(id);
-        }
-
-        public async Task<SharedAccount> SharedAccountGetByIdAsync(dynamic id)
-        {
-            return await _sharedAccountRepository.GetByIdAsync(id);
-        }
-
-        public async Task<Template> TemplateGetByIdAsync(dynamic id)
-        {
-            return await _templateRepository.GetByIdAsync(id);
         }
 
         public async Task<Employee> CreateEmployeeAsync(Employee employee)
@@ -136,7 +72,17 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-           return await _employeeRepository.AddAsync(employee);
+            var emailExist = await _employeeRepository
+                .Query()
+                .Where(e => e.Email == employee.Email)
+                .AnyAsync();
+
+            if (emailExist)
+            {
+                throw new Exception($"Email {employee.Email} already used.");
+            }
+
+            return await _employeeRepository.AddAsync(employee);
         }
 
         public async Task EditEmployeeAsync(Employee employee)
@@ -163,8 +109,7 @@ namespace HES.Core.Services
             var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
             await _workstationSessionRepository.DeleteRangeAsync(allSessions);
             // Remove all accounts
-            var allAccounts = await _deviceAccountRepository.Query().Where(t => t.EmployeeId == id).ToListAsync();
-            await _deviceAccountRepository.DeleteRangeAsync(allAccounts);
+            await _deviceAccountService.RemoveAllByEmployeeIdAsync(id);
 
             await _employeeRepository.DeleteAsync(employee);
         }
@@ -174,39 +119,253 @@ namespace HES.Core.Services
             return await _employeeRepository.ExistAsync(predicate);
         }
 
-        public async Task SetPrimaryAccount(string deviceId, string deviceAccountId)
+        #endregion
+
+        #region SamlIdp
+
+        public async Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId)
         {
-            if (deviceId == null)
-                throw new ArgumentNullException(nameof(deviceId));
+            _dataProtectionService.Validate();
 
-            if (deviceAccountId == null)
-                throw new ArgumentNullException(nameof(deviceAccountId));
+            var employee = await _employeeRepository.Query().FirstOrDefaultAsync(e => e.Email == email);
+            if (employee == null)
+            {
+                throw new ArgumentNullException(nameof(employee));
+            }
 
-            var device = await _deviceRepository.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetByIdAsync(deviceId);
             if (device == null)
-                throw new Exception($"Device not found, ID: {deviceId}");
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
+            var samlIdP = await _samlIdentityProviderService.GetByIdAsync(SamlIdentityProvider.PrimaryKey);
+
+            // Create account
+            var deviceAccountId = Guid.NewGuid().ToString();
+            var deviceAccount = new DeviceAccount
+            {
+                Id = deviceAccountId,
+                Name = SamlIdentityProvider.DeviceAccountName,
+                Urls = $"{samlIdP.Url};{hesUrl}",
+                Apps = null,
+                Login = email,
+                Type = AccountType.Personal,
+                Status = AccountStatus.Creating,
+                CreatedAt = DateTime.UtcNow,
+                PasswordUpdatedAt = DateTime.UtcNow,
+                OtpUpdatedAt = null,
+                EmployeeId = employee.Id,
+                DeviceId = device.Id,
+                SharedAccountId = null
+            };
+
+            // Validate url
+            deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
+
+            // Create task
+            var deviceTask = new DeviceTask
+            {
+                DeviceAccountId = deviceAccountId,
+                Name = deviceAccount.Name,
+                Urls = deviceAccount.Urls,
+                Apps = deviceAccount.Apps,
+                Login = deviceAccount.Login,
+                Password = _dataProtectionService.Protect(password),
+                OtpSecret = null,
+                CreatedAt = DateTime.UtcNow,
+                Operation = TaskOperation.Create,
+                DeviceId = device.Id
+            };
+
+            // Add account
+            await _deviceAccountService.AddAsync(deviceAccount);
+
+            try
+            {
+                // Add task
+                await _deviceTaskService.AddTaskAsync(deviceTask);
+            }
+            catch (Exception)
+            {
+                // Remove account
+                await _deviceAccountService.DeleteAsync(deviceAccount);
+                throw;
+            }
+        }
+
+        public async Task UpdatePasswordSamlIdpAccountAsync(string email, string password)
+        {
+            _dataProtectionService.Validate();
+
+            var employee = await _employeeRepository.Query().FirstOrDefaultAsync(e => e.Email == email);
+            if (employee == null)
+            {
+                throw new ArgumentNullException(nameof(employee));
+            }
+            var deviceAccount = await _deviceAccountService
+             .Query()
+             .Where(d => d.EmployeeId == employee.Id && d.Name == SamlIdentityProvider.DeviceAccountName)
+             .FirstOrDefaultAsync();
 
             // Update Device Account
-            var deviceAccount = await _deviceAccountRepository.GetByIdAsync(deviceAccountId);
-            if (deviceAccount == null)
-                throw new Exception($"DeviceAccount not found, ID: {deviceAccountId}");
-
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt" };
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
-            // Add task
-            await _remoteTaskService.AddTaskAsync(new DeviceTask()
+            // Create Device Task
+            try
             {
-                Operation = TaskOperation.Primary,
-                CreatedAt = DateTime.UtcNow,
-                DeviceId = device.Id,
-                DeviceAccountId = deviceAccountId
-            });
-
-            _remoteTaskService.StartTaskProcessing(deviceId);
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
+                {
+                    DeviceAccountId = deviceAccount.Id,
+                    Password = _dataProtectionService.Protect(password),
+                    CreatedAt = DateTime.UtcNow,
+                    Operation = TaskOperation.Update,
+                    DeviceId = deviceAccount.DeviceId
+                });
+            }
+            catch (Exception)
+            {
+                deviceAccount.Status = AccountStatus.Error;
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
+                throw;
+            }
         }
+
+        public async Task UpdateOtpSamlIdpAccountAsync(string email, string otp)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+            if (otp == null)
+            {
+                throw new ArgumentNullException(nameof(otp));
+            }
+
+            ValidationHepler.VerifyOtpSecret(otp);
+
+            _dataProtectionService.Validate();
+
+            var employee = await _employeeRepository.Query().FirstOrDefaultAsync(e => e.Email == email);
+            if (employee == null)
+            {
+                throw new ArgumentNullException(nameof(employee));
+            }
+            var deviceAccount = await _deviceAccountService
+             .Query()
+             .Where(d => d.EmployeeId == employee.Id && d.Name == SamlIdentityProvider.DeviceAccountName)
+             .FirstOrDefaultAsync();
+
+            var task = await _deviceTaskService
+                .Query()
+                .AsNoTracking()
+                .Where(d => d.DeviceAccountId == deviceAccount.Id && _dataProtectionService.Unprotect(d.OtpSecret) == otp)
+                .FirstOrDefaultAsync();
+
+            if (task != null)
+            {
+                return;
+            }
+
+            // Update Device Account
+            deviceAccount.Status = AccountStatus.Updating;
+            deviceAccount.UpdatedAt = DateTime.UtcNow;
+            string[] properties = { "Status", "UpdatedAt" };
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
+
+            // Create Device Task
+            try
+            {
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
+                {
+                    DeviceAccountId = deviceAccount.Id,
+                    OtpSecret = _dataProtectionService.Protect(otp),
+                    CreatedAt = DateTime.UtcNow,
+                    Operation = TaskOperation.Update,
+                    DeviceId = deviceAccount.DeviceId
+                });
+            }
+            catch (Exception)
+            {
+                deviceAccount.Status = AccountStatus.Error;
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
+                throw;
+            }
+        }
+
+        public async Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl)
+        {
+            _dataProtectionService.Validate();
+
+            var deviceAccounts = await _deviceAccountService
+             .Query()
+             .Where(d => d.Name == SamlIdentityProvider.DeviceAccountName && d.Deleted == false)
+             .ToListAsync();
+
+            var samlIdP = await _samlIdentityProviderService.GetByIdAsync(SamlIdentityProvider.PrimaryKey);
+            var validUrls = ValidationHepler.VerifyUrls($"{samlIdP.Url};{hesUrl}");
+
+            foreach (var account in deviceAccounts)
+            {
+                // Update Device Account
+                account.Status = AccountStatus.Updating;
+                account.UpdatedAt = DateTime.UtcNow;
+                string[] properties = { "Status", "UpdatedAt" };
+                await _deviceAccountService.UpdateOnlyPropAsync(account, properties);
+
+                // Create Device Task
+                try
+                {
+                    await _deviceTaskService.AddTaskAsync(new DeviceTask
+                    {
+                        DeviceAccountId = account.Id,
+                        Urls = validUrls,
+                        CreatedAt = DateTime.UtcNow,
+                        Operation = TaskOperation.Update,
+                        DeviceId = account.DeviceId
+                    });
+                }
+                catch (Exception)
+                {
+                    account.Status = AccountStatus.Error;
+                    await _deviceAccountService.UpdateOnlyPropAsync(account, properties);
+                    throw;
+                }
+            }
+
+            return deviceAccounts.Select(s => s.Id).ToList();
+        }
+
+        public async Task DeleteSamlIdpAccountAsync(string employeeId)
+        {
+            if (employeeId == null)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+
+            var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            if (employee == null)
+            {
+                throw new Exception("Employee not found.");
+            }
+
+            var account = await _deviceAccountService
+                .Query()
+                .Where(d => d.EmployeeId == employeeId && d.Name == SamlIdentityProvider.DeviceAccountName)
+                .FirstOrDefaultAsync();
+
+            if (account != null)
+            {
+                await DeleteAccount(account.Id);
+            }
+        }
+
+        #endregion
+
+        #region Device
 
         public async Task AddDeviceAsync(string employeeId, string[] selectedDevices)
         {
@@ -218,7 +377,7 @@ namespace HES.Core.Services
 
             foreach (var deviceId in selectedDevices)
             {
-                var device = await _deviceRepository.GetByIdAsync(deviceId);
+                var device = await _deviceService.GetByIdAsync(deviceId);
                 if (device == null)
                     throw new Exception($"Device not found, ID: {deviceId}");
 
@@ -228,18 +387,15 @@ namespace HES.Core.Services
                 var masterPassword = GenerateMasterPassword();
 
                 device.EmployeeId = employeeId;
-                device.MasterPassword = masterPassword;
-                await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "MasterPassword" });
+                await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
 
-                await _remoteTaskService.AddTaskAsync(new DeviceTask
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    Password = masterPassword,
+                    Password = _dataProtectionService.Protect(masterPassword),
                     Operation = TaskOperation.Link,
                     CreatedAt = DateTime.UtcNow,
                     DeviceId = device.Id
                 });
-
-                _remoteTaskService.StartTaskProcessing(deviceId);
             }
         }
 
@@ -247,7 +403,7 @@ namespace HES.Core.Services
         {
             _dataProtectionService.Validate();
 
-            var device = await _deviceRepository.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetByIdAsync(deviceId);
             if (device == null)
                 throw new Exception($"Device not found, ID: {deviceId}");
 
@@ -255,37 +411,133 @@ namespace HES.Core.Services
                 throw new Exception($"Device {deviceId} not linked to employee");
 
             // Remove all tasks
-            var allTasks = await _deviceTaskRepository.Query().Where(t => t.DeviceId == deviceId).ToListAsync();
-            await _deviceTaskRepository.DeleteRangeAsync(allTasks);
+            await _deviceTaskService.RemoveAllTasksAsync(deviceId);
 
             // Remove all accounts
-            var allAccounts = await _deviceAccountRepository.Query().Where(d => d.DeviceId == deviceId).ToListAsync();
-            foreach (var account in allAccounts)
-            {
-                account.Deleted = true;
-            }
-            await _deviceAccountRepository.UpdateOnlyPropAsync(allAccounts, new string[] { "Deleted" });
+            await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
+
+            // Remove proximity device
+            var allProximityDevices = await _workstationProximityDeviceService
+                .Query()
+                .Where(w => w.DeviceId == deviceId)
+                .ToListAsync();
+            await _workstationProximityDeviceService.DeleteRangeProximityDevicesAsync(allProximityDevices);
 
             // Remove employee from device
             device.EmployeeId = null;
             device.PrimaryAccountId = null;
-            await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId" });
+            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId" });
 
-            await _remoteTaskService.RemoveDeviceAsync(device);
-
-            _remoteTaskService.StartTaskProcessing(deviceId);
+            if (device.MasterPassword != null)
+            {
+                // Add Task remove device
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
+                {
+                    Password = _dataProtectionService.Protect(device.MasterPassword),
+                    CreatedAt = DateTime.UtcNow,
+                    Operation = TaskOperation.Wipe,
+                    DeviceId = device.Id
+                });
+            }
         }
 
-        public async Task CreatePersonalAccountAsync(DeviceAccount deviceAccount, InputModel input, string[] selectedDevices)
+        #endregion
+
+        #region Account
+
+        public async Task SetPrimaryAccount(string deviceId, string deviceAccountId)
+        {
+            if (deviceId == null)
+                throw new ArgumentNullException(nameof(deviceId));
+
+            if (deviceAccountId == null)
+                throw new ArgumentNullException(nameof(deviceAccountId));
+
+            var device = await _deviceService.GetByIdAsync(deviceId);
+            if (device == null)
+                throw new Exception($"Device not found, ID: {deviceId}");
+
+            // Update Device Account
+            var deviceAccount = await _deviceAccountService.GetByIdAsync(deviceAccountId);
+            if (deviceAccount == null)
+                throw new Exception($"DeviceAccount not found, ID: {deviceAccountId}");
+
+            deviceAccount.Status = AccountStatus.Updating;
+            deviceAccount.UpdatedAt = DateTime.UtcNow;
+            string[] properties = { "Status", "UpdatedAt" };
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
+
+            // Add task
+            await _deviceTaskService.AddTaskAsync(new DeviceTask()
+            {
+                Operation = TaskOperation.Primary,
+                CreatedAt = DateTime.UtcNow,
+                DeviceId = device.Id,
+                DeviceAccountId = deviceAccountId
+            });
+        }
+
+        private async Task SetAsPrimaryIfEmpty(string deviceId, string deviceAccountId)
+        {
+            var device = await _deviceService.GetByIdAsync(deviceId);
+
+            if (device.PrimaryAccountId == null)
+            {
+                device.PrimaryAccountId = deviceAccountId;
+                await _deviceService.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
+            }
+        }
+
+        public async Task CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId)
+        {
+            if (workstationAccount == null)
+            {
+                throw new ArgumentNullException(nameof(workstationAccount));
+            }
+            if (employeeId == null)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+            if (deviceId == null)
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            var deviceAccount = new DeviceAccount()
+            {
+                Name = workstationAccount.Name,
+                EmployeeId = employeeId,
+                Kind = AccountKind.Workstation
+            };
+
+            switch (workstationAccount.AccountType)
+            {
+                case WorkstationAccountType.Local:
+                    deviceAccount.Login = $".\\{workstationAccount.Login}";
+                    break;
+                case WorkstationAccountType.Domain:
+                    deviceAccount.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
+                    break;
+                case WorkstationAccountType.Microsoft:
+                    deviceAccount.Login = $"@\\{workstationAccount.Login}";
+                    break;
+            }
+
+            await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password }, new string[] { deviceId });
+        }
+
+        public async Task CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices)
         {
             if (deviceAccount == null)
                 throw new ArgumentNullException(nameof(deviceAccount));
 
-            if (input == null)
-                throw new ArgumentNullException(nameof(input));
+            if (accountPassword == null)
+                throw new ArgumentNullException(nameof(accountPassword));
 
             if (selectedDevices == null)
                 throw new ArgumentNullException(nameof(selectedDevices));
+
+            ValidationHepler.VerifyOtpSecret(accountPassword.OtpSecret);
 
             _dataProtectionService.Validate();
 
@@ -294,7 +546,7 @@ namespace HES.Core.Services
 
             foreach (var deviceId in selectedDevices)
             {
-                var exist = await _deviceAccountRepository
+                var exist = await _deviceAccountService
                     .Query()
                     .Where(s => s.Name == deviceAccount.Name)
                     .Where(s => s.Login == deviceAccount.Login)
@@ -306,37 +558,10 @@ namespace HES.Core.Services
                     throw new Exception("An account with the same name and login exists.");
 
                 // Validate url
-                if (deviceAccount.Urls != null)
-                {
-                    List<string> verifiedUrls = new List<string>();
-                    foreach (var url in deviceAccount.Urls.Split(";"))
-                    {
-                        string uriString = url;
-                        string domain = string.Empty;
-
-                        if (string.IsNullOrWhiteSpace(uriString))
-                        {
-                            throw new Exception("Not correct url");
-                        }
-
-                        if (!uriString.Contains(Uri.SchemeDelimiter))
-                        {
-                            uriString = string.Concat(Uri.UriSchemeHttp, Uri.SchemeDelimiter, uriString);
-                        }
-
-                        domain = new Uri(uriString).Host;
-
-                        if (domain.StartsWith("www."))
-                            domain = domain.Remove(0, 4);
-
-                        verifiedUrls.Add(domain);
-                    }
-                    deviceAccount.Urls = string.Join(";", verifiedUrls.ToArray());
-                }
-
-                var deviceAccountId = Guid.NewGuid().ToString();
+                deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
 
                 // Create Device Account
+                var deviceAccountId = Guid.NewGuid().ToString();
                 accounts.Add(new DeviceAccount
                 {
                     Id = deviceAccountId,
@@ -348,7 +573,8 @@ namespace HES.Core.Services
                     Status = AccountStatus.Creating,
                     CreatedAt = DateTime.UtcNow,
                     PasswordUpdatedAt = DateTime.UtcNow,
-                    OtpUpdatedAt = input.OtpSecret != null ? new DateTime?(DateTime.UtcNow) : null,
+                    OtpUpdatedAt = accountPassword.OtpSecret != null ? new DateTime?(DateTime.UtcNow) : null,
+                    Kind = deviceAccount.Kind,
                     EmployeeId = deviceAccount.EmployeeId,
                     DeviceId = deviceId,
                     SharedAccountId = null
@@ -362,8 +588,8 @@ namespace HES.Core.Services
                     Urls = deviceAccount.Urls,
                     Apps = deviceAccount.Apps,
                     Login = deviceAccount.Login,
-                    Password = _dataProtectionService.Protect(input.Password),
-                    OtpSecret = input.OtpSecret,
+                    Password = _dataProtectionService.Protect(accountPassword.Password),
+                    OtpSecret = accountPassword.OtpSecret,
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
                     DeviceId = deviceId
@@ -373,19 +599,17 @@ namespace HES.Core.Services
                 await SetAsPrimaryIfEmpty(deviceId, deviceAccountId);
             }
 
-            await _deviceAccountRepository.AddRangeAsync(accounts);
+            await _deviceAccountService.AddRangeAsync(accounts);
 
             try
             {
-                await _remoteTaskService.AddRangeAsync(tasks);
+                await _deviceTaskService.AddRangeAsync(tasks);
             }
             catch (Exception)
             {
-                await _deviceAccountRepository.DeleteRangeAsync(accounts);
+                await _deviceAccountService.DeleteRangeAsync(accounts);
                 throw;
             }
-
-            _remoteTaskService.StartTaskProcessing(selectedDevices);
         }
 
         public async Task EditPersonalAccountAsync(DeviceAccount deviceAccount)
@@ -395,7 +619,7 @@ namespace HES.Core.Services
             if (deviceAccount == null)
                 throw new ArgumentNullException(nameof(deviceAccount));
 
-            var exist = await _deviceAccountRepository
+            var exist = await _deviceAccountService
                 .Query()
                 .Where(s => s.Name == deviceAccount.Name)
                 .Where(s => s.Login == deviceAccount.Login)
@@ -408,44 +632,18 @@ namespace HES.Core.Services
                 throw new Exception("An account with the same name and login exists.");
 
             // Validate url
-            if (deviceAccount.Urls != null)
-            {
-                List<string> verifiedUrls = new List<string>();
-                foreach (var url in deviceAccount.Urls.Split(";"))
-                {
-                    string uriString = url;
-                    string domain = string.Empty;
-
-                    if (string.IsNullOrWhiteSpace(uriString))
-                    {
-                        throw new Exception("Not correct url");
-                    }
-
-                    if (!uriString.Contains(Uri.SchemeDelimiter))
-                    {
-                        uriString = string.Concat(Uri.UriSchemeHttp, Uri.SchemeDelimiter, uriString);
-                    }
-
-                    domain = new Uri(uriString).Host;
-
-                    if (domain.StartsWith("www."))
-                        domain = domain.Remove(0, 4);
-
-                    verifiedUrls.Add(domain);
-                }
-                deviceAccount.Urls = string.Join(";", verifiedUrls.ToArray());
-            }
+            deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
 
             // Update Device Account
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt" };
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
             // Create Device Task
             try
             {
-                await _remoteTaskService.AddTaskAsync(new DeviceTask
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
                     Name = deviceAccount.Name,
@@ -462,36 +660,34 @@ namespace HES.Core.Services
             catch (Exception)
             {
                 deviceAccount.Status = AccountStatus.Error;
-                await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
                 throw;
             }
-
-            _remoteTaskService.StartTaskProcessing(deviceAccount.DeviceId);
         }
 
-        public async Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, InputModel input)
+        public async Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword)
         {
-            _dataProtectionService.Validate();
-
             if (deviceAccount == null)
                 throw new ArgumentNullException(nameof(deviceAccount));
 
-            if (input == null)
-                throw new ArgumentNullException(nameof(input));
+            if (accountPassword == null)
+                throw new ArgumentNullException(nameof(accountPassword));
+
+            _dataProtectionService.Validate();
 
             // Update Device Account
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt" };
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
             // Create Device Task
             try
             {
-                await _remoteTaskService.AddTaskAsync(new DeviceTask
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
-                    Password = _dataProtectionService.Protect(input.Password),
+                    Password = _dataProtectionService.Protect(accountPassword.Password),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
                     DeviceId = deviceAccount.DeviceId
@@ -500,34 +696,37 @@ namespace HES.Core.Services
             catch (Exception)
             {
                 deviceAccount.Status = AccountStatus.Error;
-                await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
                 throw;
             }
-
-            _remoteTaskService.StartTaskProcessing(deviceAccount.DeviceId);
         }
 
-        public async Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, InputModel input)
+        public async Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword)
         {
-            _dataProtectionService.Validate();
-
             if (deviceAccount == null)
                 throw new ArgumentNullException(nameof(deviceAccount));
+
+            if (accountPassword == null)
+                throw new ArgumentNullException(nameof(accountPassword));
+
+            _dataProtectionService.Validate();
+
+            ValidationHepler.VerifyOtpSecret(accountPassword.OtpSecret);
 
             // Update Device Account
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             deviceAccount.OtpUpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt", "OtpUpdatedAt" };
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
             // Create Device Task
             try
             {
-                await _remoteTaskService.AddTaskAsync(new DeviceTask
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
-                    OtpSecret = _dataProtectionService.Protect(input.OtpSecret ?? string.Empty),
+                    OtpSecret = _dataProtectionService.Protect(accountPassword.OtpSecret ?? string.Empty),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
                     DeviceId = deviceAccount.DeviceId
@@ -536,11 +735,9 @@ namespace HES.Core.Services
             catch (Exception)
             {
                 deviceAccount.Status = AccountStatus.Error;
-                await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
                 throw;
             }
-
-            _remoteTaskService.StartTaskProcessing(deviceAccount.DeviceId);
         }
 
         public async Task AddSharedAccount(string employeeId, string sharedAccountId, string[] selectedDevices)
@@ -563,11 +760,11 @@ namespace HES.Core.Services
             foreach (var deviceId in selectedDevices)
             {
                 // Get Shared Account
-                var sharedAccount = await _sharedAccountRepository.GetByIdAsync(sharedAccountId);
+                var sharedAccount = await _sharedAccountService.GetByIdAsync(sharedAccountId);
                 if (sharedAccount == null)
                     throw new Exception("SharedAccount not found");
 
-                var exist = await _deviceAccountRepository
+                var exist = await _deviceAccountService
                     .Query()
                     .Where(s => s.Name == sharedAccount.Name)
                     .Where(s => s.Login == sharedAccount.Login)
@@ -616,28 +813,26 @@ namespace HES.Core.Services
                 await SetAsPrimaryIfEmpty(deviceId, deviceAccountId);
             }
 
-            await _deviceAccountRepository.AddRangeAsync(accounts);
+            await _deviceAccountService.AddRangeAsync(accounts);
             try
             {
-                await _remoteTaskService.AddRangeAsync(tasks);
+                await _deviceTaskService.AddRangeAsync(tasks);
             }
             catch (Exception)
             {
-                await _deviceAccountRepository.DeleteRangeAsync(accounts);
+                await _deviceAccountService.DeleteRangeAsync(accounts);
                 throw;
             }
-
-            _remoteTaskService.StartTaskProcessing(selectedDevices);
         }
 
-        public async Task DeleteAccount(string accountId)
+        public async Task<string> DeleteAccount(string accountId)
         {
             _dataProtectionService.Validate();
 
             if (accountId == null)
                 throw new ArgumentNullException(nameof(accountId));
 
-            var deviceAccount = await _deviceAccountRepository.GetByIdAsync(accountId);
+            var deviceAccount = await _deviceAccountService.GetByIdAsync(accountId);
             if (deviceAccount == null)
                 throw new Exception("Device account not found");
 
@@ -645,12 +840,12 @@ namespace HES.Core.Services
             deviceAccount.Status = AccountStatus.Removing;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt" };
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
             try
             {
                 // Create Device Task
-                await _remoteTaskService.AddTaskAsync(new DeviceTask
+                await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
                     DeviceAccountId = accountId,
                     CreatedAt = DateTime.UtcNow,
@@ -661,11 +856,10 @@ namespace HES.Core.Services
             catch (Exception)
             {
                 deviceAccount.Status = AccountStatus.Error;
-                await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
                 throw;
             }
-
-            _remoteTaskService.StartTaskProcessing(deviceAccount.DeviceId);
+            return deviceAccount.DeviceId;
         }
 
         public async Task UndoChanges(string accountId)
@@ -675,18 +869,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            await _remoteTaskService.UndoLastTaskAsync(accountId);
-        }
-
-        private async Task SetAsPrimaryIfEmpty(string deviceId, string deviceAccountId)
-        {
-            var device = await _deviceRepository.GetByIdAsync(deviceId);
-
-            if (device.PrimaryAccountId == null)
-            {
-                device.PrimaryAccountId = deviceAccountId;
-                await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
-            }
+            await _deviceTaskService.UndoLastTaskAsync(accountId);
         }
 
         private string GenerateMasterPassword()
@@ -694,6 +877,23 @@ namespace HES.Core.Services
             var buf = AesCryptoHelper.CreateRandomBuf(32);
             var pass = ConvertUtils.ByteArrayToHexString(buf);
             return pass;
+        }
+
+        #endregion
+
+        public async Task HandlingMasterPasswordErrorAsync(string deviceId)
+        {
+            // Remove all tasks
+            await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+
+            // Remove all accounts
+            await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
+
+            // Remove all proximity
+            await _workstationProximityDeviceService.RemoveAllProximityAsync(deviceId);
+
+            // Remove employee
+            await _deviceService.RemoveEmployeeAsync(deviceId);
         }
     }
 }

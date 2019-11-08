@@ -1,7 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -17,12 +17,12 @@ namespace HES.Core.Services
             _templateRepository = repository;
         }
 
-        public IQueryable<Template> TemplateQuery()
+        public IQueryable<Template> Query()
         {
             return _templateRepository.Query();
         }
 
-        public async Task<Template> TemplateGetByIdAsync(dynamic id)
+        public async Task<Template> GetByIdAsync(dynamic id)
         {
             return await _templateRepository.GetByIdAsync(id);
         }
@@ -37,30 +37,7 @@ namespace HES.Core.Services
             // Validate url
             if (template.Urls != null)
             {
-                List<string> verifiedUrls = new List<string>();
-                foreach (var url in template.Urls.Split(";"))
-                {
-                    string uriString = url;
-                    string domain = string.Empty;
-
-                    if (string.IsNullOrWhiteSpace(uriString))
-                    {
-                        throw new Exception("Not correct url");
-                    }
-
-                    if (!uriString.Contains(Uri.SchemeDelimiter))
-                    {
-                        uriString = string.Concat(Uri.UriSchemeHttp, Uri.SchemeDelimiter, uriString);
-                    }
-
-                    domain = new Uri(uriString).Host;
-
-                    if (domain.StartsWith("www."))
-                        domain = domain.Remove(0, 4);
-
-                    verifiedUrls.Add(domain);
-                }
-                template.Urls = string.Join(";", verifiedUrls.ToArray());
+                template.Urls = ValidationHepler.VerifyUrls(template.Urls);
             }
 
             return await _templateRepository.AddAsync(template);
@@ -76,30 +53,7 @@ namespace HES.Core.Services
             // Validate url
             if (template.Urls != null)
             {
-                List<string> verifiedUrls = new List<string>();
-                foreach (var url in template.Urls.Split(";"))
-                {
-                    string uriString = url;
-                    string domain = string.Empty;
-
-                    if (string.IsNullOrWhiteSpace(uriString))
-                    {
-                        throw new Exception("Not correct url");
-                    }
-
-                    if (!uriString.Contains(Uri.SchemeDelimiter))
-                    {
-                        uriString = string.Concat(Uri.UriSchemeHttp, Uri.SchemeDelimiter, uriString);
-                    }
-
-                    domain = new Uri(uriString).Host;
-
-                    if (domain.StartsWith("www."))
-                        domain = domain.Remove(0, 4);
-
-                    verifiedUrls.Add(domain);
-                }
-                template.Urls = string.Join(";", verifiedUrls.ToArray());
+                template.Urls = ValidationHepler.VerifyUrls(template.Urls);
             }
 
             await _templateRepository.UpdateAsync(template);

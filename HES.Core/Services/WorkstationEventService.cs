@@ -1,6 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using Hideez.SDK.Communication.HES.DTO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,66 +13,27 @@ namespace HES.Core.Services
     public class WorkstationEventService : IWorkstationEventService
     {
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
-        private readonly IAsyncRepository<Workstation> _workstationRepository;
-        private readonly IAsyncRepository<WorkstationProximityDevice> _workstationBindingRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<Employee> _employeeRepository;
-        private readonly IAsyncRepository<Company> _companyRepository;
-        private readonly IAsyncRepository<Department> _departmentRepository;
         private readonly IAsyncRepository<DeviceAccount> _deviceAccountRepository;
+        private readonly ILogger<WorkstationEventService> _logger;
 
         public WorkstationEventService(IAsyncRepository<WorkstationEvent> workstationEventRepository,
-                                       IAsyncRepository<Workstation> workstationRepository,
-                                       IAsyncRepository<WorkstationProximityDevice> workstationBindingRepository,
                                        IAsyncRepository<Device> deviceRepository,
                                        IAsyncRepository<Employee> employeeRepository,
-                                       IAsyncRepository<Company> companyRepository,
-                                       IAsyncRepository<Department> departmentRepository,
-                                       IAsyncRepository<DeviceAccount> deviceAccountRepository)
+                                       IAsyncRepository<DeviceAccount> deviceAccountRepository,
+                                       ILogger<WorkstationEventService> logger)
         {
             _workstationEventRepository = workstationEventRepository;
-            _workstationRepository = workstationRepository;
-            _workstationBindingRepository = workstationBindingRepository;
             _deviceRepository = deviceRepository;
             _employeeRepository = employeeRepository;
-            _companyRepository = companyRepository;
-            _departmentRepository = departmentRepository;
             _deviceAccountRepository = deviceAccountRepository;
+            _logger = logger;
         }
 
-        public IQueryable<WorkstationEvent> WorkstationEventQuery()
+        public IQueryable<WorkstationEvent> Query()
         {
             return _workstationEventRepository.Query();
-        }
-
-        public IQueryable<Workstation> WorkstationQuery()
-        {
-            return _workstationRepository.Query();
-        }
-
-        public IQueryable<Device> DeviceQuery()
-        {
-            return _deviceRepository.Query();
-        }
-
-        public IQueryable<Employee> EmployeeQuery()
-        {
-            return _employeeRepository.Query();
-        }
-
-        public IQueryable<Company> CompanyQuery()
-        {
-            return _companyRepository.Query();
-        }
-
-        public IQueryable<Department> DepartmentQuery()
-        {
-            return _departmentRepository.Query();
-        }
-
-        public IQueryable<DeviceAccount> DeviceAccountQuery()
-        {
-            return _deviceAccountRepository.Query();
         }
 
         public async Task AddEventAsync(WorkstationEvent workstationEvent)
@@ -81,40 +44,53 @@ namespace HES.Core.Services
             await _workstationEventRepository.AddAsync(workstationEvent);
         }
 
-        public async Task<IEnumerable<WorkstationEvent>> AddEventsRangeAsync(IList<WorkstationEvent> workstationEvents)
+        public async Task AddEventDtoAsync(WorkstationEventDto workstationEventDto)
         {
-            if (workstationEvents == null)
-                throw new ArgumentNullException(nameof(workstationEvents));
+            if (workstationEventDto == null)
+                throw new ArgumentNullException(nameof(workstationEventDto));
 
-            // Get EmployeeId, DepartmentId, DeviceAccountId based on DeviceId and other information from event
-            foreach (var e in workstationEvents)
+            var exist = await _workstationEventRepository.Query().AsNoTracking().AnyAsync(d => d.Id == workstationEventDto.Id);
+            if (exist)
             {
-                // Skip events for workstations that are not present in DB
-                var workstationExist = await _workstationRepository.ExistAsync(w => w.Id == e.WorkstationId);
-                if (!workstationExist)
-                    continue;
-
-                e.EmployeeId = _employeeRepository.Query()
-                    .Include(employee => employee.Devices)
-                    .AsNoTracking()
-                    .FirstOrDefault(employee => employee.Devices.Any(d => d.Id == e.DeviceId))?.Id;
-
-                e.DepartmentId = _employeeRepository.Query()
-                    .AsNoTracking()
-                    .FirstOrDefault(employee => employee.Id == e.EmployeeId)?.DepartmentId;
-
-                if (e.DeviceAccount != null)
-                {
-                    e.DeviceAccountId = _deviceAccountRepository.Query()
-                        .AsNoTracking()
-                        .FirstOrDefault(da => da.EmployeeId == e.EmployeeId
-                        && da.DeviceId == e.DeviceId
-                        && da.Name == e.DeviceAccount.Name
-                        && da.Login == e.DeviceAccount.Login)?.Id;
-                }
+                _logger.LogWarning($"[DUPLICATE EVENT][{workstationEventDto.WorkstationId}] EventId:{workstationEventDto.Id}, Session:{workstationEventDto.UserSession}, Event:{workstationEventDto.EventId}");
+                return;
             }
 
-            return await _workstationEventRepository.AddRangeAsync(workstationEvents);
+            string employeeId = null;
+            string departmentId = null;
+            string deviceAccountId = null;
+
+            if (workstationEventDto.DeviceId != null)
+            {
+                var device = await _deviceRepository.GetByIdAsync(workstationEventDto.DeviceId);
+                var employee = await _employeeRepository.GetByIdAsync(device?.EmployeeId);
+                var deviceAccount = await _deviceAccountRepository
+                    .Query()
+                    .Where(d => d.Name == workstationEventDto.AccountName && d.Login == workstationEventDto.AccountLogin && d.DeviceId == workstationEventDto.DeviceId)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync();
+
+                employeeId = device?.EmployeeId;
+                departmentId = employee?.DepartmentId;
+                deviceAccountId = deviceAccount?.Id;
+            }
+
+            var workstationEvent = new WorkstationEvent()
+            {
+                Id = workstationEventDto.Id,
+                Date = workstationEventDto.Date,
+                EventId = workstationEventDto.EventId,
+                SeverityId = workstationEventDto.SeverityId,
+                Note = workstationEventDto.Note,
+                WorkstationId = workstationEventDto.WorkstationId,
+                UserSession = workstationEventDto.UserSession,
+                DeviceId = workstationEventDto.DeviceId,
+                EmployeeId = employeeId,
+                DepartmentId = departmentId,
+                DeviceAccountId = deviceAccountId,
+            };
+
+            await AddEventAsync(workstationEvent);
         }
     }
 }

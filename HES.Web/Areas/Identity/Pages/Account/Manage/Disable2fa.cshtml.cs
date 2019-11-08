@@ -1,4 +1,4 @@
-﻿using HES.Infrastructure;
+﻿using HES.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

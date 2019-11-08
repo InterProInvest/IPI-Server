@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using HES.Infrastructure;
+﻿using HES.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace HES.Web.Areas.Identity.Pages.Account.Manage
 {

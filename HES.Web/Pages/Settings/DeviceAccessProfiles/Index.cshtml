@@ -17,7 +17,7 @@
 @* Modal *@
 <div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
+        <div class="modal-content" style="width:600px;">
             <div class="modal-header">
                 <h5 class="modal-title text-navyblue" id="modalDialogTitle">Dialog</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -36,8 +36,10 @@
 </div>
 
 @section Scripts{
-    <script src="~/js/dt-init-device-access-profile.js"></script>
     <script>
+        InitDeviceAccessProfileDT();
+        DeviceAccessProfileSetBreadcrumbs();
+
         // Open modal dialog
         $(document).on('click', '.open-modal-dialog', function () {
             var btn = $(this);
@@ -45,21 +47,6 @@
             var action = btn.data("action");
             var title = btn.data("title");
 
-            ShowPartial(id, action, title);
-        });
-
-        // Click to details of profile
-        $('#deviceAccessProfiles tbody tr td:not(:first-child, :last-child)').click(function () {
-            var row = $(this).closest("tr");
-            var id = row.data("id");
-            var action = row.data("action");
-            var title = row.data("title");
-
-            ShowPartial(id, action, title);
-        });
-
-        // Profile datails
-        function ShowPartial(id, action, title) {
             $('#modalDialogTitle').html(title);
             $('#modalDialog').modal('toggle');
 
@@ -70,66 +57,26 @@
                 async: true,
                 success: function (response) {
                     $("#modalBody").html(response);
-
-                    $('#pin_expiration').slider({
-                        formatter: function (value) {
-                            if (value <= 59) {
-                                $('#pin_expiration_value').html(value + ' min');
-                            }
-                            else {
-                                $('#pin_expiration_value').html((value - 59) + ' hrs');
-                            }
-                            return 'Current value: ' + value;
-                        }
-                    });
-                    $('#pin_length').slider({
-                        formatter: function (value) {
-                            $('#pin_length_value').html(value);
-                            return 'Current value: ' + value;
-                        }
-                    });
-                    $('#pin_try_count').slider({
-                        formatter: function (value) {
-                            $('#pin_try_count_value').html(value);
-                            return 'Current value: ' + value;
-                        }
-                    });
-                    $('#masterkey_expiration').slider({
-                        formatter: function (value) {
-                            if (value <= 59) {
-                                $('#masterkey_expiration_value').html(value + ' min');
-                            }
-                            else {
-                                $('#masterkey_expiration_value').html((value - 59) + ' hrs');
-                            }
-                            return 'Current value: ' + value;
-                        }
-                    });
-                    $('#button_expiration').slider({
-                        formatter: function (value) {
-                            $('#button_expiration_value').html(value + ' sec');
-                            return 'Current value: ' + value;
-                        }
-                    });
-
-                    // Validation partial view
-                    $('form').removeData('validator');
-                    $('form').removeData('unobtrusiveValidation');
-                    $.validator.unobtrusive.parse('form');
+                    ValidatePartialView()
+                    InitSlidersText();
                 }
             });
-        }
+        });
 
-        // Clear content on modal hide
-        $('#modalDialog').on('hidden.bs.modal', function (e) {
-            $("#modalBody").html("<div class='d-flex justify-content-center align-items-center'><div class='spinner-grow text-primary' style='width: 3rem; height: 3rem;' role='status'><span class='sr-only'></span></div></div>");
-        })
+        $(document).on('dblclick', '.row-dblclick', function () {
+            var id = $(this).data("id");
+            $('#modalDialogTitle').html("View profile");
+            $('#modalDialog').modal('toggle');
 
-        $(document).ready(function () {
-            // Breadcrumbs
-            $('#breadcrumb').toggleClass('d-none');
-            $('.breadcrumb').append('<li class="breadcrumb-item active">Settings</li>');
-            $('.breadcrumb').append('<li class="breadcrumb-item active">Device Access Profiles</li>');
+            $.ajax({
+                url: "/Settings/DeviceAccessProfiles?handler=ViewProfile",
+                type: "Get",
+                data: { id: id },
+                async: true,
+                success: function (response) {
+                    $("#modalBody").html(response);
+                }
+            });
         });
     </script>
     <partial name="_ValidationScriptsPartial" />

@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<table id="devices" class="display table table-hover border rounded" style="width:100%">
+<table id="devices" class="display table table-hover border rounded w-100">
     <thead>
         <tr>
             <th style="width:1px;">
@@ -98,14 +98,21 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.RFID)
                 </td>
-                <td data-sort="@item.Battery" class="pl-4">
-                    @if (item.Battery >= 1)
+                <td data-sort="@item.Battery">
+                    @if (item.Battery >= 30)
                     {
                         <img src="~/svg/device/battery_full.svg" alt="@item.Battery" />
+                        <span>@item.Battery%</span>
+                    }
+                    else if (item.Battery >= 15 && item.Battery <= 30)
+                    {
+                        <img src="~/svg/device/battery_30.svg" alt="@item.Battery" />
+                        <span>@item.Battery%</span>
                     }
                     else
                     {
-                        <img src="~/svg/device/battery_20.svg" alt="@item.Battery" />
+                        <img src="~/svg/device/battery_15.svg" alt="@item.Battery" />
+                        <span>@item.Battery%</span>
                     }
                 </td>
                 <td>
@@ -135,6 +142,9 @@
                             break;
                         case Core.Entities.DeviceState.Disabled:
                             <span class="badge badge-dark">@Html.DisplayFor(modelItem => item.State)</span>
+                            break;
+                        case Core.Entities.DeviceState.Error:
+                            <span class="badge badge-danger">@Html.DisplayFor(modelItem => item.State)</span>
                             break;
                     }
                 </td>

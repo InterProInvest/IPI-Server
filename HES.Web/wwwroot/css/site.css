@@ -1,5 +1,10 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
+﻿/* --- UI Elements --- */
+/* Override disable custom checkbox */
+.custom-checkbox .custom-control-input:disabled:checked ~ .custom-control-label::before {
+    color: #fff;
+    border-color: #adb5bd;
+    background-color: #adb5bd;
+}
 
 /*#region Bg color */
 .bg-white {
@@ -134,9 +139,152 @@ a.navbar-brand {
     height: calc(100vh - 59px);
     background: #F7F8FC;
 }
+
+/* --- Card ---  */
+.card-col {
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    -ms-flex: 0 0 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+@media (min-width: 1140px) {
+    .card-col {
+        -ms-flex: 0 0 50%;
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+@media (min-width: 1580px) {
+    .card-col {
+        -ms-flex: 0 0 33.333333%;
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+}
+
+.dashboard-card {
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    height: 340px;
+    margin-bottom: 30px;
+    padding: 15px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.dashboard-card__title {
+    color: #7A7C8B;
+    font-weight: 500;
+}
+
+.dashboard-card-logo {
+    height: 170px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dashboard-card-logo__img {
+    height: 112px;
+}
+
+.dashboard-card-body {
+    height: 115px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.dashboard-card-wrapper {
+    position: relative;
+    width: 100%;
+    flex-basis: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-card-info__title {
+    color: #7A7C8B;
+}
+
+.dashboard-card-info__text {
+    color: #0E3059;
+    font-size: 36px;
+}
+
+/* --- Card notify --- */
+.dashboard-card-notify-header {
+    height: 170px;
+    display: flex;
+    flex-direction: row;
+}
+
+.dashboard-card-notify-logo {
+    width: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dashboard-card-notify.dashboard-card-logo__img {
+    height: 84px;
+}
+
+.dashboard-card-list-wrapper {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.dashboard-card-list {
+    overflow: hidden;
+    overflow-y: auto;
+    width: 100%;
+    max-height: 148px;
+}
+
+.list-group-horizontal-lines .list-group-item {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+}
+
+.list-group-horizontal-lines:first-child .list-group-item:first-child {
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.list-group-horizontal-lines:last-child .list-group-item:last-child {
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
 /*#endregion */
 
 /*#region Sidebar */
+.navigation-menu {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.navigation-menu__body {
+    flex: 1 0 auto;
+}
+
+.navigation-menu__footer {
+    flex-shrink: 0;
+}
+
 @media screen and (max-width: 768px) {
     .custom-sidebar {
         min-width: 68px;
@@ -241,13 +389,12 @@ a.navbar-brand {
 }
 
 .copyright {
-    position: absolute;
     color: #FFFFFF;
     opacity: 0.8;
     font-size: 14px;
-    width: 236px;
-    bottom: 0;
     padding-bottom: 15px;
+    margin-top: 15px;
+    text-align: center !important;
 }
 
 @media (max-width: 768px) {
@@ -387,6 +534,13 @@ a.navbar-brand {
     padding: 7px 0px;
     border: 1px solid #dee2e6 !important;
 }
+
+.samlidp-card {
+    background: #FFF;
+    border-radius: 0.25rem !important;
+    padding: 20px;
+    border: 1px solid #dee2e6 !important;
+}
 /*#endregion
 
 /*#region Input group*/
@@ -419,6 +573,10 @@ a.navbar-brand {
         border-bottom: 0;
     }
 
+td:focus {
+    outline: none;
+}
+
 th {
     white-space: nowrap;
 }
@@ -434,6 +592,20 @@ td {
 .pagination {
     margin: 0;
 }
+
+.cell-ellipsis {
+    max-width: 400px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+@media screen and (max-width: 768px) {
+    .cell-ellipsis {
+        max-width: 100px;
+    }
+}
+
 
 /* Input with icon */
 .has-search-right {
@@ -501,7 +673,6 @@ div.dataTables_scrollHead table.dataTable {
 .disable-selection {
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* Internet Explorer */
-    -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
     -webkit-user-select: none; /* Chrome, Safari, and Opera */
     -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
 }
@@ -813,6 +984,7 @@ div.dataTables_scrollHead table.dataTable {
 }
 /*#endregion*/
 
+/* Common */
 .btn-add {
     height: 38px;
     width: 38px;
@@ -821,19 +993,14 @@ div.dataTables_scrollHead table.dataTable {
 }
 
 .pin-settings-value {
-    padding-left: 8px !important;
+    width: 110px;
 }
-
-    .pin-settings-value > h6 {
-        width: 58px;
-    }
 
 .second-modal {
     width: 498px;
     left: 50%;
     transform: translateX(-50%);
 }
-
 
 /*#region Popover*/
 .popover-btn:focus {
@@ -865,3 +1032,24 @@ div.dataTables_scrollHead table.dataTable {
         border-bottom: 1px solid #dee2e6 !important;
     }
 /*#endregion*/
+
+.link-optional:hover {
+    text-decoration: none;
+}
+
+.link-optional:after {
+    content: "";
+    display: inline-block;
+    margin-left: .255em;
+    vertical-align: central;
+    border-top: .3em solid;
+    border-right: .3em solid transparent;
+    border-bottom: 0;
+    border-left: .3em solid transparent;
+}
+
+/* Wizard */
+.wizard-tab {
+    width: 100%;
+    height: 384px;
+}

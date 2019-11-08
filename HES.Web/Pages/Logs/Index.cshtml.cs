@@ -1,114 +1,34 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using HES.Core.Interfaces;
+using HES.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.FileProviders;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Logs
 {
     public class IndexModel : PageModel
     {
-        //private readonly IHostingEnvironment _hostingEnvironment;
-        //private readonly IFileProvider _fileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
-        //public IDirectoryContents DirectoryContents { get; private set; }
+        private readonly ILogViewerService _logViewerService;
 
-        public List<FileModel> OwnLogs { get; set; } = new List<FileModel>();
-        public List<FileModel> AllLogs { get; set; } = new List<FileModel>();
-        public List<StructureModel> CurrentLog { get; set; } = new List<StructureModel>();
-        public FileModel OwnLogFile { get; set; }
-        public FileModel AllLogFile { get; set; }
+        public List<LogModel> SelectedLog { get; set; } = new List<LogModel>();
+        public List<string> LogFiles { get; set; }
 
         [TempData]
         public string ErrorMessage { get; set; }
 
-        //public IndexModel(IHostingEnvironment hostingEnvironment)
-        //{
-        //    _hostingEnvironment = hostingEnvironment;
-        //}
+        public IndexModel(ILogViewerService logViewerService)
+        {
+            _logViewerService = logViewerService;
+        }
 
         public void OnGet()
         {
-            GetFiles();
-        }
-
-        public IActionResult OnPostShowOwn(FileModel OwnLogFile)
-        {
-            if (OwnLogFile == null)
-            {
-                return RedirectToPage("./Index");
-            }
-
-            CurrentLog = GetCurrentLog(OwnLogFile.Path, OwnLogFile.Separator, "own");
-            GetFiles();
-
-            return Partial("_LogsTable", this);
-        }
-
-        //public IActionResult OnPostShowAll(FileModel AllLogFile)
-        //{
-        //    if (AllLogFile == null)
-        //    {
-        //        return RedirectToPage("./Index");
-        //    }
-
-        //    CurrentLog = GetCurrentLog(AllLogFile.Path, AllLogFile.Separator, "all");
-        //    CurrentName = AllLogFile.Name;
-        //    GetFiles();
-
-        //    return Page();
-        //}
-
-        private void GetFiles()
-        {
             try
             {
-                //string physicalPath = string.Empty;
-                //if (_hostingEnvironment.IsDevelopment())
-                //{
-                //    physicalPath = Path.Combine(AppContext.BaseDirectory.Substring(AppContext.BaseDirectory.IndexOf("bin")), "logs");
-                //    DirectoryContents = _fileProvider.GetDirectoryContents(physicalPath);
-                //}
-                //else
-                //{
-                //    physicalPath = "logs";
-                //    DirectoryContents = _fileProvider.GetDirectoryContents(physicalPath);
-                //}
-
-                var location = System.Reflection.Assembly.GetEntryAssembly().Location;
-                var directory = Path.GetDirectoryName(location);
-                var folder = Path.Combine(directory, "logs");
-                var info = new DirectoryInfo(folder);
-                FileInfo[] fileInfo = info.GetFiles("*.log");
-
-                foreach (var item in fileInfo)
-                {
-                    if (item.Name.StartsWith("hes-log-own"))
-                    {
-                        OwnLogs.Add(new FileModel() { Name = item.Name, Path = item.FullName });
-                    }
-                    else
-                    {
-                        //AllLogs.Add(new FileModel() { Name = item.Name, Path = item.FullName });
-                    }
-                }
-
-                //foreach (var item in DirectoryContents)
-                //{
-
-                //    //var logsArray = System.IO.File.ReadAllLines(item.PhysicalPath);
-                //    //var logsConcat = String.Concat(logsArray);
-                //    //var logsSeparated = logsConcat.Split(separator + " ");
-                //    if (item.Name.StartsWith("hes-log-own"))
-                //    {
-                //        OwnLogs.Add(new FileModel() { Name = item.Name, Path = item.PhysicalPath });
-                //    }
-                //    else
-                //    {
-                //        AllLogs.Add(new FileModel() { Name = item.Name, Path = item.PhysicalPath });
-                //    }
-                //}
+                LogFiles = _logViewerService.GetLogFiles();
             }
             catch (Exception ex)
             {
@@ -116,46 +36,37 @@ namespace HES.Web.Pages.Logs
             }
         }
 
-        private List<StructureModel> GetCurrentLog(string path, string separator, string type)
+        public async Task<IActionResult> OnGetShowLogAsync(string name)
         {
-            List<StructureModel> list = new List<StructureModel>();
-
-            var logs = System.IO.File.ReadAllText(path);
-            var logsSeparated = logs.Split(separator + " ");
-
-            foreach (var item in logsSeparated)
+            if (name == null)
             {
-                if (item != "")
-                {
-                    if (type == "own")
-                    {
-                        list.Add(new StructureModel { Date = separator + " " + item.Split("|")[0], Level = item.Split("|")[1], Logger = item.Split("|")[2], Message = item.Split("|")[3], Method = item.Split("|")[4], Url = item.Split("|")[5] });
-                    }
-                    else
-                    {
-                        list.Add(new StructureModel { Date = separator + " " + item.Split("|")[0], Level = item.Split("|")[1], Logger = item.Split("|")[2], Message = item.Split("|")[3] });
-                    }
-                }
+                return RedirectToPage("./Index");
             }
 
-            return list;
+            try
+            {
+                SelectedLog = await _logViewerService.GetSelectedLog(name);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+
+            return Partial("_LogsTable", this);
         }
-    }
 
-    public class FileModel
-    {
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public string Separator { get; set; }
-    }
+        public FileResult OnGetDownloadFile(string name)
+        {
+            string file_path = _logViewerService.GetFilePath(name);
+            string file_type = "application/octet-stream";
+            string file_name = Path.GetFileName(file_path);
+            return PhysicalFile(file_path, file_type, file_name);
+        }
 
-    public class StructureModel
-    {
-        public string Date { get; set; }
-        public string Level { get; set; }
-        public string Logger { get; set; }
-        public string Message { get; set; }
-        public string Method { get; set; }
-        public string Url { get; set; }
+        public IActionResult OnGetDeleteFile(string name)
+        {
+            _logViewerService.DeleteFile(name);
+            return RedirectToPage("./Index");
+        }
     }
 }

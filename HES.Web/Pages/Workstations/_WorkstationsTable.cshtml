@@ -54,7 +54,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Workstations[0].ProximityDevices)
             </th>
-            <th>
+            <th data-priority="3">
                 @Html.DisplayNameFor(model => model.Workstations[0].Approved)
             </th>
             <th class="table-col-menu" data-priority="2"></th>
@@ -63,7 +63,7 @@
     <tbody>
         @foreach (var item in Model.Workstations)
         {
-            <tr data-id="@item.Id">
+            <tr data-id="@item.Id" class="row-dblclick">
                 <td class="d-none"></td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
@@ -128,24 +128,25 @@
                             <img src="~/svg/action/more.svg" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
-                                <img class="icon-devices" style="background:#4E88CE" />
-                                Proximity Devices
-                            </a>
-                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditWorkstation" data-title="Edit workstation">
-                                <img src="~/svg/action/edit.svg" />
-                                Edit
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            @if (item.Approved == false)
+                            @if (!item.Approved)
                             {
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="ApproveWorkstation" data-title="Approve workstation">
                                     <img src="~/svg/action/done.svg" />
                                     Approve
                                 </a>
+                                <div class="dropdown-divider"></div>
                             }
-                            else
+                            <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
+                                <img class="icon-devices" style="background:#4E88CE" />
+                                Proximity
+                            </a>
+                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditWorkstation" data-title="Edit workstation">
+                                <img src="~/svg/action/edit.svg" />
+                                Edit
+                            </a>
+                            @if (item.Approved)
                             {
+                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UnapproveWorkstation" data-title="Unapprove workstation">
                                     <img src="~/svg/action/clear.svg" />
                                     Unapprove

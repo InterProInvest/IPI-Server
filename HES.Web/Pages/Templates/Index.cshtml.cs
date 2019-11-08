@@ -32,7 +32,7 @@ namespace HES.Web.Pages.Templates
 
         public async Task OnGetAsync()
         {
-            Templates = await _templateService.TemplateQuery().ToListAsync();
+            Templates = await _templateService.Query().ToListAsync();
         }
 
         #region Tempalate
@@ -73,7 +73,7 @@ namespace HES.Web.Pages.Templates
             }
 
             Template = await _templateService
-                .TemplateQuery()
+                .Query()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (Template == null)
@@ -116,7 +116,7 @@ namespace HES.Web.Pages.Templates
             }
 
             Template = await _templateService
-                .TemplateQuery()
+                .Query()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (Template == null)
