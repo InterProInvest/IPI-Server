@@ -142,7 +142,7 @@ namespace HES.Core.Services
                 var sessionsCount = sessions.Count;
                 if (sessionsCount > 1)
                 {
-                    _logger.LogCritical($"[{workstationId}] {sessionsCount} sessions were closed. id:{string.Join(" id:", sessions.SelectMany(s => s.Id).ToArray())}");
+                    _logger.LogError($"[{workstationId}] {sessionsCount} sessions were closed. id:{string.Join(" id:", sessions.SelectMany(s => s.Id).ToArray())}");
                 }
             }
         }
