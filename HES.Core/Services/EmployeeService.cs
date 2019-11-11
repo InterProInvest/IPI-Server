@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
@@ -61,7 +61,7 @@ namespace HES.Core.Services
             return await _employeeRepository.GetByIdAsync(id);
         }
 
-        public async Task<List<Employee>> GetAllEmployees()
+        public async Task<List<Employee>> GetAllEmployeesAsync()
         {
             return await _employeeRepository
                 .Query()
@@ -71,7 +71,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<List<Employee>> GetFilteredEmployees(EmployeeFilter employeeFilter)
+        public async Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter)
         {
             var filter = _employeeRepository
                 .Query()

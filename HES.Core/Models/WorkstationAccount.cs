@@ -1,8 +1,8 @@
-﻿using HES.Core.Entities.Attributes;
+﻿using HES.Core.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HES.Core.Entities.Models
+namespace HES.Core.Models
 {
     public class WorkstationAccount
     {

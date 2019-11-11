@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Entities.Attributes
+namespace HES.Core.Attributes
 {
     public class RequiredIf : ValidationAttribute, IClientModelValidator
     {

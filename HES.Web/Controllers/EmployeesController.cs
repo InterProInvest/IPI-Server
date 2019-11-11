@@ -1,11 +1,9 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -39,7 +37,7 @@ namespace HES.Web.Controllers
         [HttpGet]
         public async Task<ActionResult<IList<Employee>>> GetEmployees()
         {
-            return await _employeeService.GetAllEmployees();
+            return await _employeeService.GetAllEmployeesAsync();
         }
 
         [HttpGet("{id}")]

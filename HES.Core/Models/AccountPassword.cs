@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Entities.Models
+namespace HES.Core.Models
 {
     public class AccountPassword
     {

@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +12,8 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Employee> Query();
         Task<Employee> GetByIdAsync(dynamic id);
-        Task<List<Employee>> GetAllEmployees();
-        Task<List<Employee>> GetFilteredEmployees(EmployeeFilter employeeFilter);
+        Task<List<Employee>> GetAllEmployeesAsync();
+        Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> GetEmployeeWithIncludeAsync(string id);
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);

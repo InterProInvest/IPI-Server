@@ -1,5 +1,4 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace HES.Core.Models

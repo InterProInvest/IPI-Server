@@ -1,18 +1,14 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Entities.Models
+namespace HES.Core.Models
 {
-    public class SummaryByDepartments
+    public class SummaryByWorkstations
     {
-        public string Company { get; set; }
-        public string Department { get; set; }
-
+        public string Workstation { get; set; }
+                
         [Display(Name = "Employees Count")]
         public int EmployeesCount { get; set; }
-
-        [Display(Name = "Workstations Count")]
-        public int WorkstationsCount { get; set; }
 
         [Display(Name = "Total Sessions Count")]
         public int TotalSessionsCount { get; set; }

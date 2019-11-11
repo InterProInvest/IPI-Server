@@ -1,6 +1,6 @@
-﻿using HES.Core.Entities.Attributes;
+﻿using HES.Core.Attributes;
 
-namespace HES.Core.Entities.Models
+namespace HES.Core.Models
 {
     public class Wizard
     {

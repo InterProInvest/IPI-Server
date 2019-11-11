@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using Hideez.SDK.Communication.HES.DTO;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -63,7 +63,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task OnGetAsync()
         {
-            Employees = await _employeeService.GetAllEmployees();
+            Employees = await _employeeService.GetAllEmployeesAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
@@ -77,12 +77,12 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnPostFilterEmployeesAsync(EmployeeFilter employeeFilter)
         {
-            Employees = await _employeeService.GetFilteredEmployees(employeeFilter);
+            Employees = await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
 
             return Partial("_EmployeesTable", this);
         }
 
-        public async Task<IActionResult> OnGetCreateEmployee()
+        public async Task<IActionResult> OnGetCreateEmployeeAsync()
         {
             ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
