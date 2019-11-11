@@ -65,11 +65,7 @@ namespace HES.Web.Pages.Workstations
 
         public async Task OnGetOnlineAsync()
         {
-            var allWorkstations = await _workstationService
-                .QueryOfWorkstation()
-                .Include(w => w.ProximityDevices)
-                .Include(c => c.Department.Company)
-                .ToListAsync();
+            var allWorkstations = await _workstationService.GetAllWorkstationsAsync();
 
             Workstations = allWorkstations.Where(w => w.IsOnline == true).ToList();
 
