@@ -41,10 +41,7 @@ namespace HES.Web.Pages.SharedAccounts
 
         public async Task OnGetAsync()
         {
-            SharedAccounts = await _sharedAccountService
-                .Query()
-                .Where(d => d.Deleted == false)
-                .ToListAsync();
+            SharedAccounts = await _sharedAccountService.GetSharedAccountsAsync();
         }
 
         #region Shared Account
@@ -109,7 +106,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -119,7 +116,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
 
@@ -155,7 +152,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -165,7 +162,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
             return Partial("_EditSharedAccountPwd", this);
@@ -201,7 +198,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -211,7 +208,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
 
@@ -240,7 +237,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -250,7 +247,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
             return Partial("_DeleteSharedAccount", this);
@@ -260,7 +257,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 

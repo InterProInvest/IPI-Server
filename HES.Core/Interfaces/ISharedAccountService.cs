@@ -12,9 +12,9 @@ namespace HES.Core.Interfaces
     {
         IQueryable<SharedAccount> Query();
         Task<SharedAccount> GetByIdAsync(dynamic id);
+        Task<List<SharedAccount>> GetSharedAccountsAsync();
         Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount);
         Task CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount);
-        Task UpdateOnlyPropAsync(SharedAccount sharedAccount, string[] properties);
         Task<List<string>> EditSharedAccountAsync(SharedAccount sharedAccount);
         Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount);
         Task<List<string>> EditSharedAccountOtpAsync(SharedAccount sharedAccount);

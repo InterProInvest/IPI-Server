@@ -39,6 +39,14 @@ namespace HES.Core.Services
             return await _sharedAccountRepository.GetByIdAsync(id);
         }
 
+        public async Task<List<SharedAccount>> GetSharedAccountsAsync()
+        {
+            return await _sharedAccountRepository
+                .Query()
+                .Where(d => d.Deleted == false)
+                .ToListAsync();
+        }
+
         public async Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount)
         {
             _dataProtectionService.Validate();
@@ -108,11 +116,6 @@ namespace HES.Core.Services
             }
 
             await CreateSharedAccountAsync(sharedAccount);
-        }
-
-        public async Task UpdateOnlyPropAsync(SharedAccount sharedAccount, string[] properties)
-        {
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);
         }
 
         public async Task<List<string>> EditSharedAccountAsync(SharedAccount sharedAccount)
@@ -247,7 +250,7 @@ namespace HES.Core.Services
             }
 
             _dataProtectionService.Validate();
-                       
+
             ValidationHepler.VerifyOtpSecret(sharedAccount.OtpSecret);
 
             // Update Shared Account
