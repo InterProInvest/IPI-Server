@@ -300,9 +300,9 @@
                                 }
                                 else
                                 {
-                                    if (device.PrimaryAccountId != item.Id)
+                                    if (device.PrimaryAccountId != item.Id && item.Status == AccountStatus.Done)
                                     {
-                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Primary account">
+                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Windows account">
                                             <img src="~/svg/action/star.svg" />
                                             Set as windows account
                                         </a>
