@@ -17,7 +17,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
 {
     public class IndexModel : PageModel
     {
-        private readonly IWorkstationEventService _workstationEventService;
+        private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
@@ -26,14 +26,14 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         public IList<WorkstationEvent> WorkstationEvents { get; set; }
         public WorkstationEventFilter WorkstationEventFilter { get; set; }
 
-        public IndexModel(IWorkstationEventService workstationEventService,
+        public IndexModel(IWorkstationAuditService workstationAuditService,
                           IWorkstationService workstationService,
                           IEmployeeService employeeService,
                           IDeviceService deviceService,
                           IDeviceAccountService deviceAccountService,
                           IOrgStructureService orgStructureService)
         {
-            _workstationEventService = workstationEventService;
+            _workstationAuditService = workstationAuditService;
             _workstationService = workstationService;
             _employeeService = employeeService;
             _deviceService = deviceService;
@@ -43,16 +43,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
 
         public async Task OnGetAsync()
         {
-            WorkstationEvents = await _workstationEventService
-                .Query()
-                .Include(w => w.Workstation)
-                .Include(w => w.Device)
-                .Include(w => w.Employee)
-                .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
-                .OrderByDescending(w => w.Date)
-                .Take(500)
-                .ToListAsync();
+            WorkstationEvents = await _workstationAuditService.GetWorkstationEventsAsync();
 
             ViewData["Events"] = new SelectList(Enum.GetValues(typeof(WorkstationEventType)).Cast<WorkstationEventType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["Severity"] = new SelectList(Enum.GetValues(typeof(WorkstationEventSeverity)).Cast<WorkstationEventSeverity>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
@@ -66,72 +57,9 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
-        public async Task<IActionResult> OnPostFilterWorkstationEventsAsync(WorkstationEventFilter WorkstationEventFilter)
+        public async Task<IActionResult> OnPostFilterWorkstationEventsAsync(WorkstationEventFilter workstationEventFilter)
         {
-            var filter = _workstationEventService
-                 .Query()
-                 .Include(w => w.Workstation)
-                 .Include(w => w.Device)
-                 .Include(w => w.Employee)
-                 .Include(w => w.Department.Company)
-                 .Include(w => w.DeviceAccount)
-                 .AsQueryable();
-
-            if (WorkstationEventFilter.StartDate != null && WorkstationEventFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.Date >= WorkstationEventFilter.StartDate.Value.Date.AddSeconds(0).AddMilliseconds(0).ToUniversalTime() &&
-                                           w.Date <= WorkstationEventFilter.EndDate.Value.Date.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-            if (WorkstationEventFilter.EventId != null)
-            {
-                filter = filter.Where(w => w.EventId == (WorkstationEventType)WorkstationEventFilter.EventId);
-            }
-            if (WorkstationEventFilter.SeverityId != null)
-            {
-                filter = filter.Where(w => w.SeverityId == (WorkstationEventSeverity)WorkstationEventFilter.SeverityId);
-            }
-            if (WorkstationEventFilter.Note != null)
-            {
-                filter = filter.Where(w => w.Note.Contains(WorkstationEventFilter.Note));
-            }
-            if (WorkstationEventFilter.WorkstationId != null)
-            {
-                filter = filter.Where(w => w.WorkstationId == WorkstationEventFilter.WorkstationId);
-            }
-            if (WorkstationEventFilter.UserSession != null)
-            {
-                filter = filter.Where(w => w.UserSession.Contains(WorkstationEventFilter.UserSession));
-            }
-            if (WorkstationEventFilter.DeviceId != null)
-            {
-                filter = filter.Where(w => w.Device.Id == WorkstationEventFilter.DeviceId);
-            }
-            if (WorkstationEventFilter.EmployeeId != null)
-            {
-                filter = filter.Where(w => w.EmployeeId == WorkstationEventFilter.EmployeeId);
-            }
-            if (WorkstationEventFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == WorkstationEventFilter.CompanyId);
-            }
-            if (WorkstationEventFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == WorkstationEventFilter.DepartmentId);
-            }
-            if (WorkstationEventFilter.DeviceAccountId != null)
-            {
-                filter = filter.Where(w => w.DeviceAccountId == WorkstationEventFilter.DeviceAccountId);
-            }
-            if (WorkstationEventFilter.DeviceAccountTypeId != null)
-            {
-                filter = filter.Where(w => w.DeviceAccount.Type == (AccountType)WorkstationEventFilter.DeviceAccountTypeId);
-            }
-
-            WorkstationEvents = await filter
-                .OrderByDescending(w => w.Date)
-                .Take(WorkstationEventFilter.Records)
-                .ToListAsync();
-
+            WorkstationEvents = await _workstationAuditService.GetFilteredWorkstationEventsAsync(workstationEventFilter);
             return Partial("_WorkstationEventsTable", this);
         }
 

@@ -21,6 +21,7 @@ namespace HES.Web.Pages.Devices
         private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
         private readonly IRemoteTaskService _remoteTaskService;
         private readonly IOrgStructureService _orgStructureService;
+        private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<IndexModel> _logger;
 
@@ -39,6 +40,7 @@ namespace HES.Web.Pages.Devices
                           IDeviceAccessProfilesService deviceAccessProfilesService,
                           IRemoteTaskService remoteTaskService,
                           IOrgStructureService orgStructureService,
+                          IWorkstationAuditService workstationAuditService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ILogger<IndexModel> logger)
         {
@@ -47,6 +49,7 @@ namespace HES.Web.Pages.Devices
             _deviceAccessProfilesService = deviceAccessProfilesService;
             _remoteTaskService = remoteTaskService;
             _orgStructureService = orgStructureService;
+            _workstationAuditService = workstationAuditService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
@@ -293,6 +296,7 @@ namespace HES.Web.Pages.Devices
             try
             {
                 await _deviceService.UnlockPinAsync(deviceId);
+                await _workstationAuditService.AddPendingUnlockEventAsync(deviceId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = $"Pending unlock.";
             }

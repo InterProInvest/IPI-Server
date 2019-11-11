@@ -32,7 +32,7 @@ namespace HES.Core.Services
         readonly IWorkstationService _workstationService;
         readonly IDeviceService _deviceService;
         readonly IDataProtectionService _dataProtectionService;
-        readonly IWorkstationSessionService _workstationSessionService;
+        readonly IWorkstationAuditService _workstationAuditService;
         readonly ILogger<RemoteWorkstationConnectionsService> _logger;
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
@@ -42,7 +42,7 @@ namespace HES.Core.Services
                       IWorkstationService workstationService,
                       IDeviceService deviceService,
                       IDataProtectionService dataProtectionService,
-                      IWorkstationSessionService workstationSessionService,
+                      IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger)
         {
             _services = services;
@@ -52,7 +52,7 @@ namespace HES.Core.Services
             _workstationService = workstationService;
             _deviceService = deviceService;
             _dataProtectionService = dataProtectionService;
-            _workstationSessionService = workstationSessionService;
+            _workstationAuditService = workstationAuditService;
             _logger = logger;
         }
 
@@ -303,7 +303,7 @@ namespace HES.Core.Services
         {
             _workstationConnections.TryRemove(workstationId, out IRemoteAppConnection _);
 
-            await _workstationSessionService.CloseSessionAsync(workstationId);
+            await _workstationAuditService.CloseSessionAsync(workstationId);
         }
 
         private static IRemoteAppConnection FindWorkstationConnection(string workstationId)

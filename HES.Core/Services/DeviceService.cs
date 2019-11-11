@@ -31,19 +31,16 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
-        private readonly IWorkstationEventService _workstationEventService;
         private readonly IAesCryptographyService _aesService;
 
         public DeviceService(IAsyncRepository<Device> deviceRepository,
                              IDeviceTaskService deviceTaskService,
                              IDeviceAccessProfilesService deviceAccessProfilesService,
-                             IWorkstationEventService workstationEventService,
                              IAesCryptographyService aesService)
         {
             _deviceRepository = deviceRepository;
             _deviceTaskService = deviceTaskService;
             _deviceAccessProfilesService = deviceAccessProfilesService;
-            _workstationEventService = workstationEventService;
             _aesService = aesService;
         }
 
@@ -180,15 +177,6 @@ namespace HES.Core.Services
 
             // Create task
             await _deviceTaskService.AddUnlockPinTaskAsync(device);
-
-            // Add event
-            await _workstationEventService.AddEventAsync(new WorkstationEvent
-            {
-                Date = DateTime.UtcNow,
-                EventId = WorkstationEventType.DevicePendingUnlock,
-                SeverityId = WorkstationEventSeverity.Info,
-                DeviceId = deviceId
-            });
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate)

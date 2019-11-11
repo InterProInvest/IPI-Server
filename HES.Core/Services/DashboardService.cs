@@ -13,21 +13,21 @@ namespace HES.Core.Services
     public class DashboardService : IDashboardService
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IWorkstationSessionService _workstationSessionService;
+        private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IWorkstationService _workstationService;
         private readonly IDeviceService _deviceService;
         private readonly IAppService _appService;
 
         public DashboardService(IEmployeeService employeeService,
-                                IWorkstationSessionService workstationSessionService,
+                                IWorkstationAuditService workstationAuditService,
                                 IDeviceTaskService deviceTaskService,
                                 IWorkstationService workstationService,
                                 IDeviceService deviceService,
                                 IAppService appService)
         {
             _employeeService = employeeService;
-            _workstationSessionService = workstationSessionService;
+            _workstationAuditService = workstationAuditService;
             _deviceTaskService = deviceTaskService;
             _workstationService = workstationService;
             _deviceService = deviceService;
@@ -81,15 +81,15 @@ namespace HES.Core.Services
 
         public async Task<int> GetEmployeesOpenedSessionsCount()
         {
-            return await _workstationSessionService.GetOpenedSessionsCountAsync();
+            return await _workstationAuditService.GetOpenedSessionsCountAsync();
         }
 
         public async Task<List<DashboardNotify>> GetEmployeesNotify()
         {
             var list = new List<DashboardNotify>();
 
-            var nonHideezUnlock = await _workstationSessionService
-                .Query()
+            var nonHideezUnlock = await _workstationAuditService
+                .QueryOfSession()
                 .Where(w => w.StartDate >= DateTime.UtcNow.AddDays(-1) && w.UnlockedBy == Hideez.SDK.Communication.SessionSwitchSubject.NonHideez)
                 .CountAsync();
 
@@ -104,8 +104,8 @@ namespace HES.Core.Services
                 });
             }
 
-            var longOpenSession = await _workstationSessionService
-                .Query()
+            var longOpenSession = await _workstationAuditService
+                .QueryOfSession()
                 .Where(w => w.StartDate <= DateTime.UtcNow.AddHours(-12) && w.EndDate == null)
                 .CountAsync();
 
