@@ -65,26 +65,19 @@ namespace HES.Web
             services.AddDataProtection()
                 .SetApplicationName("HES")
                 .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "dataprotection")));
-
-            services.AddSignalR();
-
+            
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
-
             services.AddScoped<IDashboardService, DashboardService>();
-
             services.AddScoped<IEmployeeService, EmployeeService>();
-
-            services.AddScoped<IWorkstationSessionService, WorkstationSessionService>();
-
             services.AddScoped<IDeviceService, DeviceService>();
             services.AddScoped<IDeviceTaskService, DeviceTaskService>();
             services.AddScoped<IDeviceAccountService, DeviceAccountService>();
             services.AddScoped<IDeviceAccessProfilesService, DeviceAccessProfilesService>();
 
             services.AddScoped<IWorkstationService, WorkstationService>();
-            services.AddScoped<IProximityDeviceService, ProximityDeviceService>();
             services.AddScoped<IWorkstationEventService, WorkstationEventService>();
+            services.AddScoped<IWorkstationSessionService, WorkstationSessionService>();
 
             services.AddScoped<ISharedAccountService, SharedAccountService>();
             services.AddScoped<ITemplateService, TemplateService>();
@@ -124,6 +117,9 @@ namespace HES.Web
                      Configuration.GetValue<bool>("EmailSender:EnableSSL"),
                      Configuration["EmailSender:UserName"],
                      Configuration["EmailSender:Password"]));
+
+            // SignalR
+            services.AddSignalR();
 
             // Cookie
             services.Configure<CookiePolicyOptions>(options =>

@@ -20,7 +20,7 @@ namespace HES.Core.Services
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IDeviceAccountService _deviceAccountService;
         private readonly ISharedAccountService _sharedAccountService;
-        private readonly IProximityDeviceService _proximityDeviceService;
+        private readonly IWorkstationService _workstationService;
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
@@ -31,7 +31,7 @@ namespace HES.Core.Services
                                IDeviceTaskService deviceTaskService,
                                IDeviceAccountService deviceAccountService,
                                ISharedAccountService sharedAccountService,
-                               IProximityDeviceService workstationProximityDeviceService,
+                               IWorkstationService workstationService,
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                IDataProtectionService dataProtectionService,
@@ -42,7 +42,7 @@ namespace HES.Core.Services
             _deviceTaskService = deviceTaskService;
             _deviceAccountService = deviceAccountService;
             _sharedAccountService = sharedAccountService;
-            _proximityDeviceService = workstationProximityDeviceService;
+            _workstationService = workstationService;
             _workstationEventRepository = workstationEventRepository;
             _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
@@ -253,11 +253,7 @@ namespace HES.Core.Services
             await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
 
             // Remove proximity device
-            var allProximityDevices = await _proximityDeviceService
-                .Query()
-                .Where(w => w.DeviceId == deviceId)
-                .ToListAsync();
-            await _proximityDeviceService.DeleteRangeProximityDevicesAsync(allProximityDevices);
+            await _workstationService.RemoveAllProximityByDeviceIdAsync(deviceId);
 
             // Remove employee from device
             device.EmployeeId = null;
@@ -1005,7 +1001,7 @@ namespace HES.Core.Services
             await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
 
             // Remove all proximity
-            await _proximityDeviceService.RemoveAllProximityAsync(deviceId);
+            await _workstationService.RemoveAllProximityByDeviceIdAsync(deviceId);
 
             // Remove employee
             await _deviceService.RemoveEmployeeAsync(deviceId);

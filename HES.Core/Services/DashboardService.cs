@@ -198,7 +198,7 @@ namespace HES.Core.Services
 
         public async Task<int> GetWorkstationsCount()
         {
-            return await _workstationService.GetCountAsync();
+            return await _workstationService.QueryOfWorkstation().CountAsync();
         }
 
         public async Task<int> GetWorkstationsOnlineCount()
@@ -211,7 +211,7 @@ namespace HES.Core.Services
             var list = new List<DashboardNotify>();
 
             var notApproved = await _workstationService
-                .Query()
+                .QueryOfWorkstation()
                 .Where(w => w.Approved == false)
                 .CountAsync();
 

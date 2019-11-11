@@ -38,11 +38,7 @@ namespace HES.Web.Pages.Workstations
 
         public async Task OnGetAsync()
         {
-            Workstations = await _workstationService
-                .Query()
-                .Include(w => w.ProximityDevices)
-                .Include(c => c.Department.Company)
-                .ToListAsync();
+            Workstations = await _workstationService.GetAllWorkstationsAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
@@ -54,7 +50,7 @@ namespace HES.Web.Pages.Workstations
         public async Task OnGetNotApprovedAsync()
         {
             Workstations = await _workstationService
-                .Query()
+                .QueryOfWorkstation()
                 .Include(w => w.ProximityDevices)
                 .Include(c => c.Department.Company)
                 .Where(w => w.Approved == false)
@@ -70,9 +66,9 @@ namespace HES.Web.Pages.Workstations
         public async Task OnGetOnlineAsync()
         {
             var allWorkstations = await _workstationService
-                .Query()
+                .QueryOfWorkstation()
                 .Include(w => w.ProximityDevices)
-                .Include(c => c.Department.Company)         
+                .Include(c => c.Department.Company)
                 .ToListAsync();
 
             Workstations = allWorkstations.Where(w => w.IsOnline == true).ToList();
@@ -84,64 +80,9 @@ namespace HES.Web.Pages.Workstations
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
-        public async Task<IActionResult> OnPostFilterWorkstationsAsync(WorkstationFilter WorkstationFilter)
+        public async Task<IActionResult> OnPostFilterWorkstationsAsync(WorkstationFilter workstationFilter)
         {
-            var filter = _workstationService
-                .Query()
-                .Include(w => w.ProximityDevices)
-                .Include(c => c.Department.Company)
-                .AsQueryable();
-
-            if (WorkstationFilter.Name != null)
-            {
-                filter = filter.Where(w => w.Name.Contains(WorkstationFilter.Name));
-            }
-            if (WorkstationFilter.Domain != null)
-            {
-                filter = filter.Where(w => w.Domain.Contains(WorkstationFilter.Domain));
-            }
-            if (WorkstationFilter.ClientVersion != null)
-            {
-                filter = filter.Where(w => w.ClientVersion.Contains(WorkstationFilter.ClientVersion));
-            }
-            if (WorkstationFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == WorkstationFilter.CompanyId);
-            }
-            if (WorkstationFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == WorkstationFilter.DepartmentId);
-            }
-            if (WorkstationFilter.OS != null)
-            {
-                filter = filter.Where(w => w.OS.Contains(WorkstationFilter.OS));
-            }
-            if (WorkstationFilter.IP != null)
-            {
-                filter = filter.Where(w => w.IP.Contains(WorkstationFilter.IP));
-            }
-            if (WorkstationFilter.StartDate != null && WorkstationFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.LastSeen >= WorkstationFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
-                                        && w.LastSeen <= WorkstationFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-            if (WorkstationFilter.RFID != null)
-            {
-                filter = filter.Where(w => w.RFID == WorkstationFilter.RFID);
-            }
-            if (WorkstationFilter.ProximityDevicesCount != null)
-            {
-                filter = filter.Where(w => w.ProximityDevices.Count() == WorkstationFilter.ProximityDevicesCount);
-            }
-            if (WorkstationFilter.Approved != null)
-            {
-                filter = filter.Where(w => w.Approved == WorkstationFilter.Approved);
-            }
-
-            Workstations = await filter
-                .OrderBy(w => w.Name)
-                .Take(WorkstationFilter.Records)
-                .ToListAsync();
+            Workstations = await _workstationService.GetFilteredWorkstationsAsync(workstationFilter);
 
             return Partial("_WorkstationsTable", this);
         }
@@ -155,18 +96,15 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Workstation = await _workstationService
-                .Query()
-                .Include(c => c.Department.Company)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
 
             if (Workstation == null)
             {
-                _logger.LogWarning("Workstation == null");
+                _logger.LogWarning($"{nameof(Workstation)} is null");
                 return NotFound();
             }
 
@@ -187,18 +125,18 @@ namespace HES.Web.Pages.Workstations
             return Partial("_EditWorkstation", this);
         }
 
-        public async Task<IActionResult> OnPostEditWorkstationAsync(Workstation Workstation)
+        public async Task<IActionResult> OnPostEditWorkstationAsync(Workstation workstation)
         {
-            if (Workstation == null)
+            if (workstation == null)
             {
-                _logger.LogWarning("departmentId == null");
+                _logger.LogWarning($"{nameof(workstation)} is null");
                 return RedirectToPage("./Index");
             }
 
             try
             {
-                await _workstationService.EditWorkstationAsync(Workstation);
-                await _workstationService.UpdateRfidStateAsync(Workstation.Id);
+                await _workstationService.EditWorkstationAsync(workstation);
+                await _workstationService.UpdateRfidStateAsync(workstation.Id);
                 SuccessMessage = $"Workstation updated.";
             }
             catch (Exception ex)
@@ -214,18 +152,15 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Workstation = await _workstationService
-               .Query()
-               .Include(w => w.Department.Company)
-               .FirstOrDefaultAsync(c => c.Id == id);
+            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
 
             if (Workstation == null)
             {
-                _logger.LogWarning("Workstation == null");
+                _logger.LogWarning($"{nameof(Workstation)} is null");
                 return NotFound();
             }
 
@@ -234,17 +169,17 @@ namespace HES.Web.Pages.Workstations
             return Partial("_ApproveWorkstation", this);
         }
 
-        public async Task<IActionResult> OnPostApproveWorkstationAsync(Workstation Workstation)
+        public async Task<IActionResult> OnPostApproveWorkstationAsync(Workstation workstation)
         {
-            if (Workstation == null)
+            if (workstation == null)
             {
-                _logger.LogWarning("Workstation == null");
+                _logger.LogWarning($"{nameof(workstation)} is null");
                 return RedirectToPage("./Index");
             }
             try
             {
-                await _workstationService.ApproveWorkstationAsync(Workstation);
-                await _workstationService.UpdateRfidStateAsync(Workstation.Id);
+                await _workstationService.ApproveWorkstationAsync(workstation);
+                await _workstationService.UpdateRfidStateAsync(workstation.Id);
                 SuccessMessage = $"Workstation approved.";
             }
             catch (Exception ex)
@@ -260,13 +195,17 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Workstation = await _workstationService
-               .Query()
-               .FirstOrDefaultAsync(c => c.Id == id);
+            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
+
+            if (Workstation == null)
+            {
+                _logger.LogWarning($"{nameof(Workstation)} is null");
+                return NotFound();
+            }
 
             return Partial("_UnapproveWorkstation", this);
         }
@@ -275,7 +214,7 @@ namespace HES.Web.Pages.Workstations
         {
             if (workstationId == null)
             {
-                _logger.LogWarning("workstationId == null");
+                _logger.LogWarning($"{nameof(workstationId)} is null");
                 return RedirectToPage("./Index");
             }
             try

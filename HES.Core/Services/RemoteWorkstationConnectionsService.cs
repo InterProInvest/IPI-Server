@@ -30,7 +30,6 @@ namespace HES.Core.Services
         readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         readonly IEmployeeService _employeeService;
         readonly IWorkstationService _workstationService;
-        readonly IProximityDeviceService _workstationProximityDeviceService;
         readonly IDeviceService _deviceService;
         readonly IDataProtectionService _dataProtectionService;
         readonly IWorkstationSessionService _workstationSessionService;
@@ -41,7 +40,6 @@ namespace HES.Core.Services
                       IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IEmployeeService employeeService,
                       IWorkstationService workstationService,
-                      IProximityDeviceService workstationProximityDeviceService,
                       IDeviceService deviceService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationSessionService workstationSessionService,
@@ -52,7 +50,6 @@ namespace HES.Core.Services
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _employeeService = employeeService;
             _workstationService = workstationService;
-            _workstationProximityDeviceService = workstationProximityDeviceService;
             _deviceService = deviceService;
             _dataProtectionService = dataProtectionService;
             _workstationSessionService = workstationSessionService;
@@ -298,7 +295,7 @@ namespace HES.Core.Services
                 _logger.LogInformation($"New workstation {workstationInfo.MachineName} was added");
             }
 
-            await _workstationProximityDeviceService.UpdateProximitySettingsAsync(workstationInfo.Id);
+            await _workstationService.UpdateProximitySettingsAsync(workstationInfo.Id);
             await _workstationService.UpdateRfidStateAsync(workstationInfo.Id);
         }
 

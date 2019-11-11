@@ -19,7 +19,6 @@ namespace HES.Web.Pages.Employees
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
         private readonly IWorkstationService _workstationService;
-        private readonly IProximityDeviceService _proximityDeviceService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ISharedAccountService _sharedAccountService;
@@ -45,7 +44,6 @@ namespace HES.Web.Pages.Employees
         public IndexModel(IEmployeeService employeeService,
                           IDeviceService deviceService,
                           IWorkstationService workstationService,
-                          IProximityDeviceService workstationProximityDeviceService,
                           IOrgStructureService orgStructureService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ISharedAccountService sharedAccountService,
@@ -54,7 +52,6 @@ namespace HES.Web.Pages.Employees
             _employeeService = employeeService;
             _deviceService = deviceService;
             _workstationService = workstationService;
-            _proximityDeviceService = workstationProximityDeviceService;
             _orgStructureService = orgStructureService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _sharedAccountService = sharedAccountService;
@@ -87,7 +84,7 @@ namespace HES.Web.Pages.Employees
             ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["DeviceId"] = new SelectList(await _deviceService.Query().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
-            ViewData["WorkstationId"] = new SelectList(await _workstationService.Query().ToListAsync(), "Id", "Name");
+            ViewData["WorkstationId"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["WorkstationAccounts"] = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
 
@@ -97,7 +94,7 @@ namespace HES.Web.Pages.Employees
                .ToListAsync();
 
             Workstations = await _workstationService
-                .Query()
+                .QueryOfWorkstation()
                 .ToListAsync();
 
             return Partial("_CreateEmployee", this);
@@ -126,7 +123,7 @@ namespace HES.Web.Pages.Employees
                     // Proximity Unlock
                     if (!wizard.SkipProximityUnlock)
                     {
-                        await _proximityDeviceService.AddProximityDeviceAsync(wizard.WorkstationId, new string[] { wizard.DeviceId });
+                        await _workstationService.AddProximityDevicesAsync(wizard.WorkstationId, new string[] { wizard.DeviceId });
                     }
 
                     // Add workstation account

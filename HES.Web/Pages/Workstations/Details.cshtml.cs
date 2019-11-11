@@ -14,15 +14,13 @@ namespace HES.Web.Pages.Workstations
     public class DetailsModel : PageModel
     {
         private readonly IWorkstationService _workstationService;
-        private readonly IProximityDeviceService _workstationProximityDeviceService;
-        private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
         private readonly ILogger<DetailsModel> _logger;
 
-        public IList<ProximityDevice> WorkstationProximityDevices { get; set; }
+        public IList<ProximityDevice> ProximityDevices { get; set; }
         public IList<Device> Devices { get; set; }
         public Workstation Workstation { get; set; }
-        public ProximityDevice WorkstationProximityDevice { get; set; }
+        public ProximityDevice ProximityDevice { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -30,14 +28,10 @@ namespace HES.Web.Pages.Workstations
         public string ErrorMessage { get; set; }
 
         public DetailsModel(IWorkstationService workstationService,
-                            IProximityDeviceService workstationProximityDeviceService,
-                            IEmployeeService employeeService,
                             IDeviceService deviceService,
                             ILogger<DetailsModel> logger)
         {
             _workstationService = workstationService;
-            _workstationProximityDeviceService = workstationProximityDeviceService;
-            _employeeService = employeeService;
             _deviceService = deviceService;
             _logger = logger;
         }
@@ -46,30 +40,23 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Workstation = await _workstationService
-                .Query()
-                .Include(c => c.Department.Company)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
 
             if (Workstation == null)
             {
-                _logger.LogWarning("Workstation == null");
+                _logger.LogWarning($"{nameof(Workstation)} is null");
                 return NotFound();
             }
 
-            WorkstationProximityDevices = await _workstationProximityDeviceService
-                .Query()
-                .Include(d => d.Device.Employee.Department.Company)
-                .Where(d => d.WorkstationId == id)
-                .ToListAsync();
+            ProximityDevices = await _workstationService.GetProximityDevicesAsync(id);
 
-            if (WorkstationProximityDevices == null)
+            if (ProximityDevices == null)
             {
-                _logger.LogWarning("WorkstationProximityDevices == null");
+                _logger.LogWarning($"{nameof(ProximityDevices)} is null");
                 return NotFound();
             }
 
@@ -80,28 +67,23 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Workstation = await _workstationService
-            .Query()
-            .FirstOrDefaultAsync(m => m.Id == id);
+            Workstation = await _workstationService.GetWorkstationByIdAsync(id);
 
             if (Workstation == null)
             {
-                _logger.LogWarning("Workstation == null");
+                _logger.LogWarning($"{nameof(Workstation)} is null");
                 return NotFound();
             }
 
-            WorkstationProximityDevices = await _workstationProximityDeviceService
-                .Query()
-                .Where(d => d.WorkstationId == id)
-                .ToListAsync();
+            ProximityDevices = await _workstationService.GetProximityDevicesAsync(id);
 
             var deviceQuery = _deviceService.Query().AsQueryable();
 
-            foreach (var proximityDevice in WorkstationProximityDevices)
+            foreach (var proximityDevice in ProximityDevices)
             {
                 deviceQuery = deviceQuery.Where(d => d.Id != proximityDevice.DeviceId);
             }
@@ -117,28 +99,16 @@ namespace HES.Web.Pages.Workstations
         {
             if (workstationId == null)
             {
-                _logger.LogWarning("workstationId == null");
+                _logger.LogWarning($"{nameof(workstationId)} is null");
                 return NotFound();
             }
 
             try
             {
-                await _workstationProximityDeviceService.AddProximityDeviceAsync(workstationId, devicesId);
-                await _workstationProximityDeviceService.UpdateProximitySettingsAsync(workstationId);
+                await _workstationService.AddProximityDevicesAsync(workstationId, devicesId);
+                await _workstationService.UpdateProximitySettingsAsync(workstationId);
 
-                if (devicesId.Length > 1)
-                {
-                    var devices = string.Empty;
-                    foreach (var item in devicesId)
-                    {
-                        devices += item + Environment.NewLine;
-                    }
-                    SuccessMessage = $"Devices: {devices} added.";
-                }
-                else
-                {
-                    SuccessMessage = $"Device {devicesId[0]} added.";
-                }
+                SuccessMessage = "Device(s) added.";
             }
             catch (Exception ex)
             {
@@ -154,36 +124,38 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            WorkstationProximityDevice = await _workstationProximityDeviceService
-                .Query()
+            ProximityDevice = await _workstationService
+                .QueryOfProximityDevice()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (WorkstationProximityDevice == null)
+            if (ProximityDevice == null)
             {
-                _logger.LogWarning("ProximityDevice == null");
+                _logger.LogWarning($"{nameof(ProximityDevice)} is null");
                 return NotFound();
             }
 
             return Partial("_EditProximitySettings", this);
         }
 
-        public async Task<IActionResult> OnPostEditProximitySettingsAsync(ProximityDevice WorkstationProximityDevice)
+        public async Task<IActionResult> OnPostEditProximitySettingsAsync(ProximityDevice proximityDevice)
         {
-            var id = WorkstationProximityDevice.WorkstationId;
+            var id = proximityDevice.WorkstationId;
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
+                ErrorMessage = errors;
+                _logger.LogWarning(errors);
                 return RedirectToPage("./Details", new { id });
             }
 
             try
             {
-                await _workstationProximityDeviceService.EditProximityDeviceAsync(WorkstationProximityDevice);
-                await _workstationProximityDeviceService.UpdateProximitySettingsAsync(WorkstationProximityDevice.WorkstationId);
+                await _workstationService.EditProximityDeviceAsync(proximityDevice);
+                await _workstationService.UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
 
                 SuccessMessage = $"Proximity settings updated.";
             }
@@ -200,35 +172,35 @@ namespace HES.Web.Pages.Workstations
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            WorkstationProximityDevice = await _workstationProximityDeviceService
-                .Query()
+            ProximityDevice = await _workstationService
+                .QueryOfProximityDevice()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (WorkstationProximityDevice == null)
+            if (ProximityDevice == null)
             {
-                _logger.LogWarning("ProximityDevice == null");
+                _logger.LogWarning($"{nameof(ProximityDevice)} is null");
                 return NotFound();
             }
 
             return Partial("_DeleteProximityDevice", this);
         }
 
-        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(ProximityDevice WorkstationProximityDevice)
+        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(ProximityDevice proximityDevice)
         {
-            if (WorkstationProximityDevice == null)
+            if (proximityDevice == null)
             {
-                _logger.LogWarning("PoximityDevice == null");
+                _logger.LogWarning($"{nameof(proximityDevice)} is null");
                 return NotFound();
             }
 
             try
             {
-                await _workstationProximityDeviceService.DeleteProximityDeviceAsync(WorkstationProximityDevice.Id);
-                SuccessMessage = $"Device removed.";
+                await _workstationService.DeleteProximityDeviceAsync(proximityDevice.Id);
+                SuccessMessage = $"Proximity device removed.";
             }
             catch (Exception ex)
             {
@@ -236,7 +208,7 @@ namespace HES.Web.Pages.Workstations
                 ErrorMessage = ex.Message;
             }
 
-            var id = WorkstationProximityDevice.WorkstationId;
+            var id = proximityDevice.WorkstationId;
             return RedirectToPage("./Details", new { id });
         }
     }

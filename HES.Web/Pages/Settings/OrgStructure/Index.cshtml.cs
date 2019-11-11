@@ -261,7 +261,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             }
 
             HasForeignKey = await _employeeService.Query().AnyAsync(x => x.DepartmentId == id);
-            HasForeignKeyWorkstation = await _workstationService.Query().AnyAsync(x => x.DepartmentId == id);
+            HasForeignKeyWorkstation = await _workstationService.QueryOfWorkstation().AnyAsync(x => x.DepartmentId == id);
 
             return Partial("_DeleteDepartment", this);
         }
