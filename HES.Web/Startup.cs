@@ -68,6 +68,7 @@ namespace HES.Web
 
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
+            services.AddScoped<IAppService, AppService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDeviceService, DeviceService>();
@@ -77,18 +78,14 @@ namespace HES.Web
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
             services.AddScoped<ISharedAccountService, SharedAccountService>();
             services.AddScoped<ITemplateService, TemplateService>();
-
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<IOrgStructureService, OrgStructureService>();
-            services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
-            services.AddScoped<IAppService, AppService>();
             services.AddScoped<ILogViewerService, LogViewerService>();
+            services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
             services.AddTransient<IAesCryptographyService, AesCryptographyService>();
-
             services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
-
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();

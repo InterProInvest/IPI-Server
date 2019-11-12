@@ -43,7 +43,7 @@ namespace HES.Core.Services
 
         public async Task<int> GetDeviceTasksCount()
         {
-            return await _deviceTaskService.GetCountAsync();
+            return await _deviceTaskService.Query().CountAsync();
         }
 
         public async Task<List<DeviceTask>> GetDeviceTasks()

@@ -24,12 +24,7 @@ namespace HES.Core.Services
         {
             return _deviceTaskRepository.Query();
         }
-
-        public async Task<int> GetCountAsync()
-        {
-            return await _deviceTaskRepository.GetCountAsync();
-        }
-               
+                      
         public async Task AddTaskAsync(DeviceTask deviceTask)
         {
             await _deviceTaskRepository.AddAsync(deviceTask);
