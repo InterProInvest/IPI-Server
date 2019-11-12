@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -146,9 +147,8 @@ namespace HES.Web.Pages.Workstations
             var id = proximityDevice.WorkstationId;
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogWarning(errors);
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Details", new { id });
             }
 

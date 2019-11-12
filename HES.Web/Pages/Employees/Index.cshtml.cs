@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using HES.Core.Utilities;
 
 namespace HES.Web.Pages.Employees
 {
@@ -62,7 +63,7 @@ namespace HES.Web.Pages.Employees
         {
             Employees = await _employeeService.GetAllEmployeesAsync();
 
-            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["DevicesCount"] = new SelectList(Employees.Select(s => s.Devices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
@@ -81,7 +82,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnGetCreateEmployeeAsync()
         {
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["DeviceId"] = new SelectList(await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
             ViewData["WorkstationId"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
@@ -104,9 +105,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogWarning(errors);
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -197,7 +197,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
             ViewData["DepartmentId"] = new SelectList(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().ToListAsync(), "Id", "Name");
 
@@ -208,9 +208,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogWarning(errors);
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -302,8 +301,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogWarning(errors);
+               var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
 
@@ -322,7 +321,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task<JsonResult> OnGetJsonCompanyAsync()
         {
-            return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync());
         }
 
         #endregion
@@ -339,8 +338,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogWarning(errors);
+                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
 
@@ -375,8 +374,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogWarning(errors);
+                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
 

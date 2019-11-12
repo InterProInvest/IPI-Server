@@ -86,7 +86,7 @@ namespace HES.Web.Pages.Settings.Administrators
 
                 await _userManager.AddToRoleAsync(user, ApplicationRoles.AdminRole);
 
-                // Create "invite" link
+                // Create invite link
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var email = Input.Email;
                 var callbackUrl = Url.Page(
@@ -114,7 +114,7 @@ namespace HES.Web.Pages.Settings.Administrators
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -128,7 +128,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
             if (ApplicationUser == null)
             {
-                _logger.LogWarning("ApplicationUser == null");
+                _logger.LogWarning($"{nameof(ApplicationUser)} is null");
+
                 return NotFound();
             }
 
@@ -139,7 +140,7 @@ namespace HES.Web.Pages.Settings.Administrators
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -151,8 +152,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
                 if (user.Id == id)
                 {
-                    await _signInManager.SignOutAsync();
                     _logger.LogInformation($"User {user.Email} deleted himself");
+                    await _signInManager.SignOutAsync();
                 }
 
                 SuccessMessage = $"User {user.Email} deleted.";

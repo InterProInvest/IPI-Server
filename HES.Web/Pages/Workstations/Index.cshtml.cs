@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Workstations
         {
             Workstations = await _workstationService.GetAllWorkstationsAsync();
 
-            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
             ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
@@ -56,7 +56,7 @@ namespace HES.Web.Pages.Workstations
                 .Where(w => w.Approved == false)
                 .ToListAsync();
 
-            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
             ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
@@ -69,7 +69,7 @@ namespace HES.Web.Pages.Workstations
 
             Workstations = allWorkstations.Where(w => w.IsOnline == true).ToList();
 
-            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
             ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
@@ -104,7 +104,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            var companies = await _orgStructureService.CompanyQuery().ToListAsync();
+            var companies = await _orgStructureService.QueryOfCompany().ToListAsync();
             List<Department> departments;
             if (Workstation.DepartmentId == null)
             {
@@ -160,7 +160,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
 
             return Partial("_ApproveWorkstation", this);
         }

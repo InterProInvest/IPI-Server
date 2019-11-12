@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -45,15 +46,15 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task OnGetAsync()
         {
-            Companies = await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync();
-            Departments = await _orgStructureService.DepartmentQuery().Include(d => d.Company).OrderBy(c => c.Name).ToListAsync();
+            Companies = await _orgStructureService.GetCompaniesAsync();
+            Departments = await _orgStructureService.GetDepartmentsAsync();
         }
 
         #region Company
 
         public async Task<JsonResult> OnGetJsonCompanyAsync()
         {
-            return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync());
         }
 
         public IActionResult OnGetCreateCompany()
@@ -65,7 +66,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -87,15 +89,15 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Company = await _orgStructureService.CompanyQuery().FirstOrDefaultAsync(c => c.Id == id);
+            Company = await _orgStructureService.GetCompanyByIdAsync(id);
 
             if (Company == null)
             {
-                _logger.LogWarning("Company == null");
+                _logger.LogWarning($"{nameof(Company)} is null");
                 return NotFound();
             }
 
@@ -106,7 +108,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -128,15 +131,15 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Company = await _orgStructureService.CompanyQuery().FirstOrDefaultAsync(c => c.Id == id);
+            Company = await _orgStructureService.GetCompanyByIdAsync(id);
 
             if (Company == null)
             {
-                _logger.LogWarning("Company == null");
+                _logger.LogWarning($"{nameof(Company)} is null");
                 return NotFound();
             }
 
@@ -149,7 +152,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -173,7 +176,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task<IActionResult> OnGetCreateDepartment()
         {
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.GetCompaniesAsync(), "Id", "Name");
             return Partial("_CreateDepartment", this);
         }
 
@@ -181,7 +184,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -203,19 +207,19 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Department = await _orgStructureService.DepartmentQuery().Include(d => d.Company).FirstOrDefaultAsync(m => m.Id == id);
+            Department = await _orgStructureService.GetDepartmentByIdAsync(id);
 
             if (Department == null)
             {
-                _logger.LogWarning("Department == null");
+                _logger.LogWarning($"{nameof(Department)} is null");
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.GetCompaniesAsync(), "Id", "Name");
             return Partial("_EditDepartment", this);
         }
 
@@ -223,7 +227,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -245,18 +250,15 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Department = await _orgStructureService
-                .DepartmentQuery()
-                .Include(c => c.Company)
-                .FirstOrDefaultAsync(d => d.Id == id);
+            Department = await _orgStructureService.GetDepartmentByIdAsync(id);
 
             if (Department == null)
             {
-                _logger.LogWarning("Department == null");
+                _logger.LogWarning($"{nameof(Department)} is null");
                 return NotFound();
             }
 
@@ -270,7 +272,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 

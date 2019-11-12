@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -46,9 +47,8 @@ namespace HES.Web.Pages.Templates
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -89,9 +89,8 @@ namespace HES.Web.Pages.Templates
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 

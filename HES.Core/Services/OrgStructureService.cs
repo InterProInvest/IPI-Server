@@ -1,6 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,26 +23,28 @@ namespace HES.Core.Services
             _positionRepository = positionRepository;
         }
 
-        public IQueryable<Company> CompanyQuery()
+        #region Company
+
+        public IQueryable<Company> QueryOfCompany()
         {
             return _companyRepository.Query();
         }
 
-        public IQueryable<Department> DepartmentQuery()
+        public async Task<Company> GetCompanyByIdAsync(string id)
         {
-            return _departmentRepository.Query();
+            return await _companyRepository.GetByIdAsync(id);
         }
 
-        public IQueryable<Position> PositionQuery()
+        public async Task<List<Company>> GetCompaniesAsync()
         {
-            return _positionRepository.Query();
+            return await _companyRepository.Query().OrderBy(c => c.Name).ToListAsync();
         }
 
         public async Task CreateCompanyAsync(Company company)
         {
             if (company == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(company));
             }
 
             await _companyRepository.AddAsync(company);
@@ -50,8 +54,9 @@ namespace HES.Core.Services
         {
             if (company == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(company));
             }
+
             await _companyRepository.UpdateAsync(company);
         }
 
@@ -59,8 +64,9 @@ namespace HES.Core.Services
         {
             if (id == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(id));
             }
+
             var company = await _companyRepository.GetByIdAsync(id);
             if (company == null)
             {
@@ -69,11 +75,30 @@ namespace HES.Core.Services
             await _companyRepository.DeleteAsync(company);
         }
 
+        #endregion
+
+        #region Department
+
+        public IQueryable<Department> DepartmentQuery()
+        {
+            return _departmentRepository.Query();
+        }
+
+        public async Task<Department> GetDepartmentByIdAsync(string id)
+        {
+            return await _departmentRepository.Query().Include(d => d.Company).FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task<List<Department>> GetDepartmentsAsync()
+        {
+            return await _departmentRepository.Query().Include(d => d.Company).OrderBy(c => c.Name).ToListAsync();
+        }
+
         public async Task CreateDepartmentAsync(Department department)
         {
             if (department == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(department));
             }
 
             await _departmentRepository.AddAsync(department);
@@ -83,7 +108,7 @@ namespace HES.Core.Services
         {
             if (department == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(department));
             }
             await _departmentRepository.UpdateAsync(department);
         }
@@ -92,7 +117,7 @@ namespace HES.Core.Services
         {
             if (id == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(id));
             }
             var department = await _departmentRepository.GetByIdAsync(id);
             if (department == null)
@@ -102,11 +127,33 @@ namespace HES.Core.Services
             await _departmentRepository.DeleteAsync(department);
         }
 
+        #endregion
+
+        #region Position
+
+        public IQueryable<Position> PositionQuery()
+        {
+            return _positionRepository.Query();
+        }
+
+        public async Task<List<Position>> GetPositionsAsync()
+        {
+            return await _positionRepository
+                .Query()
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
+        public async Task<Position> GetPositionByIdAsync(string id)
+        {
+            return await _positionRepository.GetByIdAsync(id);
+        }
+
         public async Task CreatePositionAsync(Position position)
         {
             if (position == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(position));
             }
 
             await _positionRepository.AddAsync(position);
@@ -116,7 +163,7 @@ namespace HES.Core.Services
         {
             if (position == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(position));
             }
             await _positionRepository.UpdateAsync(position);
         }
@@ -125,7 +172,7 @@ namespace HES.Core.Services
         {
             if (id == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(id));
             }
             var position = await _positionRepository.GetByIdAsync(id);
             if (position == null)
@@ -134,5 +181,8 @@ namespace HES.Core.Services
             }
             await _positionRepository.DeleteAsync(position);
         }
+
+        #endregion
+
     }
 }

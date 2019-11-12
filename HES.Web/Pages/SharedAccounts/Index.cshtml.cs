@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using HES.Core.Utilities;
 
 namespace HES.Web.Pages.SharedAccounts
 {
@@ -56,9 +57,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -82,9 +82,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -127,9 +126,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -172,9 +170,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 

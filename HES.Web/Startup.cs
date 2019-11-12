@@ -73,7 +73,6 @@ namespace HES.Web
             services.AddScoped<IDeviceService, DeviceService>();
             services.AddScoped<IDeviceTaskService, DeviceTaskService>();
             services.AddScoped<IDeviceAccountService, DeviceAccountService>();
-
             services.AddScoped<IWorkstationService, WorkstationService>();
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
             services.AddScoped<ISharedAccountService, SharedAccountService>();
@@ -85,6 +84,10 @@ namespace HES.Web
             services.AddScoped<IAppService, AppService>();
             services.AddScoped<ILogViewerService, LogViewerService>();
             services.AddTransient<IAesCryptographyService, AesCryptographyService>();
+
+            services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
+            services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
+            services.AddScoped<IRemoteTaskService, RemoteTaskService>();
 
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
@@ -102,11 +105,6 @@ namespace HES.Web
                                                  dataProtectionProvider,
                                                  logger);
             });
-
-            services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
-            services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
-            services.AddScoped<IRemoteTaskService, RemoteTaskService>();
-
             services.AddSingleton<IEmailSenderService, EmailSenderService>(i =>
                  new EmailSenderService(
                      Configuration["EmailSender:Host"],
