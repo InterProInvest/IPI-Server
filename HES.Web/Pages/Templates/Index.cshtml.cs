@@ -2,10 +2,10 @@
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Templates
@@ -32,7 +32,7 @@ namespace HES.Web.Pages.Templates
 
         public async Task OnGetAsync()
         {
-            Templates = await _templateService.Query().ToListAsync();
+            Templates = await _templateService.GetTemplatesAsync();
         }
 
         #region Tempalate
@@ -46,7 +46,9 @@ namespace HES.Web.Pages.Templates
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
+                _logger.LogError($"{errors}");
+                ErrorMessage = errors;
                 return RedirectToPage("./Index");
             }
 
@@ -68,17 +70,15 @@ namespace HES.Web.Pages.Templates
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Template = await _templateService
-                .Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Template = await _templateService.GetByIdAsync(id);
 
             if (Template == null)
             {
-                _logger.LogWarning("Template == null");
+                _logger.LogWarning($"{nameof(Template)} is null");
                 return NotFound();
             }
 
@@ -89,7 +89,9 @@ namespace HES.Web.Pages.Templates
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
+                _logger.LogError($"{errors}");
+                ErrorMessage = errors;
                 return RedirectToPage("./Index");
             }
 
@@ -111,17 +113,15 @@ namespace HES.Web.Pages.Templates
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Template = await _templateService
-                .Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Template = await _templateService.GetByIdAsync(id);
 
             if (Template == null)
             {
-                _logger.LogWarning("Template == null");
+                _logger.LogWarning($"{nameof(Template)} is null");
                 return NotFound();
             }
 
@@ -132,7 +132,7 @@ namespace HES.Web.Pages.Templates
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
