@@ -54,7 +54,7 @@ namespace HES.Core.Services
             }
 
             // Device
-            var device = await _deviceService.GetByIdAsync(deviceTask.DeviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(deviceTask.DeviceId);
 
             // Device Account
             var deviceAccount = deviceTask.DeviceAccount;
@@ -154,7 +154,7 @@ namespace HES.Core.Services
         {
             _dataProtectionService.Validate();
 
-            var device = await _deviceService.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
 
             var query = _deviceTaskService
                 .Query()
@@ -236,7 +236,7 @@ namespace HES.Core.Services
         async Task<ushort> AddDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
 
@@ -253,7 +253,7 @@ namespace HES.Core.Services
         async Task<ushort> UpdateDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
 
@@ -280,7 +280,7 @@ namespace HES.Core.Services
         async Task<ushort> DeleteDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
 
@@ -320,7 +320,7 @@ namespace HES.Core.Services
         async Task<ushort> ProfileDevice(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Include(d => d.DeviceAccessProfile)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);

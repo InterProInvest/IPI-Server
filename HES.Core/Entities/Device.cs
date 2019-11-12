@@ -12,6 +12,7 @@ namespace HES.Core.Entities
         public string Id { get; set; }
         public string MAC { get; set; }
         public string Model { get; set; }
+        [Required]
         public string RFID { get; set; }
         public int Battery { get; set; }
         public string Firmware { get; set; }

@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Models;
 using Hideez.SDK.Communication;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -44,24 +45,81 @@ namespace HES.Core.Services
             _aesService = aesService;
         }
 
-        public IQueryable<Device> Query()
+        #region Device
+
+        public IQueryable<Device> QueryOfDevice()
         {
             return _deviceRepository.Query();
         }
 
-        public async Task<int> GetCountAsync()
-        {
-            return await _deviceRepository.GetCountAsync();
-        }
-
-        public async Task<int> GetFreeDevicesCount()
-        {
-            return await _deviceRepository.Query().Where(d => d.EmployeeId == null).CountAsync();
-        }
-
-        public async Task<Device> GetByIdAsync(dynamic id)
+        public async Task<Device> GetDeviceByIdAsync(dynamic id)
         {
             return await _deviceRepository.GetByIdAsync(id);
+        }
+
+        public async Task<Device> GetByIdWithIncludeAsync(string id)
+        {
+            return await _deviceRepository
+                .Query()
+                .Include(d => d.Employee)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task<List<Device>> GetDevicesAsync()
+        {
+            return await _deviceRepository
+                .Query()
+                .Include(d => d.DeviceAccessProfile)
+                .Include(d => d.Employee.Department.Company)
+                .ToListAsync();
+        }
+
+        public async Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter)
+        {
+            var filter = _deviceRepository
+                .Query()
+                .Include(d => d.DeviceAccessProfile)
+                .Include(c => c.Employee.Department.Company)
+                .AsQueryable();
+
+            if (deviceFilter.Battery != null)
+            {
+                filter = filter.Where(w => w.Battery == deviceFilter.Battery);
+            }
+            if (deviceFilter.Firmware != null)
+            {
+                filter = filter.Where(w => w.Firmware.Contains(deviceFilter.Firmware));
+            }
+            if (deviceFilter.EmployeeId != null)
+            {
+                if (deviceFilter.EmployeeId == "N/A")
+                {
+                    filter = filter.Where(w => w.EmployeeId == null);
+                }
+                else
+                {
+                    filter = filter.Where(w => w.EmployeeId == deviceFilter.EmployeeId);
+                }
+            }
+            if (deviceFilter.CompanyId != null)
+            {
+                filter = filter.Where(w => w.Employee.Department.Company.Id == deviceFilter.CompanyId);
+            }
+            if (deviceFilter.DepartmentId != null)
+            {
+                filter = filter.Where(w => w.Employee.DepartmentId == deviceFilter.DepartmentId);
+            }
+            if (deviceFilter.StartDate != null && deviceFilter.EndDate != null)
+            {
+                filter = filter.Where(w => w.LastSynced.HasValue
+                                        && w.LastSynced.Value >= deviceFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
+                                        && w.LastSynced.Value <= deviceFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+            }
+
+            return await filter
+                .OrderBy(w => w.Id)
+                .Take(deviceFilter.Records)
+                .ToListAsync();
         }
 
         public async Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevices(string key, byte[] fileContent)
@@ -119,17 +177,12 @@ namespace HES.Core.Services
         {
             if (device == null)
             {
-                throw new Exception("The parameter must not be null.");
-            }
-
-            if (string.IsNullOrWhiteSpace(device.RFID))
-            {
-                device.RFID = null;
+                throw new ArgumentNullException(nameof(device));
             }
 
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "RFID" });
         }
-
+        // ???
         public async Task UpdateOnlyPropAsync(Device device, string[] properties)
         {
             await _deviceRepository.UpdateOnlyPropAsync(device, properties);
@@ -204,6 +257,8 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
         }
 
+        #endregion
+
         #region Profile
 
         public async Task<string[]> GetDevicesByProfileAsync(string profileId)
@@ -229,11 +284,11 @@ namespace HES.Core.Services
         {
             if (devicesId == null)
             {
-                throw new NullReferenceException(nameof(devicesId));
+                throw new ArgumentNullException(nameof(devicesId));
             }
             if (profileId == null)
             {
-                throw new NullReferenceException(nameof(profileId));
+                throw new ArgumentNullException(nameof(profileId));
             }
 
             var profile = await _deviceAccessProfilesService.GetByIdAsync(profileId);

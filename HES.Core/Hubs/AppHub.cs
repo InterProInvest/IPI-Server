@@ -220,7 +220,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .Query()
+                    .QueryOfDevice()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.RFID == rfid);
@@ -240,7 +240,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .Query()
+                    .QueryOfDevice()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.MAC == mac);
@@ -260,7 +260,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .Query()
+                    .QueryOfDevice()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == serialNo);

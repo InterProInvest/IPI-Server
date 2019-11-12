@@ -304,7 +304,7 @@ namespace HES.Web.Pages.Employees
             }
 
             Devices = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Where(d => d.EmployeeId == null)
                 .ToListAsync();
 
@@ -365,7 +365,7 @@ namespace HES.Web.Pages.Employees
             }
 
             Device = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Include(e => e.Employee)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -432,7 +432,7 @@ namespace HES.Web.Pages.Employees
             ViewData["Templates"] = new SelectList(await _templateService.Query().ToListAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
-            Devices = await _deviceService.Query().Where(d => d.EmployeeId == id).ToListAsync();
+            Devices = await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == id).ToListAsync();
 
             return Partial("_CreatePersonalAccount", this);
         }
@@ -652,7 +652,7 @@ namespace HES.Web.Pages.Employees
 
             SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
             Devices = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Where(d => d.EmployeeId == id)
                 .ToListAsync();
 

@@ -19,7 +19,6 @@ namespace HES.Web.Pages.Devices
         private readonly IDeviceService _deviceService;
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
-        private readonly IRemoteTaskService _remoteTaskService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
@@ -38,7 +37,6 @@ namespace HES.Web.Pages.Devices
         public IndexModel(IDeviceService deviceService,
                           IEmployeeService employeeService,
                           IDeviceAccessProfilesService deviceAccessProfilesService,
-                          IRemoteTaskService remoteTaskService,
                           IOrgStructureService orgStructureService,
                           IWorkstationAuditService workstationAuditService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
@@ -47,7 +45,6 @@ namespace HES.Web.Pages.Devices
             _deviceService = deviceService;
             _employeeService = employeeService;
             _deviceAccessProfilesService = deviceAccessProfilesService;
-            _remoteTaskService = remoteTaskService;
             _orgStructureService = orgStructureService;
             _workstationAuditService = workstationAuditService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
@@ -56,11 +53,7 @@ namespace HES.Web.Pages.Devices
 
         public async Task OnGetAsync()
         {
-            Devices = await _deviceService
-                .Query()
-                .Include(d => d.DeviceAccessProfile)
-                .Include(d => d.Employee.Department.Company)
-                .ToListAsync();
+            Devices = await _deviceService.GetDevicesAsync();
 
             ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
             ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
@@ -70,10 +63,12 @@ namespace HES.Web.Pages.Devices
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
+        #region From Dashboard
+
         public async Task OnGetLowBatteryAsync()
         {
             Devices = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.Battery <= 30)
@@ -90,7 +85,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetDeviceLockedAsync()
         {
             Devices = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.State == DeviceState.Locked)
@@ -107,7 +102,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetDeviceErrorAsync()
         {
             Devices = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.State == DeviceState.Error)
@@ -124,7 +119,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetInReserveAsync()
         {
             Devices = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.EmployeeId == null)
@@ -138,53 +133,11 @@ namespace HES.Web.Pages.Devices
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
+        #endregion
+
         public async Task<IActionResult> OnPostFilterDevicesAsync(DeviceFilter DeviceFilter)
         {
-            var filter = _deviceService
-                .Query()
-                .Include(d => d.DeviceAccessProfile)
-                .Include(c => c.Employee.Department.Company)
-                .AsQueryable();
-
-            if (DeviceFilter.Battery != null)
-            {
-                filter = filter.Where(w => w.Battery == DeviceFilter.Battery);
-            }
-            if (DeviceFilter.Firmware != null)
-            {
-                filter = filter.Where(w => w.Firmware.Contains(DeviceFilter.Firmware));
-            }
-            if (DeviceFilter.EmployeeId != null)
-            {
-                if (DeviceFilter.EmployeeId == "N/A")
-                {
-                    filter = filter.Where(w => w.EmployeeId == null);
-                }
-                else
-                {
-                    filter = filter.Where(w => w.EmployeeId == DeviceFilter.EmployeeId);
-                }
-            }
-            if (DeviceFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Employee.Department.Company.Id == DeviceFilter.CompanyId);
-            }
-            if (DeviceFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.Employee.DepartmentId == DeviceFilter.DepartmentId);
-            }
-            if (DeviceFilter.StartDate != null && DeviceFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.LastSynced.HasValue
-                                        && w.LastSynced.Value >= DeviceFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
-                                        && w.LastSynced.Value <= DeviceFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-
-            Devices = await filter
-                .OrderBy(w => w.Id)
-                .Take(DeviceFilter.Records)
-                .ToListAsync();
-
+            Devices = await _deviceService.GetFilteredDevicesAsync(DeviceFilter);
             return Partial("_DevicesTable", this);
         }
 
@@ -192,17 +145,15 @@ namespace HES.Web.Pages.Devices
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Device = await _deviceService.Query()
-                .Include(d => d.Employee)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Device = await _deviceService.GetByIdWithIncludeAsync(id);
 
             if (Device == null)
             {
-                _logger.LogWarning("Device == null");
+                _logger.LogWarning($"{nameof(Device)} is null");
                 return NotFound();
             }
 
@@ -211,10 +162,12 @@ namespace HES.Web.Pages.Devices
 
         public async Task<IActionResult> OnPostEditDeviceRfidAsync(Device device)
         {
-            if (device == null)
+            if (!ModelState.IsValid)
             {
-                _logger.LogWarning("device == null");
-                return NotFound();
+                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
+                _logger.LogError($"{errors}");
+                ErrorMessage = errors;
+                return RedirectToPage("./Index");
             }
 
             try
@@ -244,12 +197,6 @@ namespace HES.Web.Pages.Devices
 
         public async Task<IActionResult> OnPostSetProfileAsync(string[] devices, string profileId)
         {
-            if (devices == null && profileId == null)
-            {
-                _logger.LogWarning("devices == null && profileId == null");
-                return RedirectToPage("./Index");
-            }
-
             try
             {
                 await _deviceService.SetProfileAsync(devices, profileId);
@@ -269,16 +216,15 @@ namespace HES.Web.Pages.Devices
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Device = await _deviceService.Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Device = await _deviceService.GetDeviceByIdAsync(id);
 
             if (Device == null)
             {
-                _logger.LogWarning("Device == null");
+                _logger.LogWarning($"{nameof(Device)} is null");
                 return NotFound();
             }
 
@@ -289,7 +235,7 @@ namespace HES.Web.Pages.Devices
         {
             if (deviceId == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(deviceId)} is null");
                 return NotFound();
             }
 
@@ -298,7 +244,7 @@ namespace HES.Web.Pages.Devices
                 await _deviceService.UnlockPinAsync(deviceId);
                 await _workstationAuditService.AddPendingUnlockEventAsync(deviceId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
-                SuccessMessage = $"Pending unlock.";
+                SuccessMessage = $"Pending unlock sent to server for processing.";
             }
             catch (Exception ex)
             {

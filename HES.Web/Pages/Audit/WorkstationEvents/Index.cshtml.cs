@@ -48,7 +48,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
             ViewData["Events"] = new SelectList(Enum.GetValues(typeof(WorkstationEventType)).Cast<WorkstationEventType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["Severity"] = new SelectList(Enum.GetValues(typeof(WorkstationEventSeverity)).Cast<WorkstationEventSeverity>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["Workstations"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _deviceService.Query().ToListAsync(), "Id", "Id");
+            ViewData["Devices"] = new SelectList(await _deviceService.QueryOfDevice().ToListAsync(), "Id", "Id");
             ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");

@@ -44,7 +44,7 @@ namespace HES.Web.Pages.Develop
             DeviceTasks = await _deviceTaskService.Query().OrderByDescending(o => o.CreatedAt).ToListAsync();
 
             ViewData["Devices"] = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 //.Include(e => e.Employee)
                 .Select(a => new SelectListItem
                 {
@@ -65,7 +65,7 @@ namespace HES.Web.Pages.Develop
                 return RedirectToPage("./index");
             }
 
-            var device = await _deviceService.GetByIdAsync(accountModel.DeviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(accountModel.DeviceId);
             if (device == null)
             {
                 throw new ArgumentNullException(nameof(device));

@@ -129,12 +129,12 @@ namespace HES.Core.Services
 
         public async Task<int> GetDevicesCount()
         {
-            return await _deviceService.GetCountAsync();
+            return await _deviceService.QueryOfDevice().CountAsync();
         }
 
         public async Task<int> GetFreeDevicesCount()
         {
-            return await _deviceService.GetFreeDevicesCount();
+            return await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == null).CountAsync();
         }
 
         public async Task<List<DashboardNotify>> GetDevicesNotify()
@@ -142,7 +142,7 @@ namespace HES.Core.Services
             var list = new List<DashboardNotify>();
 
             var lowBattery = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Where(d => d.Battery <= 30)
                 .CountAsync();
 
@@ -158,7 +158,7 @@ namespace HES.Core.Services
             }
 
             var deviceLock = await _deviceService
-                .Query()
+                .QueryOfDevice()
                 .Where(d => d.State == DeviceState.Locked)
                 .CountAsync();
 
@@ -174,7 +174,7 @@ namespace HES.Core.Services
             }
 
             var deviceError = await _deviceService
-               .Query()
+               .QueryOfDevice()
                .Where(d => d.State == DeviceState.Error)
                .CountAsync();
 

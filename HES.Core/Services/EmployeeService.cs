@@ -199,7 +199,7 @@ namespace HES.Core.Services
 
             foreach (var deviceId in devices)
             {
-                var device = await _deviceService.GetByIdAsync(deviceId);
+                var device = await _deviceService.GetDeviceByIdAsync(deviceId);
                 if (device != null)
                 {
                     if (device.EmployeeId == null)
@@ -235,7 +235,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var device = await _deviceService.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
             if (device == null)
             {
                 throw new Exception($"Device not found");
@@ -287,7 +287,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(employee));
             }
 
-            var device = await _deviceService.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
             if (device == null)
             {
                 throw new ArgumentNullException(nameof(device));
@@ -557,7 +557,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(deviceAccountId));
             }
 
-            var device = await _deviceService.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
             if (device == null)
             {
                 throw new Exception($"Device not found, ID: {deviceId}");
@@ -591,7 +591,7 @@ namespace HES.Core.Services
 
         private async Task SetAsPrimaryIfEmpty(string deviceId, string deviceAccountId)
         {
-            var device = await _deviceService.GetByIdAsync(deviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
 
             if (device.PrimaryAccountId == null)
             {
