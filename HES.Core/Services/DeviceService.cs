@@ -30,18 +30,18 @@ namespace HES.Core.Services
         }
 
         private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly IAsyncRepository<DeviceAccessProfile> _deviceAccessProfileRepository;
         private readonly IDeviceTaskService _deviceTaskService;
-        private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
         private readonly IAesCryptographyService _aesService;
 
         public DeviceService(IAsyncRepository<Device> deviceRepository,
+                             IAsyncRepository<DeviceAccessProfile> deviceAccessProfileRepository,
                              IDeviceTaskService deviceTaskService,
-                             IDeviceAccessProfilesService deviceAccessProfilesService,
                              IAesCryptographyService aesService)
         {
             _deviceRepository = deviceRepository;
             _deviceTaskService = deviceTaskService;
-            _deviceAccessProfilesService = deviceAccessProfilesService;
+            _deviceAccessProfileRepository = deviceAccessProfileRepository;
             _aesService = aesService;
         }
 
@@ -57,7 +57,7 @@ namespace HES.Core.Services
             return await _deviceRepository.GetByIdAsync(id);
         }
 
-        public async Task<Device> GetByIdWithIncludeAsync(string id)
+        public async Task<Device> GetDeviceWithIncludeAsync(string id)
         {
             return await _deviceRepository
                 .Query()
@@ -261,6 +261,90 @@ namespace HES.Core.Services
 
         #region Profile
 
+        public IQueryable<DeviceAccessProfile> QueryOfAccessProfile()
+        {
+            return _deviceAccessProfileRepository.Query();
+        }
+
+        public async Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id)
+        {
+            return await _deviceAccessProfileRepository
+                .Query()
+                .Include(d => d.Devices)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task<List<DeviceAccessProfile>> GetAccessProfilesAsync()
+        {
+            return await _deviceAccessProfileRepository
+                .Query()
+                .Include(d => d.Devices)
+                .ToListAsync();
+        }
+
+        public async Task CreateProfileAsync(DeviceAccessProfile deviceAccessProfile)
+        {
+            if (deviceAccessProfile == null)
+            {
+                throw new ArgumentNullException(nameof(deviceAccessProfile));
+            }
+
+            var profile = await _deviceAccessProfileRepository
+                .Query()
+                .Where(d => d.Name == deviceAccessProfile.Name)
+                .AnyAsync();
+
+            if (profile)
+            {
+                throw new Exception($"Name {deviceAccessProfile.Name} is already taken.");
+            }
+
+            deviceAccessProfile.CreatedAt = DateTime.UtcNow;
+            await _deviceAccessProfileRepository.AddAsync(deviceAccessProfile);
+        }
+
+        public async Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile)
+        {
+            if (deviceAccessProfile == null)
+            {
+                throw new ArgumentNullException(nameof(deviceAccessProfile));
+            }
+
+            var profile = await _deviceAccessProfileRepository
+               .Query()
+               .Where(d => d.Name == deviceAccessProfile.Name && d.Id != deviceAccessProfile.Id)
+               .AnyAsync();
+
+            if (profile)
+            {
+                throw new Exception($"Name {deviceAccessProfile.Name} is already taken.");
+            }
+
+            deviceAccessProfile.UpdatedAt = DateTime.UtcNow;
+            await _deviceAccessProfileRepository.UpdateAsync(deviceAccessProfile);
+        }
+
+        public async Task DeleteProfileAsync(string id)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (id == "default")
+            {
+                throw new Exception("Cannot delete a default profile");
+            }
+
+            var deviceAccessProfile = await _deviceAccessProfileRepository.GetByIdAsync(id);
+            if (deviceAccessProfile == null)
+            {
+                throw new Exception("Device access profile not found");
+            }
+
+            await _deviceAccessProfileRepository.DeleteAsync(deviceAccessProfile);
+        }
+
         public async Task<string[]> GetDevicesByProfileAsync(string profileId)
         {
             var tasks = await _deviceTaskService
@@ -291,7 +375,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(profileId));
             }
 
-            var profile = await _deviceAccessProfilesService.GetByIdAsync(profileId);
+            var profile = await _deviceAccessProfileRepository.GetByIdAsync(profileId);
             if (profile == null)
             {
                 throw new Exception("Profile not found");

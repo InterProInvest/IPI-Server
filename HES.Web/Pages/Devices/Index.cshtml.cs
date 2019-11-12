@@ -18,7 +18,6 @@ namespace HES.Web.Pages.Devices
     {
         private readonly IDeviceService _deviceService;
         private readonly IEmployeeService _employeeService;
-        private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
@@ -36,7 +35,6 @@ namespace HES.Web.Pages.Devices
 
         public IndexModel(IDeviceService deviceService,
                           IEmployeeService employeeService,
-                          IDeviceAccessProfilesService deviceAccessProfilesService,
                           IOrgStructureService orgStructureService,
                           IWorkstationAuditService workstationAuditService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
@@ -44,7 +42,6 @@ namespace HES.Web.Pages.Devices
         {
             _deviceService = deviceService;
             _employeeService = employeeService;
-            _deviceAccessProfilesService = deviceAccessProfilesService;
             _orgStructureService = orgStructureService;
             _workstationAuditService = workstationAuditService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
@@ -149,7 +146,7 @@ namespace HES.Web.Pages.Devices
                 return NotFound();
             }
 
-            Device = await _deviceService.GetByIdWithIncludeAsync(id);
+            Device = await _deviceService.GetDeviceWithIncludeAsync(id);
 
             if (Device == null)
             {
@@ -191,7 +188,7 @@ namespace HES.Web.Pages.Devices
 
         public async Task<IActionResult> OnGetSetProfileAsync()
         {
-            DeviceAccessProfiles = await _deviceAccessProfilesService.Query().ToListAsync();
+            DeviceAccessProfiles = await _deviceService.GetAccessProfilesAsync();
             return Partial("_SetProfile", this);
         }
 

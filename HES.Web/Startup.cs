@@ -73,7 +73,6 @@ namespace HES.Web
             services.AddScoped<IDeviceService, DeviceService>();
             services.AddScoped<IDeviceTaskService, DeviceTaskService>();
             services.AddScoped<IDeviceAccountService, DeviceAccountService>();
-            services.AddScoped<IDeviceAccessProfilesService, DeviceAccessProfilesService>();
 
             services.AddScoped<IWorkstationService, WorkstationService>();
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
