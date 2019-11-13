@@ -100,7 +100,7 @@ namespace HES.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Employee>> DeleteEmployee(string id)
         {
-            var employee = await _employeeService.GetByIdAsync(id);
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
             if (employee == null)
             {
                 return NotFound();
@@ -174,7 +174,7 @@ namespace HES.Web.Controllers
                 return BadRequest(new { error = $"{ nameof(id)} is null" });
             }
 
-            var deviceAccount = await _employeeService.GetDeviceAccountWithIncludeAsync(id);
+            var deviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (deviceAccount == null)
             {

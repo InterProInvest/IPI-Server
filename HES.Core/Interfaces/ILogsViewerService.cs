@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface ILogViewerService
+    public interface ILogsViewerService
     {
         List<string> GetLogFiles();
         Task<List<LogModel>> GetSelectedLog(string name);

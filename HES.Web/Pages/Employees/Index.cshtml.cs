@@ -76,7 +76,6 @@ namespace HES.Web.Pages.Employees
         public async Task<IActionResult> OnPostFilterEmployeesAsync(EmployeeFilter employeeFilter)
         {
             Employees = await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
-
             return Partial("_EmployeesTable", this);
         }
 
@@ -239,17 +238,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Employee = await _employeeService
-                .Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {
-                _logger.LogWarning("Employee == null");
+                _logger.LogWarning($"{nameof(Employee)} is null");
                 return NotFound();
             }
 
@@ -301,7 +298,7 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-               var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
                 _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }

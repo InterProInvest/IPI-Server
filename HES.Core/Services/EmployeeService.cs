@@ -56,9 +56,20 @@ namespace HES.Core.Services
             return _employeeRepository.Query();
         }
 
-        public async Task<Employee> GetByIdAsync(dynamic id)
+        public async Task<Employee> GetEmployeeByIdAsync(string id)
         {
             return await _employeeRepository.GetByIdAsync(id);
+        }
+
+        public async Task<Employee> GetEmployeeWithIncludeAsync(string id)
+        {
+            return await _employeeRepository
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .ThenInclude(e => e.DeviceAccessProfile)
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public async Task<List<Employee>> GetAllEmployeesAsync()
@@ -110,17 +121,6 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<Employee> GetEmployeeWithIncludeAsync(string id)
-        {
-            return await _employeeRepository
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.Devices)
-                .ThenInclude(e => e.DeviceAccessProfile)
-                .FirstOrDefaultAsync(e => e.Id == id);
-        }
-
         public async Task<Employee> CreateEmployeeAsync(Employee employee)
         {
             if (employee == null)
@@ -159,7 +159,7 @@ namespace HES.Core.Services
             // Remove all events
             var allEvents = await _workstationEventRepository.Query().Where(e => e.EmployeeId == id).ToListAsync();
             await _workstationEventRepository.DeleteRangeAsync(allEvents);
-            // Remove all events
+            // Remove all sessions
             var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
             await _workstationSessionRepository.DeleteRangeAsync(allSessions);
             // Remove all accounts
@@ -208,14 +208,7 @@ namespace HES.Core.Services
 
                         device.EmployeeId = employeeId;
                         await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
-
-                        await _deviceTaskService.AddTaskAsync(new DeviceTask
-                        {
-                            Password = _dataProtectionService.Protect(masterPassword),
-                            Operation = TaskOperation.Link,
-                            CreatedAt = DateTime.UtcNow,
-                            DeviceId = device.Id
-                        });
+                        await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Protect(masterPassword));
                     }
                 }
             }
@@ -263,13 +256,7 @@ namespace HES.Core.Services
             if (device.MasterPassword != null)
             {
                 // Add Task remove device
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    Password = _dataProtectionService.Protect(device.MasterPassword),
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Wipe,
-                    DeviceId = device.Id
-                });
+                await _deviceTaskService.AddWipeAsync(device.Id, _dataProtectionService.Protect(device.MasterPassword));
             }
         }
 
@@ -520,6 +507,16 @@ namespace HES.Core.Services
         #endregion
 
         #region Account
+        public async Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId)
+        {
+            return await _deviceAccountService
+                .Query()
+                .Include(d => d.Device)
+                .Include(d => d.Employee)
+                .Include(d => d.SharedAccount)
+                .Where(e => e.Id == deviceAccountId)
+                .FirstOrDefaultAsync();
+        }
 
         public async Task<List<DeviceAccount>> GetDeviceAccountsAsync(string employeeId)
         {
@@ -532,17 +529,6 @@ namespace HES.Core.Services
                             e.Deleted == false &&
                             e.Name != SamlIdentityProvider.DeviceAccountName)
                 .ToListAsync();
-        }
-
-        public async Task<DeviceAccount> GetDeviceAccountWithIncludeAsync(string deviceAccountId)
-        {
-            return await _deviceAccountService
-                .Query()
-                .Include(d => d.Device)
-                .Include(d => d.Employee)
-                .Include(d => d.SharedAccount)
-                .Where(e => e.Id == deviceAccountId && e.Deleted == false)
-                .FirstOrDefaultAsync();
         }
 
         public async Task SetPrimaryAccount(string deviceId, string deviceAccountId)
@@ -715,7 +701,7 @@ namespace HES.Core.Services
 
             try
             {
-                await _deviceTaskService.AddRangeAsync(tasks);
+                await _deviceTaskService.AddRangeTasksAsync(tasks);
             }
             catch (Exception)
             {
@@ -927,7 +913,7 @@ namespace HES.Core.Services
             await _deviceAccountService.AddRangeAsync(accounts);
             try
             {
-                await _deviceTaskService.AddRangeAsync(tasks);
+                await _deviceTaskService.AddRangeTasksAsync(tasks);
             }
             catch (Exception)
             {

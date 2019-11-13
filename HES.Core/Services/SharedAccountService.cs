@@ -185,7 +185,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -236,7 +236,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -289,7 +289,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -341,7 +341,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;

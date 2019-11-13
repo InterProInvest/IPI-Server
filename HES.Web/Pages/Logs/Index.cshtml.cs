@@ -11,7 +11,7 @@ namespace HES.Web.Pages.Logs
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogViewerService _logViewerService;
+        private readonly ILogsViewerService _logViewerService;
 
         public List<LogModel> SelectedLog { get; set; } = new List<LogModel>();
         public List<string> LogFiles { get; set; }
@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Logs
         [TempData]
         public string ErrorMessage { get; set; }
 
-        public IndexModel(ILogViewerService logViewerService)
+        public IndexModel(ILogsViewerService logViewerService)
         {
             _logViewerService = logViewerService;
         }

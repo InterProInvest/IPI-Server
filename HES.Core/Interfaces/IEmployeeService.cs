@@ -11,10 +11,10 @@ namespace HES.Core.Interfaces
     public interface IEmployeeService
     {
         IQueryable<Employee> Query();
-        Task<Employee> GetByIdAsync(dynamic id);
+        Task<Employee> GetEmployeeByIdAsync(string id);
+        Task<Employee> GetEmployeeWithIncludeAsync(string id);
         Task<List<Employee>> GetAllEmployeesAsync();
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
-        Task<Employee> GetEmployeeWithIncludeAsync(string id);
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
@@ -27,7 +27,7 @@ namespace HES.Core.Interfaces
         Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
         Task DeleteSamlIdpAccountAsync(string employeeId);
         Task<List<DeviceAccount>> GetDeviceAccountsAsync(string employeeId);
-        Task<DeviceAccount> GetDeviceAccountWithIncludeAsync(string deviceAccountId);
+        Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
         Task SetPrimaryAccount(string deviceId, string deviceAccountId);
         Task CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
         Task CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);

@@ -144,8 +144,6 @@ namespace HES.Core.Services
                     break;
             }
 
-            //_logger.LogDebug($"[{device.Id}] Task {deviceTask.Operation.ToString()} completed");
-
             // Delete task
             await _deviceTaskService.DeleteTaskAsync(deviceTask);
         }

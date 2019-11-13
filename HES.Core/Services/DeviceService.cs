@@ -65,6 +65,14 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
+        public async Task<List<Device>> GetDevicesByEmployeeIdAsync(string id)
+        {
+            return await _deviceRepository
+                .Query()
+                .Where(d => d.EmployeeId == id)
+                .ToListAsync();
+        }
+
         public async Task<List<Device>> GetDevicesAsync()
         {
             return await _deviceRepository
@@ -229,7 +237,7 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "State" });
 
             // Create task
-            await _deviceTaskService.AddUnlockPinTaskAsync(device);
+            await _deviceTaskService.AddUnlockPinAsync(device);
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate)
@@ -394,7 +402,7 @@ namespace HES.Core.Services
                         // Delete all previous tasks for update profile
                         await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
                         // Add task for update profile
-                        await _deviceTaskService.AddProfileTaskAsync(device);
+                        await _deviceTaskService.AddProfileAsync(device);
                     }
                 }
             }

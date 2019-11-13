@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class LogViewerService : ILogViewerService
+    public class LogsViewerService : ILogsViewerService
     {
         private readonly string _folderPath;
 
-        public LogViewerService()
+        public LogsViewerService()
         {
             _folderPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "logs");
         }

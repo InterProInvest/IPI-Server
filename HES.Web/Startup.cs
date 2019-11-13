@@ -80,7 +80,7 @@ namespace HES.Web
             services.AddScoped<ITemplateService, TemplateService>();
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<IOrgStructureService, OrgStructureService>();
-            services.AddScoped<ILogViewerService, LogViewerService>();
+            services.AddScoped<ILogsViewerService, LogsViewerService>();
             services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
             services.AddTransient<IAesCryptographyService, AesCryptographyService>();
             services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();

@@ -13,6 +13,7 @@ namespace HES.Core.Interfaces
         IQueryable<Device> QueryOfDevice();
         Task<Device> GetDeviceByIdAsync(dynamic id);
         Task<Device> GetDeviceWithIncludeAsync(string id);
+        Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
         Task<List<Device>> GetDevicesAsync();
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
         Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevices(string key, byte[] fileContent);
