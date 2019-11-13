@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models
+namespace HES.Core.Models.API
 {
-    public class WorkstationAccountDto
+    public class DeviceDto
     {
-        public WorkstationAccount WorkstationAccount { get; set; }
         [Required]
         public string EmployeeId { get; set; }
         [Required]

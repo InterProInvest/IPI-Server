@@ -156,6 +156,15 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new Exception("Employee not found");
 
+            var devices = await _deviceService
+                .QueryOfDevice()
+                .Where(x => x.EmployeeId == id)
+                .AnyAsync();
+            if (devices)
+            {
+                throw new Exception("The employee has a device attached, first untie the device before removing.");
+            }
+
             // Remove all events
             var allEvents = await _workstationEventRepository.Query().Where(e => e.EmployeeId == id).ToListAsync();
             await _workstationEventRepository.DeleteRangeAsync(allEvents);
@@ -624,7 +633,7 @@ namespace HES.Core.Services
             await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password }, new string[] { deviceId });
         }
 
-        public async Task CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices)
+        public async Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices)
         {
             if (deviceAccount == null)
                 throw new ArgumentNullException(nameof(deviceAccount));
@@ -697,7 +706,7 @@ namespace HES.Core.Services
                 await SetAsPrimaryIfEmpty(deviceId, deviceAccountId);
             }
 
-            await _deviceAccountService.AddRangeAsync(accounts);
+            var deviceAccounts = await _deviceAccountService.AddRangeAsync(accounts);
 
             try
             {
@@ -708,6 +717,8 @@ namespace HES.Core.Services
                 await _deviceAccountService.DeleteRangeAsync(accounts);
                 throw;
             }
+
+            return deviceAccounts;
         }
 
         public async Task EditPersonalAccountAsync(DeviceAccount deviceAccount)

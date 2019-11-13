@@ -20,20 +20,20 @@ namespace HES.Core.Services
         {
             return _deviceAccountRepository.Query();
         }
-               
+
         public async Task<DeviceAccount> GetByIdAsync(string accountId)
         {
             return await _deviceAccountRepository.GetByIdAsync(accountId);
         }
 
-        public async Task AddAsync(DeviceAccount deviceAccount)
+        public async Task<DeviceAccount> AddAsync(DeviceAccount deviceAccount)
         {
-            await _deviceAccountRepository.AddAsync(deviceAccount);
+            return await _deviceAccountRepository.AddAsync(deviceAccount);
         }
 
-        public async Task AddRangeAsync(IList<DeviceAccount> deviceAccounts)
+        public async Task<IList<DeviceAccount>> AddRangeAsync(IList<DeviceAccount> deviceAccounts)
         {
-            await _deviceAccountRepository.AddRangeAsync(deviceAccounts);
+            return await _deviceAccountRepository.AddRangeAsync(deviceAccounts);
         }
 
         public async Task UpdateOnlyPropAsync(DeviceAccount deviceAccount, string[] properties)

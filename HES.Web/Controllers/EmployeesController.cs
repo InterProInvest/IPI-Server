@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -61,11 +62,21 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
+        public async Task<ActionResult<Employee>> CreateEmployee(CreateEmployeeDto employeeDto)
         {
+            Employee createdEmployee;
             try
             {
-                await _employeeService.CreateEmployeeAsync(employee);
+                var employee = new Employee()
+                {
+                    FirstName = employeeDto.FirstName,
+                    LastName = employeeDto.LastName,
+                    Email = employeeDto.Email,
+                    PhoneNumber = employeeDto.PhoneNumber,
+                    DepartmentId = employeeDto.DepartmentId,
+                    PositionId = employeeDto.PositionId
+                };
+                createdEmployee = await _employeeService.CreateEmployeeAsync(employee);
             }
             catch (Exception ex)
             {
@@ -73,19 +84,28 @@ namespace HES.Web.Controllers
                 return BadRequest(new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetEmployeeById", new { id = employee.Id }, employee);
+            return CreatedAtAction("GetEmployeeById", new { id = createdEmployee.Id }, createdEmployee);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditEmployee(string id, Employee employee)
+        public async Task<IActionResult> EditEmployee(string id, EditEmployeeDto employeeDto)
         {
-            if (id != employee.Id)
+            if (id != employeeDto.Id)
             {
                 return BadRequest();
             }
 
             try
             {
+                var employee = new Employee()
+                {
+                    FirstName = employeeDto.FirstName,
+                    LastName = employeeDto.LastName,
+                    Email = employeeDto.Email,
+                    PhoneNumber = employeeDto.PhoneNumber,
+                    DepartmentId = employeeDto.DepartmentId,
+                    PositionId = employeeDto.PositionId
+                };
                 await _employeeService.EditEmployeeAsync(employee);
             }
             catch (Exception ex)
@@ -124,11 +144,12 @@ namespace HES.Web.Controllers
         #region Device
 
         [HttpPost()]
-        public async Task<IActionResult> AddDevice(string employeeId, string[] devicesIds)
+        public async Task<IActionResult> AddDevice(DeviceDto deviceDto)
         {
             try
             {
-                await _employeeService.AddDeviceAsync(employeeId, devicesIds);
+                await _employeeService.AddDeviceAsync(deviceDto.EmployeeId, new string[] { deviceDto.DeviceId });
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -140,11 +161,12 @@ namespace HES.Web.Controllers
         }
 
         [HttpDelete()]
-        public async Task<IActionResult> RemoveDevice(string employeeId, string deviceId)
+        public async Task<IActionResult> RemoveDevice(DeviceDto deviceDto)
         {
             try
             {
-                await _employeeService.RemoveDeviceAsync(employeeId, deviceId);
+                await _employeeService.RemoveDeviceAsync(deviceDto.EmployeeId, deviceDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -160,7 +182,7 @@ namespace HES.Web.Controllers
         #region Account
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<IList<DeviceAccount>>> GetDeviceAccounts(string id)
+        public async Task<ActionResult<IList<DeviceAccount>>> GetDeviceAccountsByEmployeeId(string id)
         {
             return await _employeeService.GetDeviceAccountsAsync(id);
         }
@@ -186,11 +208,29 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Employee>> CreateDeviceAccount(DeviceAccountDto deviceAccountDto)
+        public async Task<ActionResult<DeviceAccount>> CreateDeviceAccount(CreateDeviceAccountDto deviceAccountDto)
         {
+            IList<DeviceAccount> createdDeviceAccounts;
             try
             {
-                await _employeeService.CreatePersonalAccountAsync(deviceAccountDto.DeviceAccount, deviceAccountDto.AccountPassword, deviceAccountDto.DevicesIds);
+                var deviceAccount = new DeviceAccount()
+                {
+                    Name = deviceAccountDto.Name,
+                    Urls = deviceAccountDto.Urls,
+                    Apps = deviceAccountDto.Apps,
+                    Login = deviceAccountDto.Login,
+                    Kind = AccountKind.WebApp,
+                    EmployeeId = deviceAccountDto.EmployeeId,
+                    DeviceId = deviceAccountDto.DeviceId
+                };
+                var accountPassword = new AccountPassword()
+                {
+                    Password = deviceAccountDto.Password,
+                    OtpSecret = deviceAccountDto.OtpSecret
+                };
+
+                createdDeviceAccounts = await _employeeService.CreatePersonalAccountAsync(deviceAccount, accountPassword, new string[] { deviceAccountDto.DeviceId });
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -198,20 +238,95 @@ namespace HES.Web.Controllers
                 return BadRequest(new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetDeviceAccountById", new { id = deviceAccountDto.DeviceAccount.Id }, deviceAccountDto.DeviceAccount);
+            return CreatedAtAction("GetDeviceAccountById", new { id = createdDeviceAccounts[0].Id }, createdDeviceAccounts[0]);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditDeviceAccount(string id, DeviceAccount deviceAccount)
+        public async Task<IActionResult> EditDeviceAccount(string id, EditDeviceAccountDto deviceAccountDto)
         {
-            if (id != deviceAccount.Id)
+            if (id != deviceAccountDto.Id)
             {
                 return BadRequest();
             }
 
             try
             {
+                var deviceAccount = new DeviceAccount()
+                {
+                    Name = deviceAccountDto.Name,
+                    Urls = deviceAccountDto.Urls,
+                    Apps = deviceAccountDto.Apps,
+                    Login = deviceAccountDto.Login,
+                    Kind = AccountKind.WebApp,
+                    DeviceId = deviceAccountDto.DeviceId
+                };
+
                 await _employeeService.EditPersonalAccountAsync(deviceAccount);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+
+            return NoContent();
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditDeviceAccountPassword(string id, EditDeviceAccountPasswordDto deviceAccountDto)
+        {
+            if (id != deviceAccountDto.Id)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var deviceAccount = new DeviceAccount()
+                {
+                    Kind = AccountKind.WebApp,
+                    DeviceId = deviceAccountDto.DeviceId
+                };
+                var accountPassword = new AccountPassword()
+                {
+                    Password = deviceAccountDto.Password
+                };
+
+                await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+
+            return NoContent();
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditDeviceAccountOtp(string id, EditDeviceAccountOtpDto deviceAccountDto)
+        {
+            if (id != deviceAccountDto.Id)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var deviceAccount = new DeviceAccount()
+                {
+                    Kind = AccountKind.WebApp,
+                    DeviceId = deviceAccountDto.DeviceId
+                };
+                var accountPassword = new AccountPassword()
+                {
+                    OtpSecret = deviceAccountDto.OtpSercret
+                };
+
+                await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -233,7 +348,9 @@ namespace HES.Web.Controllers
 
             try
             {
-                await _employeeService.DeleteAccount(id);
+                var deviceId = await _employeeService.DeleteAccount(id);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
+
             }
             catch (Exception ex)
             {
@@ -245,11 +362,12 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddSharedAccount(SharedAccountDto sharedAccountDto)
+        public async Task<IActionResult> AddSharedAccount(AddSharedAccountDto sharedAccountDto)
         {
             try
             {
-                await _employeeService.AddSharedAccount(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId, sharedAccountDto.DevicesIds);
+                await _employeeService.AddSharedAccount(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId, new string[] { sharedAccountDto.DeviceId });
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(sharedAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -260,12 +378,12 @@ namespace HES.Web.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> UndoChanges(string accountId)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> UndoDeviceAccountChanges(string id)
         {
             try
             {
-                await _employeeService.UndoChanges(accountId);
+                await _employeeService.UndoChanges(id);
             }
             catch (Exception ex)
             {
@@ -273,15 +391,25 @@ namespace HES.Web.Controllers
                 return BadRequest(new { error = ex.Message });
             }
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateWorkstationAccount(WorkstationAccountDto workstationAccountDto)
+        public async Task<IActionResult> CreateWorkstationAccount(CreateWorkstationAccountDto workstationAccountDto)
         {
             try
             {
-                await _employeeService.CreateWorkstationAccountAsync(workstationAccountDto.WorkstationAccount, workstationAccountDto.EmployeeId, workstationAccountDto.DeviceId);
+                var workstationAccount = new WorkstationAccount()
+                {
+                    Name = workstationAccountDto.Name,
+                    AccountType = workstationAccountDto.AccountType,
+                    Login = workstationAccountDto.Login,
+                    Domain = workstationAccountDto.Domain,
+                    Password = workstationAccountDto.Password
+                };
+
+                await _employeeService.CreateWorkstationAccountAsync(workstationAccount, workstationAccountDto.EmployeeId, workstationAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -293,11 +421,12 @@ namespace HES.Web.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> SetAsWorkstationAccount(string deviceId, string deviceAccountId)
+        public async Task<IActionResult> SetAsWorkstationAccount(SetAsWorkstationAccountDto workstationAccountDto)
         {
             try
             {
-                await _employeeService.SetPrimaryAccount(deviceId, deviceAccountId);
+                await _employeeService.SetPrimaryAccount(workstationAccountDto.DeviceId, workstationAccountDto.DeviceAccountId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -305,7 +434,7 @@ namespace HES.Web.Controllers
                 return BadRequest(new { error = ex.Message });
             }
 
-            return Ok();
+            return NoContent();
         }
 
         #endregion

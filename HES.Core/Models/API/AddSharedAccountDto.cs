@@ -1,14 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models
+namespace HES.Core.Models.API
 {
-    public class SharedAccountDto
+    public class AddSharedAccountDto
     {
         [Required]
         public string EmployeeId { get; set; }
         [Required]
-        public string SharedAccountId { get; set; }
+        public string DeviceId { get; set; }
         [Required]
-        public string[] DevicesIds { get; set; }
+        public string SharedAccountId { get; set; }
     }
 }

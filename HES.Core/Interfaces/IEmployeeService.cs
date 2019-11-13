@@ -30,7 +30,7 @@ namespace HES.Core.Interfaces
         Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
         Task SetPrimaryAccount(string deviceId, string deviceAccountId);
         Task CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
-        Task CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);
+        Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);
         Task EditPersonalAccountAsync(DeviceAccount deviceAccount);
         Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
         Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
