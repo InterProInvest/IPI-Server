@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Workstation;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
@@ -33,18 +33,13 @@ namespace HES.Core.Services
 
         public async Task<Workstation> GetWorkstationByIdAsync(string id)
         {
-            return await _workstationRepository.GetByIdAsync(id);
-        }
-
-        public async Task<Workstation> GetWorkstationWithIncludeAsync(string id)
-        {
             return await _workstationRepository
                 .Query()
                 .Include(c => c.Department.Company)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<List<Workstation>> GetAllWorkstationsAsync()
+        public async Task<List<Workstation>> GetWorkstationsAsync()
         {
             return await _workstationRepository
                 .Query()
@@ -359,7 +354,6 @@ namespace HES.Core.Services
             }
         }
 
-        // ???
         public async Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId)
         {
             var workstation = await GetWorkstationByIdAsync(workstationId);

@@ -38,7 +38,7 @@ namespace HES.Web.Pages.Workstations
 
         public async Task OnGetAsync()
         {
-            Workstations = await _workstationService.GetAllWorkstationsAsync();
+            Workstations = await _workstationService.GetWorkstationsAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
             ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
@@ -65,7 +65,7 @@ namespace HES.Web.Pages.Workstations
 
         public async Task OnGetOnlineAsync()
         {
-            var allWorkstations = await _workstationService.GetAllWorkstationsAsync();
+            var allWorkstations = await _workstationService.GetWorkstationsAsync();
 
             Workstations = allWorkstations.Where(w => w.IsOnline == true).ToList();
 
@@ -96,7 +96,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
+            Workstation = await _workstationService.GetWorkstationByIdAsync(id);
 
             if (Workstation == null)
             {
@@ -152,7 +152,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
+            Workstation = await _workstationService.GetWorkstationByIdAsync(id);
 
             if (Workstation == null)
             {
@@ -195,7 +195,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
+            Workstation = await _workstationService.GetWorkstationByIdAsync(id);
 
             if (Workstation == null)
             {

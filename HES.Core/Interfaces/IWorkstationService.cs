@@ -13,8 +13,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Workstation> QueryOfWorkstation();
         Task<Workstation> GetWorkstationByIdAsync(string id);
-        Task<Workstation> GetWorkstationWithIncludeAsync(string id);
-        Task<List<Workstation>> GetAllWorkstationsAsync();
+        Task<List<Workstation>> GetWorkstationsAsync();
         Task<List<Workstation>> GetFilteredWorkstationsAsync(WorkstationFilter workstationFilter);
         Task<int> GetOnlineCountAsync();
         Task<bool> ExistAsync(Expression<Func<Workstation, bool>> predicate);

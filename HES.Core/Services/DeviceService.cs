@@ -190,7 +190,7 @@ namespace HES.Core.Services
 
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "RFID" });
         }
-        // ???
+
         public async Task UpdateOnlyPropAsync(Device device, string[] properties)
         {
             await _deviceRepository.UpdateOnlyPropAsync(device, properties);

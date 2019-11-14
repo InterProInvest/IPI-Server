@@ -45,7 +45,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            Workstation = await _workstationService.GetWorkstationWithIncludeAsync(id);
+            Workstation = await _workstationService.GetWorkstationByIdAsync(id);
 
             if (Workstation == null)
             {
