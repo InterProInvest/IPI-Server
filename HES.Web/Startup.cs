@@ -171,6 +171,7 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Notifications", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Develop", "RequireAdministratorRole");
                 })
+                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             // Register the Swagger generator

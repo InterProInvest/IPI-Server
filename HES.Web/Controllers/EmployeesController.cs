@@ -36,7 +36,7 @@ namespace HES.Web.Controllers
         #region Employee
 
         [HttpGet]
-        public async Task<ActionResult<IList<Employee>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
             return await _employeeService.GetAllEmployeesAsync();
         }
@@ -182,7 +182,7 @@ namespace HES.Web.Controllers
         #region Account
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<IList<DeviceAccount>>> GetDeviceAccountsByEmployeeId(string id)
+        public async Task<ActionResult<IEnumerable<DeviceAccount>>> GetDeviceAccountsByEmployeeId(string id)
         {
             return await _employeeService.GetDeviceAccountsAsync(id);
         }
