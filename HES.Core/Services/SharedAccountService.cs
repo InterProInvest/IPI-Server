@@ -88,7 +88,7 @@ namespace HES.Core.Services
             return await _sharedAccountRepository.AddAsync(sharedAccount);
         }
 
-        public async Task CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount)
+        public async Task<SharedAccount> CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount)
         {
             if (workstationAccount == null)
             {
@@ -115,7 +115,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            await CreateSharedAccountAsync(sharedAccount);
+            return await CreateSharedAccountAsync(sharedAccount);
         }
 
         public async Task<List<string>> EditSharedAccountAsync(SharedAccount sharedAccount)

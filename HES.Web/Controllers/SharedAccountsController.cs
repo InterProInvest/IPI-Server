@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
+using HES.Core.Models;
+using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
-using HES.Core.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using HES.Core.Models.API;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
 {
@@ -62,6 +61,32 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _sharedAccountService.CreateSharedAccountAsync(sharedAccount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetSharedAccountById", new { id = createdAccount.Id }, createdAccount);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<SharedAccount>> CreateSharedWorkstationAccount(CreateSharedWorkstationAccountDto workstationAccountDto)
+        {
+            SharedAccount createdAccount;
+            try
+            {
+                var workstationAccount = new WorkstationAccount()
+                {
+                    Name = workstationAccountDto.Name,
+                    AccountType = workstationAccountDto.AccountType,
+                    Domain = workstationAccountDto.Domain,
+                    Login = workstationAccountDto.Login,
+                    Password = workstationAccountDto.Password
+                };
+
+                createdAccount = await _sharedAccountService.CreateWorkstationSharedAccountAsync(workstationAccount);
             }
             catch (Exception ex)
             {

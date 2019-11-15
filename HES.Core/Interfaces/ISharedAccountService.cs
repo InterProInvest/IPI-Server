@@ -14,7 +14,7 @@ namespace HES.Core.Interfaces
         Task<SharedAccount> GetByIdAsync(dynamic id);
         Task<List<SharedAccount>> GetSharedAccountsAsync();
         Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount);
-        Task CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount);
+        Task<SharedAccount> CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount);
         Task<List<string>> EditSharedAccountAsync(SharedAccount sharedAccount);
         Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount);
         Task<List<string>> EditSharedAccountOtpAsync(SharedAccount sharedAccount);
