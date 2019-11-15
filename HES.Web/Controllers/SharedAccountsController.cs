@@ -14,14 +14,19 @@ namespace HES.Web.Controllers
 {
     [Authorize(Roles = ApplicationRoles.AdminRole)]
     [Route("api/[controller]/[action]")]
+    [ApiController]
     public class SharedAccountsController : ControllerBase
     {
         private readonly ISharedAccountService _sharedAccountService;
+        private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<SharedAccountsController> _logger;
 
-        public SharedAccountsController(ISharedAccountService sharedAccountService, ILogger<SharedAccountsController> logger)
+        public SharedAccountsController(ISharedAccountService sharedAccountService,
+                                        IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
+                                        ILogger<SharedAccountsController> logger)
         {
             _sharedAccountService = sharedAccountService;
+            _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
 
@@ -116,7 +121,8 @@ namespace HES.Web.Controllers
                     Login = sharedAccountDto.Login
                 };
 
-                await _sharedAccountService.EditSharedAccountAsync(sharedAccount);
+                var devices = await _sharedAccountService.EditSharedAccountAsync(sharedAccount);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
             }
             catch (Exception ex)
             {
@@ -143,7 +149,8 @@ namespace HES.Web.Controllers
                     Password = sharedAccountDto.Password
                 };
 
-                await _sharedAccountService.EditSharedAccountAsync(sharedAccount);
+                var devices = await _sharedAccountService.EditSharedAccountAsync(sharedAccount);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
             }
             catch (Exception ex)
             {
@@ -170,7 +177,8 @@ namespace HES.Web.Controllers
                     OtpSecret = sharedAccountDto.OtpSecret
                 };
 
-                await _sharedAccountService.EditSharedAccountOtpAsync(sharedAccount);
+                var devices = await _sharedAccountService.EditSharedAccountOtpAsync(sharedAccount);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
             }
             catch (Exception ex)
             {
@@ -192,7 +200,8 @@ namespace HES.Web.Controllers
 
             try
             {
-                await _sharedAccountService.DeleteSharedAccountAsync(id);
+                var devices = await _sharedAccountService.DeleteSharedAccountAsync(id);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
             }
             catch (Exception ex)
             {
