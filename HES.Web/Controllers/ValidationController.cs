@@ -9,6 +9,7 @@ namespace HES.Web.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ValidationController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;

@@ -10,19 +10,20 @@ namespace HES.Core.Interfaces
         IQueryable<Company> QueryOfCompany();
         Task<Company> GetCompanyByIdAsync(string id);
         Task<List<Company>> GetCompaniesAsync();
-        Task CreateCompanyAsync(Company company);
+        Task<Company> CreateCompanyAsync(Company company);
         Task EditCompanyAsync(Company company);
         Task DeleteCompanyAsync(string id);
         IQueryable<Department> DepartmentQuery();
-        Task<Department> GetDepartmentByIdAsync(string id);
         Task<List<Department>> GetDepartmentsAsync();
-        Task CreateDepartmentAsync(Department department);
+        Task<List<Department>> GetDepartmentsByCompanyIdAsync(string id);
+        Task<Department> GetDepartmentByIdAsync(string id);
+        Task<Department> CreateDepartmentAsync(Department department);
         Task EditDepartmentAsync(Department department);
         Task DeleteDepartmentAsync(string id);
         IQueryable<Position> PositionQuery();
-        Task<Position> GetPositionByIdAsync(string id);
         Task<List<Position>> GetPositionsAsync();
-        Task CreatePositionAsync(Position position);
+        Task<Position> GetPositionByIdAsync(string id);
+        Task<Position> CreatePositionAsync(Position position);
         Task EditPositionAsync(Position position);
         Task DeletePositionAsync(string id);
     }

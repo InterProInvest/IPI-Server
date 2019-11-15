@@ -59,10 +59,12 @@ namespace HES.Web.Controllers
             {
                 var workstation = new Workstation()
                 {
+                    Id = workstationDto.Id,
                     DepartmentId = workstationDto.DepartmentId,
                     RFID = workstationDto.RfidEnabled
                 };
                 await _workstationService.EditWorkstationAsync(workstation);
+                await _workstationService.UpdateRfidStateAsync(workstation.Id);
             }
             catch (Exception ex)
             {
@@ -85,11 +87,13 @@ namespace HES.Web.Controllers
             {
                 var workstation = new Workstation()
                 {
+                    Id = workstationDto.Id,
                     DepartmentId = workstationDto.DepartmentId,
                     RFID = workstationDto.RfidEnabled,
                     Approved = true
                 };
                 await _workstationService.ApproveWorkstationAsync(workstation);
+                await _workstationService.UpdateRfidStateAsync(workstation.Id);
             }
             catch (Exception ex)
             {
@@ -132,6 +136,7 @@ namespace HES.Web.Controllers
             try
             {
                 await _workstationService.AddProximityDevicesAsync(proximityDeviceDto.WorkstationId, new string[] { proximityDeviceDto.DeviceId });
+                await _workstationService.UpdateProximitySettingsAsync(proximityDeviceDto.WorkstationId);
             }
             catch (Exception ex)
             {

@@ -99,6 +99,7 @@ namespace HES.Web.Controllers
             {
                 var employee = new Employee()
                 {
+                    Id = employeeDto.Id,
                     FirstName = employeeDto.FirstName,
                     LastName = employeeDto.LastName,
                     Email = employeeDto.Email,
@@ -253,6 +254,7 @@ namespace HES.Web.Controllers
             {
                 var deviceAccount = new DeviceAccount()
                 {
+                    Id = deviceAccountDto.Id,
                     Name = deviceAccountDto.Name,
                     Urls = deviceAccountDto.Urls,
                     Apps = deviceAccountDto.Apps,
@@ -285,6 +287,7 @@ namespace HES.Web.Controllers
             {
                 var deviceAccount = new DeviceAccount()
                 {
+                    Id = deviceAccountDto.Id,
                     Kind = AccountKind.WebApp,
                     DeviceId = deviceAccountDto.DeviceId
                 };
@@ -317,6 +320,7 @@ namespace HES.Web.Controllers
             {
                 var deviceAccount = new DeviceAccount()
                 {
+                    Id = deviceAccountDto.Id,
                     Kind = AccountKind.WebApp,
                     DeviceId = deviceAccountDto.DeviceId
                 };
@@ -350,7 +354,6 @@ namespace HES.Web.Controllers
             {
                 var deviceId = await _employeeService.DeleteAccount(id);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
-
             }
             catch (Exception ex)
             {

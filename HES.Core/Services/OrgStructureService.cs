@@ -40,14 +40,14 @@ namespace HES.Core.Services
             return await _companyRepository.Query().OrderBy(c => c.Name).ToListAsync();
         }
 
-        public async Task CreateCompanyAsync(Company company)
+        public async Task<Company> CreateCompanyAsync(Company company)
         {
             if (company == null)
             {
                 throw new ArgumentNullException(nameof(company));
             }
 
-            await _companyRepository.AddAsync(company);
+            return await _companyRepository.AddAsync(company);
         }
 
         public async Task EditCompanyAsync(Company company)
@@ -83,25 +83,40 @@ namespace HES.Core.Services
         {
             return _departmentRepository.Query();
         }
+        public async Task<List<Department>> GetDepartmentsAsync()
+        {
+            return await _departmentRepository
+                .Query()
+                .Include(d => d.Company)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+        public async Task<List<Department>> GetDepartmentsByCompanyIdAsync(string id)
+        {
+            return await _departmentRepository
+                .Query()
+                .Include(d => d.Company)
+                .Where(d => d.CompanyId == id)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
 
         public async Task<Department> GetDepartmentByIdAsync(string id)
         {
-            return await _departmentRepository.Query().Include(d => d.Company).FirstOrDefaultAsync(m => m.Id == id);
+            return await _departmentRepository
+                .Query()
+                .Include(d => d.Company)
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task<List<Department>> GetDepartmentsAsync()
-        {
-            return await _departmentRepository.Query().Include(d => d.Company).OrderBy(c => c.Name).ToListAsync();
-        }
-
-        public async Task CreateDepartmentAsync(Department department)
+        public async Task<Department> CreateDepartmentAsync(Department department)
         {
             if (department == null)
             {
                 throw new ArgumentNullException(nameof(department));
             }
 
-            await _departmentRepository.AddAsync(department);
+            return await _departmentRepository.AddAsync(department);
         }
 
         public async Task EditDepartmentAsync(Department department)
@@ -149,14 +164,14 @@ namespace HES.Core.Services
             return await _positionRepository.GetByIdAsync(id);
         }
 
-        public async Task CreatePositionAsync(Position position)
+        public async Task<Position> CreatePositionAsync(Position position)
         {
             if (position == null)
             {
                 throw new ArgumentNullException(nameof(position));
             }
 
-            await _positionRepository.AddAsync(position);
+            return await _positionRepository.AddAsync(position);
         }
 
         public async Task EditPositionAsync(Position position)
