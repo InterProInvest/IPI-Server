@@ -33,7 +33,7 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
 
         public async Task OnGet()
         {
-            SummaryByDayAndEmployee = await _workstationAuditService.GetSummaryByDayAndEmployeeAsync();
+            SummaryByDayAndEmployee = await _workstationAuditService.GetSummaryByDayAndEmployeesAsync();
 
             ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
             ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");

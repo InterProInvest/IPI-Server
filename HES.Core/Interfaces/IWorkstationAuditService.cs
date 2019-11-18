@@ -21,10 +21,13 @@ namespace HES.Core.Interfaces
         Task<List<WorkstationSession>> GetFilteredWorkstationSessionsAsync(WorkstationSessionFilter workstationSessionFilter);
         Task AddOrUpdateWorkstationSession(WorkstationEventDto workstationEventDto);
         Task CloseSessionAsync(string workstationId);
-        Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeeAsync();
+        Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync();
         Task<List<SummaryByDayAndEmployee>> GetFilteredSummaryByDaysAndEmployeesAsync(SummaryFilter summaryFilter);
+        Task<List<SummaryByEmployees>> GetSummaryByEmployeesAsync();
         Task<List<SummaryByEmployees>> GetFilteredSummaryByEmployeesAsync(SummaryFilter summaryFilter);
+        Task<List<SummaryByDepartments>> GetSummaryByDepartmentsAsync();
         Task<List<SummaryByDepartments>> GetFilteredSummaryByDepartmentsAsync(SummaryFilter summaryFilter);
+        Task<List<SummaryByWorkstations>> GetSummaryByWorkstationsAsync();
         Task<List<SummaryByWorkstations>> GetFilteredSummaryByWorkstationsAsync(SummaryFilter summaryFilter);
     }
 }

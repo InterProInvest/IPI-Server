@@ -361,7 +361,7 @@ namespace HES.Core.Services
                 var sessionsCount = sessions.Count;
                 if (sessionsCount > 1)
                 {
-                    _logger.LogError($"[{workstationId}] {sessionsCount} sessions were closed. id:{string.Join(" id:", sessions.SelectMany(s => s.Id).ToArray())}");
+                    _logger.LogError($"[{workstationId}] {sessionsCount} sessions were closed. id:{string.Join(". id:", sessions.Select(s => s.Id).ToArray())}");
                 }
             }
         }
@@ -426,7 +426,7 @@ namespace HES.Core.Services
 
         #region Summary
 
-        public async Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeeAsync()
+        public async Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync()
         {
             return await _summaryByDayAndEmployeeRepository.SqlQuery
                 ($@"SELECT
@@ -536,6 +536,36 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<SummaryByEmployees>> GetSummaryByEmployeesAsync()
+        {
+            return await _summaryByEmployeesRepository.SqlQuery
+                 ($@"SELECT
+	                    employees.Id AS EmployeeId,
+	                    IFNULL(CONCAT(employees.FirstName,' ',employees.LastName), 'N/A') AS Employee,
+	                    companies.Id AS CompanyId,
+	                    IFNULL(companies.Name, 'N/A') AS Company,
+	                    departments.Id AS DepartmentId,
+	                    IFNULL(departments.Name, 'N/A') AS Department,
+	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
+	                    COUNT(DISTINCT DATE(workstationsessions.StartDate)) AS WorkingDaysCount,
+	                    COUNT(*) AS TotalSessionsCount,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
+	                    COUNT(*) / COUNT(DISTINCT DATE(workstationsessions.StartDate)) AS AvgSessionsCountPerDay,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT DATE(workstationsessions.StartDate))) AS AvgWorkingHoursPerDay
+                    FROM workstationsessions
+	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
+	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
+	                    LEFT JOIN companies ON departments.CompanyId = companies.Id    
+                    GROUP BY
+	                    workstationsessions.EmployeeId
+                    ORDER BY
+	                    Employee ASC
+                    LIMIT 500")
+                 .AsNoTracking()
+                 .ToListAsync();
+        }
+
         public async Task<List<SummaryByEmployees>> GetFilteredSummaryByEmployeesAsync(SummaryFilter summaryFilter)
         {
             var where = string.Empty;
@@ -607,6 +637,34 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<SummaryByDepartments>> GetSummaryByDepartmentsAsync()
+        {
+            return await _summaryByDepartmentsRepository.SqlQuery
+                ($@"SELECT
+	                    companies.Id AS CompanyId,
+	                    IFNULL(companies.Name, 'N/A') AS Company,
+	                    departments.Id AS DepartmentId,
+	                    IFNULL(departments.Name, 'N/A') AS Department,
+	                    COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS EmployeesCount,
+	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
+	                    COUNT(*) AS TotalSessionsCount,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
+	                    COUNT(*) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
+                    FROM workstationsessions
+	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
+	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
+	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+                    GROUP BY
+	                    departments.Id
+                    ORDER BY
+	                    Company ASC, Department ASC
+                    LIMIT 500")
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<List<SummaryByDepartments>> GetFilteredSummaryByDepartmentsAsync(SummaryFilter summaryFilter)
         {
             var where = string.Empty;
@@ -662,6 +720,31 @@ namespace HES.Core.Services
                     ORDER BY
 	                    Company ASC, Department ASC
                     LIMIT {summaryFilter.Records}")
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<SummaryByWorkstations>> GetSummaryByWorkstationsAsync()
+        {
+            return await _summaryByWorkstationsRepository.SqlQuery
+                ($@"SELECT
+	                    workstations.Name AS Workstation,
+	                    COUNT(DISTINCT IFNULL(companies.Id, 'N/A')) AS CompaniesCount,
+	                    COUNT(DISTINCT IFNULL(departments.Id, 'N/A')) AS DepartmentsCount,
+	                    COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS EmployeesCount,
+	                    COUNT(*) AS TotalSessionsCount,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
+	                    COUNT(*) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
+                    FROM workstationsessions
+	                    LEFT JOIN workstations ON workstationsessions.WorkstationId = workstations.Id
+	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
+	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
+	                    LEFT JOIN companies ON departments.CompanyId = companies.Id 
+                    GROUP BY
+	                    WorkstationId
+                    LIMIT 500")
                 .AsNoTracking()
                 .ToListAsync();
         }

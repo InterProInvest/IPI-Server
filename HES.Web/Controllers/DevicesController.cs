@@ -19,7 +19,6 @@ namespace HES.Web.Controllers
         private readonly IDeviceService _deviceService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
-
         private readonly ILogger<DevicesController> _logger;
 
         public DevicesController(IDeviceService deviceService,
