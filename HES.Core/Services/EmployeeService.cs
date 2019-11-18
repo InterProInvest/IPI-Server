@@ -58,11 +58,6 @@ namespace HES.Core.Services
 
         public async Task<Employee> GetEmployeeByIdAsync(string id)
         {
-            return await _employeeRepository.GetByIdAsync(id);
-        }
-
-        public async Task<Employee> GetEmployeeWithIncludeAsync(string id)
-        {
             return await _employeeRepository
                 .Query()
                 .Include(e => e.Department.Company)

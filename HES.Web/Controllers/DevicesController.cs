@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +39,12 @@ namespace HES.Web.Controllers
         public async Task<ActionResult<IEnumerable<Device>>> GetDevices()
         {
             return await _deviceService.GetDevicesAsync();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<Device>>> GetFilteredDevices(DeviceFilter deviceFilter)
+        {
+            return await _deviceService.GetFilteredDevicesAsync(deviceFilter);
         }
 
         [HttpGet("{id}")]

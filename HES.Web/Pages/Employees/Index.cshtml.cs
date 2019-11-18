@@ -188,7 +188,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            Employee = await _employeeService.GetEmployeeWithIncludeAsync(id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {

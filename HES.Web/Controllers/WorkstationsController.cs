@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +33,13 @@ namespace HES.Web.Controllers
         public async Task<ActionResult<IEnumerable<Workstation>>> GetWorkstations()
         {
             return await _workstationService.GetWorkstationsAsync();
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<Workstation>>> GetFilteredWorkstations(WorkstationFilter workstationFilter)
+        {
+            return await _workstationService.GetFilteredWorkstationsAsync(workstationFilter);
         }
 
         [HttpGet("{id}")]

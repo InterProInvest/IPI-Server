@@ -77,7 +77,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            Employee = await _employeeService.GetEmployeeWithIncludeAsync(id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {
@@ -108,7 +108,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnGetUpdateTableAsync(string id)
         {
-            Employee = await _employeeService.GetEmployeeWithIncludeAsync(id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
             DeviceAccounts = await _employeeService.GetDeviceAccountsAsync(id);
             return Partial("_EmployeeDeviceAccounts", this);
         }

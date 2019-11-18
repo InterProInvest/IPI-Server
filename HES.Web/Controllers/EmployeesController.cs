@@ -44,13 +44,7 @@ namespace HES.Web.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Employee>> GetEmployeeById(string id)
         {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return BadRequest(new { error = $"{ nameof(id)} is null" });
-            }
-
-            var employee = await _employeeService.GetEmployeeWithIncludeAsync(id);
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (employee == null)
             {
@@ -59,6 +53,20 @@ namespace HES.Web.Controllers
             }
 
             return employee;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<Employee>>> GetFilteredEmployees(EmployeeFilter employeeFilter)
+        {
+            try
+            {
+                return await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpPost]
