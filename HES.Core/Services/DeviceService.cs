@@ -52,12 +52,7 @@ namespace HES.Core.Services
             return _deviceRepository.Query();
         }
 
-        public async Task<Device> GetDeviceByIdAsync(dynamic id)
-        {
-            return await _deviceRepository.GetByIdAsync(id);
-        }
-
-        public async Task<Device> GetDeviceWithIncludeAsync(string id)
+        public async Task<Device> GetDeviceByIdAsync(string id)
         {
             return await _deviceRepository
                 .Query()
@@ -290,7 +285,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task CreateProfileAsync(DeviceAccessProfile deviceAccessProfile)
+        public async Task<DeviceAccessProfile> CreateProfileAsync(DeviceAccessProfile deviceAccessProfile)
         {
             if (deviceAccessProfile == null)
             {
@@ -308,7 +303,7 @@ namespace HES.Core.Services
             }
 
             deviceAccessProfile.CreatedAt = DateTime.UtcNow;
-            await _deviceAccessProfileRepository.AddAsync(deviceAccessProfile);
+            return await _deviceAccessProfileRepository.AddAsync(deviceAccessProfile);
         }
 
         public async Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile)
@@ -352,26 +347,7 @@ namespace HES.Core.Services
 
             await _deviceAccessProfileRepository.DeleteAsync(deviceAccessProfile);
         }
-
-        public async Task<string[]> GetDevicesByProfileAsync(string profileId)
-        {
-            var tasks = await _deviceTaskService
-                .Query()
-                .Where(d => d.Operation == TaskOperation.Wipe || d.Operation == TaskOperation.Link)
-                .Select(s => s.DeviceId)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var devicesIds = await _deviceRepository
-               .Query()
-               .Where(d => d.AcceessProfileId == profileId && d.EmployeeId != null && !tasks.Contains(d.Id))
-               .Select(s => s.Id)
-               .AsNoTracking()
-               .ToArrayAsync();
-
-            return devicesIds;
-        }
-
+        
         public async Task SetProfileAsync(string[] devicesId, string profileId)
         {
             if (devicesId == null)
@@ -410,14 +386,27 @@ namespace HES.Core.Services
 
         public async Task<string[]> UpdateProfileAsync(string profileId)
         {
-            var devicesId = await GetDevicesByProfileAsync(profileId);
+            // Get devices by profile id
+            var tasks = await _deviceTaskService
+               .Query()
+               .Where(d => d.Operation == TaskOperation.Wipe || d.Operation == TaskOperation.Link)
+               .Select(s => s.DeviceId)
+               .AsNoTracking()
+               .ToListAsync();
 
-            if (devicesId.Length > 0)
+            var devicesIds = await _deviceRepository
+               .Query()
+               .Where(d => d.AcceessProfileId == profileId && d.EmployeeId != null && !tasks.Contains(d.Id))
+               .Select(s => s.Id)
+               .AsNoTracking()
+               .ToArrayAsync();
+
+            if (devicesIds.Length > 0)
             {
-                await SetProfileAsync(devicesId, profileId);
+                await SetProfileAsync(devicesIds, profileId);
             }
 
-            return devicesId;
+            return devicesIds;
         }
 
         #endregion

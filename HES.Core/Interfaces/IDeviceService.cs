@@ -11,8 +11,7 @@ namespace HES.Core.Interfaces
     public interface IDeviceService
     {
         IQueryable<Device> QueryOfDevice();
-        Task<Device> GetDeviceByIdAsync(dynamic id);
-        Task<Device> GetDeviceWithIncludeAsync(string id);
+        Task<Device> GetDeviceByIdAsync(string id);
         Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
         Task<List<Device>> GetDevicesAsync();
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
@@ -26,10 +25,9 @@ namespace HES.Core.Interfaces
         IQueryable<DeviceAccessProfile> QueryOfAccessProfile();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
         Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);
-        Task CreateProfileAsync(DeviceAccessProfile deviceAccessProfile);
+        Task<DeviceAccessProfile> CreateProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task DeleteProfileAsync(string id);
-        Task<string[]> GetDevicesByProfileAsync(string profileId);
         Task SetProfileAsync(string[] devicesId, string profileId);
         Task<string[]> UpdateProfileAsync(string profileId);
     }

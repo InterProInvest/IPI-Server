@@ -147,7 +147,7 @@ namespace HES.Web.Pages.Devices
                 return NotFound();
             }
 
-            Device = await _deviceService.GetDeviceWithIncludeAsync(id);
+            Device = await _deviceService.GetDeviceByIdAsync(id);
 
             if (Device == null)
             {
