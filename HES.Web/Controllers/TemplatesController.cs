@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
+using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
-using HES.Core.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using HES.Core.Models.API;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
 {
@@ -29,12 +27,15 @@ namespace HES.Web.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Template>>> GetTemplates()
         {
             return await _templateService.GetTemplatesAsync();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Template>> GetTemplateById(string id)
         {
             var template = await _templateService.GetByIdAsync(id);
@@ -48,6 +49,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<Template>> CreateTemplate(CreateTemplateDto templateDto)
         {
             Template createdTemplate;
@@ -66,13 +68,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetTemplateById", new { id = createdTemplate.Id }, createdTemplate);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditTemplate(string id, EditTemplateDto templateDto)
         {
             if (id != templateDto.Id)
@@ -95,13 +99,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Template>> DeleteTemplate(string id)
         {
             var template = await _templateService.GetByIdAsync(id);

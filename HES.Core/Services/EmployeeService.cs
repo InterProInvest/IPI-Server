@@ -590,7 +590,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId)
+        public async Task<IList<DeviceAccount>> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId)
         {
             if (workstationAccount == null)
             {
@@ -625,7 +625,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password }, new string[] { deviceId });
+            return await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password }, new string[] { deviceId });
         }
 
         public async Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices)

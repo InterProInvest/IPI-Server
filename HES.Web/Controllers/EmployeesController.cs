@@ -4,6 +4,7 @@ using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -36,12 +37,15 @@ namespace HES.Web.Controllers
         #region Employee
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
             return await _employeeService.GetAllEmployeesAsync();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Employee>> GetEmployeeById(string id)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
@@ -56,20 +60,14 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Employee>>> GetFilteredEmployees(EmployeeFilter employeeFilter)
         {
-            try
-            {
-                return await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
-            }
+            return await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<Employee>> CreateEmployee(CreateEmployeeDto employeeDto)
         {
             Employee createdEmployee;
@@ -89,13 +87,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetEmployeeById", new { id = createdEmployee.Id }, createdEmployee);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditEmployee(string id, EditEmployeeDto employeeDto)
         {
             if (id != employeeDto.Id)
@@ -120,13 +120,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Employee>> DeleteEmployee(string id)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
@@ -142,7 +144,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return employee;
@@ -153,6 +155,7 @@ namespace HES.Web.Controllers
         #region Device
 
         [HttpPost()]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> AddDevice(DeviceDto deviceDto)
         {
             try
@@ -163,13 +166,14 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete()]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> RemoveDevice(DeviceDto deviceDto)
         {
             try
@@ -180,7 +184,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
@@ -191,20 +195,17 @@ namespace HES.Web.Controllers
         #region Account
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DeviceAccount>>> GetDeviceAccountsByEmployeeId(string id)
         {
             return await _employeeService.GetDeviceAccountsByEmployeeIdAsync(id);
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<DeviceAccount>> GetDeviceAccountById(string id)
         {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return BadRequest(new { error = $"{ nameof(id)} is null" });
-            }
-
             var deviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (deviceAccount == null)
@@ -217,6 +218,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<DeviceAccount>> CreateDeviceAccount(CreateDeviceAccountDto deviceAccountDto)
         {
             IList<DeviceAccount> createdDeviceAccounts;
@@ -244,13 +246,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetDeviceAccountById", new { id = createdDeviceAccounts[0].Id }, createdDeviceAccounts[0]);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditDeviceAccount(string id, EditDeviceAccountDto deviceAccountDto)
         {
             if (id != deviceAccountDto.Id)
@@ -277,13 +281,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditDeviceAccountPassword(string id, EditDeviceAccountPasswordDto deviceAccountDto)
         {
             if (id != deviceAccountDto.Id)
@@ -310,13 +316,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditDeviceAccountOtp(string id, EditDeviceAccountOtpDto deviceAccountDto)
         {
             if (id != deviceAccountDto.Id)
@@ -343,13 +351,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<DeviceAccount>> DeleteDeviceAccount(string id)
         {
             var deviceAccount = await _deviceAccountService.GetByIdAsync(id);
@@ -366,13 +376,14 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return deviceAccount;
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> AddSharedAccount(AddSharedAccountDto sharedAccountDto)
         {
             try
@@ -383,13 +394,14 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpPost("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UndoDeviceAccountChanges(string id)
         {
             try
@@ -399,15 +411,17 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateWorkstationAccount(CreateWorkstationAccountDto workstationAccountDto)
         {
+            IList<DeviceAccount> createdDeviceAccounts;
             try
             {
                 var workstationAccount = new WorkstationAccount()
@@ -419,19 +433,20 @@ namespace HES.Web.Controllers
                     Password = workstationAccountDto.Password
                 };
 
-                await _employeeService.CreateWorkstationAccountAsync(workstationAccount, workstationAccountDto.EmployeeId, workstationAccountDto.DeviceId);
+                createdDeviceAccounts = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, workstationAccountDto.EmployeeId, workstationAccountDto.DeviceId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
-            return Ok();
+            return CreatedAtAction("GetDeviceAccountById", new { id = createdDeviceAccounts[0].Id }, createdDeviceAccounts[0]);
         }
 
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> SetAsWorkstationAccount(SetAsWorkstationAccountDto workstationAccountDto)
         {
             try
@@ -442,7 +457,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();

@@ -4,6 +4,7 @@ using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -36,24 +37,29 @@ namespace HES.Web.Controllers
         #region Device
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevices()
         {
             return await _deviceService.GetDevicesAsync();
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetFilteredDevices(DeviceFilter deviceFilter)
         {
             return await _deviceService.GetFilteredDevicesAsync(deviceFilter);
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByEmployeeId(string id)
         {
             return await _deviceService.GetDevicesByEmployeeIdAsync(id);
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Device>> GetDeviceById(string id)
         {
             var device = await _deviceService.GetDeviceByIdAsync(id);
@@ -67,6 +73,8 @@ namespace HES.Web.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditDevice(string id, EditDeviceDto deviceDto)
         {
             if (id != deviceDto.Id)
@@ -87,13 +95,14 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+              return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> SetAccessProfile(SetDeviceAccessProfileDto setAccessProfileDto)
         {
             try
@@ -105,13 +114,14 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+              return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpPost("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UnlockPin(string id)
         {
             try
@@ -123,7 +133,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+              return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
@@ -134,12 +144,15 @@ namespace HES.Web.Controllers
         #region Access Profile
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DeviceAccessProfile>>> GetAccessProfiles()
         {
             return await _deviceService.GetAccessProfilesAsync();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<DeviceAccessProfile>> GetAccessProfileById(string id)
         {
             var accessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
@@ -153,6 +166,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<DeviceAccessProfile>> CreateAccessProfile(CreateDeviceAccessProfileDto deviceAccessProfileDto)
         {
             DeviceAccessProfile createdDeviceAccessProfile;
@@ -178,13 +192,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+              return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetAccessProfileById", new { id = createdDeviceAccessProfile.Id }, createdDeviceAccessProfile);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditAccessProfile(string id, EditDeviceAccessProfileDto deviceAccessProfileDto)
         {
             if (id != deviceAccessProfileDto.Id)
@@ -217,13 +233,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+              return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<DeviceAccessProfile>> DeleteAccessProfile(string id)
         {
             var deviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
@@ -239,7 +257,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+              return StatusCode(500, new { error = ex.Message });
             }
 
             return deviceAccessProfile;

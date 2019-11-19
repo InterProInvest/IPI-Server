@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace HES.Web.Controllers
 {
@@ -28,12 +29,15 @@ namespace HES.Web.Controllers
         #region Company
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
             return await _orgStructureService.GetCompaniesAsync();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Company>> GetCompanyById(string id)
         {
             var company = await _orgStructureService.GetCompanyByIdAsync(id);
@@ -47,6 +51,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<Company>> CreateCompany(CreateOrgStructureGenericDto companyDto)
         {
             Company createdCompany;
@@ -62,13 +67,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetCompanyById", new { id = createdCompany.Id }, createdCompany);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditCompany(string id, EditOrgStructureGenericDto companyDto)
         {
             if (id != companyDto.Id)
@@ -89,13 +96,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Company>> DeleteCompany(string id)
         {
             var company = await _orgStructureService.GetCompanyByIdAsync(id);
@@ -111,7 +120,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return company;
@@ -122,12 +131,15 @@ namespace HES.Web.Controllers
         #region Department
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Department>>> GetDepartments()
         {
             return await _orgStructureService.GetDepartmentsAsync();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Department>>> GetDepartmentByCompanyId(string id)
         {
             var departments = await _orgStructureService.GetDepartmentsByCompanyIdAsync(id);
@@ -141,6 +153,8 @@ namespace HES.Web.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Department>> GetDepartmentById(string id)
         {
             var department = await _orgStructureService.GetDepartmentByIdAsync(id);
@@ -154,6 +168,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<Department>> CreateDepartment(CreateDepartmentDto departmentDto)
         {
             Department createdDepartment;
@@ -170,13 +185,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetDepartmentById", new { id = createdDepartment.Id }, createdDepartment);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditDepartment(string id, EditDepartmentDto departmentDto)
         {
             if (id != departmentDto.Id)
@@ -198,13 +215,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Department>> DeleteDepartment(string id)
         {
             var department = await _orgStructureService.GetDepartmentByIdAsync(id);
@@ -220,7 +239,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return department;
@@ -231,12 +250,15 @@ namespace HES.Web.Controllers
         #region Position
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Position>>> GetPositions()
         {
             return await _orgStructureService.GetPositionsAsync();
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Position>> GetPositionById(string id)
         {
             var position = await _orgStructureService.GetPositionByIdAsync(id);
@@ -250,6 +272,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<Company>> CreatePosition(CreateOrgStructureGenericDto positionDto)
         {
             Position createdPosition;
@@ -265,13 +288,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return CreatedAtAction("GetPositionById", new { id = createdPosition.Id }, createdPosition);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> EditPosition(string id, EditOrgStructureGenericDto positionDto)
         {
             if (id != positionDto.Id)
@@ -292,13 +317,15 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Company>> DeletePosition(string id)
         {
             var position = await _orgStructureService.GetCompanyByIdAsync(id);
@@ -314,7 +341,7 @@ namespace HES.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new { error = ex.Message });
+                return StatusCode(500, new { error = ex.Message });
             }
 
             return position;

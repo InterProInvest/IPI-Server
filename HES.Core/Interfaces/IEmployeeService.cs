@@ -28,7 +28,7 @@ namespace HES.Core.Interfaces
         Task<List<DeviceAccount>> GetDeviceAccountsByEmployeeIdAsync(string employeeId);
         Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
         Task SetWorkstationAccountAsync(string deviceId, string deviceAccountId);
-        Task CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
+        Task<IList<DeviceAccount>> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
         Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);
         Task EditPersonalAccountAsync(DeviceAccount deviceAccount);
         Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
