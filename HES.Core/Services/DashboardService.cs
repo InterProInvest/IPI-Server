@@ -51,7 +51,7 @@ namespace HES.Core.Services
             return await _deviceTaskService.Query().ToListAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetServerNotify()
+        public async Task<List<DashboardNotify>> GetServerNotifyAsync()
         {
             var list = new List<DashboardNotify>();
             var longPendingTasksCount = await _deviceTaskService.Query().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
@@ -74,17 +74,17 @@ namespace HES.Core.Services
 
         #region Employees
 
-        public async Task<int> GetEmployeesCount()
+        public async Task<int> GetEmployeesCountAsync()
         {
             return await _employeeService.Query().CountAsync();
         }
 
-        public async Task<int> GetEmployeesOpenedSessionsCount()
+        public async Task<int> GetEmployeesOpenedSessionsCountAsync()
         {
             return await _workstationAuditService.GetOpenedSessionsCountAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetEmployeesNotify()
+        public async Task<List<DashboardNotify>> GetEmployeesNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
@@ -127,17 +127,17 @@ namespace HES.Core.Services
 
         #region Devices
 
-        public async Task<int> GetDevicesCount()
+        public async Task<int> GetDevicesCountAsync()
         {
             return await _deviceService.QueryOfDevice().CountAsync();
         }
 
-        public async Task<int> GetFreeDevicesCount()
+        public async Task<int> GetFreeDevicesCountAsync()
         {
             return await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == null).CountAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetDevicesNotify()
+        public async Task<List<DashboardNotify>> GetDevicesNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
@@ -196,17 +196,17 @@ namespace HES.Core.Services
 
         #region Workstations
 
-        public async Task<int> GetWorkstationsCount()
+        public async Task<int> GetWorkstationsCountAsync()
         {
             return await _workstationService.QueryOfWorkstation().CountAsync();
         }
 
-        public async Task<int> GetWorkstationsOnlineCount()
+        public async Task<int> GetWorkstationsOnlineCountAsync()
         {
             return await _workstationService.GetOnlineCountAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetWorkstationsNotify()
+        public async Task<List<DashboardNotify>> GetWorkstationsNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
