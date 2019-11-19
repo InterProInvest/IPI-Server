@@ -34,8 +34,7 @@ namespace HES.Web.Controllers
         {
             return await _workstationService.GetWorkstationsAsync();
         }
-
-
+        
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Workstation>>> GetFilteredWorkstations(WorkstationFilter workstationFilter)
         {

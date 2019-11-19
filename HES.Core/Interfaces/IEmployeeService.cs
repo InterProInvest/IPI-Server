@@ -10,7 +10,7 @@ namespace HES.Core.Interfaces
 {
     public interface IEmployeeService
     {
-        IQueryable<Employee> Query();
+        IQueryable<Employee> EmployeeQuery();
         Task<Employee> GetEmployeeByIdAsync(string id);
         Task<List<Employee>> GetAllEmployeesAsync();
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
@@ -25,17 +25,17 @@ namespace HES.Core.Interfaces
         Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
         Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
         Task DeleteSamlIdpAccountAsync(string employeeId);
-        Task<List<DeviceAccount>> GetDeviceAccountsAsync(string employeeId);
+        Task<List<DeviceAccount>> GetDeviceAccountsByEmployeeIdAsync(string employeeId);
         Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
-        Task SetPrimaryAccount(string deviceId, string deviceAccountId);
+        Task SetWorkstationAccountAsync(string deviceId, string deviceAccountId);
         Task CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
         Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);
         Task EditPersonalAccountAsync(DeviceAccount deviceAccount);
         Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
         Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
-        Task AddSharedAccount(string employeeId, string sharedAccountId, string[] selectedDevices);
-        Task<string> DeleteAccount(string accountId);
-        Task UndoChanges(string accountId);
+        Task AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices);
+        Task<string> DeleteAccountAsync(string accountId);
+        Task UndoChangesAsync(string accountId);
         Task HandlingMasterPasswordErrorAsync(string deviceId);
     }
 }

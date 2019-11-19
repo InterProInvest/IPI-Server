@@ -51,7 +51,7 @@ namespace HES.Core.Services
 
         #region Event
 
-        public IQueryable<WorkstationEvent> QueryOfEvent()
+        public IQueryable<WorkstationEvent> EventQuery()
         {
             return _workstationEventRepository.Query();
         }
@@ -208,7 +208,7 @@ namespace HES.Core.Services
 
         #region Session
 
-        public IQueryable<WorkstationSession> QueryOfSession()
+        public IQueryable<WorkstationSession> SessionQuery()
         {
             return _workstationSessionRepository.Query();
         }
@@ -224,23 +224,6 @@ namespace HES.Core.Services
                 .Include(w => w.DeviceAccount)
                 .OrderByDescending(w => w.StartDate)
                 .Take(500)
-                .ToListAsync();
-        }
-
-        public async Task<int> GetOpenedSessionsCountAsync()
-        {
-            return await _workstationSessionRepository
-                .Query()
-                .Where(w => w.EndDate == null)
-                .CountAsync();
-        }
-
-        public async Task<List<WorkstationSession>> GetOpenedSessionsAsync()
-        {
-            return await _workstationSessionRepository
-                .Query()
-                .Include(w => w.Workstation)
-                .Where(w => w.EndDate == null)
                 .ToListAsync();
         }
 

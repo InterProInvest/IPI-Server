@@ -76,12 +76,15 @@ namespace HES.Core.Services
 
         public async Task<int> GetEmployeesCountAsync()
         {
-            return await _employeeService.Query().CountAsync();
+            return await _employeeService.EmployeeQuery().CountAsync();
         }
 
         public async Task<int> GetEmployeesOpenedSessionsCountAsync()
         {
-            return await _workstationAuditService.GetOpenedSessionsCountAsync();
+            return await _workstationAuditService
+               .SessionQuery()
+               .Where(w => w.EndDate == null)
+               .CountAsync();         
         }
 
         public async Task<List<DashboardNotify>> GetEmployeesNotifyAsync()
@@ -89,7 +92,7 @@ namespace HES.Core.Services
             var list = new List<DashboardNotify>();
 
             var nonHideezUnlock = await _workstationAuditService
-                .QueryOfSession()
+                .SessionQuery()
                 .Where(w => w.StartDate >= DateTime.UtcNow.AddDays(-1) && w.UnlockedBy == Hideez.SDK.Communication.SessionSwitchSubject.NonHideez)
                 .CountAsync();
 
@@ -105,7 +108,7 @@ namespace HES.Core.Services
             }
 
             var longOpenSession = await _workstationAuditService
-                .QueryOfSession()
+                .SessionQuery()
                 .Where(w => w.StartDate <= DateTime.UtcNow.AddHours(-12) && w.EndDate == null)
                 .CountAsync();
 
@@ -129,12 +132,12 @@ namespace HES.Core.Services
 
         public async Task<int> GetDevicesCountAsync()
         {
-            return await _deviceService.QueryOfDevice().CountAsync();
+            return await _deviceService.DeviceQuery().CountAsync();
         }
 
         public async Task<int> GetFreeDevicesCountAsync()
         {
-            return await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == null).CountAsync();
+            return await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).CountAsync();
         }
 
         public async Task<List<DashboardNotify>> GetDevicesNotifyAsync()
@@ -142,7 +145,7 @@ namespace HES.Core.Services
             var list = new List<DashboardNotify>();
 
             var lowBattery = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Where(d => d.Battery <= 30)
                 .CountAsync();
 
@@ -158,7 +161,7 @@ namespace HES.Core.Services
             }
 
             var deviceLock = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Where(d => d.State == DeviceState.Locked)
                 .CountAsync();
 
@@ -174,7 +177,7 @@ namespace HES.Core.Services
             }
 
             var deviceError = await _deviceService
-               .QueryOfDevice()
+               .DeviceQuery()
                .Where(d => d.State == DeviceState.Error)
                .CountAsync();
 
@@ -198,12 +201,12 @@ namespace HES.Core.Services
 
         public async Task<int> GetWorkstationsCountAsync()
         {
-            return await _workstationService.QueryOfWorkstation().CountAsync();
+            return await _workstationService.WorkstationQuery().CountAsync();
         }
 
         public async Task<int> GetWorkstationsOnlineCountAsync()
         {
-            return await _workstationService.GetOnlineCountAsync();
+            return await Task.FromResult(RemoteWorkstationConnectionsService.WorkstationsOnlineCount());
         }
 
         public async Task<List<DashboardNotify>> GetWorkstationsNotifyAsync()
@@ -211,7 +214,7 @@ namespace HES.Core.Services
             var list = new List<DashboardNotify>();
 
             var notApproved = await _workstationService
-                .QueryOfWorkstation()
+                .WorkstationQuery()
                 .Where(w => w.Approved == false)
                 .CountAsync();
 

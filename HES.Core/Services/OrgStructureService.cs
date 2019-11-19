@@ -25,7 +25,7 @@ namespace HES.Core.Services
 
         #region Company
 
-        public IQueryable<Company> QueryOfCompany()
+        public IQueryable<Company> CompanyQuery()
         {
             return _companyRepository.Query();
         }

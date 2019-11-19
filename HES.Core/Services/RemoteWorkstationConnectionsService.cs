@@ -169,7 +169,7 @@ namespace HES.Core.Services
                 throw new HideezException(HideezErrorCode.HesFailedEstablishRemoteDeviceConnection);
 
             var device = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == deviceId);
@@ -200,7 +200,7 @@ namespace HES.Core.Services
 
                 // refresh MasterPassword field
                 device = await _deviceService
-                    .QueryOfDevice()
+                    .DeviceQuery()
                     .Include(d => d.DeviceAccessProfile)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == deviceId);

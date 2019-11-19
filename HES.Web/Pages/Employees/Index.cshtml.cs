@@ -63,7 +63,7 @@ namespace HES.Web.Pages.Employees
         {
             Employees = await _employeeService.GetAllEmployeesAsync();
 
-            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["DevicesCount"] = new SelectList(Employees.Select(s => s.Devices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
@@ -81,20 +81,20 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnGetCreateEmployeeAsync()
         {
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["DeviceId"] = new SelectList(await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
-            ViewData["WorkstationId"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
+            ViewData["DeviceId"] = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
+            ViewData["WorkstationId"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["WorkstationAccounts"] = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
 
             Devices = await _deviceService
-               .QueryOfDevice()
+               .DeviceQuery()
                .Where(d => d.EmployeeId == null)
                .ToListAsync();
 
             Workstations = await _workstationService
-                .QueryOfWorkstation()
+                .WorkstationQuery()
                 .ToListAsync();
 
             return Partial("_CreateEmployee", this);
@@ -196,7 +196,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
+            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DepartmentId"] = new SelectList(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().ToListAsync(), "Id", "Name");
 
@@ -251,7 +251,7 @@ namespace HES.Web.Pages.Employees
             }
 
             HasForeignKey = _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Where(x => x.EmployeeId == id)
                 .Any();
 
@@ -318,7 +318,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task<JsonResult> OnGetJsonCompanyAsync()
         {
-            return new JsonResult(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
         }
 
         #endregion

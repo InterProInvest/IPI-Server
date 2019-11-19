@@ -193,7 +193,7 @@ namespace HES.Web.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<IEnumerable<DeviceAccount>>> GetDeviceAccountsByEmployeeId(string id)
         {
-            return await _employeeService.GetDeviceAccountsAsync(id);
+            return await _employeeService.GetDeviceAccountsByEmployeeIdAsync(id);
         }
 
         [HttpGet("{id}")]
@@ -360,7 +360,7 @@ namespace HES.Web.Controllers
 
             try
             {
-                var deviceId = await _employeeService.DeleteAccount(id);
+                var deviceId = await _employeeService.DeleteAccountAsync(id);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
             }
             catch (Exception ex)
@@ -377,7 +377,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.AddSharedAccount(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId, new string[] { sharedAccountDto.DeviceId });
+                await _employeeService.AddSharedAccountAsync(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId, new string[] { sharedAccountDto.DeviceId });
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(sharedAccountDto.DeviceId);
             }
             catch (Exception ex)
@@ -394,7 +394,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.UndoChanges(id);
+                await _employeeService.UndoChangesAsync(id);
             }
             catch (Exception ex)
             {
@@ -436,7 +436,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.SetPrimaryAccount(workstationAccountDto.DeviceId, workstationAccountDto.DeviceAccountId);
+                await _employeeService.SetWorkstationAccountAsync(workstationAccountDto.DeviceId, workstationAccountDto.DeviceAccountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
             }
             catch (Exception ex)

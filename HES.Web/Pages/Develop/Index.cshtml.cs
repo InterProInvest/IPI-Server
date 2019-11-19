@@ -44,7 +44,7 @@ namespace HES.Web.Pages.Develop
             DeviceTasks = await _deviceTaskService.Query().OrderByDescending(o => o.CreatedAt).ToListAsync();
 
             ViewData["Devices"] = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 //.Include(e => e.Employee)
                 .Select(a => new SelectListItem
                 {
@@ -121,7 +121,7 @@ namespace HES.Web.Pages.Develop
 
                 foreach (var item in accounts)
                 {
-                    var deviceId = await _employeeService.DeleteAccount(item.Id);
+                    var deviceId = await _employeeService.DeleteAccountAsync(item.Id);
                 }
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(accountModel.DeviceId);
             }

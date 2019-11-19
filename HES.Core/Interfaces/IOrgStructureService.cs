@@ -7,7 +7,7 @@ namespace HES.Core.Interfaces
 {
     public interface IOrgStructureService
     {
-        IQueryable<Company> QueryOfCompany();
+        IQueryable<Company> CompanyQuery();
         Task<Company> GetCompanyByIdAsync(string id);
         Task<List<Company>> GetCompaniesAsync();
         Task<Company> CreateCompanyAsync(Company company);

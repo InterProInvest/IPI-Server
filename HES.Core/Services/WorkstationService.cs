@@ -26,7 +26,7 @@ namespace HES.Core.Services
 
         #region Workstation
 
-        public IQueryable<Workstation> QueryOfWorkstation()
+        public IQueryable<Workstation> WorkstationQuery()
         {
             return _workstationRepository.Query();
         }
@@ -106,11 +106,6 @@ namespace HES.Core.Services
                 .OrderBy(w => w.Name)
                 .Take(workstationFilter.Records)
                 .ToListAsync();
-        }
-
-        public Task<int> GetOnlineCountAsync()
-        {
-            return Task.FromResult(RemoteWorkstationConnectionsService.WorkstationsOnlineCount());
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Workstation, bool>> predicate)

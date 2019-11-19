@@ -128,7 +128,7 @@ namespace HES.Web.Pages.Settings.Positions
                 return NotFound();
             }
 
-            HasForeignKey = await _employeeService.Query().AnyAsync(x => x.PositionId == id);
+            HasForeignKey = await _employeeService.EmployeeQuery().AnyAsync(x => x.PositionId == id);
 
             return Partial("_DeletePosition", this);
         }

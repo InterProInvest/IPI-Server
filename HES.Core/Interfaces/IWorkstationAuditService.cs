@@ -9,15 +9,13 @@ namespace HES.Core.Interfaces
 {
     public interface IWorkstationAuditService
     {
-        IQueryable<WorkstationEvent> QueryOfEvent();
+        IQueryable<WorkstationEvent> EventQuery();
         Task<List<WorkstationEvent>> GetWorkstationEventsAsync();
         Task<List<WorkstationEvent>> GetFilteredWorkstationEventsAsync(WorkstationEventFilter workstationEventFilter);
         Task AddEventDtoAsync(WorkstationEventDto workstationEventDto);
         Task AddPendingUnlockEventAsync(string deviceId);
-        IQueryable<WorkstationSession> QueryOfSession();
+        IQueryable<WorkstationSession> SessionQuery();
         Task<List<WorkstationSession>> GetWorkstationSessionsAsync();
-        Task<List<WorkstationSession>> GetOpenedSessionsAsync();
-        Task<int> GetOpenedSessionsCountAsync();
         Task<List<WorkstationSession>> GetFilteredWorkstationSessionsAsync(WorkstationSessionFilter workstationSessionFilter);
         Task AddOrUpdateWorkstationSession(WorkstationEventDto workstationEventDto);
         Task CloseSessionAsync(string workstationId);

@@ -51,7 +51,7 @@ namespace HES.Core.Services
 
         #region Employee
 
-        public IQueryable<Employee> Query()
+        public IQueryable<Employee> EmployeeQuery()
         {
             return _employeeRepository.Query();
         }
@@ -152,7 +152,7 @@ namespace HES.Core.Services
                 throw new Exception("Employee not found");
 
             var devices = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Where(x => x.EmployeeId == id)
                 .AnyAsync();
             if (devices)
@@ -504,7 +504,7 @@ namespace HES.Core.Services
 
             if (account != null)
             {
-                await DeleteAccount(account.Id);
+                await DeleteAccountAsync(account.Id);
             }
         }
 
@@ -522,7 +522,7 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<DeviceAccount>> GetDeviceAccountsAsync(string employeeId)
+        public async Task<List<DeviceAccount>> GetDeviceAccountsByEmployeeIdAsync(string employeeId)
         {
             return await _deviceAccountService
                 .Query()
@@ -535,7 +535,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task SetPrimaryAccount(string deviceId, string deviceAccountId)
+        public async Task SetWorkstationAccountAsync(string deviceId, string deviceAccountId)
         {
             if (deviceId == null)
             {
@@ -579,7 +579,7 @@ namespace HES.Core.Services
             });
         }
 
-        private async Task SetAsPrimaryIfEmpty(string deviceId, string deviceAccountId)
+        private async Task SetAsWorkstationIfEmptyAsync(string deviceId, string deviceAccountId)
         {
             var device = await _deviceService.GetDeviceByIdAsync(deviceId);
 
@@ -698,7 +698,7 @@ namespace HES.Core.Services
                 });
 
                 // Set primary account
-                await SetAsPrimaryIfEmpty(deviceId, deviceAccountId);
+                await SetAsWorkstationIfEmptyAsync(deviceId, deviceAccountId);
             }
 
             var deviceAccounts = await _deviceAccountService.AddRangeAsync(accounts);
@@ -844,7 +844,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task AddSharedAccount(string employeeId, string sharedAccountId, string[] devicesIds)
+        public async Task AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] devicesIds)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
@@ -913,7 +913,7 @@ namespace HES.Core.Services
                 });
 
                 // Set primary account
-                await SetAsPrimaryIfEmpty(deviceId, deviceAccountId);
+                await SetAsWorkstationIfEmptyAsync(deviceId, deviceAccountId);
             }
 
             await _deviceAccountService.AddRangeAsync(accounts);
@@ -928,7 +928,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task<string> DeleteAccount(string accountId)
+        public async Task<string> DeleteAccountAsync(string accountId)
         {
             _dataProtectionService.Validate();
 
@@ -965,7 +965,7 @@ namespace HES.Core.Services
             return deviceAccount.DeviceId;
         }
 
-        public async Task UndoChanges(string accountId)
+        public async Task UndoChangesAsync(string accountId)
         {
             if (accountId == null)
                 throw new ArgumentNullException(nameof(accountId));

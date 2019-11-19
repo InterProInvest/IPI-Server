@@ -82,7 +82,7 @@ namespace HES.Web.Pages.Workstations
 
             ProximityDevices = await _workstationService.GetProximityDevicesAsync(id);
 
-            var deviceQuery = _deviceService.QueryOfDevice();
+            var deviceQuery = _deviceService.DeviceQuery();
 
             foreach (var proximityDevice in ProximityDevices)
             {

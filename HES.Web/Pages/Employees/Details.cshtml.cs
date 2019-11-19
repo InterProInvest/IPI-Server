@@ -85,7 +85,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccounts = await _employeeService.GetDeviceAccountsAsync(Employee.Id);
+            DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(Employee.Id);
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
 
@@ -109,7 +109,7 @@ namespace HES.Web.Pages.Employees
         public async Task<IActionResult> OnGetUpdateTableAsync(string id)
         {
             Employee = await _employeeService.GetEmployeeByIdAsync(id);
-            DeviceAccounts = await _employeeService.GetDeviceAccountsAsync(id);
+            DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(id);
             return Partial("_EmployeeDeviceAccounts", this);
         }
 
@@ -252,7 +252,7 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                await _employeeService.SetPrimaryAccount(deviceId, accountId);
+                await _employeeService.SetWorkstationAccountAsync(deviceId, accountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
             }
@@ -287,7 +287,7 @@ namespace HES.Web.Pages.Employees
             }
 
             Devices = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Where(d => d.EmployeeId == null)
                 .ToListAsync();
 
@@ -399,7 +399,7 @@ namespace HES.Web.Pages.Employees
             ViewData["Templates"] = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
-            Devices = await _deviceService.QueryOfDevice().Where(d => d.EmployeeId == id).ToListAsync();
+            Devices = await _deviceService.DeviceQuery().Where(d => d.EmployeeId == id).ToListAsync();
 
             return Partial("_CreatePersonalAccount", this);
         }
@@ -631,7 +631,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.AddSharedAccount(employeeId, sharedAccountId, selectedDevices);
+                await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId, selectedDevices);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
                 SuccessMessage = "Account added and will be recorded when the device is connected to the server.";
             }
@@ -678,7 +678,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                var deviceId = await _employeeService.DeleteAccount(accountId);
+                var deviceId = await _employeeService.DeleteAccountAsync(accountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = "Account deleting and will be deleted when the device is connected to the server.";
             }
@@ -725,7 +725,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.UndoChanges(accountId);
+                await _employeeService.UndoChangesAsync(accountId);
                 SuccessMessage = "Changes were canceled.";
             }
             catch (Exception ex)

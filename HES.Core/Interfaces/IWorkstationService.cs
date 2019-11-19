@@ -11,11 +11,10 @@ namespace HES.Core.Interfaces
 {
     public interface IWorkstationService
     {
-        IQueryable<Workstation> QueryOfWorkstation();
+        IQueryable<Workstation> WorkstationQuery();
         Task<Workstation> GetWorkstationByIdAsync(string id);
         Task<List<Workstation>> GetWorkstationsAsync();
         Task<List<Workstation>> GetFilteredWorkstationsAsync(WorkstationFilter workstationFilter);
-        Task<int> GetOnlineCountAsync();
         Task<bool> ExistAsync(Expression<Func<Workstation, bool>> predicate);
         Task AddWorkstationAsync(WorkstationInfo workstationInfo);
         Task UpdateWorkstationInfoAsync(WorkstationInfo workstationInfo);

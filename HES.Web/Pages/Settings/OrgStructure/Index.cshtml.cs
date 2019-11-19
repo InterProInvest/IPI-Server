@@ -54,7 +54,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task<JsonResult> OnGetJsonCompanyAsync()
         {
-            return new JsonResult(await _orgStructureService.QueryOfCompany().OrderBy(c => c.Name).ToListAsync());
+            return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
         }
 
         public IActionResult OnGetCreateCompany()
@@ -262,8 +262,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            HasForeignKey = await _employeeService.Query().AnyAsync(x => x.DepartmentId == id);
-            HasForeignKeyWorkstation = await _workstationService.QueryOfWorkstation().AnyAsync(x => x.DepartmentId == id);
+            HasForeignKey = await _employeeService.EmployeeQuery().AnyAsync(x => x.DepartmentId == id);
+            HasForeignKeyWorkstation = await _workstationService.WorkstationQuery().AnyAsync(x => x.DepartmentId == id);
 
             return Partial("_DeleteDepartment", this);
         }

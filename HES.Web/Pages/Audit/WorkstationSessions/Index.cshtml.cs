@@ -47,10 +47,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
             WorkstationSessions = await _workstationAuditService.GetWorkstationSessionsAsync();
 
             ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["Workstations"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _deviceService.QueryOfDevice().ToListAsync(), "Id", "Id");
-            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
+            ViewData["Workstations"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.DeviceQuery().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
@@ -62,7 +62,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
         public async Task OnGetNonHideezUnlockAsync()
         {
             WorkstationSessions = await _workstationAuditService
-                .QueryOfSession()
+                .SessionQuery()
                 .Include(w => w.Workstation)
                 .Include(w => w.Device)
                 .Include(w => w.Employee)
@@ -74,10 +74,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
                 .ToListAsync();
 
             ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["Workstations"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _deviceService.QueryOfDevice().ToListAsync(), "Id", "Id");
-            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
+            ViewData["Workstations"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.DeviceQuery().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
@@ -87,7 +87,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
         public async Task OnGetLongOpenSessionAsync()
         {
             WorkstationSessions = await _workstationAuditService
-                .QueryOfSession()
+                .SessionQuery()
                 .Include(w => w.Workstation)
                 .Include(w => w.Device)
                 .Include(w => w.Employee)
@@ -99,10 +99,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
                 .ToListAsync();
 
             ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["Workstations"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _deviceService.QueryOfDevice().ToListAsync(), "Id", "Id");
-            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
+            ViewData["Workstations"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.DeviceQuery().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
@@ -112,7 +112,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
         public async Task OnGetOpenedSessionsAsync()
         {
             WorkstationSessions = await _workstationAuditService
-                .QueryOfSession()
+                .SessionQuery()
                 .Include(w => w.Workstation)
                 .Include(w => w.Device)
                 .Include(w => w.Employee)
@@ -124,10 +124,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
                 .ToListAsync();
 
             ViewData["UnlockId"] = new SelectList(Enum.GetValues(typeof(SessionSwitchSubject)).Cast<SessionSwitchSubject>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["Workstations"] = new SelectList(await _workstationService.QueryOfWorkstation().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _deviceService.QueryOfDevice().ToListAsync(), "Id", "Id");
-            ViewData["Employees"] = new SelectList(await _employeeService.Query().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _orgStructureService.QueryOfCompany().ToListAsync(), "Id", "Name");
+            ViewData["Workstations"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
+            ViewData["Devices"] = new SelectList(await _deviceService.DeviceQuery().ToListAsync(), "Id", "Id");
+            ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();

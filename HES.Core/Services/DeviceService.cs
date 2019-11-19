@@ -47,7 +47,7 @@ namespace HES.Core.Services
 
         #region Device
 
-        public IQueryable<Device> QueryOfDevice()
+        public IQueryable<Device> DeviceQuery()
         {
             return _deviceRepository.Query();
         }
@@ -125,7 +125,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevices(string key, byte[] fileContent)
+        public async Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevicesAsync(string key, byte[] fileContent)
         {
             IList<Device> devicesExists = null;
             IList<Device> devicesImported = null;
@@ -264,7 +264,7 @@ namespace HES.Core.Services
 
         #region Profile
 
-        public IQueryable<DeviceAccessProfile> QueryOfAccessProfile()
+        public IQueryable<DeviceAccessProfile> AccessProfileQuery()
         {
             return _deviceAccessProfileRepository.Query();
         }

@@ -234,7 +234,7 @@ namespace HES.Core.Services
         async Task<ushort> AddDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
 
@@ -251,7 +251,7 @@ namespace HES.Core.Services
         async Task<ushort> UpdateDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
 
@@ -278,7 +278,7 @@ namespace HES.Core.Services
         async Task<ushort> DeleteDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
 
@@ -318,7 +318,7 @@ namespace HES.Core.Services
         async Task<ushort> ProfileDevice(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .QueryOfDevice()
+                .DeviceQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
