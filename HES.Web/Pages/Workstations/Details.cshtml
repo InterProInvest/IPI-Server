@@ -21,7 +21,7 @@
     </div>
 </div>
 
-@if (Model.WorkstationProximityDevices != null)
+@if (Model.ProximityDevices != null)
 {
     @*Proximity Devices title*@
     <div class="row align-items-center m-1">
@@ -44,22 +44,22 @@
             <tr>
                 <th class="d-none"></th>
                 <th data-priority="1">
-                    @Html.DisplayNameFor(model => model.WorkstationProximityDevices[0].DeviceId)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].DeviceId)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.WorkstationProximityDevices[0].Device.Employee)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].Device.Employee)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.WorkstationProximityDevices[0].Device.Employee.EmpCompany)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].Device.Employee.EmpCompany)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.WorkstationProximityDevices[0].Device.Employee.EmpDepartment)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].Device.Employee.EmpDepartment)
                 </th>
                 <th class="table-col-menu" data-priority="2"></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.WorkstationProximityDevices)
+            @foreach (var item in Model.ProximityDevices)
             {
                 <tr>
                     <td class="d-none"></td>

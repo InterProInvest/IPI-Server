@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +37,14 @@ namespace HES.Core.Services
         public async Task<SharedAccount> GetByIdAsync(dynamic id)
         {
             return await _sharedAccountRepository.GetByIdAsync(id);
+        }
+
+        public async Task<List<SharedAccount>> GetSharedAccountsAsync()
+        {
+            return await _sharedAccountRepository
+                .Query()
+                .Where(d => d.Deleted == false)
+                .ToListAsync();
         }
 
         public async Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount)
@@ -80,7 +88,7 @@ namespace HES.Core.Services
             return await _sharedAccountRepository.AddAsync(sharedAccount);
         }
 
-        public async Task CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount)
+        public async Task<SharedAccount> CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount)
         {
             if (workstationAccount == null)
             {
@@ -107,12 +115,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            await CreateSharedAccountAsync(sharedAccount);
-        }
-
-        public async Task UpdateOnlyPropAsync(SharedAccount sharedAccount, string[] properties)
-        {
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);
+            return await CreateSharedAccountAsync(sharedAccount);
         }
 
         public async Task<List<string>> EditSharedAccountAsync(SharedAccount sharedAccount)
@@ -182,7 +185,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -233,7 +236,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -247,7 +250,7 @@ namespace HES.Core.Services
             }
 
             _dataProtectionService.Validate();
-                       
+
             ValidationHepler.VerifyOtpSecret(sharedAccount.OtpSecret);
 
             // Update Shared Account
@@ -286,7 +289,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -338,7 +341,7 @@ namespace HES.Core.Services
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
 
             // Create Tasks
-            await _deviceTaskService.AddRangeAsync(tasks);
+            await _deviceTaskService.AddRangeTasksAsync(tasks);
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;

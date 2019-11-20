@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,21 +13,21 @@ namespace HES.Core.Services
     public class DashboardService : IDashboardService
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IWorkstationSessionService _workstationSessionService;
+        private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IWorkstationService _workstationService;
         private readonly IDeviceService _deviceService;
         private readonly IAppService _appService;
 
         public DashboardService(IEmployeeService employeeService,
-                                IWorkstationSessionService workstationSessionService,
+                                IWorkstationAuditService workstationAuditService,
                                 IDeviceTaskService deviceTaskService,
                                 IWorkstationService workstationService,
                                 IDeviceService deviceService,
                                 IAppService appService)
         {
             _employeeService = employeeService;
-            _workstationSessionService = workstationSessionService;
+            _workstationAuditService = workstationAuditService;
             _deviceTaskService = deviceTaskService;
             _workstationService = workstationService;
             _deviceService = deviceService;
@@ -43,7 +43,7 @@ namespace HES.Core.Services
 
         public async Task<int> GetDeviceTasksCount()
         {
-            return await _deviceTaskService.GetCountAsync();
+            return await _deviceTaskService.Query().CountAsync();
         }
 
         public async Task<List<DeviceTask>> GetDeviceTasks()
@@ -51,7 +51,7 @@ namespace HES.Core.Services
             return await _deviceTaskService.Query().ToListAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetServerNotify()
+        public async Task<List<DashboardNotify>> GetServerNotifyAsync()
         {
             var list = new List<DashboardNotify>();
             var longPendingTasksCount = await _deviceTaskService.Query().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
@@ -74,22 +74,25 @@ namespace HES.Core.Services
 
         #region Employees
 
-        public async Task<int> GetEmployeesCount()
+        public async Task<int> GetEmployeesCountAsync()
         {
-            return await _employeeService.GetCountAsync();
+            return await _employeeService.EmployeeQuery().CountAsync();
         }
 
-        public async Task<int> GetEmployeesOpenedSessionsCount()
+        public async Task<int> GetEmployeesOpenedSessionsCountAsync()
         {
-            return await _workstationSessionService.GetOpenedSessionsCountAsync();
+            return await _workstationAuditService
+               .SessionQuery()
+               .Where(w => w.EndDate == null)
+               .CountAsync();         
         }
 
-        public async Task<List<DashboardNotify>> GetEmployeesNotify()
+        public async Task<List<DashboardNotify>> GetEmployeesNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
-            var nonHideezUnlock = await _workstationSessionService
-                .Query()
+            var nonHideezUnlock = await _workstationAuditService
+                .SessionQuery()
                 .Where(w => w.StartDate >= DateTime.UtcNow.AddDays(-1) && w.UnlockedBy == Hideez.SDK.Communication.SessionSwitchSubject.NonHideez)
                 .CountAsync();
 
@@ -104,8 +107,8 @@ namespace HES.Core.Services
                 });
             }
 
-            var longOpenSession = await _workstationSessionService
-                .Query()
+            var longOpenSession = await _workstationAuditService
+                .SessionQuery()
                 .Where(w => w.StartDate <= DateTime.UtcNow.AddHours(-12) && w.EndDate == null)
                 .CountAsync();
 
@@ -127,22 +130,22 @@ namespace HES.Core.Services
 
         #region Devices
 
-        public async Task<int> GetDevicesCount()
+        public async Task<int> GetDevicesCountAsync()
         {
-            return await _deviceService.GetCountAsync();
+            return await _deviceService.DeviceQuery().CountAsync();
         }
 
-        public async Task<int> GetFreeDevicesCount()
+        public async Task<int> GetFreeDevicesCountAsync()
         {
-            return await _deviceService.GetFreeDevicesCount();
+            return await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).CountAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetDevicesNotify()
+        public async Task<List<DashboardNotify>> GetDevicesNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
             var lowBattery = await _deviceService
-                .Query()
+                .DeviceQuery()
                 .Where(d => d.Battery <= 30)
                 .CountAsync();
 
@@ -158,7 +161,7 @@ namespace HES.Core.Services
             }
 
             var deviceLock = await _deviceService
-                .Query()
+                .DeviceQuery()
                 .Where(d => d.State == DeviceState.Locked)
                 .CountAsync();
 
@@ -174,7 +177,7 @@ namespace HES.Core.Services
             }
 
             var deviceError = await _deviceService
-               .Query()
+               .DeviceQuery()
                .Where(d => d.State == DeviceState.Error)
                .CountAsync();
 
@@ -196,22 +199,22 @@ namespace HES.Core.Services
 
         #region Workstations
 
-        public async Task<int> GetWorkstationsCount()
+        public async Task<int> GetWorkstationsCountAsync()
         {
-            return await _workstationService.GetCountAsync();
+            return await _workstationService.WorkstationQuery().CountAsync();
         }
 
-        public async Task<int> GetWorkstationsOnlineCount()
+        public async Task<int> GetWorkstationsOnlineCountAsync()
         {
-            return await _workstationService.GetOnlineCountAsync();
+            return await Task.FromResult(RemoteWorkstationConnectionsService.WorkstationsOnlineCount());
         }
 
-        public async Task<List<DashboardNotify>> GetWorkstationsNotify()
+        public async Task<List<DashboardNotify>> GetWorkstationsNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
             var notApproved = await _workstationService
-                .Query()
+                .WorkstationQuery()
                 .Where(w => w.Approved == false)
                 .CountAsync();
 

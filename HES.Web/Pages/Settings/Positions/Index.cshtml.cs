@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -36,10 +37,7 @@ namespace HES.Web.Pages.Settings.Positions
 
         public async Task OnGetAsync()
         {
-            Positions = await _orgStructureService
-                .PositionQuery()
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            Positions = await _orgStructureService.GetPositionsAsync();
         }
 
         #region Position
@@ -53,7 +51,8 @@ namespace HES.Web.Pages.Settings.Positions
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -75,26 +74,27 @@ namespace HES.Web.Pages.Settings.Positions
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Position = await _orgStructureService.PositionQuery().FirstOrDefaultAsync(m => m.Id == id);
+            Position = await _orgStructureService.GetPositionByIdAsync(id);
 
             if (Position == null)
             {
-                _logger.LogWarning("Position == null");
+                _logger.LogWarning($"{nameof(Position)} is null");
                 return NotFound();
             }
 
             return Partial("_EditPosition", this);
         }
 
-        public async Task<IActionResult> OnPostEditPositionAsync(string id)
+        public async Task<IActionResult> OnPostEditPositionAsync()
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -116,19 +116,19 @@ namespace HES.Web.Pages.Settings.Positions
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Position = await _orgStructureService.PositionQuery().FirstOrDefaultAsync(m => m.Id == id);
+            Position = await _orgStructureService.GetPositionByIdAsync(id);
 
             if (Position == null)
             {
-                _logger.LogWarning("Position == null");
+                _logger.LogWarning($"{nameof(Position)} is null");
                 return NotFound();
             }
 
-            HasForeignKey = await _employeeService.Query().AnyAsync(x => x.PositionId == id);
+            HasForeignKey = await _employeeService.EmployeeQuery().AnyAsync(x => x.PositionId == id);
 
             return Partial("_DeletePosition", this);
         }
@@ -137,7 +137,7 @@ namespace HES.Web.Pages.Settings.Positions
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 

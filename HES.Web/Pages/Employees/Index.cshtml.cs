@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using HES.Core.Utilities;
 
 namespace HES.Web.Pages.Employees
 {
@@ -19,7 +20,6 @@ namespace HES.Web.Pages.Employees
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
         private readonly IWorkstationService _workstationService;
-        private readonly IProximityDeviceService _workstationProximityDeviceService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ISharedAccountService _sharedAccountService;
@@ -45,7 +45,6 @@ namespace HES.Web.Pages.Employees
         public IndexModel(IEmployeeService employeeService,
                           IDeviceService deviceService,
                           IWorkstationService workstationService,
-                          IProximityDeviceService workstationProximityDeviceService,
                           IOrgStructureService orgStructureService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ISharedAccountService sharedAccountService,
@@ -54,7 +53,6 @@ namespace HES.Web.Pages.Employees
             _employeeService = employeeService;
             _deviceService = deviceService;
             _workstationService = workstationService;
-            _workstationProximityDeviceService = workstationProximityDeviceService;
             _orgStructureService = orgStructureService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _sharedAccountService = sharedAccountService;
@@ -63,12 +61,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task OnGetAsync()
         {
-            Employees = await _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.Devices)
-                .ToListAsync();
+            Employees = await _employeeService.GetAllEmployeesAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
@@ -78,65 +71,30 @@ namespace HES.Web.Pages.Employees
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
-        public async Task<IActionResult> OnPostFilterEmployeesAsync(EmployeeFilter EmployeeFilter)
+        #region Employee
+
+        public async Task<IActionResult> OnPostFilterEmployeesAsync(EmployeeFilter employeeFilter)
         {
-            var filter = _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.Devices)
-                .AsQueryable();
-
-            if (EmployeeFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == EmployeeFilter.CompanyId);
-            }
-            if (EmployeeFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == EmployeeFilter.DepartmentId);
-            }
-            if (EmployeeFilter.PositionId != null)
-            {
-                filter = filter.Where(w => w.PositionId == EmployeeFilter.PositionId);
-            }
-            if (EmployeeFilter.DevicesCount != null)
-            {
-                filter = filter.Where(w => w.Devices.Count() == EmployeeFilter.DevicesCount);
-            }
-            if (EmployeeFilter.StartDate != null && EmployeeFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.LastSeen.HasValue
-                                        && w.LastSeen.Value >= EmployeeFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
-                                        && w.LastSeen.Value <= EmployeeFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-
-            Employees = await filter
-                .OrderBy(e => e.FirstName)
-                .ThenBy(e => e.LastName)
-                .Take(EmployeeFilter.Records)
-                .ToListAsync();
-
+            Employees = await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
             return Partial("_EmployeesTable", this);
         }
 
-        #region Employee
-
-        public async Task<IActionResult> OnGetCreateEmployee()
+        public async Task<IActionResult> OnGetCreateEmployeeAsync()
         {
             ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["DeviceId"] = new SelectList(await _deviceService.Query().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
-            ViewData["WorkstationId"] = new SelectList(await _workstationService.Query().ToListAsync(), "Id", "Name");
+            ViewData["DeviceId"] = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
+            ViewData["WorkstationId"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["WorkstationAccounts"] = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
 
             Devices = await _deviceService
-               .Query()
+               .DeviceQuery()
                .Where(d => d.EmployeeId == null)
                .ToListAsync();
 
             Workstations = await _workstationService
-                .Query()
+                .WorkstationQuery()
                 .ToListAsync();
 
             return Partial("_CreateEmployee", this);
@@ -146,36 +104,35 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogWarning(errors);
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
             try
             {
                 // Create employee
-                var user = await _employeeService.CreateEmployeeAsync(employee);
+                var createdEmployee = await _employeeService.CreateEmployeeAsync(employee);
 
                 // Add device
                 if (!wizard.SkipDevice)
                 {
-                    await _employeeService.AddDeviceAsync(user.Id, new string[] { wizard.DeviceId });
+                    await _employeeService.AddDeviceAsync(createdEmployee.Id, new string[] { wizard.DeviceId });
 
                     // Proximity Unlock
                     if (!wizard.SkipProximityUnlock)
                     {
-                        await _workstationProximityDeviceService.AddProximityDeviceAsync(wizard.WorkstationId, new string[] { wizard.DeviceId });
+                        await _workstationService.AddProximityDevicesAsync(wizard.WorkstationId, new string[] { wizard.DeviceId });
                     }
 
                     // Add workstation account
                     if (!wizard.WorkstationAccount.Skip)
                     {
-                        await _employeeService.CreateWorkstationAccountAsync(wizard.WorkstationAccount, user.Id, wizard.DeviceId);
+                        await _employeeService.CreateWorkstationAccountAsync(wizard.WorkstationAccount, createdEmployee.Id, wizard.DeviceId);
                     }
-                }
 
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(wizard.DeviceId);
+                    _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(wizard.DeviceId);
+                }
 
                 SuccessMessage = $"Employee created.";
             }
@@ -227,19 +184,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Employee = await _employeeService
-                .Query()
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {
-                _logger.LogWarning("Employee == null");
+                _logger.LogWarning($"{nameof(Employee)} is null");
                 return NotFound();
             }
 
@@ -254,9 +207,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogWarning(errors);
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -275,8 +227,8 @@ namespace HES.Web.Pages.Employees
                 else
                 {
                     ErrorMessage = ex.Message;
+                    _logger.LogError(ex.Message);
                 }
-                _logger.LogError(ex.Message);
             }
 
             return RedirectToPage("./Index");
@@ -286,22 +238,20 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Employee = await _employeeService
-                .Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {
-                _logger.LogWarning("Employee == null");
+                _logger.LogWarning($"{nameof(Employee)} is null");
                 return NotFound();
             }
 
             HasForeignKey = _deviceService
-                .Query()
+                .DeviceQuery()
                 .Where(x => x.EmployeeId == id)
                 .Any();
 
@@ -312,7 +262,7 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -348,7 +298,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
 
@@ -384,7 +335,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
 
@@ -419,7 +371,8 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
 

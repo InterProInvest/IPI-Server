@@ -25,17 +25,29 @@ namespace HES.Core.Services
             return _deviceTaskRepository.Query();
         }
 
-        public async Task<int> GetCountAsync()
-        {
-            return await _deviceTaskRepository.GetCountAsync();
-        }
-               
         public async Task AddTaskAsync(DeviceTask deviceTask)
         {
             await _deviceTaskRepository.AddAsync(deviceTask);
         }
 
-        public async Task AddProfileTaskAsync(Device device)
+        public async Task AddRangeTasksAsync(IList<DeviceTask> deviceTasks)
+        {
+            await _deviceTaskRepository.AddRangeAsync(deviceTasks);
+        }
+
+        public async Task AddLinkAsync(string deviceId, string masterPassword)
+        {
+            var task = new DeviceTask()
+            {
+                Password = masterPassword,
+                Operation = TaskOperation.Link,
+                CreatedAt = DateTime.UtcNow,
+                DeviceId = deviceId
+            };
+            await _deviceTaskRepository.AddAsync(task);
+        }
+
+        public async Task AddProfileAsync(Device device)
         {
             var task = new DeviceTask
             {
@@ -48,7 +60,7 @@ namespace HES.Core.Services
             await _deviceTaskRepository.AddAsync(task);
         }
 
-        public async Task AddUnlockPinTaskAsync(Device device)
+        public async Task AddUnlockPinAsync(Device device)
         {
             var task = new DeviceTask
             {
@@ -61,9 +73,16 @@ namespace HES.Core.Services
             await _deviceTaskRepository.AddAsync(task);
         }
 
-        public async Task AddRangeAsync(IList<DeviceTask> deviceTasks)
+        public async Task AddWipeAsync(string deviceId, string masterPassword)
         {
-            await _deviceTaskRepository.AddRangeAsync(deviceTasks);
+            var task = new DeviceTask()
+            {
+                Password = masterPassword,
+                CreatedAt = DateTime.UtcNow,
+                Operation = TaskOperation.Wipe,
+                DeviceId = deviceId
+            };
+            await _deviceTaskRepository.AddAsync(task);
         }
 
         public async Task UpdateOnlyPropAsync(DeviceTask deviceTask, string[] properties)

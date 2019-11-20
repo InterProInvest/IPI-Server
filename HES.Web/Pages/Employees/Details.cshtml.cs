@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Identity;
@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using HES.Core.Utilities;
 
 namespace HES.Web.Pages.Employees
 {
@@ -20,7 +21,6 @@ namespace HES.Web.Pages.Employees
     {
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
-        private readonly IDeviceAccountService _deviceAccountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly ITemplateService _templateService;
         private readonly ISamlIdentityProviderService _samlIdentityProviderService;
@@ -50,7 +50,6 @@ namespace HES.Web.Pages.Employees
 
         public DetailsModel(IEmployeeService employeeService,
                             IDeviceService deviceService,
-                            IDeviceAccountService deviceAccountService,
                             ISharedAccountService sharedAccountService,
                             ITemplateService templateService,
                             ISamlIdentityProviderService samlIdentityProviderService,
@@ -61,7 +60,6 @@ namespace HES.Web.Pages.Employees
         {
             _employeeService = employeeService;
             _deviceService = deviceService;
-            _deviceAccountService = deviceAccountService;
             _sharedAccountService = sharedAccountService;
             _templateService = templateService;
             _samlIdentityProviderService = samlIdentityProviderService;
@@ -75,35 +73,23 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Employee = await _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .Include(e => e.Devices).ThenInclude(e => e.DeviceAccessProfile)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {
-                _logger.LogWarning("Employee == null");
+                _logger.LogWarning($"{nameof(Employee)} is null");
                 return NotFound();
             }
 
-            DeviceAccounts = await _deviceAccountService
-                .Query()
-                .Include(d => d.Device)
-                .Include(d => d.Employee)
-                .Include(d => d.SharedAccount)
-                .Where(e => e.EmployeeId == Employee.Id)
-                .Where(d => d.Deleted == false && d.Name != SamlIdentityProvider.DeviceAccountName)
-                .ToListAsync();
+            DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(Employee.Id);
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
 
+            #region Idp
             var user = await _userManager.FindByEmailAsync(Employee.Email);
             if (user != null)
             {
@@ -115,29 +101,15 @@ namespace HES.Web.Pages.Employees
             }
 
             SamlIdentityProviderEnabled = await _samlIdentityProviderService.GetStatusAsync();
+            #endregion
 
             return Page();
         }
 
         public async Task<IActionResult> OnGetUpdateTableAsync(string id)
         {
-            Employee = await _employeeService
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .Include(e => e.Devices).ThenInclude(e => e.DeviceAccessProfile)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            DeviceAccounts = await _deviceAccountService
-                .Query()
-                .Include(d => d.Device)
-                .Include(d => d.Employee)
-                .Include(d => d.SharedAccount)
-                .Where(e => e.EmployeeId == Employee.Id)
-                .Where(d => d.Deleted == false && d.Name != SamlIdentityProvider.DeviceAccountName)
-                .ToListAsync();
-
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
+            DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(id);
             return Partial("_EmployeeDeviceAccounts", this);
         }
 
@@ -261,19 +233,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccount = await _deviceAccountService
-                .Query()
-                .Include(e => e.Employee)
-                .Include(e => e.Device)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
-                _logger.LogWarning("DeviceAccount == null");
+                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
                 return NotFound();
             }
 
@@ -284,7 +252,7 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                await _employeeService.SetPrimaryAccount(deviceId, accountId);
+                await _employeeService.SetWorkstationAccountAsync(deviceId, accountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
             }
@@ -306,22 +274,20 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Employee = await _employeeService
-                .Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)
             {
-                _logger.LogWarning("Employee == null");
+                _logger.LogWarning($"{nameof(Employee)} is null");
                 return NotFound();
             }
 
             Devices = await _deviceService
-                .Query()
+                .DeviceQuery()
                 .Where(d => d.EmployeeId == null)
                 .ToListAsync();
 
@@ -332,7 +298,7 @@ namespace HES.Web.Pages.Employees
         {
             if (employeeId == null)
             {
-                _logger.LogWarning("employeeId == null");
+                _logger.LogWarning($"{nameof(employeeId)} is null");
                 return NotFound();
             }
 
@@ -340,20 +306,7 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.AddDeviceAsync(employeeId, selectedDevices);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
-
-                if (selectedDevices.Length > 1)
-                {
-                    var devices = string.Empty;
-                    foreach (var item in selectedDevices)
-                    {
-                        devices += item + Environment.NewLine;
-                    }
-                    SuccessMessage = $"Devices: {devices} added.";
-                }
-                else
-                {
-                    SuccessMessage = $"Device {selectedDevices[0]} added.";
-                }
+                SuccessMessage = $"Device(s) added.";
             }
             catch (Exception ex)
             {
@@ -377,18 +330,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            Device = await _deviceService
-                .Query()
-                .Include(e => e.Employee)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            Device = await _deviceService.GetDeviceByIdAsync(id);
 
             if (Device == null)
             {
-                _logger.LogWarning("Device == null");
+                _logger.LogWarning($"{nameof(Device)} is null");
                 return NotFound();
             }
 
@@ -399,7 +349,7 @@ namespace HES.Web.Pages.Employees
         {
             if (device == null)
             {
-                _logger.LogWarning("device == null");
+                _logger.LogWarning($"{nameof(device)} is null");
                 return NotFound();
             }
 
@@ -446,10 +396,10 @@ namespace HES.Web.Pages.Employees
         public async Task<IActionResult> OnGetCreatePersonalAccountAsync(string id)
         {
             ViewData["EmployeeId"] = id;
-            ViewData["Templates"] = new SelectList(await _templateService.Query().ToListAsync(), "Id", "Name");
+            ViewData["Templates"] = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
-            Devices = await _deviceService.Query().Where(d => d.EmployeeId == id).ToListAsync();
+            Devices = await _deviceService.DeviceQuery().Where(d => d.EmployeeId == id).ToListAsync();
 
             return Partial("_CreatePersonalAccount", this);
         }
@@ -460,7 +410,8 @@ namespace HES.Web.Pages.Employees
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Details", new { id });
             }
 
@@ -493,7 +444,8 @@ namespace HES.Web.Pages.Employees
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Details", new { id });
             }
             try
@@ -519,19 +471,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccount = await _deviceAccountService
-                .Query()
-                .Include(e => e.Employee)
-                .Include(e => e.Device)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
-                _logger.LogWarning("DeviceAccount == null");
+                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
                 return NotFound();
             }
 
@@ -544,7 +492,8 @@ namespace HES.Web.Pages.Employees
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Details", new { id });
             }
 
@@ -567,19 +516,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccount = await _deviceAccountService
-                .Query()
-                .Include(e => e.Employee)
-                .Include(e => e.Device)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
-                _logger.LogWarning("DeviceAccount == null");
+                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
                 return NotFound();
             }
 
@@ -592,7 +537,8 @@ namespace HES.Web.Pages.Employees
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Model is not valid");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Details", new { id });
             }
 
@@ -615,19 +561,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccount = await _deviceAccountService
-                .Query()
-                .Include(e => e.Employee)
-                .Include(e => e.Device)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
-                _logger.LogWarning("DeviceAccount == null");
+                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
                 return NotFound();
             }
 
@@ -665,17 +607,14 @@ namespace HES.Web.Pages.Employees
         public async Task<IActionResult> OnGetAddSharedAccountAsync(string id)
         {
             ViewData["EmployeeId"] = id;
-            ViewData["SharedAccountId"] = new SelectList(await _sharedAccountService.Query().Where(d => d.Deleted == false).ToListAsync(), "Id", "Name");
+            ViewData["SharedAccountId"] = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
 
             SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
-            Devices = await _deviceService
-                .Query()
-                .Where(d => d.EmployeeId == id)
-                .ToListAsync();
+            Devices = await _deviceService.GetDevicesByEmployeeIdAsync(id);
 
             if (Devices == null)
             {
-                _logger.LogWarning("Devices == null");
+                _logger.LogWarning($"{nameof(Devices)} is null");
                 return NotFound();
             }
 
@@ -686,13 +625,13 @@ namespace HES.Web.Pages.Employees
         {
             if (employeeId == null)
             {
-                _logger.LogWarning("employeeId == null");
+                _logger.LogWarning($"{nameof(employeeId)} is null");
                 return NotFound();
             }
 
             try
             {
-                await _employeeService.AddSharedAccount(employeeId, sharedAccountId, selectedDevices);
+                await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId, selectedDevices);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
                 SuccessMessage = "Account added and will be recorded when the device is connected to the server.";
             }
@@ -714,17 +653,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccount = await _deviceAccountService
-                .Query()
-                .FirstOrDefaultAsync(x => x.Id == id);
+            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
-                _logger.LogWarning("DeviceAccount == null");
+                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
                 return NotFound();
             }
 
@@ -735,13 +672,13 @@ namespace HES.Web.Pages.Employees
         {
             if (accountId == null)
             {
-                _logger.LogWarning("accountId == null");
+                _logger.LogWarning($"{nameof(accountId)} is null");
                 return NotFound();
             }
 
             try
             {
-                var deviceId = await _employeeService.DeleteAccount(accountId);
+                var deviceId = await _employeeService.DeleteAccountAsync(accountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = "Account deleting and will be deleted when the device is connected to the server.";
             }
@@ -763,17 +700,15 @@ namespace HES.Web.Pages.Employees
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccount = await _deviceAccountService
-                .Query()
-                .FirstOrDefaultAsync(x => x.Id == id);
+            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
-                _logger.LogWarning("DeviceAccount == null");
+                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
                 return NotFound();
             }
 
@@ -784,13 +719,13 @@ namespace HES.Web.Pages.Employees
         {
             if (accountId == null)
             {
-                _logger.LogWarning("accountId == null");
+                _logger.LogWarning($"{nameof(accountId)} is null");
                 return NotFound();
             }
 
             try
             {
-                await _employeeService.UndoChanges(accountId);
+                await _employeeService.UndoChangesAsync(accountId);
                 SuccessMessage = "Changes were canceled.";
             }
             catch (Exception ex)

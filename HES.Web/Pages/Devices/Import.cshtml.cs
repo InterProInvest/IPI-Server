@@ -62,7 +62,7 @@ namespace HES.Web.Pages.Devices
                             {
                                 byte[] fileContent = memoryStream.ToArray();
                                 // Device import
-                                var result = await _deviceService.ImportDevices(key, fileContent);
+                                var result = await _deviceService.ImportDevicesAsync(key, fileContent);
                                 // Set result
                                 DevicesExists = result.devicesExists;
                                 DevicesImported = result.devicesImported;

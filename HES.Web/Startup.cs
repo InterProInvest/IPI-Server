@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
 using System.IO;
@@ -65,36 +65,26 @@ namespace HES.Web
                 .SetApplicationName("HES")
                 .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "dataprotection")));
 
-            services.AddSignalR();
-
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
-
+            services.AddScoped<IAppService, AppService>();
             services.AddScoped<IDashboardService, DashboardService>();
-
             services.AddScoped<IEmployeeService, EmployeeService>();
-
-            services.AddScoped<IWorkstationSessionService, WorkstationSessionService>();
-
             services.AddScoped<IDeviceService, DeviceService>();
             services.AddScoped<IDeviceTaskService, DeviceTaskService>();
             services.AddScoped<IDeviceAccountService, DeviceAccountService>();
-            services.AddScoped<IDeviceAccessProfilesService, DeviceAccessProfilesService>();
-
             services.AddScoped<IWorkstationService, WorkstationService>();
-            services.AddScoped<IProximityDeviceService, ProximityDeviceService>();
-            services.AddScoped<IWorkstationEventService, WorkstationEventService>();
-
+            services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
             services.AddScoped<ISharedAccountService, SharedAccountService>();
             services.AddScoped<ITemplateService, TemplateService>();
-
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<IOrgStructureService, OrgStructureService>();
+            services.AddScoped<ILogsViewerService, LogsViewerService>();
             services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
-            services.AddScoped<IAppService, AppService>();
-            services.AddScoped<ILogViewerService, LogViewerService>();
             services.AddTransient<IAesCryptographyService, AesCryptographyService>();
-
+            services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
+            services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
+            services.AddScoped<IRemoteTaskService, RemoteTaskService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
@@ -111,11 +101,6 @@ namespace HES.Web
                                                  dataProtectionProvider,
                                                  logger);
             });
-
-            services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
-            services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
-            services.AddScoped<IRemoteTaskService, RemoteTaskService>();
-            
             services.AddSingleton<IEmailSenderService, EmailSenderService>(i =>
                  new EmailSenderService(
                      Configuration["EmailSender:Host"],
@@ -123,6 +108,9 @@ namespace HES.Web
                      Configuration.GetValue<bool>("EmailSender:EnableSSL"),
                      Configuration["EmailSender:UserName"],
                      Configuration["EmailSender:Password"]));
+
+            // SignalR
+            services.AddSignalR();
 
             // Cookie
             services.Configure<CookiePolicyOptions>(options =>
@@ -182,7 +170,14 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Notifications", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Develop", "RequireAdministratorRole");
                 })
+                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // Register the Swagger generator
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HES API", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -240,6 +235,13 @@ namespace HES.Web
                 routes.MapHub<AppHub>("/appHub");
                 routes.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HES API V1");
+            });
+
             app.UseMvc();
             app.UseCookiePolicy();
 

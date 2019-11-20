@@ -8,11 +8,12 @@ namespace HES.Core.Interfaces
     public interface IDeviceTaskService
     {
         IQueryable<DeviceTask> Query();
-        Task<int> GetCountAsync();
         Task AddTaskAsync(DeviceTask deviceTask);
-        Task AddProfileTaskAsync(Device device);
-        Task AddUnlockPinTaskAsync(Device device);
-        Task AddRangeAsync(IList<DeviceTask> deviceTasks);
+        Task AddRangeTasksAsync(IList<DeviceTask> deviceTasks);
+        Task AddLinkAsync(string deviceId, string masterPassword);
+        Task AddProfileAsync(Device device);
+        Task AddUnlockPinAsync(Device device);
+        Task AddWipeAsync(string deviceId, string masterPassword);
         Task UpdateOnlyPropAsync(DeviceTask deviceTask, string[] properties);
         Task UndoLastTaskAsync(string accountId);
         Task DeleteTaskAsync(DeviceTask deviceTask);
