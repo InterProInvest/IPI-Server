@@ -30,7 +30,6 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesDefaultResponseType]
         public async Task<IActionResult> Login(AuthDto authDto)
         {
             if (authDto == null)
@@ -44,7 +43,7 @@ namespace HES.Web.Controllers
             if (user == null)
             {
                 _logger.LogWarning($"User {authDto.Email} not found");
-                return Unauthorized(new { error = "UserNotFound" });
+                return Unauthorized(new { error = "Unauthorized" });
             }
 
             // Verify password
@@ -99,7 +98,6 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesDefaultResponseType]
         public async Task<IActionResult> AuthN(AuthDto authDto)
         {
             if (authDto == null)
