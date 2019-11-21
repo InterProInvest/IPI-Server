@@ -11,6 +11,10 @@ To deploy server on Linux follow the `Getting Started` instructions in the [Linu
 
 To deploy server on Windows follow the `Getting Started` instructions in the [Windows deployment](WINDOWS.md).
 
+## API documentation
+
+Follow the `Quick Start` instructions in the [documentation](API.md).
+
 ## Related projects
 
 These are repos for related projects:
