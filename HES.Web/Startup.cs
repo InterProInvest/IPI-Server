@@ -3,6 +3,7 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
 using HES.Infrastructure;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +20,7 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace HES.Web
 {
@@ -148,6 +150,26 @@ namespace HES.Web
                     policy => policy.RequireRole("Administrator"));
                 config.AddPolicy("RequireUserRole",
                     policy => policy.RequireRole("User"));
+            });
+
+            // Override OnRedirectToLogin via API
+            services.ConfigureApplicationCookie(config =>
+            {
+                config.Events = new CookieAuthenticationEvents
+                {
+                    OnRedirectToLogin = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api"))
+                        {
+                            context.Response.StatusCode = (int)System.Net.HttpStatusCode.Unauthorized;
+                        }
+                        else
+                        {
+                            context.Response.Redirect(context.RedirectUri);
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             // Mvc
