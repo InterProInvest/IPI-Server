@@ -71,23 +71,7 @@
   $ sudo systemctl enable mysqld.service
 ```
 
-### 2. Installing and Cloning a GitHub Repository
-
-```shell
-  $ sudo yum install git && cd /opt
-  $ sudo git clone https://github.com/HideezGroup/web.HES && cd web.HES/HES.Web/
-```
-
-### 3. Compiling Hideez Enterprise Server
-
-```shell
-  $ sudo mkdir /opt/HideezES
-  $ sudo dotnet publish -c release -v d -o "/opt/HideezES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/web.HES/HES.Web/Crypto_linux.dll /opt/HideezES/Crypto.dll
-```
-  * **[Note]** Require internet connectivity
-
-### 4. Creating MySQL User and Database for Hideez Enterprise Server
+### 2. Creating MySQL User and Database for Hideez Enterprise Server
 
   Configuring MySQL Server
 
@@ -97,28 +81,45 @@
 
 ```sql
   ### CREATE DATABASE
-  mysql> CREATE DATABASE hideez;
+  mysql> CREATE DATABASE <your_db>;
 
   ### CREATE USER ACCOUNT
-  mysql> CREATE USER 'hideez'@'127.0.0.1' IDENTIFIED BY '<your_secret>';
+  mysql> CREATE USER '<your_user>'@'127.0.0.1' IDENTIFIED BY '<your_secret>';
 
   ### GRANT PERMISSIONS ON DATABASE
-  mysql> GRANT ALL ON hideez.* TO 'hideez'@'127.0.0.1';
+  mysql> GRANT ALL ON <your_db>.* TO '<your_user>'@'127.0.0.1';
 
   ###  RELOAD PRIVILEGES
   mysql> FLUSH PRIVILEGES;
 ```
 
+### 3. Installing and Cloning a GitHub Repository
+
+```shell
+  $ sudo yum install git && cd /opt
+  $ sudo git clone https://github.com/HideezGroup/HES src && cd src/HES.Web/
+```
+
+### 4. Compiling Hideez Enterprise Server
+
+```shell
+  $ sudo mkdir /opt/HES
+  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
+```
+  * **[Note]** Require internet connectivity
+
+
 ### 5. Configuring Hideez Enterprise Server (MySQL Credentials)
 
 ```shell
-  $ sudo vi /opt/HideezES/appsettings.json
+  $ sudo vi /opt/HES/appsettings.json
 ```
 
 ```json
   {
   "ConnectionStrings": {
-    "DefaultConnection": "server=127.0.0.1;port=3306;database=hideez;uid=hideez;pwd=<your_secret>"
+    "DefaultConnection": "server=127.0.0.1;port=3306;database=<your_db>;uid=<your_user>;pwd=<your_secret>"
   },
 
   "EmailSender": {
@@ -152,8 +153,7 @@
   User=root
   Group=root
 
-  Environment=BASE_DIR=/opt/HideezES/
-  ExecStart=${BASE_DIR}/HES.Web
+  ExecStart=/opt/HES/HES.Web
   Restart=on-failure
   ExecReload=/bin/kill -HUP $MAINPID
   KillMode=process
@@ -224,7 +224,7 @@
   ...
 ```
 
-   Restarting Nginx Reverse Proxy and check status
+  Restarting Nginx Reverse Proxy and check status
 
 ```shell
   $ sudo systemctl restart nginx
@@ -241,3 +241,45 @@
              └─14760 nginx: worker process
 ```
 ## Updating
+
+### 1. Updating Your Repo by Setting Up a Remote
+
+```shell
+  $ cd /opt/src
+  $ sudo git pull
+```
+
+### 2. Backuping Hideez Enterprise Server
+
+```shell
+  $ sudo systemctl stop hideez.service
+  $ sudo mv /opt/HES /opt/HES.old
+```
+
+### 3. Compiling Hideez Enterprise Server
+
+```shell
+  $ sudo mkdir /opt/HES
+  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
+```
+  * **[Note]** Require internet connectivity
+
+### 4. Restoring configure file Hideez Enterprise Server
+
+```shell
+  $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
+```
+
+### 5. Restarting Hideez Enterprise Server and check status
+
+```shell
+  $ sudo systemctl restart hideez.service
+  $ sudo systemctl status hideez.service
+  ● hideez.service - Hideez Web service
+     Loaded: loaded (/usr/lib/systemd/system/hideez.service; enabled; vendor preset: disabled)
+     Active: active (running) since Tue 2019-11-05 15:34:39 EET; 2 weeks 2 days ago
+   Main PID: 10816 (HES.Web)
+     CGroup: /system.slice/hideez.service
+             └─10816 /opt/HES/HES.Web
+```
