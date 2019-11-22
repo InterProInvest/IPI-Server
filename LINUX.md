@@ -269,7 +269,7 @@
 
 ```shell
   $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
-  $ sudo rm -rf /opt/HES_old
+  $ sudo rm -rf /opt/HES.old
 ```
 
 ### 5. Restarting Hideez Enterprise Server and check status
