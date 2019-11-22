@@ -51,14 +51,14 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 var employee = await _employeeService.EmployeeQuery().FirstOrDefaultAsync(e => e.Email == Input.Email);
                 var resetPasswordUrl = "/Account/ResetPassword";
                 var emailTitle = "Reset Password";
-                var emailBody = "Please reset your password by";
+                var emailBody = $"Dear {Input.Email} <br/> Please reset your password by";
 
                 var role = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
                 if (role)
                 {
                     resetPasswordUrl = "/Account/External/ResetAccountPassword";
                     emailTitle = "Hideez Enterpise Server - Reset Password of SAML IdP account";
-                    emailBody = $"Dear {employee.FullName}, please reset your password by";
+                    emailBody = $"Dear {employee.FullName} <br/> Please reset your password by";
                 }
 
                 // For more information on how to enable account confirmation and password reset please 

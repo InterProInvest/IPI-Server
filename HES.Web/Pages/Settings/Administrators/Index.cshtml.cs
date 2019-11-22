@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -97,8 +98,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,
-                    "Invite to HES",
-                    $"Please enter your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "Invitation to Hideez Enterprise Server",
+                    $"Dear {Input.Email} <br/> Please confirm the invitation by entering a new password using this <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>link</a>.");
 
                 SuccessMessage = $"The invitation has been sent to {Input.Email}.";
             }
