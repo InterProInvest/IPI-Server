@@ -138,7 +138,6 @@
   },
 
   "AllowedHosts": "*"
-
 ```
 
 ### 6. Daemonizing Hideez Enterprise Server
@@ -153,6 +152,7 @@
   User=root
   Group=root
 
+  WorkingDirectory=/opt/HES
   ExecStart=/opt/HES/HES.Web
   Restart=on-failure
   ExecReload=/bin/kill -HUP $MAINPID
