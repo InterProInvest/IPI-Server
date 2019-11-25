@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using HES.Core.Utilities;
 
 namespace HES.Web.Pages.SharedAccounts
 {
@@ -41,10 +42,7 @@ namespace HES.Web.Pages.SharedAccounts
 
         public async Task OnGetAsync()
         {
-            SharedAccounts = await _sharedAccountService
-                .Query()
-                .Where(d => d.Deleted == false)
-                .ToListAsync();
+            SharedAccounts = await _sharedAccountService.GetSharedAccountsAsync();
         }
 
         #region Shared Account
@@ -59,9 +57,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -85,9 +82,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -109,7 +105,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -119,7 +115,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
 
@@ -130,9 +126,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -155,7 +150,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -165,7 +160,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
             return Partial("_EditSharedAccountPwd", this);
@@ -175,9 +170,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                _logger.LogError($"{errors}");
-                ErrorMessage = errors;
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
@@ -201,7 +195,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -211,7 +205,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
 
@@ -240,7 +234,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -250,7 +244,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             if (SharedAccount == null)
             {
-                _logger.LogWarning("SharedAccount == null");
+                _logger.LogWarning($"{nameof(SharedAccount)} is null");
                 return NotFound();
             }
             return Partial("_DeleteSharedAccount", this);
@@ -260,7 +254,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 

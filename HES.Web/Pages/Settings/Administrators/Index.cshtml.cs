@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -86,7 +87,7 @@ namespace HES.Web.Pages.Settings.Administrators
 
                 await _userManager.AddToRoleAsync(user, ApplicationRoles.AdminRole);
 
-                // Create "invite" link
+                // Create invite link
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var email = Input.Email;
                 var callbackUrl = Url.Page(
@@ -97,8 +98,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,
-                    "Invite to HES",
-                    $"Please enter your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "Invitation to Hideez Enterprise Server",
+                    $"Dear {Input.Email} <br/> Please confirm the invitation by entering a new password using this <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>link</a>.");
 
                 SuccessMessage = $"The invitation has been sent to {Input.Email}.";
             }
@@ -114,7 +115,7 @@ namespace HES.Web.Pages.Settings.Administrators
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -128,7 +129,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
             if (ApplicationUser == null)
             {
-                _logger.LogWarning("ApplicationUser == null");
+                _logger.LogWarning($"{nameof(ApplicationUser)} is null");
+
                 return NotFound();
             }
 
@@ -139,7 +141,7 @@ namespace HES.Web.Pages.Settings.Administrators
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -151,8 +153,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
                 if (user.Id == id)
                 {
-                    await _signInManager.SignOutAsync();
                     _logger.LogInformation($"User {user.Email} deleted himself");
+                    await _signInManager.SignOutAsync();
                 }
 
                 SuccessMessage = $"User {user.Email} deleted.";

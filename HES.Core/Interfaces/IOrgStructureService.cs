@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,15 +8,22 @@ namespace HES.Core.Interfaces
     public interface IOrgStructureService
     {
         IQueryable<Company> CompanyQuery();
-        IQueryable<Department> DepartmentQuery();
-        IQueryable<Position> PositionQuery();
-        Task CreateCompanyAsync(Company company);
+        Task<Company> GetCompanyByIdAsync(string id);
+        Task<List<Company>> GetCompaniesAsync();
+        Task<Company> CreateCompanyAsync(Company company);
         Task EditCompanyAsync(Company company);
         Task DeleteCompanyAsync(string id);
-        Task CreateDepartmentAsync(Department department);
+        IQueryable<Department> DepartmentQuery();
+        Task<List<Department>> GetDepartmentsAsync();
+        Task<List<Department>> GetDepartmentsByCompanyIdAsync(string id);
+        Task<Department> GetDepartmentByIdAsync(string id);
+        Task<Department> CreateDepartmentAsync(Department department);
         Task EditDepartmentAsync(Department department);
         Task DeleteDepartmentAsync(string id);
-        Task CreatePositionAsync(Position position);
+        IQueryable<Position> PositionQuery();
+        Task<List<Position>> GetPositionsAsync();
+        Task<Position> GetPositionByIdAsync(string id);
+        Task<Position> CreatePositionAsync(Position position);
         Task EditPositionAsync(Position position);
         Task DeletePositionAsync(string id);
     }

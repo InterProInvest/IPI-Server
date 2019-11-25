@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Utilities;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -27,18 +29,19 @@ namespace HES.Core.Services
             return await _templateRepository.GetByIdAsync(id);
         }
 
+        public async Task<List<Template>> GetTemplatesAsync()
+        {
+            return await _templateRepository.Query().ToListAsync();
+        }
+
         public async Task<Template> CreateTmplateAsync(Template template)
         {
             if (template == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(template));
             }
 
-            // Validate url
-            if (template.Urls != null)
-            {
-                template.Urls = ValidationHepler.VerifyUrls(template.Urls);
-            }
+            template.Urls = ValidationHepler.VerifyUrls(template.Urls);
 
             return await _templateRepository.AddAsync(template);
         }
@@ -47,14 +50,10 @@ namespace HES.Core.Services
         {
             if (template == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(template));
             }
 
-            // Validate url
-            if (template.Urls != null)
-            {
-                template.Urls = ValidationHepler.VerifyUrls(template.Urls);
-            }
+            template.Urls = ValidationHepler.VerifyUrls(template.Urls);
 
             await _templateRepository.UpdateAsync(template);
         }
@@ -63,9 +62,9 @@ namespace HES.Core.Services
         {
             if (id == null)
             {
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(id));
             }
-            var template = await _templateRepository.GetByIdAsync(id);
+            var template = await GetByIdAsync(id);
             if (template == null)
             {
                 throw new Exception("Template does not exist.");

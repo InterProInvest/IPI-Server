@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HES.Core.Entities;
-using HES.Core.Entities.Models;
+using HES.Core.Models;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -44,7 +44,7 @@ namespace HES.Web.Pages.Develop
             DeviceTasks = await _deviceTaskService.Query().OrderByDescending(o => o.CreatedAt).ToListAsync();
 
             ViewData["Devices"] = await _deviceService
-                .Query()
+                .DeviceQuery()
                 //.Include(e => e.Employee)
                 .Select(a => new SelectListItem
                 {
@@ -65,7 +65,7 @@ namespace HES.Web.Pages.Develop
                 return RedirectToPage("./index");
             }
 
-            var device = await _deviceService.GetByIdAsync(accountModel.DeviceId);
+            var device = await _deviceService.GetDeviceByIdAsync(accountModel.DeviceId);
             if (device == null)
             {
                 throw new ArgumentNullException(nameof(device));
@@ -121,7 +121,7 @@ namespace HES.Web.Pages.Develop
 
                 foreach (var item in accounts)
                 {
-                    var deviceId = await _employeeService.DeleteAccount(item.Id);
+                    var deviceId = await _employeeService.DeleteAccountAsync(item.Id);
                 }
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(accountModel.DeviceId);
             }

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HES.Core.Entities.Models;
-using HES.Core.Interfaces;
+﻿using HES.Core.Interfaces;
+using HES.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Dashboard
 {
@@ -63,31 +62,31 @@ namespace HES.Web.Pages.Dashboard
             ServerVersion = _dashboardService.GetServerVersion();
             ServerRemoteTasksCount = await _dashboardService.GetDeviceTasksCount();
 
-            ServerNotify = await _dashboardService.GetServerNotify();
+            ServerNotify = await _dashboardService.GetServerNotifyAsync();
         }
 
         private async Task GetEmployeesInfo()
         {
-            RegisteredEmployeesCount = await _dashboardService.GetEmployeesCount();
-            EmployeesSessionsCount = await _dashboardService.GetEmployeesOpenedSessionsCount();
+            RegisteredEmployeesCount = await _dashboardService.GetEmployeesCountAsync();
+            EmployeesSessionsCount = await _dashboardService.GetEmployeesOpenedSessionsCountAsync();
 
-            EmployeesNotify = await _dashboardService.GetEmployeesNotify();
+            EmployeesNotify = await _dashboardService.GetEmployeesNotifyAsync();
         }
 
         private async Task GetDevicesInfo()
         {
-            RegisteredDevicesCount = await _dashboardService.GetDevicesCount();
-            FreeDevicesCount = await _dashboardService.GetFreeDevicesCount();
+            RegisteredDevicesCount = await _dashboardService.GetDevicesCountAsync();
+            FreeDevicesCount = await _dashboardService.GetFreeDevicesCountAsync();
 
-            DevicesNotify = await _dashboardService.GetDevicesNotify();
+            DevicesNotify = await _dashboardService.GetDevicesNotifyAsync();
         }
 
         private async Task GetWorkstationsInfo()
         {
-            RegisteredWorkstationsCount = await _dashboardService.GetWorkstationsCount();
-            WorkstationsOnlineCount = await _dashboardService.GetWorkstationsOnlineCount();
+            RegisteredWorkstationsCount = await _dashboardService.GetWorkstationsCountAsync();
+            WorkstationsOnlineCount = await _dashboardService.GetWorkstationsOnlineCountAsync();
 
-            WorkstationsNotify = await _dashboardService.GetWorkstationsNotify();
+            WorkstationsNotify = await _dashboardService.GetWorkstationsNotifyAsync();
         }
     }
 }

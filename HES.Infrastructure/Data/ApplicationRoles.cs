@@ -2,7 +2,7 @@
 {
     public static class ApplicationRoles
     {
-        public static readonly string AdminRole = "Administrator";
-        public static readonly string UserRole = "User";
+        public const string AdminRole = "Administrator";
+        public const string UserRole = "User";
     }
 }

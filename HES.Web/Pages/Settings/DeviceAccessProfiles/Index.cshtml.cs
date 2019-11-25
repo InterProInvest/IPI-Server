@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,6 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
     public class IndexModel : PageModel
     {
         private readonly IDeviceService _deviceService;
-        private readonly IDeviceAccessProfilesService _deviceAccessProfilesService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<IndexModel> _logger;
 
@@ -28,22 +28,17 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         public string ErrorMessage { get; set; }
 
         public IndexModel(IDeviceService deviceService,
-                          IDeviceAccessProfilesService deviceAccessProfilesService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ILogger<IndexModel> logger)
         {
             _deviceService = deviceService;
-            _deviceAccessProfilesService = deviceAccessProfilesService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
 
         public async Task OnGetAsync()
         {
-            DeviceAccessProfiles = await _deviceAccessProfilesService
-                .Query()
-                .Include(d => d.Devices)
-                .ToListAsync();
+            DeviceAccessProfiles = await _deviceService.GetAccessProfilesAsync();
         }
 
         public IActionResult OnGetCreateProfile()
@@ -51,19 +46,18 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
             return Partial("_CreateProfile", this);
         }
 
-        public async Task<IActionResult> OnPostCreateProfileAsync(DeviceAccessProfile DeviceAccessProfile)
+        public async Task<IActionResult> OnPostCreateProfileAsync(DeviceAccessProfile deviceAccessProfile)
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogError($"DeviceAccessProfile. {errors}");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
             try
             {
-                await _deviceAccessProfilesService.CreateProfileAsync(DeviceAccessProfile);
+                await _deviceService.CreateProfileAsync(deviceAccessProfile);
                 SuccessMessage = $"Device profile created.";
             }
             catch (Exception ex)
@@ -79,17 +73,15 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccessProfile = await _deviceAccessProfilesService
-                .Query()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            DeviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
 
             if (DeviceAccessProfile == null)
             {
-                _logger.LogWarning("DeviceAccessProfile == null");
+                _logger.LogWarning($"{nameof(DeviceAccessProfile)} is null");
                 return NotFound();
             }
 
@@ -100,15 +92,14 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         {
             if (!ModelState.IsValid)
             {
-                var errors = string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
-                ErrorMessage = errors;
-                _logger.LogError($"DeviceAccessProfile. {errors}");
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
 
             try
             {
-                await _deviceAccessProfilesService.EditProfileAsync(DeviceAccessProfile);
+                await _deviceService.EditProfileAsync(DeviceAccessProfile);
                 var devicesId = await _deviceService.UpdateProfileAsync(DeviceAccessProfile.Id);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devicesId);
                 SuccessMessage = $"Device access profile updated.";
@@ -126,18 +117,15 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccessProfile = await _deviceAccessProfilesService
-                .Query()
-                .Include(d => d.Devices)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            DeviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
 
             if (DeviceAccessProfile == null)
             {
-                _logger.LogWarning("DeviceAccessProfile == null");
+                _logger.LogWarning($"{nameof(DeviceAccessProfile)} is null");
                 return NotFound();
             }
 
@@ -150,13 +138,13 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
             try
             {
-                await _deviceAccessProfilesService.DeleteProfileAsync(id);
+                await _deviceService.DeleteProfileAsync(id);
                 SuccessMessage = $"Device access profile deleted.";
             }
             catch (Exception ex)
@@ -172,18 +160,15 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         {
             if (id == null)
             {
-                _logger.LogWarning("id == null");
+                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
-            DeviceAccessProfile = await _deviceAccessProfilesService
-                .Query()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Id == id);
+            DeviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
 
             if (DeviceAccessProfile == null)
             {
-                _logger.LogWarning("DeviceAccessProfile == null");
+                _logger.LogWarning($"{nameof(DeviceAccessProfile)} is null");
                 return NotFound();
             }
 

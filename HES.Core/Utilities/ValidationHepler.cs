@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace HES.Core.Utilities
@@ -52,6 +54,11 @@ namespace HES.Core.Utilities
                     throw new Exception("Otp secret is not valid");
                 }
             }
+        }
+
+        public static string GetModelStateErrors(ModelStateDictionary ModelState)
+        {
+            return string.Join(" ", ModelState.Values.SelectMany(s => s.Errors).Select(s => s.ErrorMessage).ToArray());
         }
     }
 }

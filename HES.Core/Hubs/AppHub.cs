@@ -17,24 +17,21 @@ namespace HES.Core.Hubs
     {
         private readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
-        private readonly IWorkstationEventService _workstationEventService;
-        private readonly IWorkstationSessionService _workstationSessionService;
+        private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IDeviceService _deviceService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
-                      IWorkstationEventService workstationEventService,
-                      IWorkstationSessionService workstationSessionService,
+                      IWorkstationAuditService workstationAuditService,
                       IDeviceService deviceService,
                       IDeviceTaskService deviceTaskService,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
-            _workstationEventService = workstationEventService;
-            _workstationSessionService = workstationSessionService;
+            _workstationAuditService = workstationAuditService;
             _deviceService = deviceService;
             _deviceTaskService = deviceTaskService;
             _logger = logger;
@@ -122,7 +119,7 @@ namespace HES.Core.Hubs
             {
                 try
                 {
-                    await _workstationEventService.AddEventDtoAsync(eventDto);
+                    await _workstationAuditService.AddEventDtoAsync(eventDto);
                 }
                 catch (Exception ex)
                 {
@@ -143,7 +140,7 @@ namespace HES.Core.Hubs
 
                 try
                 {
-                    await _workstationSessionService.AddOrUpdateWorkstationSession(eventDto);
+                    await _workstationAuditService.AddOrUpdateWorkstationSession(eventDto);
                 }
                 catch (Exception ex)
                 {
@@ -167,7 +164,7 @@ namespace HES.Core.Hubs
         }
 
         #endregion
-               
+
         #region Device
 
         // Incoming request
@@ -223,7 +220,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .Query()
+                    .DeviceQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.RFID == rfid);
@@ -243,7 +240,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .Query()
+                    .DeviceQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.MAC == mac);
@@ -263,7 +260,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .Query()
+                    .DeviceQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == serialNo);

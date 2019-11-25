@@ -54,7 +54,7 @@ namespace HES.Core.Entities
             get
             {
                 var prop = PinExpiration / 60;
-                return prop <= 59 ? ($"{prop} min") : ($"{(prop / 60) + 59} hrs");
+                return prop <= 59 ? ($"{prop} min") : ($"{(prop / 60)} hrs");
             }
 
         }

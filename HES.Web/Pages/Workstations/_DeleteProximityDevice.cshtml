@@ -1,10 +1,10 @@
 ﻿@model HES.Web.Pages.Workstations.DetailsModel
 
-<h5 class="text-gray mb-4 ">You want to remove device @Model.WorkstationProximityDevice.DeviceId from this workstation?</h5>
+<h5 class="text-gray mb-4 ">You want to remove device @Model.ProximityDevice.DeviceId from this workstation?</h5>
 
 <form method="post" class="text-right">
-    <input type="hidden" asp-for="WorkstationProximityDevice.Id"/>
-    <input type="hidden" asp-for="WorkstationProximityDevice.WorkstationId"/>
+    <input type="hidden" asp-for="ProximityDevice.Id"/>
+    <input type="hidden" asp-for="ProximityDevice.WorkstationId"/>
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
     <input type="submit" value="Delete" class="btn btn-danger" asp-page-handler="DeleteProximityDevice" />
 </form>

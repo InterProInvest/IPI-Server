@@ -30,10 +30,9 @@ namespace HES.Core.Services
         readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         readonly IEmployeeService _employeeService;
         readonly IWorkstationService _workstationService;
-        readonly IProximityDeviceService _workstationProximityDeviceService;
         readonly IDeviceService _deviceService;
         readonly IDataProtectionService _dataProtectionService;
-        readonly IWorkstationSessionService _workstationSessionService;
+        readonly IWorkstationAuditService _workstationAuditService;
         readonly ILogger<RemoteWorkstationConnectionsService> _logger;
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
@@ -41,10 +40,9 @@ namespace HES.Core.Services
                       IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IEmployeeService employeeService,
                       IWorkstationService workstationService,
-                      IProximityDeviceService workstationProximityDeviceService,
                       IDeviceService deviceService,
                       IDataProtectionService dataProtectionService,
-                      IWorkstationSessionService workstationSessionService,
+                      IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger)
         {
             _services = services;
@@ -52,10 +50,9 @@ namespace HES.Core.Services
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _employeeService = employeeService;
             _workstationService = workstationService;
-            _workstationProximityDeviceService = workstationProximityDeviceService;
             _deviceService = deviceService;
             _dataProtectionService = dataProtectionService;
-            _workstationSessionService = workstationSessionService;
+            _workstationAuditService = workstationAuditService;
             _logger = logger;
         }
 
@@ -172,7 +169,7 @@ namespace HES.Core.Services
                 throw new HideezException(HideezErrorCode.HesFailedEstablishRemoteDeviceConnection);
 
             var device = await _deviceService
-                .Query()
+                .DeviceQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == deviceId);
@@ -203,7 +200,7 @@ namespace HES.Core.Services
 
                 // refresh MasterPassword field
                 device = await _deviceService
-                    .Query()
+                    .DeviceQuery()
                     .Include(d => d.DeviceAccessProfile)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == deviceId);
@@ -298,7 +295,7 @@ namespace HES.Core.Services
                 _logger.LogInformation($"New workstation {workstationInfo.MachineName} was added");
             }
 
-            await _workstationProximityDeviceService.UpdateProximitySettingsAsync(workstationInfo.Id);
+            await _workstationService.UpdateProximitySettingsAsync(workstationInfo.Id);
             await _workstationService.UpdateRfidStateAsync(workstationInfo.Id);
         }
 
@@ -306,7 +303,7 @@ namespace HES.Core.Services
         {
             _workstationConnections.TryRemove(workstationId, out IRemoteAppConnection _);
 
-            await _workstationSessionService.CloseSessionAsync(workstationId);
+            await _workstationAuditService.CloseSessionAsync(workstationId);
         }
 
         private static IRemoteAppConnection FindWorkstationConnection(string workstationId)
