@@ -27,7 +27,7 @@ namespace HES.Core.Interfaces
         Task DeleteSamlIdpAccountAsync(string employeeId);
         Task<List<DeviceAccount>> GetDeviceAccountsByEmployeeIdAsync(string employeeId);
         Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
-        Task SetWorkstationAccountAsync(string deviceId, string deviceAccountId);
+        Task SetAsWorkstationAccountAsync(string deviceId, string deviceAccountId);
         Task<IList<DeviceAccount>> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
         Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);
         Task EditPersonalAccountAsync(DeviceAccount deviceAccount);
@@ -35,7 +35,8 @@ namespace HES.Core.Interfaces
         Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
         Task AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices);
         Task<string> DeleteAccountAsync(string accountId);
-        Task UndoChangesAsync(string accountId);
+        Task<DeviceAccount> GetLastChangedAccountAsync(string deviceId);
+        Task UndoChangesAsync(string deviceId);
         Task HandlingMasterPasswordErrorAsync(string deviceId);
     }
 }

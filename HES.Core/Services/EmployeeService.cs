@@ -535,7 +535,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task SetWorkstationAccountAsync(string deviceId, string deviceAccountId)
+        public async Task SetAsWorkstationAccountAsync(string deviceId, string deviceAccountId)
         {
             if (deviceId == null)
             {
@@ -553,30 +553,23 @@ namespace HES.Core.Services
                 throw new Exception($"Device not found, ID: {deviceId}");
             }
 
+            var currentPrimaryAccountId = device.PrimaryAccountId;
+
             var deviceAccount = await _deviceAccountService.GetByIdAsync(deviceAccountId);
             if (deviceAccount == null)
             {
                 throw new Exception($"DeviceAccount not found, ID: {deviceAccountId}");
             }
 
-            if (deviceAccount.Status != AccountStatus.Done)
-            {
-                throw new Exception("Set as windows account only when the status is completed.");
-            }
+            device.PrimaryAccountId = deviceAccountId;
+            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
 
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
-            string[] properties = { "Status", "UpdatedAt" };
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Status", "UpdatedAt" });
 
             // Add task
-            await _deviceTaskService.AddTaskAsync(new DeviceTask()
-            {
-                Operation = TaskOperation.Primary,
-                CreatedAt = DateTime.UtcNow,
-                DeviceId = device.Id,
-                DeviceAccountId = deviceAccountId
-            });
+            await _deviceTaskService.AddPrimaryAsync(device.Id, currentPrimaryAccountId, deviceAccountId);
         }
 
         private async Task SetAsWorkstationIfEmptyAsync(string deviceId, string deviceAccountId)
@@ -718,10 +711,12 @@ namespace HES.Core.Services
 
         public async Task EditPersonalAccountAsync(DeviceAccount deviceAccount)
         {
-            _dataProtectionService.Validate();
-
             if (deviceAccount == null)
+            {
                 throw new ArgumentNullException(nameof(deviceAccount));
+            }
+
+            _dataProtectionService.Validate();
 
             var exist = await _deviceAccountService
                 .Query()
@@ -733,7 +728,12 @@ namespace HES.Core.Services
                 .AnyAsync();
 
             if (exist)
+            {
                 throw new Exception("An account with the same name and login exists.");
+            }
+
+            // Get current device account
+            var currentDeviceAccount = await _deviceAccountService.Query().AsNoTracking().FirstOrDefaultAsync(d => d.Id == deviceAccount.Id);
 
             // Validate url
             deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
@@ -741,24 +741,23 @@ namespace HES.Core.Services
             // Update Device Account
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
-            string[] properties = { "Status", "UpdatedAt" };
+            string[] properties = { "Name", "Login", "Urls", "Apps", "Status", "UpdatedAt" };
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
             // Create Device Task
+
             try
             {
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    DeviceAccountId = deviceAccount.Id,
-                    Name = deviceAccount.Name,
-                    Urls = deviceAccount.Urls ?? string.Empty,
-                    Apps = deviceAccount.Apps ?? string.Empty,
-                    Login = deviceAccount.Login,
-                    Password = null,
-                    OtpSecret = null,
-                    CreatedAt = DateTime.UtcNow,
+                    Name = currentDeviceAccount.Name,
+                    Urls = currentDeviceAccount.Urls,
+                    Apps = currentDeviceAccount.Apps,
+                    Login = currentDeviceAccount.Login,
                     Operation = TaskOperation.Update,
-                    DeviceId = deviceAccount.DeviceId
+                    CreatedAt = DateTime.UtcNow,
+                    DeviceId = deviceAccount.DeviceId,
+                    DeviceAccountId = deviceAccount.Id
                 });
             }
             catch (Exception)
@@ -772,17 +771,22 @@ namespace HES.Core.Services
         public async Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword)
         {
             if (deviceAccount == null)
+            {
                 throw new ArgumentNullException(nameof(deviceAccount));
+            }
 
             if (accountPassword == null)
+            {
                 throw new ArgumentNullException(nameof(accountPassword));
+            }
 
             _dataProtectionService.Validate();
 
             // Update Device Account
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
-            string[] properties = { "Status", "UpdatedAt" };
+            deviceAccount.PasswordUpdatedAt = DateTime.UtcNow;
+            string[] properties = { "Status", "UpdatedAt", "PasswordUpdatedAt" };
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
             // Create Device Task
@@ -790,11 +794,11 @@ namespace HES.Core.Services
             {
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    DeviceAccountId = deviceAccount.Id,
                     Password = _dataProtectionService.Protect(accountPassword.Password),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
-                    DeviceId = deviceAccount.DeviceId
+                    DeviceId = deviceAccount.DeviceId,
+                    DeviceAccountId = deviceAccount.Id
                 });
             }
             catch (Exception)
@@ -808,10 +812,14 @@ namespace HES.Core.Services
         public async Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword)
         {
             if (deviceAccount == null)
+            {
                 throw new ArgumentNullException(nameof(deviceAccount));
+            }
 
             if (accountPassword == null)
+            {
                 throw new ArgumentNullException(nameof(accountPassword));
+            }
 
             _dataProtectionService.Validate();
 
@@ -820,7 +828,7 @@ namespace HES.Core.Services
             // Update Device Account
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
-            deviceAccount.OtpUpdatedAt = DateTime.UtcNow;
+            deviceAccount.OtpUpdatedAt = accountPassword.OtpSecret == null ? null : (DateTime?)DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt", "OtpUpdatedAt" };
             await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
 
@@ -829,11 +837,11 @@ namespace HES.Core.Services
             {
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    DeviceAccountId = deviceAccount.Id,
                     OtpSecret = _dataProtectionService.Protect(accountPassword.OtpSecret ?? string.Empty),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
-                    DeviceId = deviceAccount.DeviceId
+                    DeviceId = deviceAccount.DeviceId,
+                    DeviceAccountId = deviceAccount.Id
                 });
             }
             catch (Exception)
@@ -965,14 +973,26 @@ namespace HES.Core.Services
             return deviceAccount.DeviceId;
         }
 
-        public async Task UndoChangesAsync(string accountId)
+        public async Task<DeviceAccount> GetLastChangedAccountAsync(string deviceId)
         {
-            if (accountId == null)
-                throw new ArgumentNullException(nameof(accountId));
+            if (deviceId == null)
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            return await _deviceTaskService.GetLastChangedAccountAsync(deviceId);
+        }
+
+        public async Task UndoChangesAsync(string deviceId)
+        {
+            if (deviceId == null)
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
 
             _dataProtectionService.Validate();
 
-            await _deviceTaskService.UndoLastTaskAsync(accountId);
+            await _deviceTaskService.UndoLastTaskAsync(deviceId);
         }
 
         private string GenerateMasterPassword()

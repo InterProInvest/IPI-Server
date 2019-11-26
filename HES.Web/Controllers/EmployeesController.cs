@@ -451,7 +451,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.SetWorkstationAccountAsync(workstationAccountDto.DeviceId, workstationAccountDto.DeviceAccountId);
+                await _employeeService.SetAsWorkstationAccountAsync(workstationAccountDto.DeviceId, workstationAccountDto.DeviceAccountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
             }
             catch (Exception ex)

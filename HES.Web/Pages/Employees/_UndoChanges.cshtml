@@ -1,9 +1,9 @@
 ﻿@model HES.Web.Pages.Employees.DetailsModel
 
-<h5 class="text-gray mb-4 ">You want to undo changes for @Model.DeviceAccount.Name?</h5>
+    <h5 class="text-gray mb-4 ">Are you sure you want to discard changes to your account @Model.DeviceAccount.Name?</h5>
 
 <form method="post" class="text-right">
-    <input type="hidden" asp-for="DeviceAccount.Id" name="accountId" />
+    <input type="hidden" asp-for="DeviceAccount.DeviceId" name="deviceId" />
     <input type="hidden" asp-for="DeviceAccount.EmployeeId" name="employeeId" />
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
     <input type="submit" value="Undo" class="btn btn-danger" asp-page-handler="UndoChanges" />
