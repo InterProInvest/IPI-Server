@@ -400,13 +400,13 @@ namespace HES.Web.Controllers
             return NoContent();
         }
 
-        [HttpPost("{id}")]
+        [HttpPost("{deviceId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> UndoDeviceAccountChanges(string id)
+        public async Task<IActionResult> UndoDeviceAccountsChanges(string deviceId)
         {
             try
             {
-                await _employeeService.UndoChangesAsync(id);
+                await _employeeService.UndoChangesAsync(deviceId);
             }
             catch (Exception ex)
             {
