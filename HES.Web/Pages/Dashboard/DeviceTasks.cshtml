@@ -88,7 +88,7 @@
                     @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    @Html.DisplayFor(modelItem => item.OldName)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.DeviceAccount.Employee.FullName)
