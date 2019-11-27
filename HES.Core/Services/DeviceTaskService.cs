@@ -44,7 +44,7 @@ namespace HES.Core.Services
             {
                 Operation = TaskOperation.Primary,
                 CreatedAt = DateTime.UtcNow,
-                Login = currentAccountId,
+                OldLogin = currentAccountId,
                 DeviceId = deviceId,
                 DeviceAccountId = newAccountId
             };
@@ -141,10 +141,10 @@ namespace HES.Core.Services
             switch (lastTask.Operation)
             {
                 case TaskOperation.Update:
-                    deviceAccount.Name = lastTask.Name;
-                    deviceAccount.Urls = lastTask.Urls;
-                    deviceAccount.Apps = lastTask.Apps;
-                    deviceAccount.Login = lastTask.Login;
+                    deviceAccount.Name = lastTask.OldName;
+                    deviceAccount.Urls = lastTask.OldUrls;
+                    deviceAccount.Apps = lastTask.OldApps;
+                    deviceAccount.Login = lastTask.OldLogin;
                     properties.AddRange(new string[] { "Name", "Urls", "Apps", "Login" });
                     break;
                 case TaskOperation.Primary:
@@ -152,7 +152,7 @@ namespace HES.Core.Services
                         .Query()
                         .AsNoTracking()
                         .FirstOrDefaultAsync(d => d.Id == deviceAccount.DeviceId);
-                    device.PrimaryAccountId = lastTask.Login;
+                    device.PrimaryAccountId = lastTask.OldLogin;
                     await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
                     break;
             }

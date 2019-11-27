@@ -312,10 +312,10 @@ namespace HES.Core.Services
             var deviceTask = new DeviceTask
             {
                 DeviceAccountId = deviceAccountId,
-                Name = deviceAccount.Name,
-                Urls = deviceAccount.Urls,
-                Apps = deviceAccount.Apps,
-                Login = deviceAccount.Login,
+                OldName = deviceAccount.Name,
+                OldUrls = deviceAccount.Urls,
+                OldApps = deviceAccount.Apps,
+                OldLogin = deviceAccount.Login,
                 Password = _dataProtectionService.Protect(password),
                 OtpSecret = null,
                 CreatedAt = DateTime.UtcNow,
@@ -467,7 +467,7 @@ namespace HES.Core.Services
                     await _deviceTaskService.AddTaskAsync(new DeviceTask
                     {
                         DeviceAccountId = account.Id,
-                        Urls = validUrls,
+                        OldUrls = validUrls,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
                         DeviceId = account.DeviceId
@@ -679,10 +679,10 @@ namespace HES.Core.Services
                 tasks.Add(new DeviceTask
                 {
                     DeviceAccountId = deviceAccountId,
-                    Name = deviceAccount.Name,
-                    Urls = deviceAccount.Urls,
-                    Apps = deviceAccount.Apps,
-                    Login = deviceAccount.Login,
+                    OldName = deviceAccount.Name,
+                    OldUrls = deviceAccount.Urls,
+                    OldApps = deviceAccount.Apps,
+                    OldLogin = deviceAccount.Login,
                     Password = _dataProtectionService.Protect(accountPassword.Password),
                     OtpSecret = accountPassword.OtpSecret,
                     CreatedAt = DateTime.UtcNow,
@@ -750,10 +750,10 @@ namespace HES.Core.Services
             {
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    Name = currentDeviceAccount.Name,
-                    Urls = currentDeviceAccount.Urls,
-                    Apps = currentDeviceAccount.Apps,
-                    Login = currentDeviceAccount.Login,
+                    OldName = currentDeviceAccount.Name,
+                    OldUrls = currentDeviceAccount.Urls,
+                    OldApps = currentDeviceAccount.Apps,
+                    OldLogin = currentDeviceAccount.Login,
                     Operation = TaskOperation.Update,
                     CreatedAt = DateTime.UtcNow,
                     DeviceId = deviceAccount.DeviceId,
@@ -909,10 +909,10 @@ namespace HES.Core.Services
                 tasks.Add(new DeviceTask
                 {
                     DeviceAccountId = deviceAccountId,
-                    Name = sharedAccount.Name,
-                    Urls = sharedAccount.Urls,
-                    Apps = sharedAccount.Apps,
-                    Login = sharedAccount.Login,
+                    OldName = sharedAccount.Name,
+                    OldUrls = sharedAccount.Urls,
+                    OldApps = sharedAccount.Apps,
+                    OldLogin = sharedAccount.Login,
                     Password = sharedAccount.Password,
                     OtpSecret = sharedAccount.OtpSecret,
                     CreatedAt = DateTime.UtcNow,
@@ -946,6 +946,15 @@ namespace HES.Core.Services
             var deviceAccount = await _deviceAccountService.GetByIdAsync(accountId);
             if (deviceAccount == null)
                 throw new Exception("Device account not found");
+
+            if (deviceAccount.Status == AccountStatus.Creating)
+            {
+                deviceAccount.Deleted = true;
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Deleted" });
+                var task = await _deviceTaskService.Query().FirstOrDefaultAsync(d => d.DeviceAccountId == deviceAccount.Id);
+                await _deviceTaskService.DeleteTaskAsync(task);
+                return deviceAccount.DeviceId;
+            }
 
             // Update Device Account
             deviceAccount.Status = AccountStatus.Removing;

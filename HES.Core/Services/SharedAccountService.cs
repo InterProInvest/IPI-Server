@@ -169,10 +169,10 @@ namespace HES.Core.Services
                 tasks.Add(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
-                    Name = sharedAccount.Name,
-                    Urls = sharedAccount.Urls ?? string.Empty,
-                    Apps = sharedAccount.Apps ?? string.Empty,
-                    Login = sharedAccount.Login,
+                    OldName = sharedAccount.Name,
+                    OldUrls = sharedAccount.Urls ?? string.Empty,
+                    OldApps = sharedAccount.Apps ?? string.Empty,
+                    OldLogin = sharedAccount.Login,
                     Password = null,
                     OtpSecret = null,
                     CreatedAt = DateTime.UtcNow,

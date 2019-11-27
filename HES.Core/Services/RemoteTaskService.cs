@@ -74,36 +74,6 @@ namespace HES.Core.Services
                 case TaskOperation.Update:
                     deviceAccount.Status = AccountStatus.Done;
                     deviceAccount.LastSyncedAt = DateTime.UtcNow;
-                    //if (deviceTask.Name != null)
-                    //{
-                    //    deviceAccount.Name = deviceTask.Name;
-                    //    properties.Add("Name");
-                    //}
-                    //if (deviceTask.Urls != null)
-                    //{
-                    //    deviceAccount.Urls = deviceTask.Urls;
-                    //    properties.Add("Urls");
-                    //}
-                    //if (deviceTask.Apps != null)
-                    //{
-                    //    deviceAccount.Apps = deviceTask.Apps;
-                    //    properties.Add("Apps");
-                    //}
-                    //if (deviceTask.Login != null)
-                    //{
-                    //    deviceAccount.Login = deviceTask.Login;
-                    //    properties.Add("Login");
-                    //}
-                    //if (deviceTask.Password != null)
-                    //{
-                    //    deviceAccount.PasswordUpdatedAt = DateTime.UtcNow;
-                    //    properties.Add("PasswordUpdatedAt");
-                    //}
-                    //if (deviceTask.OtpSecret != null)
-                    //{
-                    //    deviceAccount.OtpUpdatedAt = deviceTask.OtpSecret != string.Empty ? new DateTime?(DateTime.UtcNow) : null;
-                    //    properties.Add("OtpUpdatedAt");
-                    //}
                     await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties.ToArray());
                     break;
                 case TaskOperation.Delete:
@@ -120,9 +90,7 @@ namespace HES.Core.Services
                     break;
                 case TaskOperation.Primary:
                     deviceAccount.Status = AccountStatus.Done;
-                    deviceAccount.LastSyncedAt = DateTime.UtcNow;
-                    //device.PrimaryAccountId = deviceTask.DeviceAccountId;
-                    //await _deviceService.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
+                    deviceAccount.LastSyncedAt = DateTime.UtcNow;         
                     await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties.ToArray());
                     break;
                 case TaskOperation.Wipe:
