@@ -3,7 +3,7 @@
 @foreach (var device in Model.Employee.Devices)
 {
     <div class="row align-items-center m-0">
-        <div class="row align-items-center sub-details-card">
+        <div class="row align-items-center sub-details-card pr-2">
             <div class="col-auto pr-1">
                 <h3 class="text-navyblue m-0">Device @device.Id</h3>
             </div>
@@ -269,73 +269,44 @@
                                 <img src="~/svg/action/more.svg" />
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-
-                                @switch (item.Type)
+                                @if (item.Status != AccountStatus.Removing)
                                 {
-                                    case AccountType.Personal:
-                                        @if (item.Status != Core.Entities.AccountStatus.Removing)
+                                    @if (device.PrimaryAccountId != item.Id)
+                                    {
+                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Windows account">
+                                            <img src="~/svg/action/star.svg" />
+                                            Set as windows account
+                                        </a>
+                                    }
+                                    @if (item.Type == AccountType.Personal)
+                                    {
+                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccount" data-title="Edit personal account">
+                                            <img src="~/svg/action/edit.svg" />
+                                            Edit
+                                        </a>
+                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountPwd" data-title="Edit personal account password">
+                                            <img src="~/svg/action/password.svg" />
+                                            Edit password
+                                        </a>
+                                        @if (item.Kind != AccountKind.Workstation)
                                         {
-                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccount" data-title="Edit personal account">
-                                                <img src="~/svg/action/edit.svg" />
-                                                Edit
-                                            </a>
-                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountPwd" data-title="Edit personal account password">
-                                                <img src="~/svg/action/password.svg" />
-                                                Edit password
-                                            </a>
-                                            @if (item.Kind != AccountKind.Workstation)
-                                            {
-                                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountOtp" data-title="Edit personal account OTP">
-                                                    <img src="~/svg/action/otp.svg" />
-                                                    Edit OTP
-                                                </a>
-                                            }
-                                        }
-                                        @if (item.Status == Core.Entities.AccountStatus.Updating || item.Status == Core.Entities.AccountStatus.Removing)
-                                        {
-                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UndoChanges" data-title="Undo changes">
-                                                <img src="~/svg/action/undo.svg" />
-                                                Undo changes
+                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountOtp" data-title="Edit personal account OTP">
+                                                <img src="~/svg/action/otp.svg" />
+                                                Edit OTP
                                             </a>
                                         }
-                                        else
-                                        {
-                                            @if (device.PrimaryAccountId != item.Id)
-                                            {
-                                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Windows account">
-                                                    <img src="~/svg/action/star.svg" />
-                                                    Set as windows account
-                                                </a>
-                                            }
-                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteAccount" data-title="Delete account">
-                                                <img src="~/svg/action/delete.svg" />
-                                                Delete
-                                            </a>
-                                        }
-                                        break;
-                                    case AccountType.Shared:
-                                        @if (item.Status == Core.Entities.AccountStatus.Removing)
-                                        {
-                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UndoChanges" data-title="Undo changes">
-                                                <img src="~/svg/action/undo.svg" />
-                                                Undo changes
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            @if (device.PrimaryAccountId != item.Id)
-                                            {
-                                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Windows account">
-                                                    <img src="~/svg/action/star.svg" />
-                                                    Set as windows account
-                                                </a>
-                                            }
-                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteAccount" data-title="Delete account">
-                                                <img src="~/svg/action/delete.svg" />
-                                                Delete
-                                            </a>
-                                        }
-                                        break;
+                                    }
+                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteAccount" data-title="Delete account">
+                                        <img src="~/svg/action/delete.svg" />
+                                        Delete
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="dropdown-item">
+                                        <img src="~/svg/action/info.svg" />
+                                        When deleting an action is not available
+                                    </a>
                                 }
                             </div>
                         </div>

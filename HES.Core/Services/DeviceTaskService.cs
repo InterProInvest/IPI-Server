@@ -125,10 +125,17 @@ namespace HES.Core.Services
 
         public async Task UndoLastTaskAsync(string deviceId)
         {
-            // Last task
-            var lastTask = await GetLastChangeTaskAsync(deviceId);
+            if (deviceId == null)
+            {
+                throw new ArgumentNullException(nameof(deviceId));
 
-            // Device account
+            }
+
+            var properties = new List<string>() { "Status", "UpdatedAt" };
+
+            // Get last task
+            var lastTask = await GetLastChangeTaskAsync(deviceId);
+            // Current device account
             var deviceAccount = await _deviceAccountService.GetByIdAsync(lastTask.DeviceAccountId);
 
             switch (lastTask.Operation)
@@ -138,10 +145,13 @@ namespace HES.Core.Services
                     deviceAccount.Urls = lastTask.Urls;
                     deviceAccount.Apps = lastTask.Apps;
                     deviceAccount.Login = lastTask.Login;
-                    await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Name", "Urls", "Apps", "Login" });
+                    properties.AddRange(new string[] { "Name", "Urls", "Apps", "Login" });
                     break;
                 case TaskOperation.Primary:
-                    var device = await _deviceRepository.Query().AsNoTracking().FirstOrDefaultAsync(d => d.Id == deviceAccount.DeviceId);
+                    var device = await _deviceRepository
+                        .Query()
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(d => d.Id == deviceAccount.DeviceId);
                     device.PrimaryAccountId = lastTask.Login;
                     await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
                     break;
@@ -150,20 +160,20 @@ namespace HES.Core.Services
             // Delete last task
             await _deviceTaskRepository.DeleteAsync(lastTask);
 
-            // Get previous task
-            //var previousTask = await GetLastChangeTaskAsync(deviceId);        
-            var previousTask = await _deviceTaskRepository.Query()
+            // Get previous task             
+            var previousTask = await _deviceTaskRepository
+                .Query()
                 .Where(d => d.DeviceAccountId == deviceAccount.Id &&
-                  (d.Operation == TaskOperation.Create ||
-                   d.Operation == TaskOperation.Update ||
-                   d.Operation == TaskOperation.Delete ||
-                   d.Operation == TaskOperation.Primary))
-                       .OrderByDescending(d => d.CreatedAt)
-               .FirstOrDefaultAsync();
+                           (d.Operation == TaskOperation.Create ||
+                            d.Operation == TaskOperation.Update ||
+                            d.Operation == TaskOperation.Delete ||
+                            d.Operation == TaskOperation.Primary))
+                .OrderByDescending(d => d.CreatedAt)
+                .FirstOrDefaultAsync();
 
+            // If exists previous task for device account, update status
             if (previousTask != null)
             {
-                // Update account
                 switch (previousTask.Operation)
                 {
                     case TaskOperation.Create:
@@ -183,67 +193,7 @@ namespace HES.Core.Services
                 deviceAccount.UpdatedAt = DateTime.UtcNow;
             }
 
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Status", "UpdatedAt" });
-
-            //// last task
-            //var lastTask = await _deviceTaskRepository
-            //    .Query()
-            //    .OrderByDescending(t => t.CreatedAt)
-            //    .FirstOrDefaultAsync(t => t.DeviceAccountId == accountId);
-
-            //// Current account
-            //var deviceAccount = await _deviceAccountService.GetByIdAsync(accountId);
-
-
-            //switch (lastTask.Operation)
-            //{
-            //    case TaskOperation.Update:
-            //        deviceAccount.Name = lastTask.Name;
-            //        deviceAccount.Urls = lastTask.Urls;
-            //        deviceAccount.Apps = lastTask.Apps;
-            //        deviceAccount.Login = lastTask.Login;
-            //        await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Name", "Urls", "Apps", "Login" });
-            //        break;
-            //    case TaskOperation.Delete:
-            //        break;
-            //    case TaskOperation.Primary:
-            //        var device = await _deviceRepository.Query().AsNoTracking().FirstOrDefaultAsync(d => d.Id == deviceAccount.DeviceId);
-            //        device.PrimaryAccountId = lastTask.Login;
-            //        await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
-            //        break;
-            //}
-
-            //// Delete last task
-            //await _deviceTaskRepository.DeleteAsync(lastTask);
-
-            //// Get previous task
-            //var previousTask = _deviceTaskRepository
-            //    .Query()
-            //    .OrderByDescending(d => d.CreatedAt)
-            //    .FirstOrDefault(d => d.DeviceAccountId == deviceAccount.Id);
-
-            //if (previousTask != null)
-            //{
-            //    // Update account
-            //    switch (previousTask.Operation)
-            //    {
-            //        case TaskOperation.Create:
-            //            deviceAccount.Status = AccountStatus.Creating;
-            //            deviceAccount.UpdatedAt = null;
-            //            break;
-            //        case TaskOperation.Update:
-            //            deviceAccount.Status = AccountStatus.Updating;
-            //            deviceAccount.UpdatedAt = DateTime.UtcNow;
-            //            break;
-            //    }
-            //}
-            //else
-            //{
-            //    deviceAccount.Status = AccountStatus.Done;
-            //    deviceAccount.UpdatedAt = DateTime.UtcNow;
-            //}
-
-            //await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Status", "UpdatedAt" });
+            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties.ToArray());
         }
 
         private async Task<DeviceTask> GetLastChangeTaskAsync(string deviceId)
