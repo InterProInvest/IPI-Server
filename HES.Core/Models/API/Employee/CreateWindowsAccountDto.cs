@@ -2,14 +2,10 @@
 
 namespace HES.Core.Models.API
 {
-    public class CreateWorkstationAccountDto
+    public class CreateWindowsAccountDto
     {
         [Required]
         public string Name { get; set; }
-        [Required]
-        public WorkstationAccountType AccountType { get; set; }
-        [Required]
-        public string Domain { get; set; }
         [Required]
         public string Login { get; set; }
         [Required]

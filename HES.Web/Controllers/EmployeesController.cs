@@ -419,22 +419,78 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWorkstationAccount(CreateWorkstationAccountDto workstationAccountDto)
+        public async Task<IActionResult> CreateWindowsLocalAccount(CreateWindowsAccountDto localAccountDto)
         {
             IList<DeviceAccount> createdDeviceAccounts;
             try
             {
                 var workstationAccount = new WorkstationAccount()
                 {
-                    Name = workstationAccountDto.Name,
-                    AccountType = workstationAccountDto.AccountType,
-                    Login = workstationAccountDto.Login,
-                    Domain = workstationAccountDto.Domain,
-                    Password = workstationAccountDto.Password
+                    Name = localAccountDto.Name,
+                    AccountType = WorkstationAccountType.Local,
+                    Domain = "local",
+                    Login = localAccountDto.Login,
+                    Password = localAccountDto.Password
                 };
 
-                createdDeviceAccounts = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, workstationAccountDto.EmployeeId, workstationAccountDto.DeviceId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
+                createdDeviceAccounts = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, localAccountDto.EmployeeId, localAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(localAccountDto.DeviceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetDeviceAccountById", new { id = createdDeviceAccounts[0].Id }, createdDeviceAccounts[0]);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateWindowsDomainAccount(CreateWindowsDomainAccountDto domainAccountDto)
+        {
+            IList<DeviceAccount> createdDeviceAccounts;
+            try
+            {
+                var workstationAccount = new WorkstationAccount()
+                {
+                    Name = domainAccountDto.Name,
+                    AccountType = WorkstationAccountType.Domain,
+                    Domain = domainAccountDto.Domain,
+                    Login = domainAccountDto.Login,
+                    Password = domainAccountDto.Password
+                };
+
+                createdDeviceAccounts = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, domainAccountDto.EmployeeId, domainAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(domainAccountDto.DeviceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetDeviceAccountById", new { id = createdDeviceAccounts[0].Id }, createdDeviceAccounts[0]);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateWindowsMicrosoftAccount(CreateWindowsAccountDto microsoftAccountDto)
+        {
+            IList<DeviceAccount> createdDeviceAccounts;
+            try
+            {
+                var workstationAccount = new WorkstationAccount()
+                {
+                    Name = microsoftAccountDto.Name,
+                    AccountType = WorkstationAccountType.Microsoft,
+                    Domain = "ms",
+                    Login = microsoftAccountDto.Login,
+                    Password = microsoftAccountDto.Password
+                };
+
+                createdDeviceAccounts = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, microsoftAccountDto.EmployeeId, microsoftAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(microsoftAccountDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -447,7 +503,7 @@ namespace HES.Web.Controllers
 
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> SetAsWorkstationAccount(SetAsWorkstationAccountDto workstationAccountDto)
+        public async Task<IActionResult> SetAsWindowsAccount(SetAsWindowsAccountDto workstationAccountDto)
         {
             try
             {

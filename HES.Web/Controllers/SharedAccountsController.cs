@@ -83,7 +83,61 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<SharedAccount>> CreateSharedWorkstationAccount(CreateSharedWorkstationAccountDto workstationAccountDto)
+        public async Task<ActionResult<SharedAccount>> CreateSharedWindowsLocalAccount(CreateWindowsAccountDto localAccountDto)
+        {
+            SharedAccount createdAccount;
+            try
+            {
+                var workstationAccount = new WorkstationAccount()
+                {
+                    Name = localAccountDto.Name,
+                    AccountType = WorkstationAccountType.Local,
+                    Domain = "local",
+                    Login = localAccountDto.Login,
+                    Password = localAccountDto.Password
+                };
+
+                createdAccount = await _sharedAccountService.CreateWorkstationSharedAccountAsync(workstationAccount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetSharedAccountById", new { id = createdAccount.Id }, createdAccount);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<SharedAccount>> CreateSharedWindowsDomainAccount(CreateWindowsDomainAccountDto domainAccountDto)
+        {
+            SharedAccount createdAccount;
+            try
+            {
+                var workstationAccount = new WorkstationAccount()
+                {
+                    Name = domainAccountDto.Name,
+                    AccountType = WorkstationAccountType.Domain,
+                    Domain = domainAccountDto.Domain,
+                    Login = domainAccountDto.Login,
+                    Password = domainAccountDto.Password
+                };
+
+                createdAccount = await _sharedAccountService.CreateWorkstationSharedAccountAsync(workstationAccount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetSharedAccountById", new { id = createdAccount.Id }, createdAccount);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<SharedAccount>> CreateSharedWindowsMicrosoftAccount(CreateWindowsAccountDto workstationAccountDto)
         {
             SharedAccount createdAccount;
             try
@@ -91,8 +145,8 @@ namespace HES.Web.Controllers
                 var workstationAccount = new WorkstationAccount()
                 {
                     Name = workstationAccountDto.Name,
-                    AccountType = workstationAccountDto.AccountType,
-                    Domain = workstationAccountDto.Domain,
+                    AccountType = WorkstationAccountType.Microsoft,
+                    Domain = "ms",
                     Login = workstationAccountDto.Login,
                     Password = workstationAccountDto.Password
                 };
