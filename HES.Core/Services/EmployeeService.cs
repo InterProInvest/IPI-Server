@@ -852,7 +852,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] devicesIds)
+        public async Task<IList<DeviceAccount>> AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] devicesIds)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
@@ -934,6 +934,8 @@ namespace HES.Core.Services
                 await _deviceAccountService.DeleteRangeAsync(accounts);
                 throw;
             }
+
+            return accounts;
         }
 
         public async Task<string> DeleteAccountAsync(string accountId)

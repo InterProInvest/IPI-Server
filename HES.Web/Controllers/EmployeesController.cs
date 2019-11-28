@@ -383,12 +383,13 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> AddSharedAccount(AddSharedAccountDto sharedAccountDto)
         {
+            IList<DeviceAccount> createdDeviceAccounts;
             try
             {
-                await _employeeService.AddSharedAccountAsync(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId, new string[] { sharedAccountDto.DeviceId });
+                createdDeviceAccounts = await _employeeService.AddSharedAccountAsync(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId, new string[] { sharedAccountDto.DeviceId });
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(sharedAccountDto.DeviceId);
             }
             catch (Exception ex)
@@ -397,7 +398,7 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return NoContent();
+            return CreatedAtAction("GetDeviceAccountById", new { id = createdDeviceAccounts[0].Id }, createdDeviceAccounts[0]);
         }
 
         [HttpPost("{deviceId}")]

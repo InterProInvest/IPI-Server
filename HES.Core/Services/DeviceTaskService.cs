@@ -141,11 +141,14 @@ namespace HES.Core.Services
             switch (lastTask.Operation)
             {
                 case TaskOperation.Update:
-                    deviceAccount.Name = lastTask.OldName;
-                    deviceAccount.Urls = lastTask.OldUrls;
-                    deviceAccount.Apps = lastTask.OldApps;
-                    deviceAccount.Login = lastTask.OldLogin;
-                    properties.AddRange(new string[] { "Name", "Urls", "Apps", "Login" });
+                    if (lastTask.Password == null && lastTask.OtpSecret == null)
+                    {
+                        deviceAccount.Name = lastTask.OldName;
+                        deviceAccount.Urls = lastTask.OldUrls;
+                        deviceAccount.Apps = lastTask.OldApps;
+                        deviceAccount.Login = lastTask.OldLogin;
+                        properties.AddRange(new string[] { "Name", "Urls", "Apps", "Login" });
+                    }
                     break;
                 case TaskOperation.Primary:
                     var device = await _deviceRepository

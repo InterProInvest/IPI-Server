@@ -33,7 +33,7 @@ namespace HES.Core.Interfaces
         Task EditPersonalAccountAsync(DeviceAccount deviceAccount);
         Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
         Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
-        Task AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices);
+        Task<IList<DeviceAccount>> AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices);
         Task<string> DeleteAccountAsync(string accountId);
         Task<DeviceAccount> GetLastChangedAccountAsync(string deviceId);
         Task UndoChangesAsync(string deviceId);
