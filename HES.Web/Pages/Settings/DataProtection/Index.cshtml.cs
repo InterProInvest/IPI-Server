@@ -14,19 +14,18 @@ namespace HES.Web.Pages.Settings.DataProtection
     public class IndexModel : PageModel
     {
         private readonly IDataProtectionService _dataProtectionService;
-        private readonly ILogger<IndexModel> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<IndexModel> _logger;
 
         public ProtectionStatus Status { get; set; }
+        public CurrentPasswordModel CurrentPassword { get; set; }
+        public NewPasswordModel NewPassword { get; set; }
+        public ChangePasswordModel ChangePassword { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
         [TempData]
         public string ErrorMessage { get; set; }
-
-        public CurrentPasswordModel CurrentPassword { get; set; }
-        public NewPasswordModel NewPassword { get; set; }
-        public ChangePasswordModel ChangePassword { get; set; }
 
         public class CurrentPasswordModel
         {
@@ -70,11 +69,11 @@ namespace HES.Web.Pages.Settings.DataProtection
             public string ConfirmPassword { get; set; }
         }
 
-        public IndexModel(IDataProtectionService dataProtectionService, ILogger<IndexModel> logger, UserManager<ApplicationUser> userManager)
+        public IndexModel(IDataProtectionService dataProtectionService, UserManager<ApplicationUser> userManager, ILogger<IndexModel> logger)
         {
             _dataProtectionService = dataProtectionService;
-            _logger = logger;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task OnGetAsync()
@@ -82,18 +81,19 @@ namespace HES.Web.Pages.Settings.DataProtection
             Status = await _dataProtectionService.Status();
         }
 
-        public async Task<IActionResult> OnPostEnableDataProtectionAsync(NewPasswordModel NewPassword)
+        public async Task<IActionResult> OnPostEnableProtectionAsync(NewPasswordModel NewPassword)
         {
             if (NewPassword == null)
             {
-                _logger.LogWarning("NewPassword == null");
+                _logger.LogWarning($"{nameof(NewPassword)} is null");
                 return NotFound();
             }
 
             try
             {
-                var user = await _userManager.GetUserAsync(User);
-                await _dataProtectionService.EnableDataProtectionAsync(NewPassword.Password, user.Email);
+                //var user = await _userManager.GetUserAsync(User);
+                await _dataProtectionService.EnableProtectionAsync(NewPassword.Password);
+                _logger.LogInformation($"Data protection enabled by {User.Identity.Name}");
                 SuccessMessage = "Data protection enabled";
             }
             catch (Exception ex)
@@ -105,41 +105,42 @@ namespace HES.Web.Pages.Settings.DataProtection
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostDisableDataProtectionAsync(CurrentPasswordModel CurrentPassword)
+        //public async Task<IActionResult> OnPostDisableDataProtectionAsync(CurrentPasswordModel CurrentPassword)
+        //{
+        //    if (CurrentPassword == null)
+        //    {
+        //        _logger.LogWarning("CurrentPassword == null");
+        //        return NotFound();
+        //    }
+
+        //    try
+        //    {
+        //        var user = await _userManager.GetUserAsync(User);
+        //        await _dataProtectionService.DisableDataProtectionAsync(CurrentPassword.Password, user.Email);
+        //        SuccessMessage = "Data protection disabled";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ErrorMessage = ex.Message;
+        //        _logger.LogError(ex.Message);
+        //    }
+
+        //    return RedirectToPage("./Index");
+        //}
+
+        public async Task<IActionResult> OnPostActivateProtectionAsync(CurrentPasswordModel CurrentPassword)
         {
             if (CurrentPassword == null)
             {
-                _logger.LogWarning("CurrentPassword == null");
+                _logger.LogWarning($"{nameof(CurrentPassword)} is null");
                 return NotFound();
             }
 
             try
             {
-                var user = await _userManager.GetUserAsync(User);
-                await _dataProtectionService.DisableDataProtectionAsync(CurrentPassword.Password, user.Email);
-                SuccessMessage = "Data protection disabled";
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-                _logger.LogError(ex.Message);
-            }
-
-            return RedirectToPage("./Index");
-        }
-
-        public async Task<IActionResult> OnPostActivateDataProtectionAsync(CurrentPasswordModel CurrentPassword)
-        {
-            if (CurrentPassword == null)
-            {
-                _logger.LogWarning("CurrentPassword == null");
-                return NotFound();
-            }
-
-            try
-            {
-                var user = await _userManager.GetUserAsync(User);
-                await _dataProtectionService.ActivateDataProtectionAsync(CurrentPassword.Password, user.Email);
+                //var user = await _userManager.GetUserAsync(User);
+                await _dataProtectionService.ActivateProtectionAsync(CurrentPassword.Password);
+                _logger.LogInformation($"Data protection enabled by {User.Identity.Name}");
                 SuccessMessage = "Data protection activated";
             }
             catch (Exception ex)
@@ -151,18 +152,19 @@ namespace HES.Web.Pages.Settings.DataProtection
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostChangePwdDataProtectionAsync(ChangePasswordModel ChangePassword)
+        public async Task<IActionResult> OnPostChangeProtectionSecretAsync(ChangePasswordModel ChangePassword)
         {
             if (ChangePassword == null)
             {
-                _logger.LogWarning("ChangePassword == null");
+                _logger.LogWarning($"{nameof(ChangePassword)} is null");
                 return NotFound();
             }
 
             try
             {
-                var user = await _userManager.GetUserAsync(User);
-                await _dataProtectionService.ChangeDataProtectionPasswordAsync(ChangePassword.OldPassword, ChangePassword.NewPassword, user.Email);
+                //var user = await _userManager.GetUserAsync(User);
+                await _dataProtectionService.ChangeProtectionSecretAsync(ChangePassword.OldPassword, ChangePassword.NewPassword);
+                _logger.LogInformation($"Data protection enabled by {User.Identity.Name}");
                 SuccessMessage = "Data protection password changed";
             }
             catch (Exception ex)

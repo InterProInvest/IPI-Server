@@ -6,14 +6,11 @@ namespace HES.Core.Interfaces
     public interface IDataProtectionService
     {
         Task<ProtectionStatus> Status();
-        //ProtectionStatus GetStatus();
-        bool CanUse();
-        Task ActivateDataProtectionAsync(string password, string user);
-        Task EnableDataProtectionAsync(string password, string user);
-        Task DisableDataProtectionAsync(string password, string user);
-        Task ChangeDataProtectionPasswordAsync(string oldPassword, string newPassword, string user);
-        string Protect(string text);
-        string Unprotect(string text);
         void Validate();
+        Task EnableProtectionAsync(string secret);
+        Task ActivateProtectionAsync(string secret);
+        Task ChangeProtectionSecretAsync(string oldSecret, string newSecret);
+        string Encrypt(string plainText);
+        string Decrypt(string cipherText);
     }
 }

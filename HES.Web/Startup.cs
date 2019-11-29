@@ -94,13 +94,11 @@ namespace HES.Web
                 var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
                 var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
                 var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
-                var dataProtectionProvider = scope.ServiceProvider.GetService<IDataProtectionProvider>();
                 var logger = scope.ServiceProvider.GetService<ILogger<DataProtectionService>>();
                 return new DataProtectionService(dataProtectionRepository,
                                                  deviceRepository,
                                                  deviceTaskRepository,
                                                  sharedAccountRepository,
-                                                 dataProtectionProvider,
                                                  logger);
             });
             services.AddSingleton<IEmailSenderService, EmailSenderService>(i =>

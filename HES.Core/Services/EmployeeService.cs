@@ -212,7 +212,7 @@ namespace HES.Core.Services
 
                         device.EmployeeId = employeeId;
                         await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
-                        await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Protect(masterPassword));
+                        await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Encrypt(masterPassword));
                     }
                 }
             }
@@ -260,7 +260,7 @@ namespace HES.Core.Services
             if (device.MasterPassword != null)
             {
                 // Add Task remove device
-                await _deviceTaskService.AddWipeAsync(device.Id, _dataProtectionService.Protect(device.MasterPassword));
+                await _deviceTaskService.AddWipeAsync(device.Id, _dataProtectionService.Encrypt(device.MasterPassword));
             }
         }
 
@@ -316,7 +316,7 @@ namespace HES.Core.Services
                 OldUrls = deviceAccount.Urls,
                 OldApps = deviceAccount.Apps,
                 OldLogin = deviceAccount.Login,
-                Password = _dataProtectionService.Protect(password),
+                Password = _dataProtectionService.Encrypt(password),
                 OtpSecret = null,
                 CreatedAt = DateTime.UtcNow,
                 Operation = TaskOperation.Create,
@@ -365,7 +365,7 @@ namespace HES.Core.Services
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
-                    Password = _dataProtectionService.Protect(password),
+                    Password = _dataProtectionService.Encrypt(password),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
                     DeviceId = deviceAccount.DeviceId
@@ -407,7 +407,7 @@ namespace HES.Core.Services
             var task = await _deviceTaskService
                 .Query()
                 .AsNoTracking()
-                .Where(d => d.DeviceAccountId == deviceAccount.Id && _dataProtectionService.Unprotect(d.OtpSecret) == otp)
+                .Where(d => d.DeviceAccountId == deviceAccount.Id && _dataProtectionService.Decrypt(d.OtpSecret) == otp)
                 .FirstOrDefaultAsync();
 
             if (task != null)
@@ -427,7 +427,7 @@ namespace HES.Core.Services
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
-                    OtpSecret = _dataProtectionService.Protect(otp),
+                    OtpSecret = _dataProtectionService.Encrypt(otp),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
                     DeviceId = deviceAccount.DeviceId
@@ -683,7 +683,7 @@ namespace HES.Core.Services
                     OldUrls = deviceAccount.Urls,
                     OldApps = deviceAccount.Apps,
                     OldLogin = deviceAccount.Login,
-                    Password = _dataProtectionService.Protect(accountPassword.Password),
+                    Password = _dataProtectionService.Encrypt(accountPassword.Password),
                     OtpSecret = accountPassword.OtpSecret,
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
@@ -794,7 +794,7 @@ namespace HES.Core.Services
             {
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    Password = _dataProtectionService.Protect(accountPassword.Password),
+                    Password = _dataProtectionService.Encrypt(accountPassword.Password),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
                     DeviceId = deviceAccount.DeviceId,
@@ -837,7 +837,7 @@ namespace HES.Core.Services
             {
                 await _deviceTaskService.AddTaskAsync(new DeviceTask
                 {
-                    OtpSecret = _dataProtectionService.Protect(accountPassword.OtpSecret ?? string.Empty),
+                    OtpSecret = _dataProtectionService.Encrypt(accountPassword.OtpSecret ?? string.Empty),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Update,
                     DeviceId = deviceAccount.DeviceId,

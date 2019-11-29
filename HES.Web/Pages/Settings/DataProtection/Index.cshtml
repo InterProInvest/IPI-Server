@@ -26,7 +26,7 @@
                     case Core.Services.ProtectionStatus.Busy:
                         <h5>Protection <span class="badge badge-warning">Busy</span></h5>
                         break;
-                    case Core.Services.ProtectionStatus.RequiresActivation:
+                    case Core.Services.ProtectionStatus.Activate:
                         <h5>Protection <span class="badge badge-danger">Requires activation</span></h5>
                         break;
                 }
@@ -44,7 +44,7 @@
                         <button type="button" class="btn btn-primary" disabled>Disable data protection</button>
                         <button type="button" class="btn btn-primary" disabled>Change protection password</button>
                         break;
-                    case Core.Services.ProtectionStatus.RequiresActivation:
+                    case Core.Services.ProtectionStatus.Activate:
                         <button type="button" class="btn btn-primary open-modal-dialog-activate">Activate protection</button>
                         break;
                 }
@@ -87,7 +87,7 @@
                     </div>
                     <div class="form-group m-0 text-right">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Enable" class="btn btn-primary" asp-page-handler="EnableDataProtection" />
+                        <input type="submit" value="Enable" class="btn btn-primary" asp-page-handler="EnableProtection" />
                     </div>
                 </form>
             </div>
@@ -115,7 +115,7 @@
                     </div>
                     <div class="form-group m-0 text-right">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Activate" class="btn btn-primary" asp-page-handler="ActivateDataProtection" />
+                        <input type="submit" value="Activate" class="btn btn-primary" asp-page-handler="ActivateProtection" />
                     </div>
                 </form>
             </div>
@@ -181,7 +181,7 @@
                     </div>
                     <div class="form-group m-0 text-right">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="ChangePwdDataProtection" />
+                        <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="ChangeProtectionSecret" />
                     </div>
                 </form>
             </div>

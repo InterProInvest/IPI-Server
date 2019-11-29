@@ -148,8 +148,8 @@ namespace HES.Core.Services
             {
                 foreach (var task in tasks)
                 {
-                    task.Password = _dataProtectionService.Unprotect(task.Password);
-                    task.OtpSecret = _dataProtectionService.Unprotect(task.OtpSecret);
+                    task.Password = _dataProtectionService.Decrypt(task.Password);
+                    task.OtpSecret = _dataProtectionService.Decrypt(task.OtpSecret);
                     var idFromDevice = await ExecuteRemoteTask(remoteDevice, task);
                     await TaskCompleted(task.Id, idFromDevice);
 
