@@ -221,7 +221,7 @@ namespace HES.Core.Services
 
         #region Proximity Device
 
-        public IQueryable<ProximityDevice> QueryOfProximityDevice()
+        public IQueryable<ProximityDevice> ProximityDeviceQuery()
         {
             return _proximityDeviceRepository.Query();
         }
@@ -235,7 +235,16 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task AddProximityDevicesAsync(string workstationId, string[] devicesIds)
+        public async Task<ProximityDevice> GetProximityDeviceByIdAsync(string id)
+        {
+            return await _proximityDeviceRepository
+                .Query()
+                .Include(d => d.Device.Employee.Department.Company)
+                .Include(d => d.Workstation.Department)
+                .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<IList<ProximityDevice>> AddProximityDevicesAsync(string workstationId, string[] devicesIds)
         {
             if (workstationId == null)
             {
@@ -269,8 +278,10 @@ namespace HES.Core.Services
                 }
             }
 
-            await _proximityDeviceRepository.AddRangeAsync(proximityDevices);
+            var addedDevices = await _proximityDeviceRepository.AddRangeAsync(proximityDevices);
             await UpdateProximitySettingsAsync(workstationId);
+
+            return addedDevices;
         }
 
         public async Task AddMultipleProximityDevicesAsync(string[] workstationsIds, string[] devicesIds)

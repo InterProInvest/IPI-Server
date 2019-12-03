@@ -213,7 +213,7 @@ namespace HES.Web.Controllers
                     Password = sharedAccountDto.Password
                 };
 
-                var devices = await _sharedAccountService.EditSharedAccountAsync(sharedAccount);
+                var devices = await _sharedAccountService.EditSharedAccountPwdAsync(sharedAccount);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
             }
             catch (Exception ex)

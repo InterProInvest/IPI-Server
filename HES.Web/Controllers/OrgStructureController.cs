@@ -273,7 +273,7 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<Company>> CreatePosition(CreateOrgStructureGenericDto positionDto)
+        public async Task<ActionResult<Position>> CreatePosition(CreateOrgStructureGenericDto positionDto)
         {
             Position createdPosition;
             try
@@ -326,9 +326,9 @@ namespace HES.Web.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Company>> DeletePosition(string id)
+        public async Task<ActionResult<Position>> DeletePosition(string id)
         {
-            var position = await _orgStructureService.GetCompanyByIdAsync(id);
+            var position = await _orgStructureService.GetPositionByIdAsync(id);
             if (position == null)
             {
                 return NotFound();
