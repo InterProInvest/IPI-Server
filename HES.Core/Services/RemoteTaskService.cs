@@ -43,10 +43,7 @@ namespace HES.Core.Services
         async Task TaskCompleted(string taskId, ushort idFromDevice)
         {
             // Task
-            var deviceTask = await _deviceTaskService
-                .Query()
-                .Include(d => d.DeviceAccount)
-                .FirstOrDefaultAsync(t => t.Id == taskId);
+            var deviceTask = await _deviceTaskService.GetTaskByIdAsync(taskId);
 
             if (deviceTask == null)
             {
@@ -90,7 +87,7 @@ namespace HES.Core.Services
                     break;
                 case TaskOperation.Primary:
                     deviceAccount.Status = AccountStatus.Done;
-                    deviceAccount.LastSyncedAt = DateTime.UtcNow;         
+                    deviceAccount.LastSyncedAt = DateTime.UtcNow;
                     await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties.ToArray());
                     break;
                 case TaskOperation.Wipe:
@@ -140,7 +137,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            query = query.OrderBy(x => x.CreatedAt);
+            query = query.OrderBy(x => x.CreatedAt).AsNoTracking();
 
             var tasks = await query.ToListAsync();
 

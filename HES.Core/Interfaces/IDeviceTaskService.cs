@@ -8,6 +8,7 @@ namespace HES.Core.Interfaces
     public interface IDeviceTaskService
     {
         IQueryable<DeviceTask> Query();
+        Task<DeviceTask> GetTaskByIdAsync(string id);
         Task AddTaskAsync(DeviceTask deviceTask);
         Task AddRangeTasksAsync(IList<DeviceTask> deviceTasks);
         Task AddPrimaryAsync(string deviceId, string currentAccountId, string newAccountId);

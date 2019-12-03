@@ -18,45 +18,26 @@
                 @switch (Model.Status)
                 {
                     case Core.Services.ProtectionStatus.On:
-                        <h5>Protection <span class="badge badge-success">Enabled</span></h5>
-                        break;
-                    case Core.Services.ProtectionStatus.Off:
-                        <h5>Protection <span class="badge badge-secondary">Disabled</span></h5>
-                        break;
-                    case Core.Services.ProtectionStatus.Busy:
-                        <h5>Protection <span class="badge badge-warning">Busy</span></h5>
-                        break;
-                    case Core.Services.ProtectionStatus.Activate:
-                        <h5>Protection <span class="badge badge-danger">Requires activation</span></h5>
-                        break;
-                }
-                <hr />
-                @switch (Model.Status)
-                {
-                    case Core.Services.ProtectionStatus.On:
+                        <h5>Status: Enabled</h5>
+                        <hr />
                         <button type="button" class="btn btn-primary open-modal-dialog-change mb-2">Change protection password</button>
-                        <button type="button" class="btn btn-danger open-modal-dialog-disable mb-2">Disable data protection</button>
                         break;
                     case Core.Services.ProtectionStatus.Off:
-                        <button type="button" class="btn btn-primary open-modal-dialog-enable">Enable data protection</button>
+                        <h5>Status: Disabled</h5>
+                        <hr />
+                        <button type="button" class="btn btn-primary open-modal-dialog-enable">Enable protection</button>
                         break;
                     case Core.Services.ProtectionStatus.Busy:
-                        <button type="button" class="btn btn-primary" disabled>Disable data protection</button>
+                        <h5>Status: Busy</h5>
+                        <hr />
                         <button type="button" class="btn btn-primary" disabled>Change protection password</button>
                         break;
                     case Core.Services.ProtectionStatus.Activate:
+                        <h5>Status: Activate</h5>
+                        <hr />
                         <button type="button" class="btn btn-primary open-modal-dialog-activate">Activate protection</button>
                         break;
                 }
-            </div>
-        </div>
-    </div>
-    <div class="col mb-2">
-        <div class="card">
-            <div class="card-body">
-                <h5>Description</h5>
-                <hr />
-                Web applications often need to store security-sensitive data. Data protection stack provide a simple, easy to use cryptographic can use to protect data, including key management and rotation.
             </div>
         </div>
     </div>

@@ -260,7 +260,7 @@ namespace HES.Core.Services
             if (device.MasterPassword != null)
             {
                 // Add Task remove device
-                await _deviceTaskService.AddWipeAsync(device.Id, _dataProtectionService.Encrypt(device.MasterPassword));
+                await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
             }
         }
 
