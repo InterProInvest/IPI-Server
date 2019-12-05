@@ -143,7 +143,16 @@ Add a Web Site
 ```
   * **[Note]** Require internet connectivity
 
-### 4. Restoring configure file Hideez Enterprise Server
+### 4. Backuping MySQL Database (Optional)
+
+```shell
+  > md bkp
+  > cd bkp
+  > mysqldump -u <your_user> -p <your_db> > <your_db_bkp>.sql
+  Enter password: ********
+```
+
+### 5. Restoring configure file Hideez Enterprise Server
 
 ```shell
   > cd ..\..\
@@ -153,7 +162,7 @@ Add a Web Site
   > HES.old, Are you sure (Y/N)? y
 ```
 
-### 5. Starting Hideez Enterprise Server
+### 6. Starting Hideez Enterprise Server
 
 ```shell
   > appcmd start site /site.name:<site_name>  
