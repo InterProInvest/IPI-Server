@@ -6,7 +6,7 @@
   * .NET Core (.NET Core SDK version 2.2).
   * MySQL Server (version 8.0+).
 
-## Preparation System
+## System Preparation
 
 Download and install Git: https://git-scm.com/download/win
 
@@ -15,9 +15,9 @@ Download and install .NET Core SDK 2.2: https://dotnet.microsoft.com/download/do
 Download and install MySQL: https://dev.mysql.com/downloads/installer/   
 - [MySQL Installer Initial Setup](https://dev.mysql.com/doc/refman/8.0/en/mysql-installer.html)
 
-## Getting Started.
+## Getting Started (fresh install)
 
-### 1. Creating MySQL User and Database for Hideez Enterprise Server
+### 1. Creating MySQL User and Database for the HES
 
 Configuring MySQL Server
   
@@ -39,7 +39,7 @@ Configuring MySQL Server
   mysql> FLUSH PRIVILEGES
 ```
 
-### 2. Cloning a GitHub Repository
+### 2. Cloning the HES GitHub repository
 
 ```shell
   > md Hideez
@@ -48,15 +48,15 @@ Configuring MySQL Server
   > cd src\HES.Web
 ```
 
-### 3. Compiling Hideez Enterprise Server
+### 3. Building the HES from the sources
 
 ```shell
   > md ..\..\HES
   > dotnet publish -c release -v d -o "..\..\HES" --framework netcoreapp2.2 --runtime win-x64 HES.Web.csproj
 ```
-  * **[Note]** Require internet connectivity
+  * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Configuring Hideez Enterprise Server
+### 4. Configuring HES
 
 ```shell
   > cd..\..\HES
@@ -99,7 +99,7 @@ Create a Self-Signed Certificate for IIS
 - Enter any *friendly* name and then click **OK**.
 - You will now have an IIS Self Signed Certificate valid for 1 year listed under Server Certificates. The certificate common name (Issued To) is the server name.
 
-Add a Web Site
+Add the Web Site
 
 - Start **IIS Manager**. For information about starting IIS Manager, see [Open IIS Manager](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc770472(v=ws.10)?redirectedfrom=MSDN).
 - In the **Connections** pane, right-click the **Sites** node in the tree view, and then click **Add Web Site**.
@@ -118,14 +118,14 @@ Add a Web Site
 
 ## Updating
 
-### 1. Updating Your Repo by Setting Up a Remote
+### 1. Updating the sources from the GitHub repository
 
 ```shell
   > cd Hideez\src
   > git pull
 ```
 
-### 2. Backuping Hideez Enterprise Server
+### 2. Backing up the HES binaries
 
 ```shell
   > cd %windir%\system32\inetsrv
@@ -134,16 +134,16 @@ Add a Web Site
   > rename HES HES.old
 ```
 
-### 3. Compiling Hideez Enterprise Server
+### 3. Building the HES from the sources
 
 ```shell
   > cd src\HES.Web
   > md ..\..\HES
   > dotnet publish -c release -v d -o "..\..\HES" --framework netcoreapp2.2 --runtime win-x64 HES.Web.csproj
 ```
-  * **[Note]** Require internet connectivity
+  * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Restoring configure file Hideez Enterprise Server
+### 4. Restoring the configuration file
 
 ```shell
   > cd ..\..\
@@ -153,7 +153,7 @@ Add a Web Site
   > HES.old, Are you sure (Y/N)? y
 ```
 
-### 5. Starting Hideez Enterprise Server
+### 5. Starting the HES
 
 ```shell
   > appcmd start site /site.name:<site_name>  
