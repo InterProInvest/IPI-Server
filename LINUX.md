@@ -6,7 +6,7 @@
   * .NET Core (.NET Core SDK version 2.2).
   * MySQL Server (version 8.0+).
 
-## Preparation System (Example for [CentOS 7](https://www.centos.org/about/)).
+## System Preparation (Example for [CentOS 7](https://www.centos.org/about/))
 
   Disabling SELinux:
 
@@ -36,7 +36,7 @@
   $ sudo yum install mysql-server
 ```
 
-  ## Getting Started.
+  ## Getting Started (fresh install)
 
 ### 1. Postinstalling and Securing MySQL Server
 
@@ -44,7 +44,7 @@
   $ sudo mysql_secure_installation
 ```
 
-  It will prompt for few question’s, which recommended to say yes
+  It is recommended to say yes to the following questions:
 
 ```shell
   Enter password for user root:
@@ -71,7 +71,7 @@
   $ sudo systemctl enable mysqld.service
 ```
 
-### 2. Creating MySQL User and Database for Hideez Enterprise Server
+### 2. Creating MySQL User and Database for the Hideez Enterprise Server
 
   Configuring MySQL Server
 
@@ -93,24 +93,24 @@
   mysql> FLUSH PRIVILEGES;
 ```
 
-### 3. Installing and Cloning a GitHub Repository
+### 3. Installing and cloning the HES GitHub repository
 
 ```shell
   $ sudo yum install git && cd /opt
   $ sudo git clone https://github.com/HideezGroup/HES src && cd src/HES.Web/
 ```
 
-### 4. Compiling Hideez Enterprise Server
+### 4. Building the Hideez Enterprise Server from the sources
 
 ```shell
   $ sudo mkdir /opt/HES
   $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
   $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
 ```
-  * **[Note]** Require internet connectivity
+  * **[Note]** Requires internet connectivity to download NuGet packages
 
 
-### 5. Configuring Hideez Enterprise Server (MySQL Credentials)
+### 5. Configuring the Hideez Enterprise Server (MySQL credentials)
 
 ```shell
   $ sudo vi /opt/HES/appsettings.json
@@ -168,16 +168,16 @@
   $ sudo systemctl restart hideez.service
 ```
 
-### 7. Configuring Nginx Reverse Proxy
+### 7. Configuring the Nginx Reverse Proxy
 
-  Creating a Self-Signed SSL Certificate for Nginx
+  Creating a Self-Signed SSL Certificate for the Nginx
 
 ```shell
  $ sudo mkdir /etc/nginx/certs
  $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/hideez.key -out /etc/nginx/certs/hideez.crt
 ```
 
-  Basic Configuration for an Nginx Reverse Proxy
+  Basic Configuration for the Nginx Reverse Proxy
 
 ```conf
     server {
@@ -224,7 +224,7 @@
   ...
 ```
 
-  Restarting Nginx Reverse Proxy and check status
+  Restarting the Nginx Reverse Proxy and check its status
 
 ```shell
   $ sudo systemctl restart nginx
@@ -240,39 +240,39 @@
              ├─14758 nginx: master process /usr/sbin/nginx
              └─14760 nginx: worker process
 ```
-## Updating
+## Updating the HES
 
-### 1. Updating Your Repo by Setting Up a Remote
+### 1. Updating the sources from the GitHub repository
 
 ```shell
   $ cd /opt/src
   $ sudo git pull
 ```
 
-### 2. Backuping Hideez Enterprise Server
+### 2. Backing up the Hideez Enterprise Server
 
 ```shell
   $ sudo systemctl stop hideez.service
   $ sudo mv /opt/HES /opt/HES.old
 ```
 
-### 3. Compiling Hideez Enterprise Server
+### 3. Building the Hideez Enterprise Server from the sources
 
 ```shell
   $ sudo mkdir /opt/HES
   $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
   $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
 ```
-  * **[Note]** Require internet connectivity
+  * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Restoring configure file Hideez Enterprise Server
+### 4. Restoring the configuration file
 
 ```shell
   $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
   $ sudo rm -rf /opt/HES.old
 ```
 
-### 5. Restarting Hideez Enterprise Server and check status
+### 5. Restarting the Hideez Enterprise Server and check its status
 
 ```shell
   $ sudo systemctl restart hideez.service
