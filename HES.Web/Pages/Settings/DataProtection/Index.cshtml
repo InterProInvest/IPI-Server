@@ -11,204 +11,43 @@
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
 <h1 class="text-navyblue">Data Protection</h1>
-<div class="row">
-    <div class="col-sm-12 col-lg-4 mb-2">
-        <div class="card">
-            <div class="card-body">
-                @switch (Model.Status)
-                {
-                    case Core.Services.ProtectionStatus.On:
-                        <h5>Status: Enabled</h5>
-                        <hr />
-                        <button type="button" class="btn btn-primary open-modal-dialog-change mb-2">Change protection password</button>
-                        break;
-                    case Core.Services.ProtectionStatus.Off:
-                        <h5>Status: Disabled</h5>
-                        <hr />
-                        <button type="button" class="btn btn-primary open-modal-dialog-enable">Enable protection</button>
-                        break;
-                    case Core.Services.ProtectionStatus.Busy:
-                        <h5>Status: Busy</h5>
-                        <hr />
-                        <button type="button" class="btn btn-primary" disabled>Change protection password</button>
-                        break;
-                    case Core.Services.ProtectionStatus.Activate:
-                        <h5>Status: Activate</h5>
-                        <hr />
-                        <button type="button" class="btn btn-primary open-modal-dialog-activate">Activate protection</button>
-                        break;
-                }
-            </div>
+<hr />
+@switch (Model.Status)
+{
+    case Core.Services.ProtectionStatus.On:
+        <h5>Change encryption password</h5>
+        <div class="profile-fill-card">
+            <form method="post" style="max-width:350px">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label class="text-gray" asp-for="ChangePassword.OldPassword"></label>
+                    <input asp-for="ChangePassword.OldPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ChangePassword.OldPassword" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="text-gray" asp-for="ChangePassword.NewPassword"></label>
+                    <input asp-for="ChangePassword.NewPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="text-gray" asp-for="ChangePassword.ConfirmPassword"></label>
+                    <input asp-for="ChangePassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="form-group m-0">
+                    <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="ChangeProtectionSecret" />
+                </div>
+            </form>
         </div>
-    </div>
-</div>
+        break;
+    case Core.Services.ProtectionStatus.Busy:
+        <h5>Protection is Busy</h5>
+        break;
+}
 
-@* Modal enable *@
-<div class="modal" id="modalDialogEnable" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-navyblue" id="modalDialogTitle">Enable data protection</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div id="modalBody" class="modal-body">
-                <form method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="NewPassword.Password"></label>
-                        <input asp-for="NewPassword.Password" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="NewPassword.Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="NewPassword.ConfirmPassword"></label>
-                        <input asp-for="NewPassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="NewPassword.ConfirmPassword" class="text-danger"></span>
-                    </div>
-                    <div class="form-group m-0 text-right">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Enable" class="btn btn-primary" asp-page-handler="EnableProtection" />
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* Modal activate *@
-<div class="modal" id="modalDialogActivate" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-navyblue" id="modalDialogTitle">Activate data protection</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div id="modalBody" class="modal-body">
-                <form method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="CurrentPassword.Password"></label>
-                        <input asp-for="CurrentPassword.Password" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="CurrentPassword.Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-group m-0 text-right">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Activate" class="btn btn-primary" asp-page-handler="ActivateProtection" />
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* Modal disable *@
-<div class="modal" id="modalDialogDisable" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-navyblue" id="modalDialogTitle">Disable data protection</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div id="modalBody" class="modal-body">
-                <form method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="CurrentPassword.Password"></label>
-                        <input asp-for="CurrentPassword.Password" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="CurrentPassword.Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-group m-0 text-right">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Disable" class="btn btn-danger" asp-page-handler="DisableDataProtection" />
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* Modal change pwd *@
-<div class="modal" id="modalDialogChange" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-navyblue" id="modalDialogTitle">Change data protection</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div id="modalBody" class="modal-body">
-                <form method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="ChangePassword.OldPassword"></label>
-                        <input asp-for="ChangePassword.OldPassword" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="ChangePassword.OldPassword" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="ChangePassword.NewPassword"></label>
-                        <input asp-for="ChangePassword.NewPassword" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label class="text-gray" asp-for="ChangePassword.ConfirmPassword"></label>
-                        <input asp-for="ChangePassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
-                        <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger"></span>
-                    </div>
-                    <div class="form-group m-0 text-right">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="ChangeProtectionSecret" />
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 @section Scripts{
     <script>
-        // Open modal dialog
-        $(document).on('click', '.open-modal-dialog-enable', function () {
-            $('#modalDialogEnable').modal('toggle');
-
-            // Validation partial view
-            $('form').removeData('validator');
-            $('form').removeData('unobtrusiveValidation');
-            $.validator.unobtrusive.parse('form');
-        });
-        // Open modal dialog
-        $(document).on('click', '.open-modal-dialog-disable', function () {
-            $('#modalDialogDisable').modal('toggle');
-
-            // Validation partial view
-            $('form').removeData('validator');
-            $('form').removeData('unobtrusiveValidation');
-            $.validator.unobtrusive.parse('form');
-        });
-        // Open modal dialog
-        $(document).on('click', '.open-modal-dialog-activate', function () {
-            $('#modalDialogActivate').modal('toggle');
-
-            // Validation partial view
-            $('form').removeData('validator');
-            $('form').removeData('unobtrusiveValidation');
-            $.validator.unobtrusive.parse('form');
-        });
-        // Open modal dialog
-        $(document).on('click', '.open-modal-dialog-change', function () {
-            $('#modalDialogChange').modal('toggle');
-
-            // Validation partial view
-            $('form').removeData('validator');
-            $('form').removeData('unobtrusiveValidation');
-            $.validator.unobtrusive.parse('form');
-        });
-
         $(document).ready(function () {
             // Breadcrumbs
             $('#breadcrumb').toggleClass('d-none');

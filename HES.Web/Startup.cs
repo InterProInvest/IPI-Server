@@ -3,9 +3,9 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
 using HES.Infrastructure;
+using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,11 +15,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace HES.Web
@@ -62,11 +59,6 @@ namespace HES.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Data protection keys
-            services.AddDataProtection()
-                .SetApplicationName("HES")
-                .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "dataprotection")));
-
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
             services.AddScoped<IAppService, AppService>();
@@ -94,10 +86,12 @@ namespace HES.Web
                 var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
                 var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
                 var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
+                var applicationUserService = scope.ServiceProvider.GetService<IApplicationUserService>();
                 return new DataProtectionService(dataProtectionRepository,
                                                  deviceRepository,
                                                  deviceTaskRepository,
-                                                 sharedAccountRepository);
+                                                 sharedAccountRepository,
+                                                 applicationUserService);
             });
             services.AddSingleton<IEmailSenderService, EmailSenderService>(i =>
                  new EmailSenderService(
@@ -254,6 +248,8 @@ namespace HES.Web
                 routes.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
             });
 
+            app.UseMiddleware<DataProtectionMiddeware>();
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -274,7 +270,7 @@ namespace HES.Web
                 new ApplicationDbSeed(context, userManager, roleManager).Initialize();
                 // Get status of data protection
                 var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
-                dataProtectionService.Status();
+                dataProtectionService.Initialize().Wait();
             }
         }
     }

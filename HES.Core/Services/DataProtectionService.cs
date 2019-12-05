@@ -24,6 +24,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
+        private readonly IApplicationUserService _applicationUserService;
         private bool protectionEnabled;
         private bool protectionActivated;
         private bool protectionBusy;
@@ -33,39 +34,46 @@ namespace HES.Core.Services
         public DataProtectionService(IAsyncRepository<DataProtection> dataProtectionRepository,
                                      IAsyncRepository<Device> deviceRepository,
                                      IAsyncRepository<DeviceTask> deviceTaskRepository,
-                                     IAsyncRepository<SharedAccount> sharedAccountRepository)
+                                     IAsyncRepository<SharedAccount> sharedAccountRepository,
+                                     IApplicationUserService applicationUserService)
         {
             _dataProtectionRepository = dataProtectionRepository;
             _deviceRepository = deviceRepository;
             _deviceTaskRepository = deviceTaskRepository;
             _sharedAccountRepository = sharedAccountRepository;
+            _applicationUserService = applicationUserService;
         }
 
-        public async Task<ProtectionStatus> Status()
+        public async Task Initialize()
         {
             var data = await GetEncryptedEntityAsync();
 
             if (data != null)
             {
-                protectionEnabled = true;
+                protectionEnabled = true;                
+            }            
 
-                if (!protectionActivated)
-                {
-                    return ProtectionStatus.Activate;
-                }
-
-                if (protectionBusy)
-                {
-                    return ProtectionStatus.Busy;
-                }
-
-                return ProtectionStatus.On;
+            if (protectionEnabled)
+            {
+                await _applicationUserService.SendEmailDataProtectionNotify();
             }
-
-            protectionEnabled = false;
-            return ProtectionStatus.Off;
         }
 
+        public ProtectionStatus Status()
+        {
+            if (!protectionEnabled)
+            {
+                return ProtectionStatus.Off;
+            }
+
+            if (!protectionActivated)
+            {
+                return ProtectionStatus.Activate;
+            }
+
+            return ProtectionStatus.On;
+        }
+        
         public void Validate()
         {
             if (!protectionEnabled)
