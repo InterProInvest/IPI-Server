@@ -111,6 +111,8 @@ namespace HES.Web
                      Configuration["EmailSender:UserName"],
                      Configuration["EmailSender:Password"]));
 
+            services.AddHostedService<RemoveLogsFilesHostedService>();
+
             // SignalR
             services.AddSignalR();
 
