@@ -25,9 +25,18 @@ To deploy the server on Linux, follow the `Getting Started` instructions in the 
 
 To deploy the server on Windows, follow the `Getting Started` instructions in the [Windows deployment](WINDOWS.md).
 
+After you have deployed the server open the HES web interface and log in using the default login 'admin@hideez.com' and default password 'admin'.
+
 ## API documentation
 
 Almost everything you can do with the HES web interface you can do via the HES REST API calls. Follow the `Quick Start` instructions in the [documentation](API.md).
+
+## Next steps
+
+- change the admin's password
+- invite more admins
+- import the Hideez Devices from the file provided to you when you have bought the devices
+- setup the HES following the [user documentation](https://support.hideez.com/en/collections/2014634-hideez-enterprise-solution)
 
 ## Related projects
 
