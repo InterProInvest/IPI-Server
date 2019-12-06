@@ -3,7 +3,7 @@ The HES web API is intended to integrate the Hideez Enterprise Solution with the
 To see the list of available methods, their parameters and return values you need to install your own HES instance and open the link: `https://<your_server_name>/swagger/` By this link, you will be able to test each method as well. To open the link you need to logon the HES.   
 
 To use web API calls from an external application or service you need to authorize first. 
-Use `POST` `/api/Identity/Login` and send your login (email) and password in the json format:
+Use `POST` method `/api/Identity/Login` and send your login (email) and password in the json format:
 
     ```json
     {
@@ -11,5 +11,5 @@ Use `POST` `/api/Identity/Login` and send your login (email) and password in the
         "password": "<user_password>"
     }
     ```
-Server response headers will contain cookies named '.AspNetCore.Identity.Application'. Add these cookies to the headers of each following request.
+Server response headers will contain cookie named '.AspNetCore.Identity.Application'. Add this cookie to the headers of each following request. Identity cookie is valid for two weeks after that you need to call '/api/Identity/Login' method again. 
 
