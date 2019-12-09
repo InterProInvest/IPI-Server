@@ -30,16 +30,23 @@ namespace HES.Core.Services
 
         private void DoWork(object state)
         {
-            var directoryInfo = new DirectoryInfo(_folderPath);
-            FileInfo[] fileInfo = directoryInfo.GetFiles("*.log");
-
-            foreach (var item in fileInfo)
+            try
             {
-                if (item.CreationTime < DateTime.Now.AddDays(-30))
+                var directoryInfo = new DirectoryInfo(_folderPath);
+                FileInfo[] fileInfo = directoryInfo.GetFiles("*.log");
+
+                foreach (var item in fileInfo)
                 {
-                    File.Delete(item.FullName);
-                    _logger.LogInformation($"File deleted {item.Name}");
+                    if (item.CreationTime < DateTime.Now.AddDays(-30))
+                    {
+                        File.Delete(item.FullName);
+                        _logger.LogInformation($"File deleted {item.Name}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
             }
         }
 
