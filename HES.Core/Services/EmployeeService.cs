@@ -255,6 +255,7 @@ namespace HES.Core.Services
             // Remove employee from device
             device.EmployeeId = null;
             device.PrimaryAccountId = null;
+            device.AcceessProfileId = "default";
             await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId" });
 
             if (device.MasterPassword != null)
