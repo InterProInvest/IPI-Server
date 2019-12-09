@@ -264,15 +264,22 @@
   $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
 ```
   * **[Note]** Require internet connectivity
+  
+### 4. Backuping MySQL Database (Optional)
 
-### 4. Restoring configure file Hideez Enterprise Server
+```shell
+  $ sudo mkdir /opt/backups && cd /opt/backups
+  $ sudo mysqldump -u <your_user> -p <your_secret> <your_db> | gzip -c > <your_db>.sql.gz
+```
+
+### 5. Restoring configure file Hideez Enterprise Server
 
 ```shell
   $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
   $ sudo rm -rf /opt/HES.old
 ```
 
-### 5. Restarting Hideez Enterprise Server and check status
+### 6. Restarting Hideez Enterprise Server and check status
 
 ```shell
   $ sudo systemctl restart hideez.service

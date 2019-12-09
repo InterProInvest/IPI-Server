@@ -130,7 +130,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             ProximityDevice = await _workstationService
-                .QueryOfProximityDevice()
+                .ProximityDeviceQuery()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ProximityDevice == null)
@@ -177,7 +177,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             ProximityDevice = await _workstationService
-                .QueryOfProximityDevice()
+                .ProximityDeviceQuery()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ProximityDevice == null)
