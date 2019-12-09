@@ -3,24 +3,21 @@
 @foreach (var device in Model.Employee.Devices)
 {
     <div class="row align-items-center m-0">
-        <div class="row align-items-center sub-details-card">
+        <div class="row align-items-center sub-details-card pr-2">
             <div class="col-auto pr-1">
                 <h3 class="text-navyblue m-0">Device @device.Id</h3>
             </div>
-            <div class="col-auto p-1">
-                <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img src="~/svg/action/more.svg" />
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-left shadow" aria-labelledby="dropdownMenuLink">
-                        <a class="dropdown-item open-modal-dialog" data-id="@device.Id" data-action="DeleteDevice" data-title="Delete device">
-                            <img src="~/svg/action/delete.svg" />
-                            Delete
-                        </a>
-                    </div>
-                </div>
+            <div class="col-auto px-1">
+                <button class="btn p-0 open-modal-dialog" data-id="@device.Id" data-action="DeleteDevice" data-title="Remove device" title="Remove device from employee">
+                    <img src="~/svg/action/delete.svg" />
+                </button>
             </div>
-            <div class="col-auto pl-0 pr-2">
+            <div id="deviceUndo" class="col-auto px-1 @(Model.DeviceAccounts.Where(d => d.DeviceId == device.Id).Where(d => d.Status == AccountStatus.Updating || d.Status == AccountStatus.Removing).Any() == true ? "" : "d-none") ">
+                <button class="btn p-0 open-modal-dialog" data-id="@device.Id" data-action="UndoChanges" data-title="Undo changes" title="Undo changes from device">
+                    <img src="~/svg/action/undo.svg" />
+                </button>
+            </div>
+            <div class="col-auto px-1">
                 <button id="show_popover_@device.Id" class="btn popover-btn p-0">
                     <img src="~/svg/action/info.svg" />
                 </button>
@@ -107,7 +104,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col p-0"></div>
         </div>
     </div>
 
@@ -273,43 +269,43 @@
                                 <img src="~/svg/action/more.svg" />
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                                @if (item.Type == Core.Entities.AccountType.Personal && item.Status != Core.Entities.AccountStatus.Removing)
+                                @if (item.Status != AccountStatus.Removing)
                                 {
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccount" data-title="Edit personal account">
-                                        <img src="~/svg/action/edit.svg" />
-                                        Edit
-                                    </a>
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountPwd" data-title="Edit personal account password">
-                                        <img src="~/svg/action/password.svg" />
-                                        Edit password
-                                    </a>
-                                    @if (item.Kind != AccountKind.Workstation)
-                                    {
-                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountOtp" data-title="Edit personal account OTP">
-                                            <img src="~/svg/action/otp.svg" />
-                                            Edit OTP
-                                        </a>
-                                    }
-                                }
-                                @if (item.Type == Core.Entities.AccountType.Personal && (item.Status == Core.Entities.AccountStatus.Updating || item.Status == Core.Entities.AccountStatus.Removing))
-                                {
-                                    <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UndoChanges" data-title="Undo changes">
-                                        <img src="~/svg/action/undo.svg" />
-                                        Undo changes
-                                    </a>
-                                }
-                                else
-                                {
-                                    if (device.PrimaryAccountId != item.Id && item.Status == AccountStatus.Done)
+                                    @if (device.PrimaryAccountId != item.Id)
                                     {
                                         <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SetPrimaryAccount" data-title="Windows account">
                                             <img src="~/svg/action/star.svg" />
                                             Set as windows account
                                         </a>
                                     }
+                                    @if (item.Type == AccountType.Personal)
+                                    {
+                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccount" data-title="Edit personal account">
+                                            <img src="~/svg/action/edit.svg" />
+                                            Edit
+                                        </a>
+                                        <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountPwd" data-title="Edit personal account password">
+                                            <img src="~/svg/action/password.svg" />
+                                            Edit password
+                                        </a>
+                                        @if (item.Kind != AccountKind.Workstation)
+                                        {
+                                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditPersonalAccountOtp" data-title="Edit personal account OTP">
+                                                <img src="~/svg/action/otp.svg" />
+                                                Edit OTP
+                                            </a>
+                                        }
+                                    }
                                     <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteAccount" data-title="Delete account">
                                         <img src="~/svg/action/delete.svg" />
                                         Delete
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="dropdown-item">
+                                        <img src="~/svg/action/info.svg" />
+                                        When deleting an action is not available
                                     </a>
                                 }
                             </div>

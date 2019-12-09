@@ -2,7 +2,7 @@
 
 namespace HES.Core.Models.API
 {
-    public class SetAsWorkstationAccountDto
+    public class SetAsWindowsAccountDto
     {
         [Required]
         public string DeviceId { get; set; }

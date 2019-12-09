@@ -252,7 +252,7 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                await _employeeService.SetWorkstationAccountAsync(deviceId, accountId);
+                await _employeeService.SetAsWorkstationAccountAsync(deviceId, accountId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
             }
@@ -704,7 +704,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
+            DeviceAccount = await _employeeService.GetLastChangedAccountAsync(id);
 
             if (DeviceAccount == null)
             {
@@ -715,17 +715,17 @@ namespace HES.Web.Pages.Employees
             return Partial("_UndoChanges", this);
         }
 
-        public async Task<IActionResult> OnPostUndoChangesAsync(string accountId, string employeeId)
+        public async Task<IActionResult> OnPostUndoChangesAsync(string deviceId, string employeeId)
         {
-            if (accountId == null)
+            if (deviceId == null)
             {
-                _logger.LogWarning($"{nameof(accountId)} is null");
+                _logger.LogWarning($"{nameof(deviceId)} is null");
                 return NotFound();
             }
 
             try
             {
-                await _employeeService.UndoChangesAsync(accountId);
+                await _employeeService.UndoChangesAsync(deviceId);
                 SuccessMessage = "Changes were canceled.";
             }
             catch (Exception ex)

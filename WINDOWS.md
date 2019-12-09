@@ -143,7 +143,15 @@ Add the Web Site
 ```
   * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Restoring the configuration file
+### 4. Backuping MySQL Database (optional)
+
+```shell
+  > md bkp
+  > cd bkp
+  > mysqldump -u <your_user> -p <your_db> > <your_db_bkp>.sql
+  Enter password: ********
+```
+### 5. Restoring the configuration file
 
 ```shell
   > cd ..\..\
@@ -153,7 +161,7 @@ Add the Web Site
   > HES.old, Are you sure (Y/N)? y
 ```
 
-### 5. Starting the HES
+### 6. Starting the HES
 
 ```shell
   > appcmd start site /site.name:<site_name>  

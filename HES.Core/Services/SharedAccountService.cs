@@ -75,13 +75,13 @@ namespace HES.Core.Services
             sharedAccount.Urls = ValidationHepler.VerifyUrls(sharedAccount.Urls);
 
             // Set password
-            sharedAccount.Password = _dataProtectionService.Protect(sharedAccount.Password);
+            sharedAccount.Password = _dataProtectionService.Encrypt(sharedAccount.Password);
             // Set password date change
             sharedAccount.PasswordChangedAt = DateTime.UtcNow;
             // Set otp date change
             if (!string.IsNullOrWhiteSpace(sharedAccount.OtpSecret))
             {
-                sharedAccount.OtpSecret = _dataProtectionService.Protect(sharedAccount.OtpSecret);
+                sharedAccount.OtpSecret = _dataProtectionService.Encrypt(sharedAccount.OtpSecret);
                 sharedAccount.OtpSecretChangedAt = DateTime.UtcNow;
             }
 
@@ -169,10 +169,10 @@ namespace HES.Core.Services
                 tasks.Add(new DeviceTask
                 {
                     DeviceAccountId = deviceAccount.Id,
-                    Name = sharedAccount.Name,
-                    Urls = sharedAccount.Urls ?? string.Empty,
-                    Apps = sharedAccount.Apps ?? string.Empty,
-                    Login = sharedAccount.Login,
+                    OldName = sharedAccount.Name,
+                    OldUrls = sharedAccount.Urls ?? string.Empty,
+                    OldApps = sharedAccount.Apps ?? string.Empty,
+                    OldLogin = sharedAccount.Login,
                     Password = null,
                     OtpSecret = null,
                     CreatedAt = DateTime.UtcNow,
@@ -201,7 +201,7 @@ namespace HES.Core.Services
             _dataProtectionService.Validate();
 
             // Update Shared Account
-            sharedAccount.Password = _dataProtectionService.Protect(sharedAccount.Password);
+            sharedAccount.Password = _dataProtectionService.Encrypt(sharedAccount.Password);
             sharedAccount.PasswordChangedAt = DateTime.UtcNow;
             string[] properties = { "Password", "PasswordChangedAt" };
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);
@@ -254,7 +254,7 @@ namespace HES.Core.Services
             ValidationHepler.VerifyOtpSecret(sharedAccount.OtpSecret);
 
             // Update Shared Account
-            sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? _dataProtectionService.Protect(sharedAccount.OtpSecret) : null;
+            sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? _dataProtectionService.Encrypt(sharedAccount.OtpSecret) : null;
             sharedAccount.OtpSecretChangedAt = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? new DateTime?(DateTime.UtcNow) : null;
             string[] properties = { "OtpSecret", "OtpSecretChangedAt" };
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);

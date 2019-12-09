@@ -8,10 +8,10 @@ namespace HES.Core.Entities
     {
         [Key]
         public string Id { get; set; }
-        public string Name { get; set; }
-        public string Urls { get; set; }
-        public string Apps { get; set; }
-        public string Login { get; set; }
+        public string OldName { get; set; }
+        public string OldUrls { get; set; }
+        public string OldApps { get; set; }
+        public string OldLogin { get; set; }
         public string Password { get; set; }
         public string OtpSecret { get; set; }
         public TaskOperation Operation { get; set; }

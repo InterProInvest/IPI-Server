@@ -315,7 +315,5 @@ namespace HES.Core.Hubs
         }
 
         #endregion
-
-
     }
 }

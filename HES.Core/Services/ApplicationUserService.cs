@@ -74,10 +74,12 @@ namespace HES.Core.Services
         public async Task SendEmailDataProtectionNotify()
         {
             var administrators = await GetOnlyAdministrators();
+            var title = "Hideez Enterpise Server - Activate Data Protection";
+            var body = $"The server has been restarted, you need to activate the data protection, please go to the server.";
 
-            foreach (var admin in administrators)
+            foreach (var user in administrators)
             {
-                await _emailSender.SendEmailAsync(admin.Email, "Hideez Enterprise Server", "Need to activate data protection");
+                await _emailSender.SendEmailAsync(user.Email, title, body);
             }
         }
     }

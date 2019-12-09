@@ -265,14 +265,21 @@
 ```
   * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Restoring the configuration file
+### 4. Backuping MySQL Database (optional)
+
+```shell
+  $ sudo mkdir /opt/backups && cd /opt/backups
+  $ sudo mysqldump -u <your_user> -p <your_secret> <your_db> | gzip -c > <your_db> .sql.gz
+```
+
+### 5.  Restoring the configuration file
 
 ```shell
   $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
   $ sudo rm -rf /opt/HES.old
 ```
 
-### 5. Restarting the Hideez Enterprise Server and check its status
+### 6. Restarting the Hideez Enterprise Server and check its status
 
 ```shell
   $ sudo systemctl restart hideez.service

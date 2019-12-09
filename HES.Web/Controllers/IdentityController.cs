@@ -98,6 +98,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> AuthN(AuthDto authDto)
         {
             if (authDto == null)

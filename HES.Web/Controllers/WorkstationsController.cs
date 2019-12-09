@@ -147,13 +147,29 @@ namespace HES.Web.Controllers
             return await _workstationService.GetProximityDevicesAsync(id);
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ProximityDevice>> GetProximityDeviceById(string id)
+        {
+            var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
+
+            if (proximityDevice == null)
+            {
+                return NotFound();
+            }
+
+            return proximityDevice;
+        }
+
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> AddProximityDevice(AddProximityDeviceDto proximityDeviceDto)
         {
+            IList<ProximityDevice> proximityDevices;
             try
             {
-                await _workstationService.AddProximityDevicesAsync(proximityDeviceDto.WorkstationId, new string[] { proximityDeviceDto.DeviceId });
+                proximityDevices = await _workstationService.AddProximityDevicesAsync(proximityDeviceDto.WorkstationId, new string[] { proximityDeviceDto.DeviceId });
                 await _workstationService.UpdateProximitySettingsAsync(proximityDeviceDto.WorkstationId);
             }
             catch (Exception ex)
@@ -162,13 +178,20 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return NoContent();
+            return CreatedAtAction("GetProximityDeviceById", new { id = proximityDevices[0].Id }, proximityDevices[0]);
         }
 
         [HttpPost("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeleteProximityDevice(string id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ProximityDevice>> DeleteProximityDevice(string id)
         {
+            var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
+            if (proximityDevice == null)
+            {
+                return NotFound();
+            }
+
             try
             {
                 await _workstationService.DeleteProximityDeviceAsync(id);
@@ -179,7 +202,7 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return NoContent();
+            return proximityDevice;
         }
 
         #endregion
