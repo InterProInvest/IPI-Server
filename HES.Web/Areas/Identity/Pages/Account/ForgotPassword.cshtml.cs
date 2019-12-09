@@ -80,6 +80,6 @@ namespace HES.Web.Areas.Identity.Pages.Account
             }
 
             return Page();
-        }
+        }               
     }
 }

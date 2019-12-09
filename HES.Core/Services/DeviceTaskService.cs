@@ -28,6 +28,14 @@ namespace HES.Core.Services
             return _deviceTaskRepository.Query();
         }
 
+        public async Task<DeviceTask> GetTaskByIdAsync(string id)
+        {
+            return await _deviceTaskRepository
+               .Query()
+               .Include(d => d.DeviceAccount)
+               .FirstOrDefaultAsync(d => d.Id == id);
+        }
+
         public async Task AddTaskAsync(DeviceTask deviceTask)
         {
             await _deviceTaskRepository.AddAsync(deviceTask);

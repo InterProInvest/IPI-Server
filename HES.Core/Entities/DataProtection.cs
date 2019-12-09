@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
@@ -8,8 +7,6 @@ namespace HES.Core.Entities
         [Key]
         public string Id { get; set; }
         public string Value { get; set; }
-
-        [NotMapped]
-        public static string PrimaryKey => "DataProtection";
+        public string ValueHash { get; set; }
     }
 }
