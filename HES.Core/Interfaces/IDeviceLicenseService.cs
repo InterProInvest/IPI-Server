@@ -9,6 +9,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<DeviceLicense> Query();
         Task<List<DeviceLicense>> GeDeviceLicensesAsync();
-        Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId);
+        Task<IList<DeviceLicense>> GetNewDeviceLicensesByDeviceIdAsync(string deviceId);
+        Task OnDeviceLicenseAppliedAsync(string deviceId, string licenseId)
     }
 }

@@ -155,7 +155,6 @@ namespace HES.Core.Services
                     MasterPassword = null,
                     AcceessProfileId = "default",
                     ImportedAt = DateTime.UtcNow
-                    //UsePin = true
                 })
                 .ToList();
 

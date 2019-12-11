@@ -146,7 +146,7 @@ namespace HES.Core.Services
                     _appConnections.TryGetValue(workstationId, out descr);
                     if (descr != null)
                     {
-                        var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, null); //new SdkLogger<RemoteDeviceConnectionsService>(_logger)
+                        var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, SdkConfig.DefaultRemoteCommandTimeout, null); //new SdkLogger<RemoteDeviceConnectionsService>(_logger)
                         descr.Device = remoteDevice;
 
                         await remoteDevice.Verify(channelNo);

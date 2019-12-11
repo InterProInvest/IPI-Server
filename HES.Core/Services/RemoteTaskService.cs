@@ -7,6 +7,7 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Command;
+using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
@@ -95,7 +96,7 @@ namespace HES.Core.Services
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { "MasterPassword" });
                     break;
                 case TaskOperation.UnlockPin:
-                    device.State = DeviceState.OK;
+                    device.State = Entities.DeviceState.OK;
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State" });
                     break;
                 case TaskOperation.Link:
@@ -303,17 +304,17 @@ namespace HES.Core.Services
                 MasterKey_Bond = device.DeviceAccessProfile.MasterKeyBonding,
                 MasterKey_Connect = device.DeviceAccessProfile.MasterKeyConnection,
                 MasterKey_Channel = device.DeviceAccessProfile.MasterKeyNewChannel,
-                MasterKey_Link = device.DeviceAccessProfile.MasterKeyConnection,
+                //MasterKey_Link = device.DeviceAccessProfile.MasterKeyConnection,
 
                 Button_Bond = device.DeviceAccessProfile.ButtonBonding,
                 Button_Connect = device.DeviceAccessProfile.ButtonConnection,
                 Button_Channel = device.DeviceAccessProfile.ButtonNewChannel,
-                Button_Link = device.DeviceAccessProfile.ButtonConnection,
+                //Button_Link = device.DeviceAccessProfile.ButtonConnection,
 
                 Pin_Bond = device.DeviceAccessProfile.PinBonding,
                 Pin_Connect = device.DeviceAccessProfile.PinConnection,
                 Pin_Channel = device.DeviceAccessProfile.PinNewChannel,
-                Pin_Link = device.DeviceAccessProfile.PinConnection,
+                //Pin_Link = device.DeviceAccessProfile.PinConnection,
 
                 PinMinLength = device.DeviceAccessProfile.PinLength,
                 PinMaxTries = device.DeviceAccessProfile.PinTryCount,
