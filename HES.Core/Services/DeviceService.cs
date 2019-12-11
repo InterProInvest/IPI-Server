@@ -125,6 +125,14 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<Device> AddDeviceAsync(Device device)
+        {
+            if (device == null)
+                throw new ArgumentNullException(nameof(device));
+
+            return await _deviceRepository.AddAsync(device);
+        }
+
         public async Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevicesAsync(string key, byte[] fileContent)
         {
             IList<Device> devicesExists = null;
@@ -347,7 +355,7 @@ namespace HES.Core.Services
 
             await _deviceAccessProfileRepository.DeleteAsync(deviceAccessProfile);
         }
-        
+
         public async Task SetProfileAsync(string[] devicesId, string profileId)
         {
             if (devicesId == null)

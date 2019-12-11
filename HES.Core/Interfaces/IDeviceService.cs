@@ -15,6 +15,7 @@ namespace HES.Core.Interfaces
         Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
         Task<List<Device>> GetDevicesAsync();
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
+        Task<Device> AddDeviceAsync(Device device);
         Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevicesAsync(string key, byte[] fileContent);
         Task EditRfidAsync(Device device);
         Task UpdateOnlyPropAsync(Device device, string[] properties);
