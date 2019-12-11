@@ -23,7 +23,8 @@ namespace HES.Core.Entities
         public string AcceessProfileId { get; set; }
         public string MasterPassword { get; set; }
         public DateTime ImportedAt { get; set; }
-
+        public bool HasNewLicense { get; set; }
+        
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
         [Display(Name = "Access Profile")]

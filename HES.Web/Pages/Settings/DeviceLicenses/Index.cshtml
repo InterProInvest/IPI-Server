@@ -1,0 +1,88 @@
+﻿@page
+@model HES.Web.IndexModel
+
+@{
+    ViewData["Title"] = "Device Licenses";
+    ViewData["ActivePage"] = MenuNavPages.Settings;
+    ViewData["SettingsPage"] = SettingsNavPages.DeviceLicenses;
+}
+
+<div class="row align-items-center mr-0">
+    <div class="col-auto">
+        <h1 class="text-navyblue">Device Licenses</h1>
+    </div>
+    <div class="col"></div>
+    <div class="col-auto p-1">
+        <div class="form-group has-search-right m-0">
+            <div class="form-control-feedback">
+                <img class="img-size" src="~/svg/action/search.svg" />
+            </div>
+            <input id="searchbox" type="text" class="form-control" placeholder="Search">
+        </div>
+    </div>
+</div>
+
+<table id="deviceLicenses" class="display table table-hover border rounded w-100">
+    <thead>
+        <tr>
+            <th data-priority="1">
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].LicenseOrderId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].DeviceId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].CreatedAt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].ImportedAt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].LicenseEndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].Capabilities)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeviceLicense[0].AppliedAt)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.DeviceLicense)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LicenseOrderId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeviceId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ImportedAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LicenseEndDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Capabilities)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AppliedAt)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@section Scripts{
+    <script>
+        InitDeviceLicensesDT();
+        DeviceLicensesSetBreadcrumbs();
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

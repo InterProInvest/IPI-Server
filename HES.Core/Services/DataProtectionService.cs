@@ -50,8 +50,8 @@ namespace HES.Core.Services
 
             if (data != null)
             {
-                protectionEnabled = true;                
-            }            
+                protectionEnabled = true;
+            }
 
             if (protectionEnabled)
             {
@@ -73,7 +73,7 @@ namespace HES.Core.Services
 
             return ProtectionStatus.On;
         }
-        
+
         public void Validate()
         {
             if (!protectionEnabled)

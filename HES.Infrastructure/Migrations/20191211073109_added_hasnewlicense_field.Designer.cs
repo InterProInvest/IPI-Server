@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191211073109_added_hasnewlicense_field")]
+    partial class added_hasnewlicense_field
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -257,21 +259,24 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime?>("AppliedAt");
+                    b.Property<DateTime>("AppliedAt");
 
                     b.Property<int>("Capabilities");
 
                     b.Property<DateTime>("CreatedAt");
 
-                    b.Property<byte[]>("Data");
+                    b.Property<byte[]>("Data")
+                        .IsRequired();
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .IsRequired();
 
                     b.Property<DateTime>("ImportedAt");
 
                     b.Property<DateTime>("LicenseEndDate");
 
-                    b.Property<string>("LicenseOrderId");
+                    b.Property<string>("LicenseOrderId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
