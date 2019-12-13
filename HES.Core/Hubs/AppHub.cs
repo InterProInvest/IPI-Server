@@ -21,7 +21,7 @@ namespace HES.Core.Hubs
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IDeviceService _deviceService;
         private readonly IDeviceTaskService _deviceTaskService;
-        private readonly IDeviceLicenseService _deviceLicenseService;
+        private readonly ILicenseService _licenseService;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
@@ -29,7 +29,7 @@ namespace HES.Core.Hubs
                       IWorkstationAuditService workstationAuditService,
                       IDeviceService deviceService,
                       IDeviceTaskService deviceTaskService,
-                      IDeviceLicenseService deviceLicenseService,
+                      ILicenseService licenseService,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
@@ -37,7 +37,7 @@ namespace HES.Core.Hubs
             _workstationAuditService = workstationAuditService;
             _deviceService = deviceService;
             _deviceTaskService = deviceTaskService;
-            _deviceLicenseService = deviceLicenseService;
+            _licenseService = licenseService;
             _logger = logger;
         }
 
@@ -304,12 +304,12 @@ namespace HES.Core.Hubs
 
         public async Task<IList<DeviceLicense>> GetNewDeviceLicenses(string deviceId)
         {
-            return await _deviceLicenseService.GetNewDeviceLicensesByDeviceIdAsync(deviceId);
+            return await _licenseService.GetNewDeviceLicensesByDeviceIdAsync(deviceId);
         }
 
         public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
         {
-            await _deviceLicenseService.OnDeviceLicenseAppliedAsync(deviceId, licenseId);
+            await _licenseService.OnDeviceLicenseAppliedAsync(deviceId, licenseId);
         }
 
         // Incoming request

@@ -7,13 +7,13 @@ namespace HES.Core.Entities
     {
         [Key]
         public string Id { get; set; }
-        public string LicenseOrderId { get; set; }
+        [Required]
         public string DeviceId { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime ImportedAt { get; set; }
-        public DateTime LicenseEndDate { get; set; }
-        public int Capabilities { get; set; }
+        [Required]
+        public string LicenseOrderId { get; set; }
+        public DateTime? ImportedAt { get; set; }
         public DateTime? AppliedAt { get; set; }
+        public DateTime? EndDate { get; set; }
         public byte[] Data { get; set; }
     }
 }

@@ -79,7 +79,7 @@ namespace HES.Web
             services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
-            services.AddScoped<IDeviceLicenseService, DeviceLicenseService>();
+            services.AddScoped<ILicenseService, LicenseService>();
 
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {

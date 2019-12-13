@@ -29,6 +29,7 @@ namespace HES.Infrastructure
         public DbSet<SamlIdentityProvider> SamlIdentityProvider { get; set; }
         public DbSet<DataProtection> DataProtection { get; set; }
         public DbSet<DeviceLicense> DeviceLicenses { get; set; }
+        public DbSet<LicenseOrder> LicenseOrders { get; set; }
 
 
         public DbQuery<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }

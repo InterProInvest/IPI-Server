@@ -1,0 +1,88 @@
+﻿@page
+@model HES.Web.Pages.Settings.LicenseOrders.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<partial name="_SuccessMessage" for="SuccessMessage" />
+<partial name="_ErrorMessage" for="ErrorMessage" />
+
+<h1 class="text-navyblue">Create License Order</h1>
+
+<form method="post">
+    <div class="row filter-card">
+        <div class="col-12 col-sm-4" style="max-height:460px;">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.ContactEmail" class="control-label"></label>
+                <input asp-for="LicenseOrder.ContactEmail" class="form-control" />
+                <span asp-validation-for="LicenseOrder.ContactEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.Note" class="control-label"></label>
+                <textarea class="form-control" asp-for="LicenseOrder.Note" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.StartDate" class="control-label"></label>
+                <input asp-for="LicenseOrder.StartDate" class="form-control" />
+                <span asp-validation-for="LicenseOrder.StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.EndDate" class="control-label"></label>
+                <input asp-for="LicenseOrder.EndDate" class="form-control" />
+                <span asp-validation-for="LicenseOrder.EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="LicenseOrder.ProlongExistingLicenses" /> @Html.DisplayNameFor(model => model.LicenseOrder.ProlongExistingLicenses)
+                </label>
+            </div>
+        </div>
+        <div class="col-12 col-sm-8" style="max-height:460px; overflow-y:auto">
+            <table id="devices" class="display table table-hover inside-scrollbar w-100">
+                <thead>
+                    <tr>
+                        <th class="table-col-menu">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="checkbox_all">
+                                <label class="custom-control-label" for="checkbox_all"></label>
+                            </div>
+                        </th>
+                        <th>
+                            Serial Number
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var device in Model.Devices)
+                    {
+                        <tr>
+                            <td class="table-col-menu">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" name="devicesIds" id="@device.Id" value="@device.Id">
+                                    <label class="custom-control-label" for="@device.Id"></label>
+                                </div>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => device.Id)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col">
+            <input type="submit" value="Create" class="btn btn-primary mr-2" />
+            <a asp-page="Index">Back to List</a>
+        </div>
+    </div>
+
+</form>
+
+<div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

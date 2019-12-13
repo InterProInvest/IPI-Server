@@ -8,24 +8,64 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class DeviceLicenseService : IDeviceLicenseService
+    public class LicenseService : ILicenseService
     {
+        private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
 
-        public DeviceLicenseService(IAsyncRepository<DeviceLicense> deviceLicenseRepository,
-                                    IAsyncRepository<Device> deviceRepository)
+        public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
+                                   IAsyncRepository<DeviceLicense> deviceLicenseRepository,
+                                   IAsyncRepository<Device> deviceRepository)
         {
+            _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
             _deviceRepository = deviceRepository;
         }
 
-        public IQueryable<DeviceLicense> Query()
+        #region Order
+
+        public IQueryable<LicenseOrder> LicenseOrderQuery()
         {
-            return _deviceLicenseRepository.Query();
+            return _licenseOrderRepository.Query();
         }
 
-        public async Task<List<DeviceLicense>> GeDeviceLicensesAsync()
+        public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder)
+        {
+            if (licenseOrder == null)
+            {
+                throw new ArgumentNullException(nameof(licenseOrder));
+            }
+
+            return await _licenseOrderRepository.AddAsync(licenseOrder);
+        }
+
+        #endregion
+
+        #region License
+
+        public async Task<List<DeviceLicense>> AddDeviceLicenseAsync(string orderId, List<string> devicesIds)
+        {
+            if (devicesIds == null)
+            {
+                throw new ArgumentNullException(nameof(devicesIds));
+            }
+
+            var deviceLicenses = new List<DeviceLicense>();
+
+            foreach (var deviceId in devicesIds)
+            {
+                deviceLicenses.Add(new DeviceLicense()
+                {
+                    LicenseOrderId = orderId,
+                    DeviceId = deviceId
+                });
+            }
+
+            return await _deviceLicenseRepository.AddRangeAsync(deviceLicenses) as List<DeviceLicense>;
+        }
+
+        public async Task<List<DeviceLicense>> GetDeviceLicensesAsync()
         {
             return await _deviceLicenseRepository
                 .Query()
@@ -68,5 +108,7 @@ namespace HES.Core.Services
                 await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "HasNewLicense" });
             }
         }
+
+        #endregion
     }
 }

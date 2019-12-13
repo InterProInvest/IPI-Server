@@ -141,13 +141,13 @@ function InitSlidersText() {
     $('#pin_try_count_value').html($('#pin_try_count').val());
 }
 
-// Device Licenses
+// License Orders
 // Initialize DataTables
-function InitDeviceLicensesDT() {
-    var table_name = '#deviceLicenses';
+function InitLicenseOrdersDT() {
+    var table_name = '#licenseOrders';
     var table = $(table_name).DataTable({
         responsive: true,
-        "order": [[0, "asc"]]
+        "order": [[5, "asc"]]
     });
     var dataTable = $(table_name).dataTable();
     // Search box
@@ -165,10 +165,10 @@ function InitDeviceLicensesDT() {
 }
 
 // Breadcrumbs
-function DeviceLicensesSetBreadcrumbs() {
+function LicenseOrdersSetBreadcrumbs() {
     $('#breadcrumb').toggleClass('d-none');
     $('.breadcrumb').append('<li class="breadcrumb-item active">Settings</li>');
-    $('.breadcrumb').append('<li class="breadcrumb-item active">Device Licenses</li>');
+    $('.breadcrumb').append('<li class="breadcrumb-item active">License Orders</li>');
 }
 
 // DataTables initialization
