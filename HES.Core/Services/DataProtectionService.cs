@@ -54,13 +54,9 @@ namespace HES.Core.Services
 
             if (data == null)
             {
-<<<<<<< HEAD
-                protectionEnabled = true;
-=======
                 protectionEnabled = false;
                 protectionActivated = false;
                 return;
->>>>>>> develop
             }
 
             var result = await ValidateSecretAsync(_config.GetValue<string>("DataProtection:Password"));

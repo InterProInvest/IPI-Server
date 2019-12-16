@@ -9,7 +9,7 @@ namespace HES.Core.Services
 {
     public class RemoveLogsFilesHostedService : IHostedService, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<RemoveLogsFilesHostedService> _logger;
         private readonly string _folderPath;
         private Timer _timer;
 
