@@ -208,8 +208,36 @@ namespace HES.Core.Hubs
                 if (dto == null || dto.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto));
 
-                // Update Battery, Firmware, IsLocked, LastSynced         
-                await _deviceService.UpdateDeviceInfoAsync(dto.DeviceSerialNo, dto.Battery, dto.FirmwareVersion, dto.IsLocked);
+                var exist = await _deviceService
+                    .DeviceQuery()
+                    .AsNoTracking()
+                    .Where(d => d.Id == dto.DeviceSerialNo)
+                    .AnyAsync();
+
+                if (exist)
+                {
+                    // Update Battery, Firmware, IsLocked, LastSynced         
+                    await _deviceService.UpdateDeviceInfoAsync(dto.DeviceSerialNo, dto.Battery, dto.FirmwareVersion, dto.IsLocked);
+                }
+                else
+                {
+                    if (dto.Mac != null)
+                    {
+                        // Add device
+                        var device = new Device()
+                        {
+                            Id = dto.DeviceSerialNo,
+                            MAC =  dto.Mac,
+                            Model = dto.DeviceSerialNo.Substring(0, 5),
+                            RFID = dto.Mac.Replace(":", "").Substring(0, 8),
+                            Battery = dto.Battery,
+                            Firmware = dto.FirmwareVersion,
+                            ImportedAt = DateTime.UtcNow,
+                            LastSynced = DateTime.UtcNow
+                        };
+                        await _deviceService.AddDeviceAsync(device);
+                    }
+                }
             }
             catch (Exception ex)
             {

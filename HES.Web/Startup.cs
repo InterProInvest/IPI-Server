@@ -51,6 +51,13 @@ namespace HES.Web
                 configuration["EmailSender:Password"] = email_pwd;
             }
 
+            var dataprotectoin_pwd = configuration["DATAPROTECTION_PWD"];
+
+            if (dataprotectoin_pwd != null)
+            {
+                configuration["DataProtection:Password"] = dataprotectoin_pwd;
+            }
+
             Configuration = configuration;
         }
 
@@ -84,12 +91,14 @@ namespace HES.Web
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
+                var config = scope.ServiceProvider.GetService<IConfiguration>();
                 var dataProtectionRepository = scope.ServiceProvider.GetService<IAsyncRepository<DataProtection>>();
                 var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
                 var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
                 var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
                 var applicationUserService = scope.ServiceProvider.GetService<IApplicationUserService>();
-                return new DataProtectionService(dataProtectionRepository,
+                return new DataProtectionService(config,
+                                                 dataProtectionRepository,
                                                  deviceRepository,
                                                  deviceTaskRepository,
                                                  sharedAccountRepository,

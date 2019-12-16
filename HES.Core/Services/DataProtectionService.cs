@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace HES.Core.Services
 
     public class DataProtectionService : IDataProtectionService
     {
+        private readonly IConfiguration _config;
         private readonly IAsyncRepository<DataProtection> _dataProtectionRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
@@ -31,12 +33,14 @@ namespace HES.Core.Services
         private byte[] key;
         private byte[] iv;
 
-        public DataProtectionService(IAsyncRepository<DataProtection> dataProtectionRepository,
+        public DataProtectionService(IConfiguration config,
+                                     IAsyncRepository<DataProtection> dataProtectionRepository,
                                      IAsyncRepository<Device> deviceRepository,
                                      IAsyncRepository<DeviceTask> deviceTaskRepository,
                                      IAsyncRepository<SharedAccount> sharedAccountRepository,
                                      IApplicationUserService applicationUserService)
         {
+            _config = config;
             _dataProtectionRepository = dataProtectionRepository;
             _deviceRepository = deviceRepository;
             _deviceTaskRepository = deviceTaskRepository;
@@ -48,15 +52,28 @@ namespace HES.Core.Services
         {
             var data = await GetEncryptedEntityAsync();
 
-            if (data != null)
+            if (data == null)
             {
+<<<<<<< HEAD
                 protectionEnabled = true;
+=======
+                protectionEnabled = false;
+                protectionActivated = false;
+                return;
+>>>>>>> develop
             }
 
-            if (protectionEnabled)
+            var result = await ValidateSecretAsync(_config.GetValue<string>("DataProtection:Password"));
+            if (!result)
             {
+                protectionEnabled = true;
+                protectionActivated = false;
                 await _applicationUserService.SendEmailDataProtectionNotify();
+                return;
             }
+
+            protectionEnabled = true;
+            protectionActivated = true;
         }
 
         public ProtectionStatus Status()
@@ -129,7 +146,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ActivateProtectionAsync(string secret)
+        public async Task<bool> ActivateProtectionAsync(string secret)
         {
             if (string.IsNullOrWhiteSpace(secret))
             {
@@ -149,11 +166,9 @@ namespace HES.Core.Services
             try
             {
                 protectionBusy = true;
-                // Decrypt value, if no error occurred during the decrypt, then the password is correct                
-                await ValidateSecret(secret);
-                // Activated
-                protectionActivated = true;
+                protectionActivated = await ValidateSecretAsync(secret);       
                 protectionBusy = false;
+                return protectionActivated;
             }
 
             catch (Exception)
@@ -194,7 +209,7 @@ namespace HES.Core.Services
             {
                 protectionBusy = true;
                 // Decrypt value, if no error occurred during the decrypt, then the password is correct                
-                await ValidateSecret(oldSecret);
+                await ValidateSecretAsync(oldSecret);
                 // Change data secret
                 await ChangeDataSecretAsync(newSecret);
                 protectionBusy = false;
@@ -478,13 +493,13 @@ namespace HES.Core.Services
             return plaintext;
         }
 
-        private async Task ValidateSecret(string secret)
+        private async Task<bool> ValidateSecretAsync(string secret)
         {
             try
             {
-                // Get value
+                // Get encrypted value
                 var data = await GetEncryptedEntityAsync();
-                // Set temp keys
+                // Get hash from provided secret
                 var hash = GetSHA256(secret);
                 byte[] tempKey = new byte[32];
                 byte[] tempIv = new byte[16];
@@ -498,15 +513,16 @@ namespace HES.Core.Services
                 var equals = decryptedHash.SequenceEqual(originalHash);
                 if (!equals)
                 {
-                    throw new CryptographicException("Secret is not valid.");
+                    return false;
                 }
                 // Set keys
                 key = tempKey;
                 iv = tempIv;
+                return true;
             }
             catch (CryptographicException)
             {
-                throw new Exception("Secret is not valid.");
+                return false;
             }
         }
 

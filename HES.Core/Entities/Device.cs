@@ -20,7 +20,7 @@ namespace HES.Core.Entities
         public DateTime? LastSynced { get; set; }
         public string EmployeeId { get; set; }
         public string PrimaryAccountId { get; set; }
-        public string AcceessProfileId { get; set; }
+        public string AcceessProfileId { get; set; } = "default";
         public string MasterPassword { get; set; }
         public DateTime ImportedAt { get; set; }
         public bool HasNewLicense { get; set; }
