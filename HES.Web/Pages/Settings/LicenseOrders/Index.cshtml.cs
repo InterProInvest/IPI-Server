@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using HES.Core.Entities;
-using HES.Infrastructure;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
     public class IndexModel : PageModel
     {
-        private readonly HES.Infrastructure.ApplicationDbContext _context;
+        private readonly ILicenseService _licenseService;
         public IList<LicenseOrder> LicenseOrder { get; set; }
 
-        public IndexModel(HES.Infrastructure.ApplicationDbContext context)
+        public IndexModel(ILicenseService licenseService)
         {
-            _context = context;
+            _licenseService = licenseService;
         }
 
         public async Task OnGetAsync()
         {
-            LicenseOrder = await _context.LicenseOrders.ToListAsync();
+            LicenseOrder = await _licenseService.GetLicenseOrdersAsync();
         }
     }
 }

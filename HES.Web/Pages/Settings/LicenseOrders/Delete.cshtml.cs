@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using HES.Core.Entities;
-using HES.Infrastructure;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
     public class DeleteModel : PageModel
     {
-        private readonly HES.Infrastructure.ApplicationDbContext _context;
-
-        public DeleteModel(HES.Infrastructure.ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ILicenseService _licenseService;
 
         [BindProperty]
         public LicenseOrder LicenseOrder { get; set; }
+
+
+        public DeleteModel(ILicenseService licenseService)
+        {
+            _licenseService = licenseService;
+        }
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
@@ -29,7 +26,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 return NotFound();
             }
 
-            LicenseOrder = await _context.LicenseOrders.FirstOrDefaultAsync(m => m.Id == id);
+            LicenseOrder = await _licenseService.GetLicenseOrderByIdAsync(id);
 
             if (LicenseOrder == null)
             {
@@ -45,13 +42,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 return NotFound();
             }
 
-            LicenseOrder = await _context.LicenseOrders.FindAsync(id);
-
-            if (LicenseOrder != null)
-            {
-                _context.LicenseOrders.Remove(LicenseOrder);
-                await _context.SaveChangesAsync();
-            }
+            await _licenseService.DeleteOrderAsync(id);
 
             return RedirectToPage("./Index");
         }

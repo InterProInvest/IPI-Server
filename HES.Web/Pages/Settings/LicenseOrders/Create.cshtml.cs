@@ -20,7 +20,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         private readonly ILogger<CreateModel> _logger;
         public LicenseOrder LicenseOrder { get; set; }
         public LicenseOrderDto LicenseOrderDto { get; set; }
-        public List<Device> Devices { get; set; }
+        public List<Device> NonLicensedDevices { get; set; }
+        public List<Device> LicensedDevices { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -38,14 +39,20 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         public async Task OnGetAsync()
         {
-            Devices = await _deviceService
+            NonLicensedDevices = await _deviceService
                 .DeviceQuery()
-                .Where(d => d.HasNewLicense == false && d.LicenseStatus == LicenseStatus.None)
+                .Where(d => d.LicenseStatus == LicenseStatus.None)
+                .AsNoTracking()
+                .ToListAsync();
+
+            LicensedDevices = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus != LicenseStatus.None)
                 .AsNoTracking()
                 .ToListAsync();
         }
 
-        public async Task<IActionResult> OnPostAsync(LicenseOrder licenseOrder, List<string> devicesIds)
+        public async Task<IActionResult> OnPostCreateNewLicenseAsync(LicenseOrder licenseOrder, List<string> nonLicensedDevicesIds)
         {
             if (!ModelState.IsValid)
             {
@@ -57,7 +64,30 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             try
             {
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
-                await _licenseService.AddDeviceLicenseAsync(createdOrder.Id, devicesIds);
+                await _licenseService.AddDeviceLicenseAsync(createdOrder.Id, nonLicensedDevicesIds);
+                SuccessMessage = "Order created";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+
+            return RedirectToPage("./Index");
+        }
+
+        public async Task<IActionResult> OnPostCreateRenewLicenseAsync(LicenseOrder licenseOrder, List<string> licensedDevicesIds)
+        {
+            if (!ModelState.IsValid)
+            {
+                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                _logger.LogError(ErrorMessage);
+                return RedirectToPage("./Create");
+            }
+
+            try
+            {
+                var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
+                await _licenseService.AddDeviceLicenseAsync(createdOrder.Id, licensedDevicesIds);
                 SuccessMessage = "Order created";
             }
             catch (Exception ex)

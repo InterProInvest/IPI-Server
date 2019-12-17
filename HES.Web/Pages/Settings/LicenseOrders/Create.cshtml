@@ -10,79 +10,203 @@
 
 <h1 class="text-navyblue">Create License Order</h1>
 
-<form method="post">
-    <div class="row filter-card">
-        <div class="col-12 col-sm-4" style="max-height:460px;">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="LicenseOrder.ContactEmail" class="control-label"></label>
-                <input asp-for="LicenseOrder.ContactEmail" class="form-control" />
-                <span asp-validation-for="LicenseOrder.ContactEmail" class="text-danger"></span>
+<ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="pills-new-license-tab" data-toggle="pill" href="#pills-new-license" role="tab" aria-controls="pills-new-license" aria-selected="true">New license</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="pills-renew-license-tab" data-toggle="pill" href="#pills-renew-license" role="tab" aria-controls="pills-renew-license" aria-selected="false">Renew license</a>
+    </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="pills-new-license" role="tabpanel" aria-labelledby="pills-new-license-tab">
+        <form method="post">
+            <div class="row white-card">
+                <div class="col-12 col-sm-4">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.ContactEmail" class="control-label"></label>
+                        <input asp-for="LicenseOrder.ContactEmail" class="form-control" />
+                        <span asp-validation-for="LicenseOrder.ContactEmail" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.Note" class="control-label"></label>
+                        <textarea class="form-control" asp-for="LicenseOrder.Note" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.StartDate" class="control-label"></label>
+                        <input type="date" asp-for="LicenseOrder.StartDate" class="form-control" value="@string.Format("{0:yyyy-MM-dd}", DateTime.Now)" />
+                        <span asp-validation-for="LicenseOrder.StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.EndDate" class="control-label"></label>
+                        <input type="date" asp-for="LicenseOrder.EndDate" class="form-control" value="@string.Format("{0:yyyy-MM-dd}", DateTime.Now)" />
+                        <span asp-validation-for="LicenseOrder.EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-8" style="max-height:390px; overflow-y:auto">
+                    <table id="nonLicensedDevices" class="display table table-hover inside-scrollbar w-100">
+                        <thead>
+                            <tr>
+                                <th class="table-col-menu">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" onchange="checkAllNonLicensedDevices(this)" class="custom-control-input" id="checkbox_all_nonLicensedDevices">
+                                        <label class="custom-control-label" for="checkbox_all_nonLicensedDevices"></label>
+                                    </div>
+                                </th>
+                                <th>
+                                    Serial Number
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var device in Model.NonLicensedDevices)
+                            {
+                                <tr>
+                                    <td class="table-col-menu">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" name="nonLicensedDevicesIds" id="nonLicensedDevices_@device.Id" value="@device.Id">
+                                            <label class="custom-control-label" for="nonLicensedDevices_@device.Id"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => device.Id)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col">
+                    <input type="submit" value="Create" class="btn btn-primary mr-2" asp-page-handler="CreateNewLicense" />
+                    <a class="btn btn-secondary" asp-page="Index">Back</a>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="LicenseOrder.Note" class="control-label"></label>
-                <textarea class="form-control" asp-for="LicenseOrder.Note" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label asp-for="LicenseOrder.StartDate" class="control-label"></label>
-                <input asp-for="LicenseOrder.StartDate" class="form-control" />
-                <span asp-validation-for="LicenseOrder.StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LicenseOrder.EndDate" class="control-label"></label>
-                <input asp-for="LicenseOrder.EndDate" class="form-control" />
-                <span asp-validation-for="LicenseOrder.EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="LicenseOrder.ProlongExistingLicenses" /> @Html.DisplayNameFor(model => model.LicenseOrder.ProlongExistingLicenses)
-                </label>
-            </div>
-        </div>
-        <div class="col-12 col-sm-8" style="max-height:460px; overflow-y:auto">
-            <table id="devices" class="display table table-hover inside-scrollbar w-100">
-                <thead>
-                    <tr>
-                        <th class="table-col-menu">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="checkbox_all">
-                                <label class="custom-control-label" for="checkbox_all"></label>
-                            </div>
-                        </th>
-                        <th>
-                            Serial Number
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var device in Model.Devices)
-                    {
-                        <tr>
-                            <td class="table-col-menu">
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" name="devicesIds" id="@device.Id" value="@device.Id">
-                                    <label class="custom-control-label" for="@device.Id"></label>
-                                </div>
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => device.Id)
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="col">
-            <input type="submit" value="Create" class="btn btn-primary mr-2" />
-            <a asp-page="Index">Back to List</a>
-        </div>
+        </form>
     </div>
-
-</form>
-
-<div>
+    <div class="tab-pane fade" id="pills-renew-license" role="tabpanel" aria-labelledby="pills-renew-license-tab">
+        <form method="post">
+            <div class="row filter-card">
+                <div class="col-12 col-sm-4">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.ContactEmail" class="control-label"></label>
+                        <input asp-for="LicenseOrder.ContactEmail" class="form-control" />
+                        <span asp-validation-for="LicenseOrder.ContactEmail" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.Note" class="control-label"></label>
+                        <textarea class="form-control" asp-for="LicenseOrder.Note" rows="3"></textarea>
+                    </div>
+                    <div class="form-group form-check">
+                        <label class="form-check-label">
+                            <input id="prolongExistingLicenses" onchange="changeProlongExistingLicenses(this)" type="checkbox" class="form-check-input" asp-for="LicenseOrder.ProlongExistingLicenses" checked /> @Html.DisplayNameFor(model => model.LicenseOrder.ProlongExistingLicenses)
+                        </label>
+                    </div>
+                    <div class="form-group d-none" id="licenseOrderStartDateGroup">
+                        <label asp-for="LicenseOrder.StartDate" class="control-label"></label>
+                        <input id="licenseOrderStartDate" type="date" asp-for="LicenseOrder.StartDate" class="form-control" value="@string.Format("{0:yyyy-MM-dd}", DateTime.Now)" />
+                        <span asp-validation-for="LicenseOrder.StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LicenseOrder.EndDate" class="control-label"></label>
+                        <input type="date" asp-for="LicenseOrder.EndDate" class="form-control" value="@string.Format("{0:yyyy-MM-dd}", DateTime.Now)" />
+                        <span asp-validation-for="LicenseOrder.EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-8" style="max-height:390px; overflow-y:auto">
+                    <table id="licensedDevices" class="display table table-hover inside-scrollbar w-100">
+                        <thead>
+                            <tr>
+                                <th class="table-col-menu">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" onchange="checkAllLicensedDevices(this)" class="custom-control-input" id="checkbox_all_licensedDevices">
+                                        <label class="custom-control-label" for="checkbox_all_licensedDevices"></label>
+                                    </div>
+                                </th>
+                                <th>
+                                    Serial Number
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var device in Model.LicensedDevices)
+                            {
+                                <tr>
+                                    <td class="table-col-menu">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" name="licensedDevicesIds" id="licensedDevices_@device.Id" value="@device.Id">
+                                            <label class="custom-control-label" for="licensedDevices_@device.Id"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => device.Id)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col">
+                    <input type="submit" value="Create" class="btn btn-primary mr-2" asp-page-handler="CreateRenewLicense" />
+                    <a class="btn btn-secondary" asp-page="Index">Back</a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
+    <script>
+        function changeProlongExistingLicenses(chkb) {
+            if (chkb.checked) {
+                $('#licenseOrderStartDateGroup').addClass('d-none');
+                   $('#licenseOrderStartDate').val('@string.Format("{0:yyyy-MM-dd}", DateTime.Now)');
+            }
+            else {
+                $('#licenseOrderStartDateGroup').removeClass('d-none');
+                $('#licenseOrderStartDate').val('@string.Format("{0:yyyy-MM-dd}", DateTime.Now)');
+            }
+        }
+
+        function checkAllNonLicensedDevices(chkb) {
+            if (chkb.checked) {
+                $('#nonLicensedDevices').each(function () {
+                    $(this).find('input[type="checkbox"]').each(function () {
+                        this.checked = true;
+                     });
+                });
+            }
+            else {
+                $('#nonLicensedDevices').each(function () {
+                    $(this).find('input[type="checkbox"]').each(function () {
+                        this.checked = false;
+                    });
+                });
+            }
+        }
+
+         function checkAllLicensedDevices(chkb) {
+            if (chkb.checked) {
+                $('#licensedDevices').each(function () {
+                    $(this).find('input[type="checkbox"]').each(function () {
+                        this.checked = true;
+                     });
+                });
+            }
+            else {
+                $('#licensedDevices').each(function () {
+                    $(this).find('input[type="checkbox"]').each(function () {
+                        this.checked = false;
+                    });
+                });
+            }
+        }
+
+        // Breadcrumbs        
+        $('#breadcrumb').toggleClass('d-none');
+        $('.breadcrumb').append('<li class="breadcrumb-item"><a href="/Settings/LicenseOrders">License Orders</a></li>');
+        $('.breadcrumb').append('<li class="breadcrumb-item active">Create Order</li>');
+    </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

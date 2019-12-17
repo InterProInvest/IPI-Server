@@ -5,11 +5,9 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1 class="text-navyblue">Edit License Order</h1>
 
-<h4>LicenseOrder</h4>
-<hr />
-<div class="row">
+<div class="row white-card">
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -21,8 +19,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="LicenseOrder.Note" class="control-label"></label>
-                <input asp-for="LicenseOrder.Note" class="form-control" />
-                <span asp-validation-for="LicenseOrder.Note" class="text-danger"></span>
+                <textarea class="form-control" asp-for="LicenseOrder.Note" rows="3"></textarea>
             </div>
             <div class="form-group">
                 <label asp-for="LicenseOrder.StartDate" class="control-label"></label>
@@ -40,24 +37,11 @@
                 </label>
             </div>
             <div class="form-group">
-                <label asp-for="LicenseOrder.CreatedAt" class="control-label"></label>
-                <input asp-for="LicenseOrder.CreatedAt" class="form-control" />
-                <span asp-validation-for="LicenseOrder.CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LicenseOrder.OrderStatus" class="control-label"></label>
-                <select asp-for="LicenseOrder.OrderStatus" class="form-control"></select>
-                <span asp-validation-for="LicenseOrder.OrderStatus" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary mr-2" />
+                <a  class="btn btn-secondary" asp-page="./Index">Cancel</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-page="./Index">Back to List</a>
 </div>
 
 @section Scripts {

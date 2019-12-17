@@ -30,6 +30,18 @@ namespace HES.Core.Services
             return _licenseOrderRepository.Query();
         }
 
+        public async Task<LicenseOrder> GetLicenseOrderByIdAsync(string id)
+        {
+            return await _licenseOrderRepository
+                .Query()
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }
+
+        public async Task<List<LicenseOrder>> GetLicenseOrdersAsync()
+        {
+            return await _licenseOrderRepository.Query().ToListAsync();
+        }
+
         public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder)
         {
             if (licenseOrder == null)
@@ -38,6 +50,22 @@ namespace HES.Core.Services
             }
 
             return await _licenseOrderRepository.AddAsync(licenseOrder);
+        }
+
+        public async Task DeleteOrderAsync(string id)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            var licenseOrder = await _licenseOrderRepository.GetByIdAsync(id);
+
+            if (licenseOrder == null)
+            {
+                throw new Exception("Order does not exist.");
+            }
+            await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
 
         #endregion
@@ -108,6 +136,8 @@ namespace HES.Core.Services
                 await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "HasNewLicense" });
             }
         }
+
+
 
         #endregion
     }

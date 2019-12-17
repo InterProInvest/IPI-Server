@@ -147,7 +147,10 @@ function InitLicenseOrdersDT() {
     var table_name = '#licenseOrders';
     var table = $(table_name).DataTable({
         responsive: true,
-        "order": [[5, "asc"]]
+        "order": [[5, "asc"]],
+        "columnDefs": [
+            { "orderable": false, "targets": [7] }
+        ]
     });
     var dataTable = $(table_name).dataTable();
     // Search box

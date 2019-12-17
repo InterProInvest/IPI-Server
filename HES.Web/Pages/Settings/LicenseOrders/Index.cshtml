@@ -37,13 +37,13 @@
                 @Html.DisplayNameFor(model => model.LicenseOrder[0].Note)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].ProlongExistingLicenses)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.LicenseOrder[0].StartDate)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.LicenseOrder[0].EndDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LicenseOrder[0].ProlongExistingLicenses)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.LicenseOrder[0].CreatedAt)
@@ -64,14 +64,17 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Note)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.StartDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.EndDate)
-                </td>
-                <td>
+                <td data-sort="@item.ProlongExistingLicenses">
                     @Html.DisplayFor(modelItem => item.ProlongExistingLicenses)
+                </td>
+                <td data-sort="@(item.ProlongExistingLicenses == true ? 0 : item.StartDate.Ticks)">
+                    @if (!item.ProlongExistingLicenses)
+                    {
+                        @Html.DisplayFor(modelItem => item.StartDate)
+                    }
+                </td>
+                <td data-sort="@item.EndDate.Ticks">
+                    @Html.DisplayFor(modelItem => item.EndDate)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.CreatedAt)
@@ -79,7 +82,7 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.OrderStatus)
                 </td>
-                <td>
+                <td class="table-col-menu">
                     <div class="dropdown no-arrow">
                         <a class="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img src="~/svg/action/more.svg" />

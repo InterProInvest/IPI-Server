@@ -4,13 +4,9 @@
 @{
     ViewData["Title"] = "Delete";
 }
-
-<h1>Delete</h1>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>LicenseOrder</h4>
-    <hr />
+<h1 class="text-navyblue">Delete License Order</h1>
+<div class="white-card">
+    <h3>Are you sure you want to delete this?</h3>
     <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.LicenseOrder.ContactEmail)
@@ -55,10 +51,19 @@
             @Html.DisplayFor(model => model.LicenseOrder.OrderStatus)
         </dd>
     </dl>
-    
+
     <form method="post">
         <input type="hidden" asp-for="LicenseOrder.Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-page="./Index">Back to List</a>
+        <input type="submit" value="Delete" class="btn btn-danger mr-2" />
+        <a class="btn btn-secondary" asp-page="./Index">Cancel</a>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        // Breadcrumbs
+        $('#breadcrumb').toggleClass('d-none');
+        $('.breadcrumb').append('<li class="breadcrumb-item"><a href="/Settings/LicenseOrders">License Orders</a></li>');
+        $('.breadcrumb').append('<li class="breadcrumb-item active">Delete Order</li>');
+    </script>
+}
