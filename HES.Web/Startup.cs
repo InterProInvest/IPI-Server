@@ -51,6 +51,13 @@ namespace HES.Web
                 configuration["EmailSender:Password"] = email_pwd;
             }
 
+            var dataprotectoin_pwd = configuration["DATAPROTECTION_PWD"];
+
+            if (dataprotectoin_pwd != null)
+            {
+                configuration["DataProtection:Password"] = dataprotectoin_pwd;
+            }
+
             Configuration = configuration;
         }
 
@@ -82,12 +89,14 @@ namespace HES.Web
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
+                var config = scope.ServiceProvider.GetService<IConfiguration>();
                 var dataProtectionRepository = scope.ServiceProvider.GetService<IAsyncRepository<DataProtection>>();
                 var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
                 var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
                 var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
                 var applicationUserService = scope.ServiceProvider.GetService<IApplicationUserService>();
-                return new DataProtectionService(dataProtectionRepository,
+                return new DataProtectionService(config,
+                                                 dataProtectionRepository,
                                                  deviceRepository,
                                                  deviceTaskRepository,
                                                  sharedAccountRepository,
@@ -181,8 +190,6 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Notifications", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Develop", "RequireAdministratorRole");
                 })
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

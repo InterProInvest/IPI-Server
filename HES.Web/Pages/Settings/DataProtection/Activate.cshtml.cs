@@ -18,6 +18,7 @@ namespace HES.Web
         {
             [Required]
             [DataType(DataType.Password)]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             public string Password { get; set; }
         }
         
@@ -42,7 +43,13 @@ namespace HES.Web
             returnUrl = returnUrl ?? Url.Content("~/");
             try
             {
-                await _dataProtectionService.ActivateProtectionAsync(Input.Password);
+                var result = await _dataProtectionService.ActivateProtectionAsync(Input.Password);
+                if (!result)
+                {
+                    ModelState.AddModelError("Input.Password", "Invalid password.");
+                    return Page();
+                }
+
             }
             catch (Exception ex)
             {

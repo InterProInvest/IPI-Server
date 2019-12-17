@@ -27,7 +27,7 @@ namespace HES.Core.Services
 
         readonly string _deviceId;
 
-        readonly ConcurrentDictionary<string, RemoteDeviceDescription> _appConnections 
+        readonly ConcurrentDictionary<string, RemoteDeviceDescription> _appConnections
             = new ConcurrentDictionary<string, RemoteDeviceDescription>();
 
         public bool IsDeviceConnectedToHost => _appConnections.Count > 0;
@@ -43,7 +43,7 @@ namespace HES.Core.Services
         public void OnDeviceConnected(string workstationId, IRemoteAppConnection appConnection)
         {
             Debug.WriteLine($"!!!!!!!!!!!!! OnDeviceConnected {_deviceId}");
-            _appConnections.AddOrUpdate(workstationId, new RemoteDeviceDescription(appConnection), (conn, old) => 
+            _appConnections.AddOrUpdate(workstationId, new RemoteDeviceDescription(appConnection), (conn, old) =>
             {
                 return new RemoteDeviceDescription(appConnection);
             });
@@ -81,7 +81,7 @@ namespace HES.Core.Services
                 // trying to connect to any workstation, first, look for that where Device is not empty
                 descr = _appConnections.Values.Where(x => x.Device != null).FirstOrDefault();
                 if (descr == null)
-                   descr = _appConnections.Values.FirstOrDefault();
+                    descr = _appConnections.Values.FirstOrDefault();
             }
             else
             {
@@ -127,7 +127,7 @@ namespace HES.Core.Services
             }
             finally
             {
-                lock(descr)
+                lock (descr)
                 {
                     descr.Tcs = null;
                 }
@@ -138,7 +138,7 @@ namespace HES.Core.Services
         {
             Debug.WriteLine($"!!!!!!!!!!!!! OnDeviceHubConnected {workstationId}");
 
-            Task.Run(async () => 
+            Task.Run(async () =>
             {
                 RemoteDeviceDescription descr = null;
                 try
@@ -146,7 +146,7 @@ namespace HES.Core.Services
                     _appConnections.TryGetValue(workstationId, out descr);
                     if (descr != null)
                     {
-                        var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, null); //new SdkLogger<RemoteDeviceConnectionsService>(_logger)
+                        var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, SdkConfig.DefaultRemoteCommandTimeout, null); //new SdkLogger<RemoteDeviceConnectionsService>(_logger)
                         descr.Device = remoteDevice;
 
                         await remoteDevice.Verify(channelNo);
