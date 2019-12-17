@@ -64,7 +64,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             try
             {
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
-                await _licenseService.AddDeviceLicenseAsync(createdOrder.Id, nonLicensedDevicesIds);
+                await _licenseService.AddDeviceLicensesAsync(createdOrder.Id, nonLicensedDevicesIds);
                 SuccessMessage = "Order created";
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             try
             {
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
-                await _licenseService.AddDeviceLicenseAsync(createdOrder.Id, licensedDevicesIds);
+                await _licenseService.AddDeviceLicensesAsync(createdOrder.Id, licensedDevicesIds);
                 SuccessMessage = "Order created";
             }
             catch (Exception ex)
@@ -96,19 +96,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             }
 
             return RedirectToPage("./Index");
-        }
-
-
-        //var licenseOrderDto = new LicenseOrderDto()
-        //{
-        //    Id = createdOrder.Id,
-        //    ContactEmail = createdOrder.ContactEmail,
-        //    CustomerNote = createdOrder.Note,
-        //    LicenseStartDate = createdOrder.StartDate,
-        //    LicenseEndDate = createdOrder.EndDate,
-        //    ProlongExistingLicenses = createdOrder.ProlongExistingLicenses,
-        //    CustomerId
-
-        //}
+        }       
     }
 }

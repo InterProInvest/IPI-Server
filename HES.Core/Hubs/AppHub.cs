@@ -332,7 +332,7 @@ namespace HES.Core.Hubs
 
         public async Task<IList<DeviceLicense>> GetNewDeviceLicenses(string deviceId)
         {
-            return await _licenseService.GetNewDeviceLicensesByDeviceIdAsync(deviceId);
+            return await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
         }
 
         public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)

@@ -68,11 +68,17 @@ namespace HES.Core.Services
             await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
 
+        public async Task SetStatusSent(LicenseOrder licenseOrder)
+        {
+            licenseOrder.OrderStatus = OrderStatus.Sent;
+            await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
+        }
+
         #endregion
 
         #region License
 
-        public async Task<List<DeviceLicense>> AddDeviceLicenseAsync(string orderId, List<string> devicesIds)
+        public async Task<List<DeviceLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds)
         {
             if (devicesIds == null)
             {
@@ -100,11 +106,20 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<IList<DeviceLicense>> GetNewDeviceLicensesByDeviceIdAsync(string deviceId)
+        public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
         {
             return await _deviceLicenseRepository
                 .Query()
                 .Where(d => d.AppliedAt == null && d.DeviceId == deviceId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId)
+        {
+            return await _deviceLicenseRepository
+                .Query()
+                .Where(d => d.AppliedAt == null && d.LicenseOrderId == orderId)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -124,7 +139,7 @@ namespace HES.Core.Services
             deviceLicense.AppliedAt = DateTime.UtcNow;
             await _deviceLicenseRepository.UpdateOnlyPropAsync(deviceLicense, new string[] { "AppliedAt" });
 
-            var existLicenses = await GetNewDeviceLicensesByDeviceIdAsync(deviceId);
+            var existLicenses = await GetDeviceLicensesByDeviceIdAsync(deviceId);
             if (existLicenses.Count == 0)
             {
                 var device = await _deviceRepository.GetByIdAsync(deviceId);
@@ -136,8 +151,6 @@ namespace HES.Core.Services
                 await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "HasNewLicense" });
             }
         }
-
-
 
         #endregion
     }

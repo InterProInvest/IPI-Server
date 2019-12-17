@@ -30,7 +30,8 @@
 <table id="licenseOrders" class="display table table-hover border rounded w-100">
     <thead>
         <tr>
-            <th>
+            <th class="d-none"></th>
+            <th data-priority="1">
                 @Html.DisplayNameFor(model => model.LicenseOrder[0].ContactEmail)
             </th>
             <th>
@@ -51,15 +52,16 @@
             <th>
                 @Html.DisplayNameFor(model => model.LicenseOrder[0].OrderStatus)
             </th>
-            <th></th>
+            <th class="table-col-menu" data-priority="2"></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.LicenseOrder)
         {
             <tr>
+                <td class="d-none"></td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.ContactEmail)
+                    @item.ContactEmail
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Note)
@@ -70,11 +72,11 @@
                 <td data-sort="@(item.ProlongExistingLicenses == true ? 0 : item.StartDate.Ticks)">
                     @if (!item.ProlongExistingLicenses)
                     {
-                        @Html.DisplayFor(modelItem => item.StartDate)
+                        @Html.DisplayFor(modelItem => item.StartDate.Date)
                     }
                 </td>
                 <td data-sort="@item.EndDate.Ticks">
-                    @Html.DisplayFor(modelItem => item.EndDate)
+                    @Html.DisplayFor(modelItem => item.EndDate.Date)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.CreatedAt)
@@ -88,18 +90,38 @@
                             <img src="~/svg/action/more.svg" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
-                                <img src="~/svg/action/details.svg" />
-                                Details
-                            </a>
-                            <a class="dropdown-item" asp-page="./Edit" asp-route-id="@item.Id">
-                                <img src="~/svg/action/edit.svg" />
-                                Edit
-                            </a>
-                            <a class="dropdown-item" asp-page="./Delete" asp-route-id="@item.Id">
-                                <img src="~/svg/action/delete.svg" />
-                                Delete
-                            </a>
+                            @if (item.OrderStatus == OrderStatus.New)
+                            {
+                                <form class="form-inline dropdown-item" method="post">
+                                    <input type="hidden" name="orderId" value="@item.Id" />
+                                    <button type="submit" class="nav-link btn btn-link text-dark p-0" style="text-decoration: none;" asp-page-handler="SendOrder">
+                                        <img src="~/svg/action/send.svg" />
+                                        Send
+                                    </button>
+                                </form>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
+                                    <img src="~/svg/action/details.svg" />
+                                    Details
+                                </a>
+                                @*
+                                    <a class="dropdown-item" asp-page="./Edit" asp-route-id="@item.Id">
+                                        <img src="~/svg/action/edit.svg" />
+                                        Edit
+                                    </a>
+                                *@
+                                <a class="dropdown-item" asp-page="./Delete" asp-route-id="@item.Id">
+                                    <img src="~/svg/action/delete.svg" />
+                                    Delete
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
+                                    <img src="~/svg/action/details.svg" />
+                                    Details
+                                </a>
+                            }
                         </div>
                     </div>
                 </td>
@@ -123,4 +145,3 @@
     </script>
     <partial name="_ValidationScriptsPartial" />
 }
-
