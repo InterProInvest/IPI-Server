@@ -330,16 +330,6 @@ namespace HES.Core.Hubs
             return info;
         }
 
-        public async Task<IList<DeviceLicense>> GetNewDeviceLicenses(string deviceId)
-        {
-            return await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
-        }
-
-        public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
-        {
-            await _licenseService.OnDeviceLicenseAppliedAsync(deviceId, licenseId);
-        }
-
         // Incoming request
         public async Task<HideezErrorInfo> FixDevice(string deviceId)
         {
@@ -355,7 +345,17 @@ namespace HES.Core.Hubs
                 return new HideezErrorInfo(ex);
             }
         }
+        
+        public async Task<IList<DeviceLicense>> GetNewDeviceLicenses(string deviceId)
+        {
+            return await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+        }
 
+        public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
+        {
+            await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+        }
+        
         #endregion
     }
 }

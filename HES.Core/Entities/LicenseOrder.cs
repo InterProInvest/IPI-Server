@@ -29,6 +29,7 @@ namespace HES.Core.Entities
         Processing,
         Waiting,
         Completed,
+        Closed,
         Cancelled
     }
 }

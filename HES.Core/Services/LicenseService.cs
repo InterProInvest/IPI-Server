@@ -99,13 +99,6 @@ namespace HES.Core.Services
             return await _deviceLicenseRepository.AddRangeAsync(deviceLicenses) as List<DeviceLicense>;
         }
 
-        public async Task<List<DeviceLicense>> GetDeviceLicensesAsync()
-        {
-            return await _deviceLicenseRepository
-                .Query()
-                .ToListAsync();
-        }
-
         public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
         {
             return await _deviceLicenseRepository
@@ -124,7 +117,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task OnDeviceLicenseAppliedAsync(string deviceId, string licenseId)
+        public async Task SetDeviceLicenseAppliedAsync(string deviceId, string licenseId)
         {
             var deviceLicense = await _deviceLicenseRepository
                 .Query()

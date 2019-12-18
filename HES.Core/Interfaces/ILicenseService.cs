@@ -14,9 +14,8 @@ namespace HES.Core.Interfaces
         Task DeleteOrderAsync(string id);
         Task SetStatusSent(LicenseOrder licenseOrder);
         Task<List<DeviceLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds);
-        Task<List<DeviceLicense>> GetDeviceLicensesAsync();
         Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId);
         Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId);
-        Task OnDeviceLicenseAppliedAsync(string deviceId, string licenseId);
+        Task SetDeviceLicenseAppliedAsync(string deviceId, string licenseId);
     }
 }
