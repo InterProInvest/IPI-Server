@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HES.Core.Services
+namespace HES.Core.HostedServices
 {
     public class RemoveLogsFilesHostedService : IHostedService, IDisposable
     {
@@ -21,10 +21,7 @@ namespace HES.Core.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Remove logs service is starting.");
-
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-
             return Task.CompletedTask;
         }
 
@@ -52,10 +49,7 @@ namespace HES.Core.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Remove logs service is stopping.");
-
             _timer?.Change(Timeout.Infinite, 0);
-
             return Task.CompletedTask;
         }
 
