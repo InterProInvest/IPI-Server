@@ -9,7 +9,7 @@ namespace HES.Core.Services
 {
     public class RemoveLogsFilesHostedService : IHostedService, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<RemoveLogsFilesHostedService> _logger;
         private readonly string _folderPath;
         private Timer _timer;
 
@@ -21,7 +21,7 @@ namespace HES.Core.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Remove logs service is starting.");
+            //_logger.LogInformation("Remove logs service is starting.");
 
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
 
@@ -52,7 +52,7 @@ namespace HES.Core.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Remove logs service is stopping.");
+            //_logger.LogInformation("Remove logs service is stopping.");
 
             _timer?.Change(Timeout.Infinite, 0);
 
