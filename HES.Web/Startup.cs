@@ -2,6 +2,7 @@ using HES.Core.Entities;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
+using HES.Core.HostedServices;
 using HES.Infrastructure;
 using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -113,6 +115,7 @@ namespace HES.Web
                      Configuration["EmailSender:Password"]));
 
             services.AddHostedService<RemoveLogsFilesHostedService>();
+            services.AddHostedService<LicenseOrderStatusHostedService>();
 
             // SignalR
             services.AddSignalR();
@@ -272,6 +275,8 @@ namespace HES.Web
 
             using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
+                var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
+                logger.LogInformation("Server started");
                 // Apply migration
                 var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
                 context.Database.Migrate();

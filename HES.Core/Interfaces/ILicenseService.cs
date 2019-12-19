@@ -10,9 +10,12 @@ namespace HES.Core.Interfaces
         IQueryable<LicenseOrder> LicenseOrderQuery();
         Task<List<LicenseOrder>> GetLicenseOrdersAsync();
         Task<LicenseOrder> GetLicenseOrderByIdAsync(string id);
+        Task<List<LicenseOrder>> GetOpenLicenseOrdersAsync();
         Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder);
         Task DeleteOrderAsync(string id);
-        Task SetStatusSent(LicenseOrder licenseOrder);
+        Task SendOrderAsync(string orderId);
+        Task<OrderStatus> GetLicenseOrderStatusAsync(string orderId);
+        Task ChangeOrderStatusAsync(LicenseOrder licenseOrder);
         Task<List<DeviceLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds);
         Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId);
         Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId);

@@ -27,9 +27,10 @@ namespace HES.Core.Entities
         New,
         Sent,
         Processing,
-        Waiting,
+        WaitingForPayment,
         Completed,
-        Closed,
-        Cancelled
+        Cancelled,
+        Error,
+        Undefined
     }
 }

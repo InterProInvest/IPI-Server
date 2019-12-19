@@ -1,15 +1,22 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Models.API.License;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
     public class LicenseService : ILicenseService
     {
+        private const string ApiBaseAddress = "http://192.168.10.249:8070/";
+        //private const string ApiBaseAddress = "https://localhost:44388/";
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
@@ -42,6 +49,16 @@ namespace HES.Core.Services
             return await _licenseOrderRepository.Query().ToListAsync();
         }
 
+        public async Task<List<LicenseOrder>> GetOpenLicenseOrdersAsync()
+        {
+            return await _licenseOrderRepository
+                .Query()
+                .Where(o => o.OrderStatus == OrderStatus.Sent ||
+                            o.OrderStatus == OrderStatus.Processing ||
+                            o.OrderStatus == OrderStatus.WaitingForPayment)
+                .ToListAsync();
+        }
+
         public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder)
         {
             if (licenseOrder == null)
@@ -68,9 +85,84 @@ namespace HES.Core.Services
             await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
 
-        public async Task SetStatusSent(LicenseOrder licenseOrder)
+        public async Task SendOrderAsync(string orderId)
         {
-            licenseOrder.OrderStatus = OrderStatus.Sent;
+            var order = await GetLicenseOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new Exception("Order not found");
+            }
+
+            var devices = await GetDeviceLicensesByOrderIdAsync(orderId);
+            if (devices == null)
+            {
+                throw new Exception("Device licenses not found");
+            }
+
+            var licenseOrderDto = new LicenseOrderDto()
+            {
+                Id = order.Id,
+                ContactEmail = order.ContactEmail,
+                CustomerNote = order.Note,
+                LicenseStartDate = order.StartDate,
+                LicenseEndDate = order.EndDate,
+                ProlongExistingLicenses = order.ProlongExistingLicenses,
+                CustomerId = "BBB26599-81B8-44D5-80C0-31CF830F1578",
+                Devices = devices.Select(d => d.DeviceId).ToList()
+            };
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(ApiBaseAddress);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                var stringContent = new StringContent(JsonConvert.SerializeObject(licenseOrderDto), Encoding.UTF8, "application/json");
+                var path = $"api/Licenses/CreateLicenseOrder";
+
+                HttpResponseMessage response = await client.PostAsync(path, stringContent);
+                if (response.IsSuccessStatusCode)
+                {
+                    order.OrderStatus = OrderStatus.Sent;
+                    await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
+                    return;
+                }
+
+                var ex = await response.Content.ReadAsStringAsync();
+                throw new Exception(ex);
+            }
+        }
+
+        public async Task<OrderStatus> GetLicenseOrderStatusAsync(string orderId)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(ApiBaseAddress);
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var path = $"api/Licenses/GetLicenseOrderStatus/{orderId}";
+                    HttpResponseMessage response = await client.GetAsync(path);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<OrderStatus>(data);
+                    }
+
+                    return OrderStatus.Error;
+                }
+            }
+            catch (Exception)
+            {
+                return OrderStatus.Undefined;
+            }
+        }
+
+        public async Task ChangeOrderStatusAsync(LicenseOrder licenseOrder)
+        {
             await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
         }
 

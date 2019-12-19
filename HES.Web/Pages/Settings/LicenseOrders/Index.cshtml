@@ -7,6 +7,9 @@
     ViewData["SettingsPage"] = SettingsNavPages.LicenseOrders;
 }
 
+<partial name="_SuccessMessage" for="SuccessMessage" />
+<partial name="_ErrorMessage" for="ErrorMessage" />
+
 <div class="row align-items-center mr-0">
     <div class="col-auto">
         <h1 class="text-navyblue">License Orders</h1>
@@ -94,7 +97,7 @@
                             {
                                 <form class="form-inline dropdown-item" method="post">
                                     <input type="hidden" name="orderId" value="@item.Id" />
-                                    <button type="submit" class="nav-link btn btn-link text-dark p-0" style="text-decoration: none;" asp-page-handler="SendOrder">
+                                    <button type="submit" class="nav-link btn btn-link text-dark p-0 w-100 text-left text-decoration-none" asp-page-handler="SendOrder">
                                         <img src="~/svg/action/send.svg" />
                                         Send
                                     </button>
