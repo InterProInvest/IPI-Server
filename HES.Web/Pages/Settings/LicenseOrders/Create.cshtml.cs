@@ -54,6 +54,12 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         public async Task<IActionResult> OnPostCreateNewLicenseAsync(LicenseOrder licenseOrder, List<string> nonLicensedDevicesIds)
         {
+            if (nonLicensedDevicesIds.Count == 0)
+            {
+                ErrorMessage = "No devices selected, select devices.";
+                return RedirectToPage("./Create");
+            }
+
             if (!ModelState.IsValid)
             {
                 ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
@@ -77,6 +83,12 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         public async Task<IActionResult> OnPostCreateRenewLicenseAsync(LicenseOrder licenseOrder, List<string> licensedDevicesIds)
         {
+            if (licensedDevicesIds.Count == 0)
+            {
+                ErrorMessage = "No devices selected, select devices.";
+                return RedirectToPage("./Create");
+            }
+
             if (!ModelState.IsValid)
             {
                 ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
@@ -96,6 +108,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             }
 
             return RedirectToPage("./Index");
-        }       
+        }
     }
 }
