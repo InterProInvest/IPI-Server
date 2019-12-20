@@ -56,6 +56,7 @@ namespace HES.Core.Services
                 .Where(o => o.OrderStatus == OrderStatus.Sent ||
                             o.OrderStatus == OrderStatus.Processing ||
                             o.OrderStatus == OrderStatus.WaitingForPayment)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -93,8 +94,8 @@ namespace HES.Core.Services
                 throw new Exception("Order not found");
             }
 
-            var devices = await GetDeviceLicensesByOrderIdAsync(orderId);
-            if (devices == null)
+            var deviceLicenses = await GetDeviceLicensesByOrderIdAsync(orderId);
+            if (deviceLicenses == null)
             {
                 throw new Exception("Device licenses not found");
             }
@@ -108,7 +109,7 @@ namespace HES.Core.Services
                 LicenseEndDate = order.EndDate,
                 ProlongExistingLicenses = order.ProlongExistingLicenses,
                 CustomerId = "BBB26599-81B8-44D5-80C0-31CF830F1578",
-                Devices = devices.Select(d => d.DeviceId).ToList()
+                Devices = deviceLicenses.Select(d => d.DeviceId).ToList()
             };
 
             using (HttpClient client = new HttpClient())
@@ -161,8 +162,9 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ChangeOrderStatusAsync(LicenseOrder licenseOrder)
+        public async Task ChangeOrderStatusAsync(LicenseOrder licenseOrder, OrderStatus orderStatus)
         {
+            licenseOrder.OrderStatus = orderStatus;
             await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
         }
 
@@ -191,12 +193,64 @@ namespace HES.Core.Services
             return await _deviceLicenseRepository.AddRangeAsync(deviceLicenses) as List<DeviceLicense>;
         }
 
+        public async Task UpdateNewDeviceLicensesAsync(string orderId)
+        {
+            if (orderId == null)
+            {
+                throw new ArgumentNullException(nameof(orderId));
+            }
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(ApiBaseAddress);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var path = $"/api/Licenses/GetDeviceLicenses/{orderId}";
+                HttpResponseMessage response = await client.GetAsync(path);
+                response.EnsureSuccessStatusCode();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = await response.Content.ReadAsStringAsync();
+
+                    var newLicenses = JsonConvert.DeserializeObject<List<DeviceLicense>>(data);
+                    var currentLicenses = await GetDeviceLicensesByOrderIdAsync(orderId);
+
+                    var newLicensesDevicesIds = newLicenses.Select(d => d.DeviceId).ToList();
+                    var currentLicensesDevicesIds = currentLicenses.Select(d => d.DeviceId).ToList();
+
+                    var result = currentLicensesDevicesIds.SequenceEqual(newLicensesDevicesIds);
+                    if (!result)
+                    {
+                        throw new Exception($"Current licenses not equal new licenses. Order id:{orderId}");
+                    }
+
+                    var devices = await _deviceRepository.Query().Where(x => newLicensesDevicesIds.Contains(x.Id)).ToListAsync();
+
+                    foreach (var currentLicense in currentLicenses)
+                    {
+                        var newLicense = newLicenses.FirstOrDefault(d => d.DeviceId == currentLicense.DeviceId);
+                        currentLicense.ImportedAt = DateTime.UtcNow;
+                        currentLicense.EndDate = newLicense.EndDate;
+                        currentLicense.Data = newLicense.Data;
+                        var index = devices.FindIndex(d => d.Id == currentLicense.DeviceId);
+                        devices[index].HasNewLicense = true;
+                        devices[index].LicenseEndDate = currentLicense.EndDate;
+                        devices[index].LicenseStatus = LicenseStatus.Valid;
+                    }
+
+                    await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
+                    await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate", "LicenseStatus" });
+                }
+            }
+        }
+
         public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
         {
             return await _deviceLicenseRepository
                 .Query()
                 .Where(d => d.AppliedAt == null && d.DeviceId == deviceId)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -205,7 +259,6 @@ namespace HES.Core.Services
             return await _deviceLicenseRepository
                 .Query()
                 .Where(d => d.AppliedAt == null && d.LicenseOrderId == orderId)
-                .AsNoTracking()
                 .ToListAsync();
         }
 

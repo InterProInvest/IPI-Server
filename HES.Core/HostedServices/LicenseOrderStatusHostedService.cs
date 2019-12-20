@@ -42,10 +42,25 @@ namespace HES.Core.HostedServices
                 {
                     var status = await _licenseService.GetLicenseOrderStatusAsync(order.Id);
 
-                    if (order.OrderStatus != status && status != OrderStatus.Undefined)
+                    // Transport error
+                    if (status == OrderStatus.Undefined)
                     {
-                        order.OrderStatus = status;
-                        await _licenseService.ChangeOrderStatusAsync(order);
+                        continue;
+                    }
+
+                    if (status == order.OrderStatus)
+                    {
+                        continue;
+                    }
+
+                    if (status == OrderStatus.Completed)
+                    {
+                        await _licenseService.UpdateNewDeviceLicensesAsync(order.Id);
+                        await _licenseService.ChangeOrderStatusAsync(order, status);
+                    }
+                    else
+                    {
+                        await _licenseService.ChangeOrderStatusAsync(order, status);
                     }
                 }
             }
