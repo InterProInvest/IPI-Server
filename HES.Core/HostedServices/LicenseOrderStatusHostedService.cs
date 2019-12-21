@@ -42,12 +42,13 @@ namespace HES.Core.HostedServices
                 {
                     var status = await _licenseService.GetLicenseOrderStatusAsync(order.Id);
 
-                    // Transport error
+                    // Http transport error
                     if (status == OrderStatus.Undefined)
                     {
                         continue;
                     }
 
+                    // Status has not changed
                     if (status == order.OrderStatus)
                     {
                         continue;
@@ -56,12 +57,10 @@ namespace HES.Core.HostedServices
                     if (status == OrderStatus.Completed)
                     {
                         await _licenseService.UpdateNewDeviceLicensesAsync(order.Id);
-                        await _licenseService.ChangeOrderStatusAsync(order, status);
                     }
-                    else
-                    {
-                        await _licenseService.ChangeOrderStatusAsync(order, status);
-                    }
+
+                    await _licenseService.ChangeOrderStatusAsync(order, status);
+                    // TODO send email with status
                 }
             }
             catch (Exception ex)
