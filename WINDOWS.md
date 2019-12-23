@@ -13,42 +13,21 @@ Download and install Git: https://git-scm.com/download/win
 Download and install .NET Core SDK 2.2: https://dotnet.microsoft.com/download/dotnet-core/2.2
 
 Download and install MySQL: https://dev.mysql.com/downloads/installer/   
-- [MySQL Installer Initial Setup](https://dev.mysql.com/doc/refman/8.0/en/mysql-installer.html)
+- [MySQL Installer initial setup](https://dev.mysql.com/doc/refman/8.0/en/mysql-installer.html)
 
 ## Getting Started (fresh install)
 
-### 1. Creating MySQL User and Database for the HES
-
-Configuring MySQL Server
-  
-```shell
-  mysql -h localhost -u root -p
-```
-
-```sql
-  ### CREATE DATABASE
-  mysql> CREATE DATABASE <your_db>
-
-  ### CREATE USER ACCOUNT
-  mysql> CREATE USER '<your_user>'@'127.0.0.1' IDENTIFIED BY '<your_secret>'
-
-  ### GRANT PERMISSIONS ON DATABASE
-  mysql> GRANT ALL ON <your_db>.* TO '<your_user>'@'127.0.0.1'
-
-  ###  RELOAD PRIVILEGES
-  mysql> FLUSH PRIVILEGES
-```
-
-### 2. Cloning the HES GitHub repository
+### 1. Cloning the HES GitHub repository
 
 ```shell
+  > cd C:\
   > md Hideez
   > cd Hideez
   > git clone https://github.com/HideezGroup/HES src
   > cd src\HES.Web
 ```
 
-### 3. Building the HES from the sources
+### 2. Building the HES from the sources
 
 ```shell
   > md ..\..\HES
@@ -56,25 +35,29 @@ Configuring MySQL Server
 ```
   * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Configuring HES
+### 3. Configuring HES
 
 ```shell
   > cd..\..\HES
-  > appsettings.json
+  > notepad appsettings.json
 ```
 
 ```json
   {
   "ConnectionStrings": {
-    "DefaultConnection": "server=127.0.0.1;port=3306;database=<your_db>;uid=<your_user>;pwd=<your_secret>"
+    "DefaultConnection": "server=<mysql_server>;port=<mysql_port>;database=<your_db>;uid=<your_user>;pwd=<your_secret>"
   },
 
   "EmailSender": {
-    "Host": "smtp.example.com",
-    "Port": 123,
+    "Host": "<email_host>",
+    "Port": "<email_port>",
     "EnableSSL": true,
-    "UserName": "user@example.com",
-    "Password": "password"
+    "UserName": "<your_email_name>",
+    "Password": "<your_email_password>"
+  },
+  
+  "DataProtection": {
+    "Password": "<protection_password>"
   },
 
   "Logging": {
@@ -87,9 +70,20 @@ Configuring MySQL Server
   "AllowedHosts": "*"
 ```
 
-### 5. Configuring IIS
+* **<mysql_server>** - MySQL server ip address (example `127.0.0.1`)
+* **<mysql_port>** - MySQL server port (example `3306`)
+* **<your_db>** - The name of your database on the MySQL server (example `hes`)
+* **<your_user>** - MySQL database username (example `admin`)
+* **<your_secret>** - Password from database user on MySQL server (example `password`)
+* **<email_host>** - Host your email server (example `smtp.example.com`)
+* **<email_port>** - Port your email server (example `123`)
+* **<your_email_name>** - Your email name (example `user@example.com`)
+* **<your_email_password>** - Your email name (example `password`)
+* **<protection_password>** - Your password for database encryption (example `password`)
 
-If the web server is not enabled then use the [official guide](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-2.2#iis-configuration)
+### 4. Configuring IIS
+
+#### If the web server is not enabled then use the [official guide](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-2.2#iis-configuration)
  
 Create a Self-Signed Certificate for IIS
 
@@ -121,7 +115,7 @@ Add the Web Site
 ### 1. Updating the sources from the GitHub repository
 
 ```shell
-  > cd Hideez\src
+  > cd C:\Hideez\src
   > git pull
 ```
 
@@ -130,7 +124,7 @@ Add the Web Site
 ```shell
   > cd %windir%\system32\inetsrv
   > appcmd stop site /site.name:<site_name>
-  > cd Hideez 
+  > cd C:\Hideez 
   > rename HES HES.old
 ```
 
@@ -143,15 +137,7 @@ Add the Web Site
 ```
   * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 4. Backuping MySQL Database (optional)
-
-```shell
-  > md bkp
-  > cd bkp
-  > mysqldump -u <your_user> -p <your_db> > <your_db_bkp>.sql
-  Enter password: ********
-```
-### 5. Restoring the configuration file
+### 4. Restoring the configuration file
 
 ```shell
   > cd ..\..\
@@ -159,6 +145,15 @@ Add the Web Site
   > Overwrite HES\appsettings.json? (Yes/No/All): y 
   > rmdir /s HES.old
   > HES.old, Are you sure (Y/N)? y
+```
+
+### 5. Backuping MySQL Database (optional)
+
+```shell
+  > md bkp
+  > cd C:\Program Files\MySQL\MySQL Server 8.0\bin
+  > mysqldump -u <your_user> -p <your_db> > C:\Hideez\<your_db_bkp>.sql
+  Enter password: ********
 ```
 
 ### 6. Starting the HES
