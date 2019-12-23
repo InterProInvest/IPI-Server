@@ -255,6 +255,7 @@ namespace HES.Core.Services
             device.EmployeeId = null;
             device.PrimaryAccountId = null;
             device.MasterPassword = null;
+            device.AcceessProfileId = "default";
             device.LastSynced = DateTime.UtcNow;
 
             var properties = new List<string>()
@@ -262,6 +263,7 @@ namespace HES.Core.Services
                 "EmployeeId",
                 "PrimaryAccountId",
                 "MasterPassword",
+                "AcceessProfileId",
                 "LastSynced"
             };
 
@@ -381,7 +383,7 @@ namespace HES.Core.Services
                     device.AcceessProfileId = profileId;
                     await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
 
-                    if (device.EmployeeId != null)
+                    if (device.MasterPassword != null)
                     {
                         // Delete all previous tasks for update profile
                         await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
