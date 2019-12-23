@@ -146,7 +146,7 @@ namespace HES.Core.Services
                     {
                         await _employeeService.HandlingMasterPasswordErrorAsync(deviceId);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         _logger.LogCritical($"[{deviceId}] {ex.Message}");
                     }
@@ -209,8 +209,14 @@ namespace HES.Core.Services
                 if (remoteDevice.AccessLevel.IsLinkRequired)
                 {
                     // we have tried to link the device with no success. Just in case clearing all device's tasks and linkings
-                    await _employeeService.HandlingMasterPasswordErrorAsync(deviceId);
-                    throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
+                    //await _employeeService.HandlingMasterPasswordErrorAsync(deviceId);
+                    //throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
+                    var remoteDeviceInfo = new List<string>();
+                    foreach (System.Reflection.PropertyInfo propertyInfo in remoteDevice.AccessLevel.GetType().GetProperties())
+                    {
+                        remoteDeviceInfo.Add($"propertyName: {propertyInfo.Name} - propertyValue: {propertyInfo.GetValue(propertyInfo.Name)}");
+                    }
+                    throw new Exception($"Can't link the device {device.Id}, remoteDevice.AccessLevel: { string.Join("; ", remoteDeviceInfo.ToArray()) }");
                 }
             }
 
@@ -223,17 +229,14 @@ namespace HES.Core.Services
                 MasterKey_Bond = device.DeviceAccessProfile.MasterKeyBonding,
                 MasterKey_Connect = device.DeviceAccessProfile.MasterKeyConnection,
                 MasterKey_Channel = device.DeviceAccessProfile.MasterKeyNewChannel,
-                //MasterKey_Link = device.DeviceAccessProfile.MasterKeyConnection,
 
                 Button_Bond = device.DeviceAccessProfile.ButtonBonding,
                 Button_Connect = device.DeviceAccessProfile.ButtonConnection,
                 Button_Channel = device.DeviceAccessProfile.ButtonNewChannel,
-                //Button_Link = device.DeviceAccessProfile.ButtonConnection,
 
                 Pin_Bond = device.DeviceAccessProfile.PinBonding,
                 Pin_Connect = device.DeviceAccessProfile.PinConnection,
                 Pin_Channel = device.DeviceAccessProfile.PinNewChannel,
-                //Pin_Link = device.DeviceAccessProfile.PinConnection,
 
                 PinMinLength = device.DeviceAccessProfile.PinLength,
                 PinMaxTries = device.DeviceAccessProfile.PinTryCount,
