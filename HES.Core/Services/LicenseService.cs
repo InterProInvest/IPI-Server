@@ -15,8 +15,8 @@ namespace HES.Core.Services
 {
     public class LicenseService : ILicenseService
     {
-        private const string ApiBaseAddress = "http://192.168.10.249:8070/";
         //private const string ApiBaseAddress = "https://localhost:44388/";
+        private const string ApiBaseAddress = "http://192.168.10.249:8070/";
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
@@ -212,32 +212,26 @@ namespace HES.Core.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Deserialize new licenses
                     var data = await response.Content.ReadAsStringAsync();
-
                     var newLicenses = JsonConvert.DeserializeObject<List<DeviceLicense>>(data);
+                    // Get current licenses to update
                     var currentLicenses = await GetDeviceLicensesByOrderIdAsync(orderId);
-
-                    var newLicensesDevicesIds = newLicenses.Select(d => d.DeviceId).ToList();
-                    var currentLicensesDevicesIds = currentLicenses.Select(d => d.DeviceId).ToList();
-
-                    var result = currentLicensesDevicesIds.SequenceEqual(newLicensesDevicesIds);
-                    if (!result)
+                    // Get devices to update
+                    var devicesIds = newLicenses.Select(d => d.DeviceId).ToList();
+                    var devices = await _deviceRepository.Query().Where(x => devicesIds.Contains(x.Id)).ToListAsync();
+                    
+                    foreach (var newLicense in newLicenses)
                     {
-                        throw new Exception($"Current licenses not equal new licenses. Order id:{orderId}");
-                    }
-
-                    var devices = await _deviceRepository.Query().Where(x => newLicensesDevicesIds.Contains(x.Id)).ToListAsync();
-
-                    foreach (var currentLicense in currentLicenses)
-                    {
-                        var newLicense = newLicenses.FirstOrDefault(d => d.DeviceId == currentLicense.DeviceId);
+                        var currentLicense = currentLicenses.FirstOrDefault(c => c.DeviceId == newLicense.DeviceId);
                         currentLicense.ImportedAt = DateTime.UtcNow;
                         currentLicense.EndDate = newLicense.EndDate;
                         currentLicense.Data = newLicense.Data;
-                        var index = devices.FindIndex(d => d.Id == currentLicense.DeviceId);
-                        devices[index].HasNewLicense = true;
-                        devices[index].LicenseEndDate = currentLicense.EndDate;
-                        devices[index].LicenseStatus = LicenseStatus.Valid;
+
+                        var device = devices.FirstOrDefault(d => d.Id == newLicense.DeviceId);
+                        device.HasNewLicense = true;
+                        device.LicenseEndDate = currentLicense.EndDate;
+                        device.LicenseStatus = LicenseStatus.Valid;
                     }
 
                     await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
