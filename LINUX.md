@@ -119,15 +119,19 @@
 ```json
   {
   "ConnectionStrings": {
-    "DefaultConnection": "server=127.0.0.1;port=3306;database=<your_db>;uid=<your_user>;pwd=<your_secret>"
+    "DefaultConnection": "server=<mysql_server>;port=<mysql_port>;database=<your_db>;uid=<your_user>;pwd=<your_secret>"
   },
 
   "EmailSender": {
-    "Host": "smtp.example.com",
-    "Port": 123,
+    "Host": "<email_host>",
+    "Port": "<email_port>",
     "EnableSSL": true,
-    "UserName": "user@example.com",
-    "Password": "password"
+    "UserName": "<your_email_name>",
+    "Password": "<your_email_password>"
+  },
+  
+  "DataProtection": {
+    "Password": "<protection_password>"
   },
 
   "Logging": {
@@ -139,6 +143,17 @@
 
   "AllowedHosts": "*"
 ```
+
+* **<mysql_server>** - MySQL server ip address (example `127.0.0.1`)
+* **<mysql_port>** - MySQL server port (example `3306`)
+* **<your_db>** - The name of your database on the MySQL server (example `hes`)
+* **<your_user>** - MySQL database username (example `admin`)
+* **<your_secret>** - Password from database user on MySQL server (example `password`)
+* **<email_host>** - Host your email server (example `smtp.example.com`)
+* **<email_port>** - Port your email server (example `123`)
+* **<your_email_name>** - Your email name (example `user@example.com`)
+* **<your_email_password>** - Your email name (example `password`)
+* **<protection_password>** - Your password for database encryption (example `password`)
 
 ### 6. Daemonizing Hideez Enterprise Server
 
