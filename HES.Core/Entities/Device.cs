@@ -1,4 +1,5 @@
-﻿using HES.Core.Services;
+﻿using HES.Core.Enums;
+using HES.Core.Services;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -26,20 +27,12 @@ namespace HES.Core.Entities
 
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
+
         [Display(Name = "Access Profile")]
         [ForeignKey("AcceessProfileId")]
         public DeviceAccessProfile DeviceAccessProfile { get; set; }
 
         [NotMapped]
         public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);
-    }
-
-    public enum DeviceState
-    {
-        OK,
-        Locked,
-        PendingUnlock,
-        Disabled,
-        Error
     }
 }

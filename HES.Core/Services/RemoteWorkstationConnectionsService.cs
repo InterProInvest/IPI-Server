@@ -178,6 +178,11 @@ namespace HES.Core.Services
             if (device == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
 
+            if (device.EmployeeId == null)
+            {
+                throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
+            }
+
             // Getting device info
             await remoteDevice.Initialize();
 
@@ -208,15 +213,7 @@ namespace HES.Core.Services
 
                 if (remoteDevice.AccessLevel.IsLinkRequired)
                 {
-                    // we have tried to link the device with no success. Just in case clearing all device's tasks and linkings
-                    //await _employeeService.HandlingMasterPasswordErrorAsync(deviceId);
-                    //throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
-                    var remoteDeviceInfo = new List<string>();
-                    foreach (System.Reflection.PropertyInfo propertyInfo in remoteDevice.AccessLevel.GetType().GetProperties())
-                    {
-                        remoteDeviceInfo.Add($"propertyName: {propertyInfo.Name} - propertyValue: {propertyInfo.GetValue(propertyInfo.Name)}");
-                    }
-                    throw new Exception($"Can't link the device {device.Id}, remoteDevice.AccessLevel: { string.Join("; ", remoteDeviceInfo.ToArray()) }");
+                    throw new Exception($"Can't link the device {device.Id}");
                 }
             }
 
