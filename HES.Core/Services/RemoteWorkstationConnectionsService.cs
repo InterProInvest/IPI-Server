@@ -177,14 +177,14 @@ namespace HES.Core.Services
 
             if (device == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
+            
+            // Getting device info
+            await remoteDevice.Initialize();
 
-            if (device.EmployeeId == null)
+            if (device.EmployeeId == null && remoteDevice.AccessLevel.IsLinkRequired)
             {
                 throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
             }
-
-            // Getting device info
-            await remoteDevice.Initialize();
 
             // unlocking the device 
             if (remoteDevice.AccessLevel.IsLocked)
