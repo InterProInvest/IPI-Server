@@ -23,6 +23,7 @@ namespace HES.Web.Pages.Employees
         private readonly IOrgStructureService _orgStructureService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ISharedAccountService _sharedAccountService;
+        private readonly IDataProtectionService _dataProtectionService;
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Employee> Employees { get; set; }
@@ -48,6 +49,7 @@ namespace HES.Web.Pages.Employees
                           IOrgStructureService orgStructureService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ISharedAccountService sharedAccountService,
+                          IDataProtectionService dataProtectionService,
                           ILogger<IndexModel> logger)
         {
             _employeeService = employeeService;
@@ -56,6 +58,7 @@ namespace HES.Web.Pages.Employees
             _orgStructureService = orgStructureService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _sharedAccountService = sharedAccountService;
+            _dataProtectionService = dataProtectionService;
             _logger = logger;
         }
 
@@ -174,8 +177,8 @@ namespace HES.Web.Pages.Employees
                 AccountType = accountType,
                 Login = sharedLogin,
                 Domain = sharedType,
-                Password = shared.Password,
-                ConfirmPassword = shared.Password
+                Password = _dataProtectionService.Decrypt(shared.Password),
+                ConfirmPassword = _dataProtectionService.Decrypt(shared.Password)
             };
             return new JsonResult(personal);
         }
