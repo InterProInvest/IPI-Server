@@ -370,7 +370,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(profileId));
             }
 
-            var state = await _deviceRepository.Query().Where(x => devicesId.Contains(x.Id)).Select(d => d.State != DeviceState.OK).AnyAsync();
+            var state = await _deviceRepository.Query().Where(x => devicesId.Contains(x.Id) && x.State != DeviceState.OK).AnyAsync();
             if (state)
             {
                 throw new Exception("You have chosen a device with a status that does not allow changing the profile.");
