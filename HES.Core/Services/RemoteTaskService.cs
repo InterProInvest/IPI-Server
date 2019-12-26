@@ -96,7 +96,7 @@ namespace HES.Core.Services
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { "MasterPassword" });
                     break;
                 case TaskOperation.UnlockPin:
-                    device.State = Entities.DeviceState.OK;
+                    device.State = Enums.DeviceState.OK;
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State" });
                     break;
                 case TaskOperation.Link:

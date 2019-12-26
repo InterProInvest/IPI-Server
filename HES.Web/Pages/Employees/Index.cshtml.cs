@@ -23,6 +23,7 @@ namespace HES.Web.Pages.Employees
         private readonly IOrgStructureService _orgStructureService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ISharedAccountService _sharedAccountService;
+        private readonly IDataProtectionService _dataProtectionService;
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Employee> Employees { get; set; }
@@ -48,6 +49,7 @@ namespace HES.Web.Pages.Employees
                           IOrgStructureService orgStructureService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ISharedAccountService sharedAccountService,
+                          IDataProtectionService dataProtectionService,
                           ILogger<IndexModel> logger)
         {
             _employeeService = employeeService;
@@ -56,6 +58,7 @@ namespace HES.Web.Pages.Employees
             _orgStructureService = orgStructureService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _sharedAccountService = sharedAccountService;
+            _dataProtectionService = dataProtectionService;
             _logger = logger;
         }
 
@@ -83,7 +86,7 @@ namespace HES.Web.Pages.Employees
         {
             ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["DeviceId"] = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).ToListAsync(), "Id", "Id");
+            ViewData["DeviceId"] = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null && d.State == Core.Enums.DeviceState.OK).ToListAsync(), "Id", "Id");
             ViewData["WorkstationId"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
             ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["WorkstationAccounts"] = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
@@ -174,8 +177,8 @@ namespace HES.Web.Pages.Employees
                 AccountType = accountType,
                 Login = sharedLogin,
                 Domain = sharedType,
-                Password = shared.Password,
-                ConfirmPassword = shared.Password
+                Password = _dataProtectionService.Decrypt(shared.Password),
+                ConfirmPassword = _dataProtectionService.Decrypt(shared.Password)
             };
             return new JsonResult(personal);
         }

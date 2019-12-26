@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using HES.Core.Utilities;
+using HES.Core.Enums;
 
 namespace HES.Web.Pages.Employees
 {
@@ -288,7 +289,7 @@ namespace HES.Web.Pages.Employees
 
             Devices = await _deviceService
                 .DeviceQuery()
-                .Where(d => d.EmployeeId == null)
+                .Where(d => d.EmployeeId == null && d.State == DeviceState.OK)
                 .ToListAsync();
 
             return Partial("_AddDevice", this);
