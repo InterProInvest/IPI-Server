@@ -122,31 +122,7 @@
                     @Html.DisplayFor(modelItem => item.DeviceAccessProfile.Name)
                 </td>
                 <td>
-                    @switch (item.State)
-                    {
-                        case Core.Entities.DeviceState.OK:
-                            @if (item.IsOnline)
-                            {
-                                <span class="badge badge-success" title="Device is connected">Connected</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-light">@Html.DisplayFor(modelItem => item.State)</span>
-                            }
-                            break;
-                        case Core.Entities.DeviceState.Locked:
-                            <span class="badge badge-danger">@Html.DisplayFor(modelItem => item.State)</span>
-                            break;
-                        case Core.Entities.DeviceState.PendingUnlock:
-                            <span class="badge badge-warning">@Html.DisplayFor(modelItem => item.State)</span>
-                            break;
-                        case Core.Entities.DeviceState.Disabled:
-                            <span class="badge badge-dark">@Html.DisplayFor(modelItem => item.State)</span>
-                            break;
-                        case Core.Entities.DeviceState.Error:
-                            <span class="badge badge-danger">@Html.DisplayFor(modelItem => item.State)</span>
-                            break;
-                    }
+                    <span class="@(item.IsOnline == true ? "state-connected" : "")">@Html.DisplayFor(modelItem => item.State)</span>
                 </td>
                 <td>
                     @if (item.LastSynced != null)
@@ -174,7 +150,7 @@
                                 <img src="~/svg/action/edit.svg" />
                                 Edit RFID
                             </a>
-                            @if (item.State == Core.Entities.DeviceState.Locked)
+                            @if (item.State == Core.Enums.DeviceState.Locked)
                             {
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UnlockPin" data-title="Unlock PIN">

@@ -123,23 +123,27 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("AcceessProfileId");
+                    b.Property<string>("AcceessProfileId")
+                        .IsRequired();
 
                     b.Property<int>("Battery");
 
                     b.Property<string>("EmployeeId");
 
-                    b.Property<string>("Firmware");
+                    b.Property<string>("Firmware")
+                        .IsRequired();
 
                     b.Property<DateTime>("ImportedAt");
 
                     b.Property<DateTime?>("LastSynced");
 
-                    b.Property<string>("MAC");
+                    b.Property<string>("MAC")
+                        .IsRequired();
 
                     b.Property<string>("MasterPassword");
 
-                    b.Property<string>("Model");
+                    b.Property<string>("Model")
+                        .IsRequired();
 
                     b.Property<string>("PrimaryAccountId");
 
@@ -645,7 +649,8 @@ namespace HES.Infrastructure.Migrations
                 {
                     b.HasOne("HES.Core.Entities.DeviceAccessProfile", "DeviceAccessProfile")
                         .WithMany("Devices")
-                        .HasForeignKey("AcceessProfileId");
+                        .HasForeignKey("AcceessProfileId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("HES.Core.Entities.Employee", "Employee")
                         .WithMany("Devices")

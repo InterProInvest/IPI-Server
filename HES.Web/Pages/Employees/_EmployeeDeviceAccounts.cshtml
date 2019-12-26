@@ -17,7 +17,7 @@
                     <img src="~/svg/action/undo.svg" />
                 </button>
             </div>
-            <div class="col-auto px-1">
+            @*<div class="col-auto px-1">
                 <button id="show_popover_@device.Id" class="btn popover-btn p-0">
                     <img src="~/svg/action/info.svg" />
                 </button>
@@ -71,23 +71,23 @@
                         <div class="col">
                             @switch (device.State)
                             {
-                                case Core.Entities.DeviceState.OK:
+                                case Core.Enums.DeviceState.OK:
                                     @if (device.IsOnline)
                                     {
                                         <span class="badge badge-success">Connected</span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-light">@Html.DisplayFor(model => device.State)</span>
+                                        <span class="state-connected">@Html.DisplayFor(model => device.State)</span>
                                     }
                                     break;
-                                case Core.Entities.DeviceState.Locked:
+                                case Core.Enums.DeviceState.Locked:
                                     <span class="badge badge-danger">@Html.DisplayFor(model => device.State)</span>
                                     break;
-                                case Core.Entities.DeviceState.PendingUnlock:
+                                case Core.Enums.DeviceState.PendingUnlock:
                                     <span class="badge badge-warning">@Html.DisplayFor(model => device.State)</span>
                                     break;
-                                case Core.Entities.DeviceState.Disabled:
+                                case Core.Enums.DeviceState.Disabled:
                                     <span class="badge badge-dark">@Html.DisplayFor(model => device.State)</span>
                                     break;
                             }
@@ -103,7 +103,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>*@
         </div>
     </div>
 
