@@ -89,12 +89,12 @@ namespace HES.Core.Services
 
         public void Validate()
         {
-            if (!protectionEnabled)
-            {
-                throw new Exception("Data protection not enabled.");
-            }
+            //if (!protectionEnabled)
+            //{
+            //    throw new Exception("Data protection not enabled.");
+            //}
 
-            if (!protectionActivated)
+            if (protectionEnabled && !protectionActivated)
             {
                 throw new Exception("Data protection not activated.");
             }
@@ -262,6 +262,9 @@ namespace HES.Core.Services
             if (plainText == null)
                 return null;
 
+            if (!protectionEnabled)
+                return plainText;
+
             Validate();
 
             var enc = EncryptStringToBytes(plainText, key, iv);
@@ -272,6 +275,9 @@ namespace HES.Core.Services
         {
             if (cipherText == null)
                 return null;
+
+            if (!protectionEnabled)
+                return cipherText;
 
             Validate();
 
@@ -414,7 +420,7 @@ namespace HES.Core.Services
             {
                 throw new Exception("Decryption error, data was protected with another key.");
             }
-            
+
             // Update devices
             await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
             // Update tasks
