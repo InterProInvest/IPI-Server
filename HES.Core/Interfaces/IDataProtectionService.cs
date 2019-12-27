@@ -9,6 +9,7 @@ namespace HES.Core.Interfaces
         ProtectionStatus Status();       
         void Validate();
         Task EnableProtectionAsync(string secret);
+        Task DisableProtectionAsync(string secret);
         Task<bool> ActivateProtectionAsync(string secret);
         Task ChangeProtectionSecretAsync(string oldSecret, string newSecret);
         string Encrypt(string plainText);
