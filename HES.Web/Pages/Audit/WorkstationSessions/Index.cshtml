@@ -156,7 +156,7 @@
         function ShowEndDate() {
             $('#endDate').datepicker().data('datepicker').show();
         }
-        
+
         $(document).on('submit', '#filterForm', function (e) {
             e.preventDefault();
             $('#loading').html("<div class='spinner-border text-primary' role='status'></div>");
@@ -205,6 +205,12 @@
 
         // Dropdown Device Accounts
         function GetDeviceAccounts(id) {
+            if (id == '') {
+                var subList = $("#deviceAccountId");
+                subList.empty();
+                subList.attr("disabled", true);
+                return;
+            }
             $.getJSON('/Audit/WorkstationEvents?handler=JsonDeviceAccounts', { id: id },
                 function (data) {
                     var dep = "<option selected=''></option>";

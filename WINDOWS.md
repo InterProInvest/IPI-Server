@@ -2,11 +2,13 @@
 
 ## Requirements
 
-  * Git
+  * Git.
   * .NET Core (.NET Core SDK version 2.2).
   * MySQL Server (version 8.0+).
 
 ## System Preparation
+
+#### If the web server is not enabled then use the [official guide](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-2.2#iis-configuration) to enable IIS.
 
 Download and install [Git](https://git-scm.com/download/win)
 
@@ -84,8 +86,6 @@ Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
 * **<protection_password>** - Your password for database encryption (example `password`)
 
 ### 4. Configuring IIS
-
-#### If the web server is not enabled then use the [official guide](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-2.2#iis-configuration)
  
 Create a Self-Signed Certificate for IIS
 

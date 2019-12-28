@@ -219,6 +219,12 @@
 
         // Dropdown Device Accounts
         function GetDeviceAccounts(id) {
+            if (id == '') {
+                var subList = $("#deviceAccountId");
+                subList.empty();
+                subList.attr("disabled", true);
+                return;
+            }
             $.getJSON('/Audit/WorkstationEvents?handler=JsonDeviceAccounts', { id: id },
                 function (data) {
                     var dep = "<option selected=''></option>";

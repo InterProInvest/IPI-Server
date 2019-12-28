@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.Command;
 using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
@@ -14,6 +9,10 @@ using Hideez.SDK.Communication.Utils;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
@@ -92,8 +91,9 @@ namespace HES.Core.Services
                     await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties.ToArray());
                     break;
                 case TaskOperation.Wipe:
+                    device.State = Enums.DeviceState.OK;
                     device.MasterPassword = null;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { "MasterPassword" });
+                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword" });
                     break;
                 case TaskOperation.UnlockPin:
                     device.State = Enums.DeviceState.OK;
