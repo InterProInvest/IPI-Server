@@ -88,12 +88,7 @@ namespace HES.Core.Services
         }
 
         public void Validate()
-        {
-            //if (!protectionEnabled)
-            //{
-            //    throw new Exception("Data protection not enabled.");
-            //}
-
+        {          
             if (protectionEnabled && !protectionActivated)
             {
                 throw new Exception("Data protection not activated.");
