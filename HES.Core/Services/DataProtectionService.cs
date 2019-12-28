@@ -1,13 +1,15 @@
-﻿using HES.Core.Entities;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using HES.Core.Crypto;
+using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+
+//todo - use transactions when enabling/disabling the protection
 
 namespace HES.Core.Services
 {
@@ -21,17 +23,17 @@ namespace HES.Core.Services
 
     public class DataProtectionService : IDataProtectionService
     {
-        private readonly IConfiguration _config;
-        private readonly IAsyncRepository<DataProtection> _dataProtectionRepository;
-        private readonly IAsyncRepository<Device> _deviceRepository;
-        private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
-        private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
-        private readonly IApplicationUserService _applicationUserService;
-        private bool protectionEnabled;
-        private bool protectionActivated;
-        private bool protectionBusy;
-        private byte[] key;
-        private byte[] iv;
+        readonly IConfiguration _config;
+        readonly IAsyncRepository<DataProtection> _dataProtectionRepository;
+        readonly IAsyncRepository<Device> _deviceRepository;
+        readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
+        readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
+        readonly IApplicationUserService _applicationUserService;
+        
+        bool _protectionEnabled;
+        DataProtectionKey _key;
+        bool _protectionActivated;
+        bool _protectionBusy;
 
         public DataProtectionService(IConfiguration config,
                                      IAsyncRepository<DataProtection> dataProtectionRepository,
@@ -48,607 +50,434 @@ namespace HES.Core.Services
             _applicationUserService = applicationUserService;
         }
 
+        #region Data Protection Params
+        async Task<DataProtection> ReadDataProtectionEntity()
+        {
+            var list = await _dataProtectionRepository
+                .Query()
+                .ToListAsync();
+
+            if (list.Count == 0)
+                return null;
+
+            if (list.Count > 1)
+                throw new Exception("Detected not finished password change operation");
+
+            var entity = list[0];
+            if (string.IsNullOrEmpty(entity.Value))
+                throw new Exception("Data Protection parameters is empty");
+
+            entity.Params = JsonConvert.DeserializeObject<DataProtectionParams>(entity.Value);
+
+            return entity;
+        }
+
+        async Task<DataProtection> SaveDataProtectionEntity(DataProtectionParams prms)
+        {
+            var entity = await _dataProtectionRepository.AddAsync(new DataProtection()
+            {
+                Value = JsonConvert.SerializeObject(prms),
+                Params = prms
+            });
+
+            return entity;
+        }
+
+        async Task DeleteDataProtectionEntity(int id)
+        {
+            var entity = await _dataProtectionRepository
+                .Query()
+                .Where(v => v.Id == id)
+                .FirstOrDefaultAsync();
+
+            if (entity != null)
+                await _dataProtectionRepository.DeleteAsync(entity);
+        }
+        #endregion
+
+        string TryGetStoredPassword()
+        {
+            return _config.GetValue<string>("DataProtection:Password");
+        }
+
         public async Task Initialize()
         {
-            var data = await GetEncryptedEntityAsync();
+            _protectionEnabled = false;
+            _protectionActivated = false;
 
-            if (data == null)
+            try
             {
-                protectionEnabled = false;
-                protectionActivated = false;
-                return;
+                var prms = await ReadDataProtectionEntity();
+
+                if (prms != null)
+                {
+                    _protectionEnabled = true;
+
+                    var password = TryGetStoredPassword();
+
+                    if (password != null)
+                    {
+                        await ActivateProtectionAsync(password);
+                    }
+                }
+            }
+            finally
+            {
+                if (_protectionEnabled && !_protectionActivated)
+                    await _applicationUserService.SendEmailDataProtectionNotify();
+            }
+        }
+
+        public async Task<bool> ActivateProtectionAsync(string password)
+        {
+            try
+            {
+                if (_protectionBusy)
+                    throw new Exception("Data protection is busy.");
+                _protectionBusy = true;
+
+                if (string.IsNullOrWhiteSpace(password))
+                    throw new ArgumentNullException(nameof(password));
+
+                if (_protectionActivated)
+                    throw new Exception("Data protection is already activated.");
+
+                var dataProtectionEntity = await ReadDataProtectionEntity();
+                if (dataProtectionEntity == null)
+                    throw new Exception("Data protection parameters not found.");
+
+                _key = new DataProtectionKey(dataProtectionEntity.Id, dataProtectionEntity.Params);
+
+                _protectionActivated = _key.ValidatePassword(password);
+
+                return _protectionActivated;
+            }
+            finally
+            {
+                _protectionBusy = false;
+            }
+        }
+
+        public async Task EnableProtectionAsync(string password)
+        {
+            try
+            {
+                if (_protectionBusy)
+                    throw new Exception("Data protection is busy.");
+                _protectionBusy = true;
+
+                if (string.IsNullOrWhiteSpace(password))
+                    throw new ArgumentNullException(nameof(password));
+
+                if (_protectionEnabled)
+                    throw new Exception("Data protection is already enabled.");
+
+                var prms = DataProtectionKey.CreateParams(password);
+
+                var dataProtectionEntity = await SaveDataProtectionEntity(prms);
+
+                _key = new DataProtectionKey(dataProtectionEntity.Id, dataProtectionEntity.Params);
+                _key.ValidatePassword(password);
+
+                await EncryptDatabase(_key);
+
+                _protectionEnabled = true;
+                _protectionActivated = true;
+            }
+            finally
+            {
+                _protectionBusy = false;
+            }
+        }
+
+        public async Task DisableProtectionAsync(string password)
+        {
+            try
+            {
+                if (_protectionBusy)
+                    throw new Exception("Data protection is busy.");
+                _protectionBusy = true;
+
+                if (!_protectionEnabled)
+                    throw new Exception("Data protection is not enabled.");
+
+                if (!_protectionActivated)
+                    throw new Exception("Data protection is not activated.");
+
+
+                var dataProtectionEntity = await ReadDataProtectionEntity();
+                if (dataProtectionEntity == null)
+                    throw new Exception("Data protection parameters not found.");
+
+                var key = new DataProtectionKey(dataProtectionEntity.Id, dataProtectionEntity.Params);
+
+                if (!key.ValidatePassword(password))
+                    throw new Exception("Incorrect password");
+
+                await DecryptDatabase(key);
+
+                await DeleteDataProtectionEntity(key.KeyId);
+
+                _key = null;
+                _protectionActivated = false;
+                _protectionEnabled = false;
+            }
+            finally
+            {
+                _protectionBusy = false;
+            }
+        }
+
+        public async Task ChangeProtectionSecretAsync(string oldPassword, string newPassword)
+        {
+            if (!_protectionActivated)
+                throw new Exception("Data protection is not activated");
+
+
+            var oldDataProtectionEntity = await ReadDataProtectionEntity();
+            if (oldDataProtectionEntity == null)
+                throw new Exception("Data protection parameters not found.");
+
+            var oldKey = new DataProtectionKey(oldDataProtectionEntity.Id, oldDataProtectionEntity.Params);
+
+            if (!oldKey.ValidatePassword(oldPassword))
+                throw new Exception("Incorrect old password");
+
+
+            // creating the key for the new password
+            var prms = DataProtectionKey.CreateParams(newPassword);
+            var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
+            var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
+            newKey.ValidatePassword(newPassword);
+
+            await ReencryptDatabase(oldKey, newKey);
+
+            // delete old key
+            await DeleteDataProtectionEntity(oldKey.KeyId);
+
+            // set new key as a current key
+            _key = newKey;
+        }
+
+        async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
+        {
+            var devices = await _deviceRepository.Query().ToListAsync();
+            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+            
+            foreach (var device in devices)
+            {
+                if (device.MasterPassword != null &&
+                    key.TryDecrypt(device.MasterPassword, out string plainText))
+                {
+                    device.MasterPassword = newKey.Encrypt(plainText);
+                }
             }
 
-            var result = await ValidateSecretAsync(_config.GetValue<string>("DataProtection:Password"));
-            if (!result)
+            foreach (var task in deviceTasks)
             {
-                protectionEnabled = true;
-                protectionActivated = false;
-                await _applicationUserService.SendEmailDataProtectionNotify();
-                return;
+                if (task.Password != null &&
+                    key.TryDecrypt(task.Password, out string plainText))
+                {
+                    task.Password = newKey.Encrypt(plainText);
+                }
+                if (task.OtpSecret != null &&
+                    key.TryDecrypt(task.OtpSecret, out plainText))
+                {
+                    task.OtpSecret = newKey.Encrypt(plainText);
+                }
             }
 
-            protectionEnabled = true;
-            protectionActivated = true;
+            foreach (var account in sharedAccounts)
+            {
+                if (account.Password != null &&
+                    key.TryDecrypt(account.Password, out string plainText))
+                {
+                    account.Password = newKey.Encrypt(plainText);
+                }
+                if (account.OtpSecret != null &&
+                    key.TryDecrypt(account.OtpSecret, out plainText))
+                {
+                    account.OtpSecret = newKey.Encrypt(plainText);
+                }
+            }
+
+            // devices validation - go through all records and check if each has a new key-id
+            int correctRecords = 0;
+            int wrongRecords = 0;
+            foreach (var device in devices)
+            {
+                if (device.MasterPassword != null)
+                {
+                    if (newKey.TryDecrypt(device.MasterPassword, out string plainText))
+                        correctRecords++;
+                    else
+                        wrongRecords++;
+                }
+            }
+
+            Debug.WriteLine($"Data Protection password change for the devices: success - {correctRecords}, fail - {wrongRecords}");
+
+            // deviceTasks validation
+            correctRecords = 0;
+            wrongRecords = 0;
+            foreach (var task in deviceTasks)
+            {
+                if (task.Password != null)
+                {
+                    if (newKey.TryDecrypt(task.Password, out string plainText))
+                        correctRecords++;
+                    else
+                        wrongRecords++;
+                }
+                if (task.OtpSecret != null)
+                {
+                    if (newKey.TryDecrypt(task.OtpSecret, out string plainText))
+                        correctRecords++;
+                    else
+                        wrongRecords++;
+                }
+            }
+
+            Debug.WriteLine($"Data Protection password change for the deviceTasks: success - {correctRecords}, fail - {wrongRecords}");
+
+            // sharedAccounts validation
+            correctRecords = 0;
+            wrongRecords = 0;
+            foreach (var account in sharedAccounts)
+            {
+                if (account.Password != null)
+                {
+                    if (newKey.TryDecrypt(account.Password, out string plainText))
+                        correctRecords++;
+                    else
+                        wrongRecords++;
+                }
+                if (account.OtpSecret != null)
+                {
+                    if (newKey.TryDecrypt(account.OtpSecret, out string plainText))
+                        correctRecords++;
+                    else
+                        wrongRecords++;
+                }
+            }
+
+            Debug.WriteLine($"Data Protection password change for the sharedAccounts: success - {correctRecords}, fail - {wrongRecords}");
+
+
+            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+        }
+
+        async Task EncryptDatabase(DataProtectionKey key)
+        {
+            var devices = await _deviceRepository.Query().ToListAsync();
+            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+
+            foreach (var device in devices)
+            {
+                if (device.MasterPassword != null)
+                    device.MasterPassword = key.Encrypt(device.MasterPassword);
+            }
+
+            foreach (var task in deviceTasks)
+            {
+                if (task.Password != null)
+                    task.Password = key.Encrypt(task.Password);
+                if (task.OtpSecret != null)
+                    task.OtpSecret = key.Encrypt(task.OtpSecret);
+            }
+
+            foreach (var account in sharedAccounts)
+            {
+                if (account.Password != null)
+                    account.Password = key.Encrypt(account.Password);
+                if (account.OtpSecret != null)
+                    account.OtpSecret = key.Encrypt(account.OtpSecret);
+            }
+
+            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+        }
+
+        async Task DecryptDatabase(DataProtectionKey key)
+        {
+            var devices = await _deviceRepository.Query().ToListAsync();
+            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+
+            foreach (var device in devices)
+            {
+                if (device.MasterPassword != null)
+                    device.MasterPassword = key.Decrypt(device.MasterPassword);
+            }
+
+            foreach (var task in deviceTasks)
+            {
+                if (task.Password != null)
+                    task.Password = key.Decrypt(task.Password);
+                if (task.OtpSecret != null)
+                    task.OtpSecret = key.Decrypt(task.OtpSecret);
+            }
+
+            foreach (var account in sharedAccounts)
+            {
+                if (account.Password != null)
+                    account.Password = key.Decrypt(account.Password);
+                if (account.OtpSecret != null)
+                    account.OtpSecret = key.Decrypt(account.OtpSecret);
+            }
+
+            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+        }
+
+        public string Encrypt(string plainText)
+        {
+            if (!_protectionEnabled)
+                return plainText;
+
+            Validate();
+
+            return _key.Encrypt(plainText);
+        }
+
+        public string Decrypt(string cipherText)
+        {
+            if (!_protectionEnabled)
+                return cipherText;
+
+            Validate();
+
+            return _key.Decrypt(cipherText);
         }
 
         public ProtectionStatus Status()
         {
-            if (!protectionEnabled)
-            {
+            if (!_protectionEnabled)
                 return ProtectionStatus.Off;
-            }
 
-            if (!protectionActivated)
-            {
+            if (!_protectionActivated)
                 return ProtectionStatus.Activate;
-            }
 
             return ProtectionStatus.On;
         }
 
         public void Validate()
         {
-            //if (!protectionEnabled)
-            //{
+            //if (!_protectionEnabled)
             //    throw new Exception("Data protection not enabled.");
-            //}
 
-            if (protectionEnabled && !protectionActivated)
-            {
+            if (_protectionEnabled && !_protectionActivated)
                 throw new Exception("Data protection not activated.");
-            }
 
-            if (protectionBusy)
-            {
+            if (_protectionBusy)
                 throw new Exception("Data protection is busy.");
-            }
         }
 
-        public async Task EnableProtectionAsync(string secret)
-        {
-            if (string.IsNullOrWhiteSpace(secret))
-            {
-                throw new ArgumentNullException(nameof(secret));
-            }
-
-            if (protectionBusy)
-            {
-                throw new Exception("Data protection is busy.");
-            }
-
-            if (protectionEnabled)
-            {
-                throw new Exception("Data protection is already enabled.");
-            }
-
-            try
-            {
-                protectionBusy = true;
-                // Create encryption keys
-                CreateEncryptionKeys(secret);
-                // Encrypt value
-                await SetEncryptedEntityAsync();
-                // Enabled
-                await EncryptAllAsync();
-                protectionEnabled = true;
-                protectionActivated = true;
-                protectionBusy = false;
-            }
-            catch (Exception)
-            {
-                protectionBusy = false;
-                throw;
-            }
-        }
-
-        public async Task DisableProtectionAsync(string secret)
-        {
-            if (string.IsNullOrWhiteSpace(secret))
-            {
-                throw new ArgumentNullException(nameof(secret));
-            }
-
-            if (protectionBusy)
-            {
-                throw new Exception("Data protection is busy.");
-            }
-
-            if (!protectionEnabled)
-            {
-                throw new Exception("Data protection is already disabled.");
-            }
-
-            try
-            {
-                protectionBusy = true;
-                var result = await ValidateSecretAsync(secret);
-                if (!result)
-                {
-                    throw new Exception("Password is not valid");
-                }
-
-                // Disable
-                await DisableDataProtectionAsync();
-
-                protectionEnabled = false;
-                protectionActivated = false;
-                protectionBusy = false;
-            }
-            catch (Exception)
-            {
-                protectionBusy = false;
-                throw;
-            }
-        }
-
-        public async Task<bool> ActivateProtectionAsync(string secret)
-        {
-            if (string.IsNullOrWhiteSpace(secret))
-            {
-                throw new ArgumentNullException(nameof(secret));
-            }
-
-            if (protectionBusy)
-            {
-                throw new Exception("Data protection is busy.");
-            }
-
-            if (protectionActivated)
-            {
-                throw new Exception("Data protection is already activated.");
-            }
-
-            try
-            {
-                protectionBusy = true;
-                protectionActivated = await ValidateSecretAsync(secret);
-                protectionBusy = false;
-                return protectionActivated;
-            }
-
-            catch (Exception)
-            {
-                protectionBusy = false;
-                throw;
-            }
-        }
-
-        public async Task ChangeProtectionSecretAsync(string oldSecret, string newSecret)
-        {
-            if (string.IsNullOrWhiteSpace(oldSecret))
-            {
-                throw new ArgumentNullException(nameof(oldSecret));
-            }
-
-            if (string.IsNullOrWhiteSpace(newSecret))
-            {
-                throw new ArgumentNullException(nameof(newSecret));
-            }
-
-            if (protectionBusy)
-            {
-                throw new Exception("Data protection is busy.");
-            }
-
-            if (!protectionEnabled)
-            {
-                throw new Exception("Data protection is not enabled.");
-            }
-
-            if (!protectionActivated)
-            {
-                throw new Exception("Data protection is not activated.");
-            }
-
-            try
-            {
-                protectionBusy = true;
-                // Decrypt value, if no error occurred during the decrypt, then the password is correct                
-                await ValidateSecretAsync(oldSecret);
-                // Change data secret
-                await ChangeDataSecretAsync(newSecret);
-                protectionBusy = false;
-            }
-            catch (Exception)
-            {
-                protectionBusy = false;
-                throw;
-            }
-        }
-
-        public string Encrypt(string plainText)
-        {
-            if (plainText == null)
-                return null;
-
-            if (!protectionEnabled)
-                return plainText;
-
-            Validate();
-
-            var enc = EncryptStringToBytes(plainText, key, iv);
-            return Convert.ToBase64String(enc);
-        }
-
-        public string Decrypt(string cipherText)
-        {
-            if (cipherText == null)
-                return null;
-
-            if (!protectionEnabled)
-                return cipherText;
-
-            Validate();
-
-            var cipherBytes = Convert.FromBase64String(cipherText);
-            return DecryptStringFromBytes(cipherBytes, key, iv);
-        }
-
-        private async Task ChangeDataSecretAsync(string secret)
-        {
-            var devices = await _deviceRepository.Query().ToListAsync(); ;
-            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
-
-            // Decrypt
-            try
-            {
-                foreach (var device in devices)
-                {
-                    if (device.MasterPassword != null)
-                    {
-                        device.MasterPassword = InternalDecrypt(device.MasterPassword);
-                    }
-                }
-
-                foreach (var task in deviceTasks)
-                {
-                    if (task.Password != null)
-                    {
-                        task.Password = InternalDecrypt(task.Password);
-                    }
-                    if (task.OtpSecret != null)
-                    {
-                        task.OtpSecret = InternalDecrypt(task.OtpSecret);
-                    }
-                }
-
-                foreach (var account in sharedAccounts)
-                {
-                    if (account.Password != null)
-                    {
-                        account.Password = InternalDecrypt(account.Password);
-                    }
-                    if (account.OtpSecret != null)
-                    {
-                        account.OtpSecret = InternalDecrypt(account.OtpSecret);
-                    }
-                }
-            }
-            catch (CryptographicException)
-            {
-                throw new Exception("Decryption error, data was protected with another key.");
-            }
-
-            CreateEncryptionKeys(secret);
-            await SetEncryptedEntityAsync();
-
-            // Encrypt
-            foreach (var device in devices)
-            {
-                if (device.MasterPassword != null)
-                {
-                    device.MasterPassword = InternalEncrypt(device.MasterPassword);
-                }
-            }
-
-            foreach (var task in deviceTasks)
-            {
-                if (task.Password != null)
-                {
-                    task.Password = InternalEncrypt(task.Password);
-                }
-                if (task.OtpSecret != null)
-                {
-                    task.OtpSecret = InternalEncrypt(task.OtpSecret);
-                }
-            }
-
-            foreach (var account in sharedAccounts)
-            {
-                if (account.Password != null)
-                {
-                    account.Password = InternalEncrypt(account.Password);
-                }
-                if (account.OtpSecret != null)
-                {
-                    account.OtpSecret = InternalEncrypt(account.OtpSecret);
-                }
-            }
-
-            // Update devices
-            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            // Update tasks
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            // Update sharedAccounts
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
-        }
-
-        private async Task DisableDataProtectionAsync()
-        {
-            var devices = await _deviceRepository.Query().ToListAsync(); ;
-            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
-
-            // Decrypt
-            try
-            {
-                foreach (var device in devices)
-                {
-                    if (device.MasterPassword != null)
-                    {
-                        device.MasterPassword = InternalDecrypt(device.MasterPassword);
-                    }
-                }
-
-                foreach (var task in deviceTasks)
-                {
-                    if (task.Password != null)
-                    {
-                        task.Password = InternalDecrypt(task.Password);
-                    }
-                    if (task.OtpSecret != null)
-                    {
-                        task.OtpSecret = InternalDecrypt(task.OtpSecret);
-                    }
-                }
-
-                foreach (var account in sharedAccounts)
-                {
-                    if (account.Password != null)
-                    {
-                        account.Password = InternalDecrypt(account.Password);
-                    }
-                    if (account.OtpSecret != null)
-                    {
-                        account.OtpSecret = InternalDecrypt(account.OtpSecret);
-                    }
-                }
-            }
-            catch (CryptographicException)
-            {
-                throw new Exception("Decryption error, data was protected with another key.");
-            }
-
-            // Update devices
-            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            // Update tasks
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            // Update sharedAccounts
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
-            // Remove entity
-            var data = await GetEncryptedEntityAsync();
-            await _dataProtectionRepository.DeleteAsync(data);
-        }
-
-        private async Task EncryptAllAsync()
-        {
-            var devices = await _deviceRepository.Query().ToListAsync(); ;
-            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
-
-            // Encrypt
-            foreach (var device in devices)
-            {
-                if (device.MasterPassword != null)
-                {
-                    device.MasterPassword = InternalEncrypt(device.MasterPassword);
-                }
-            }
-
-            foreach (var task in deviceTasks)
-            {
-                if (task.Password != null)
-                {
-                    task.Password = InternalEncrypt(task.Password);
-                }
-                if (task.OtpSecret != null)
-                {
-                    task.OtpSecret = InternalEncrypt(task.OtpSecret);
-                }
-            }
-
-            foreach (var account in sharedAccounts)
-            {
-                if (account.Password != null)
-                {
-                    account.Password = InternalEncrypt(account.Password);
-                }
-                if (account.OtpSecret != null)
-                {
-                    account.OtpSecret = InternalEncrypt(account.OtpSecret);
-                }
-            }
-
-            // Update devices
-            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            // Update tasks
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            // Update sharedAccounts
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
-        }
-
-        private string InternalEncrypt(string plainText)
-        {
-            if (plainText == null)
-                return null;
-
-            var enc = EncryptStringToBytes(plainText, key, iv);
-            return Convert.ToBase64String(enc);
-        }
-
-        private string InternalDecrypt(string cipherText)
-        {
-            if (cipherText == null)
-                return null;
-
-            var cipherBytes = Convert.FromBase64String(cipherText);
-            return DecryptStringFromBytes(cipherBytes, key, iv);
-        }
-
-        private byte[] GetSHA256(string value)
-        {
-            // Create a SHA256   
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                // ComputeHash - returns byte array  
-                return sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(value));
-            }
-        }
-
-        private void CreateEncryptionKeys(string value)
-        {
-            var hash = GetSHA256(value);
-            key = new byte[32];
-            iv = new byte[16];
-            Array.Copy(hash, 0, key, 0, 32);
-            Array.Copy(hash, 0, iv, 0, 16);
-        }
-
-        private byte[] EncryptStringToBytes(string plainText, byte[] key, byte[] iv)
-        {
-            if (plainText == null || plainText.Length <= 0)
-                throw new ArgumentNullException(nameof(plainText));
-            if (key == null || key.Length <= 0)
-                throw new ArgumentNullException(nameof(key));
-            if (iv == null || iv.Length <= 0)
-                throw new ArgumentNullException(nameof(iv));
-
-            byte[] encrypted;
-
-            // Add salt
-            var salt = new byte[128];
-            using (var random = new RNGCryptoServiceProvider())
-            {
-                random.GetNonZeroBytes(salt);
-            }
-            var saltBase64 = (Convert.ToBase64String(salt)).Substring(0, 128);
-            plainText = string.Concat(saltBase64, plainText);
-
-            using (var aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = iv;
-
-                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-                using (var msEncrypt = new MemoryStream())
-                {
-                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (var swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
-                }
-            }
-
-            return encrypted;
-        }
-
-        private string DecryptStringFromBytes(byte[] cipherText, byte[] key, byte[] iv)
-        {
-            if (cipherText == null || cipherText.Length <= 0)
-                throw new ArgumentNullException(nameof(cipherText));
-            if (key == null || key.Length <= 0)
-                throw new ArgumentNullException(nameof(key));
-            if (iv == null || iv.Length <= 0)
-                throw new ArgumentNullException(nameof(iv));
-
-            string plaintext;
-
-            using (var aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = iv;
-
-                var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-                using (var msDecrypt = new MemoryStream(cipherText))
-                {
-                    using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (var srDecrypt = new StreamReader(csDecrypt))
-                        {
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
-                    }
-                }
-            }
-
-            // Remove salt
-            plaintext = plaintext.Substring(128);
-            return plaintext;
-        }
-
-        private async Task<bool> ValidateSecretAsync(string secret)
-        {
-            try
-            {
-                // Get encrypted value
-                var data = await GetEncryptedEntityAsync();
-                // Get hash from provided secret
-                var hash = GetSHA256(secret);
-                byte[] tempKey = new byte[32];
-                byte[] tempIv = new byte[16];
-                Array.Copy(hash, 0, tempKey, 0, 32);
-                Array.Copy(hash, 0, tempIv, 0, 16);
-                // Try decrypt
-                var cipherBytes = Convert.FromBase64String(data.Value);
-                var decrypted = DecryptStringFromBytes(cipherBytes, tempKey, tempIv);
-                var decryptedHash = GetSHA256(decrypted);
-                var originalHash = Convert.FromBase64String(data.ValueHash);
-                var equals = decryptedHash.SequenceEqual(originalHash);
-                if (!equals)
-                {
-                    return false;
-                }
-                // Set keys
-                key = tempKey;
-                iv = tempIv;
-                return true;
-            }
-            catch (CryptographicException)
-            {
-                return false;
-            }
-        }
-
-        private async Task<DataProtection> GetEncryptedEntityAsync()
-        {
-            return await _dataProtectionRepository
-                 .Query()
-                 .OrderBy(v => v.Id)
-                 .FirstOrDefaultAsync();
-        }
-
-        private async Task SetEncryptedEntityAsync()
-        {
-            var guid = Guid.NewGuid().ToString();
-            // Encrypt
-            var encrypted = EncryptStringToBytes(guid, key, iv);
-            var encryptedBase64 = Convert.ToBase64String(encrypted);
-            // Hash from guid
-            var valueHash = Convert.ToBase64String(GetSHA256(guid));
-            // Check exist
-            var data = await GetEncryptedEntityAsync();
-            if (data != null)
-            {
-                await _dataProtectionRepository.DeleteAsync(data);
-            }
-            // Save to base
-            await _dataProtectionRepository.AddAsync(new DataProtection() { Value = encryptedBase64, ValueHash = valueHash });
-        }
     }
 }
