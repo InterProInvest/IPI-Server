@@ -35,17 +35,11 @@ namespace HES.Core.Services
 
         private string CreateTamplate(string text)
         {
-            string html = @"<div style='margin: 5px; height: 300px;width: 500px;background-color: #F7F8FC;border-radius: 10px;box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); font-family: Roboto;'>
-                <div style='padding: 25px;'>
-                    <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
-                </div>
-                <div style='padding: 0px 25px;'>
-                    <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>_text_</div>                    
-                </div>
-            </div>";
-
+            string html = @"<div style='font-family: Roboto;'>
+                                  <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
+                                 <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>_text_</div>                    
+                           </div>";
             return html.Replace("_text_", text);
         }
-
     }
 }
