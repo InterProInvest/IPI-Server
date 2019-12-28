@@ -1068,3 +1068,13 @@ div.dataTables_scrollHead table.dataTable {
     justify-content: center;
     flex-direction: column;
 }
+
+.state-connected:after {
+    content: "";
+    margin-left: 5px;
+    height: 9px;
+    width: 9px;
+    background-color: green;
+    border-radius: 50%;
+    display: inline-block;
+}

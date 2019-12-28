@@ -229,7 +229,7 @@ namespace HES.Core.Hubs
                             Id = dto.DeviceSerialNo,
                             MAC =  dto.Mac,
                             Model = dto.DeviceSerialNo.Substring(0, 5),
-                            RFID = dto.Mac.Replace(":", "").Substring(0, 8),
+                            RFID = dto.Mac.Replace(":", "").Substring(0, 10),
                             Battery = dto.Battery,
                             Firmware = dto.FirmwareVersion,
                             ImportedAt = DateTime.UtcNow,

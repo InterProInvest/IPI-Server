@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using HES.Core.Utilities;
+using HES.Core.Enums;
 
 namespace HES.Web.Pages.Devices
 {

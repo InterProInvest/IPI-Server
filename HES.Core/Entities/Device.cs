@@ -1,4 +1,5 @@
-﻿using HES.Core.Services;
+﻿using HES.Core.Enums;
+using HES.Core.Services;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,6 +30,7 @@ namespace HES.Core.Entities
         
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
+
         [Display(Name = "Access Profile")]
         [ForeignKey("AcceessProfileId")]
         public DeviceAccessProfile DeviceAccessProfile { get; set; }
@@ -44,14 +46,5 @@ namespace HES.Core.Entities
         PendingUnlock,
         Disabled,
         Error
-    }
-
-    public enum LicenseStatus
-    {
-        None,
-        Valid,
-        Warning,
-        Critical,
-        Expired
     }
 }

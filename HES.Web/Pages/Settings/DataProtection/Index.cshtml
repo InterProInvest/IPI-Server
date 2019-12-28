@@ -14,30 +14,84 @@
 <hr />
 @switch (Model.Status)
 {
+    case Core.Services.ProtectionStatus.Off:
+        <a class="btn btn-link" data-toggle="collapse" href="#enableDataProtection" role="button" aria-expanded="false" aria-controls="enableDataProtection">
+            <h6>
+                Enable data protection
+            </h6>
+        </a>
+        <div class="collapse" id="enableDataProtection">
+            <div class="profile-fill-card">
+                <form method="post" style="max-width:350px">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label class="text-gray" asp-for="NewPassword.Password"></label>
+                        <input asp-for="NewPassword.Password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="NewPassword.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-gray" asp-for="NewPassword.ConfirmPassword"></label>
+                        <input asp-for="NewPassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="NewPassword.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group m-0">
+                        <input type="submit" value="Enable" class="btn btn-primary" asp-page-handler="EnableProtection" />
+                    </div>
+                </form>
+            </div>
+        </div>
+        break;
     case Core.Services.ProtectionStatus.On:
-        <h5>Change encryption password</h5>
-        <div class="profile-fill-card">
-            <form method="post" style="max-width:350px">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label class="text-gray" asp-for="ChangePassword.OldPassword"></label>
-                    <input asp-for="ChangePassword.OldPassword" class="form-control" autocomplete="new-password" />
-                    <span asp-validation-for="ChangePassword.OldPassword" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label class="text-gray" asp-for="ChangePassword.NewPassword"></label>
-                    <input asp-for="ChangePassword.NewPassword" class="form-control" autocomplete="new-password" />
-                    <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label class="text-gray" asp-for="ChangePassword.ConfirmPassword"></label>
-                    <input asp-for="ChangePassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
-                    <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger"></span>
-                </div>
-                <div class="form-group m-0">
-                    <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="ChangeProtectionSecret" />
-                </div>
-            </form>
+        <a class="btn btn-link" data-toggle="collapse" href="#disableDataProtection" role="button" aria-expanded="false" aria-controls="disableDataProtection">
+            <h6>
+                Disable data protection
+            </h6>
+        </a>
+        <div class="collapse" id="disableDataProtection">
+            <div class="profile-fill-card">
+                <form method="post" style="max-width:350px">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label class="text-gray" asp-for="CurrentPassword.Password"></label>
+                        <input asp-for="CurrentPassword.Password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="CurrentPassword.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group m-0">
+                        <input type="submit" value="Disable" class="btn btn-danger" asp-page-handler="DisableProtection" />
+                    </div>
+                </form>
+            </div>
+        </div>
+        <br />
+        <a class="btn btn-link" data-toggle="collapse" href="#changeEncryptionPassword" role="button" aria-expanded="false" aria-controls="changeEncryptionPassword">
+            <h6>
+                Change encryption password
+            </h6>
+        </a>
+        <div class="collapse" id="changeEncryptionPassword">
+            <div class="profile-fill-card">
+                <form method="post" style="max-width:350px">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label class="text-gray" asp-for="ChangePassword.OldPassword"></label>
+                        <input asp-for="ChangePassword.OldPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ChangePassword.OldPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-gray" asp-for="ChangePassword.NewPassword"></label>
+                        <input asp-for="ChangePassword.NewPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-gray" asp-for="ChangePassword.ConfirmPassword"></label>
+                        <input asp-for="ChangePassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group m-0">
+                        <input type="submit" value="Change" class="btn btn-primary" asp-page-handler="ChangeProtectionSecret" />
+                    </div>
+                </form>
+            </div>
         </div>
         break;
     case Core.Services.ProtectionStatus.Busy:

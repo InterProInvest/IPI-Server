@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using Hideez.SDK.Communication;
@@ -254,6 +255,7 @@ namespace HES.Core.Services
             device.EmployeeId = null;
             device.PrimaryAccountId = null;
             device.MasterPassword = null;
+            device.AcceessProfileId = "default";
             device.LastSynced = DateTime.UtcNow;
 
             var properties = new List<string>()
@@ -261,6 +263,7 @@ namespace HES.Core.Services
                 "EmployeeId",
                 "PrimaryAccountId",
                 "MasterPassword",
+                "AcceessProfileId",
                 "LastSynced"
             };
 
@@ -366,6 +369,12 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(profileId));
             }
 
+            var state = await _deviceRepository.Query().Where(x => devicesId.Contains(x.Id) && x.State != DeviceState.OK).AsNoTracking().AnyAsync();
+            if (state)
+            {
+                throw new Exception("You have chosen a device with a status that does not allow changing the profile.");
+            }
+
             var profile = await _deviceAccessProfileRepository.GetByIdAsync(profileId);
             if (profile == null)
             {
@@ -380,7 +389,7 @@ namespace HES.Core.Services
                     device.AcceessProfileId = profileId;
                     await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
 
-                    if (device.EmployeeId != null)
+                    if (device.MasterPassword != null && device.EmployeeId != null)
                     {
                         // Delete all previous tasks for update profile
                         await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
