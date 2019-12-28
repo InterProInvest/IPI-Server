@@ -1,4 +1,4 @@
-﻿using HES.Core.Entities;
+﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

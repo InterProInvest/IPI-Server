@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HES.Core.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace HES.Core.Entities
@@ -20,17 +21,5 @@ namespace HES.Core.Entities
         public bool ProlongExistingLicenses { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public OrderStatus OrderStatus { get; set; } = OrderStatus.New;
-    }
-
-    public enum OrderStatus
-    {
-        New,
-        Sent,
-        Processing,
-        WaitingForPayment,
-        Completed,
-        Cancelled,
-        Error,
-        Undefined
     }
 }

@@ -100,7 +100,7 @@
                             <img src="~/svg/action/more.svg" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                            @if (item.OrderStatus == OrderStatus.New)
+                            @if (item.OrderStatus == HES.Core.Enums.OrderStatus.New)
                             {
                                 <form class="form-inline dropdown-item" method="post">
                                     <input type="hidden" name="orderId" value="@item.Id" />

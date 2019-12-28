@@ -37,14 +37,5 @@ namespace HES.Core.Entities
 
         [NotMapped]
         public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);
-    }
-
-    public enum DeviceState
-    {
-        OK,
-        Locked,
-        PendingUnlock,
-        Disabled,
-        Error
-    }
+    }    
 }
