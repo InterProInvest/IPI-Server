@@ -88,13 +88,8 @@ namespace HES.Core.Services
         }
 
         public void Validate()
-        {
-            if (!protectionEnabled)
-            {
-                throw new Exception("Data protection not enabled.");
-            }
-
-            if (!protectionActivated)
+        {          
+            if (protectionEnabled && !protectionActivated)
             {
                 throw new Exception("Data protection not activated.");
             }
@@ -142,6 +137,46 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task DisableProtectionAsync(string secret)
+        {
+            if (string.IsNullOrWhiteSpace(secret))
+            {
+                throw new ArgumentNullException(nameof(secret));
+            }
+
+            if (protectionBusy)
+            {
+                throw new Exception("Data protection is busy.");
+            }
+
+            if (!protectionEnabled)
+            {
+                throw new Exception("Data protection is already disabled.");
+            }
+
+            try
+            {
+                protectionBusy = true;
+                var result = await ValidateSecretAsync(secret);
+                if (!result)
+                {
+                    throw new Exception("Password is not valid");
+                }
+
+                // Disable
+                await DisableDataProtectionAsync();
+
+                protectionEnabled = false;
+                protectionActivated = false;
+                protectionBusy = false;
+            }
+            catch (Exception)
+            {
+                protectionBusy = false;
+                throw;
+            }
+        }
+
         public async Task<bool> ActivateProtectionAsync(string secret)
         {
             if (string.IsNullOrWhiteSpace(secret))
@@ -162,7 +197,7 @@ namespace HES.Core.Services
             try
             {
                 protectionBusy = true;
-                protectionActivated = await ValidateSecretAsync(secret);       
+                protectionActivated = await ValidateSecretAsync(secret);
                 protectionBusy = false;
                 return protectionActivated;
             }
@@ -222,6 +257,9 @@ namespace HES.Core.Services
             if (plainText == null)
                 return null;
 
+            if (!protectionEnabled)
+                return plainText;
+
             Validate();
 
             var enc = EncryptStringToBytes(plainText, key, iv);
@@ -232,6 +270,9 @@ namespace HES.Core.Services
         {
             if (cipherText == null)
                 return null;
+
+            if (!protectionEnabled)
+                return cipherText;
 
             Validate();
 
@@ -327,6 +368,63 @@ namespace HES.Core.Services
             await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
             // Update sharedAccounts
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+        }
+
+        private async Task DisableDataProtectionAsync()
+        {
+            var devices = await _deviceRepository.Query().ToListAsync(); ;
+            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+
+            // Decrypt
+            try
+            {
+                foreach (var device in devices)
+                {
+                    if (device.MasterPassword != null)
+                    {
+                        device.MasterPassword = InternalDecrypt(device.MasterPassword);
+                    }
+                }
+
+                foreach (var task in deviceTasks)
+                {
+                    if (task.Password != null)
+                    {
+                        task.Password = InternalDecrypt(task.Password);
+                    }
+                    if (task.OtpSecret != null)
+                    {
+                        task.OtpSecret = InternalDecrypt(task.OtpSecret);
+                    }
+                }
+
+                foreach (var account in sharedAccounts)
+                {
+                    if (account.Password != null)
+                    {
+                        account.Password = InternalDecrypt(account.Password);
+                    }
+                    if (account.OtpSecret != null)
+                    {
+                        account.OtpSecret = InternalDecrypt(account.OtpSecret);
+                    }
+                }
+            }
+            catch (CryptographicException)
+            {
+                throw new Exception("Decryption error, data was protected with another key.");
+            }
+
+            // Update devices
+            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+            // Update tasks
+            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+            // Update sharedAccounts
+            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+            // Remove entity
+            var data = await GetEncryptedEntityAsync();
+            await _dataProtectionRepository.DeleteAsync(data);
         }
 
         private async Task EncryptAllAsync()

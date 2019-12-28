@@ -685,7 +685,7 @@ namespace HES.Core.Services
                     OldApps = deviceAccount.Apps,
                     OldLogin = deviceAccount.Login,
                     Password = _dataProtectionService.Encrypt(accountPassword.Password),
-                    OtpSecret = accountPassword.OtpSecret,
+                    OtpSecret = _dataProtectionService.Encrypt(accountPassword.OtpSecret),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
                     DeviceId = deviceId
