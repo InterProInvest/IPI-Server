@@ -24,12 +24,6 @@ namespace HES.Web.Middleware
 
                 switch (status)
                 {
-                    //case ProtectionStatus.Off:
-                    //    if (context.Request.Path != "/Settings/DataProtection/SetPassword")
-                    //    {
-                    //        context.Response.Redirect($"/Settings/DataProtection/SetPassword", true);
-                    //    }
-                    //    break;
                     case ProtectionStatus.Activate:
                         if (context.Request.Path != "/Settings/DataProtection/Activate")
                         {

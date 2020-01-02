@@ -29,7 +29,7 @@ namespace HES.Core.Services
         readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
         readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
         readonly IApplicationUserService _applicationUserService;
-        
+
         bool _protectionEnabled;
         DataProtectionKey _key;
         bool _protectionActivated;
@@ -230,33 +230,42 @@ namespace HES.Core.Services
 
         public async Task ChangeProtectionSecretAsync(string oldPassword, string newPassword)
         {
-            if (!_protectionActivated)
-                throw new Exception("Data protection is not activated");
+            try
+            {
+                if (_protectionBusy)
+                    throw new Exception("Data protection is busy.");
+                _protectionBusy = true;
 
+                if (!_protectionActivated)
+                    throw new Exception("Data protection is not activated");
 
-            var oldDataProtectionEntity = await ReadDataProtectionEntity();
-            if (oldDataProtectionEntity == null)
-                throw new Exception("Data protection parameters not found.");
+                var oldDataProtectionEntity = await ReadDataProtectionEntity();
+                if (oldDataProtectionEntity == null)
+                    throw new Exception("Data protection parameters not found.");
 
-            var oldKey = new DataProtectionKey(oldDataProtectionEntity.Id, oldDataProtectionEntity.Params);
+                var oldKey = new DataProtectionKey(oldDataProtectionEntity.Id, oldDataProtectionEntity.Params);
 
-            if (!oldKey.ValidatePassword(oldPassword))
-                throw new Exception("Incorrect old password");
+                if (!oldKey.ValidatePassword(oldPassword))
+                    throw new Exception("Incorrect old password");
 
+                // creating the key for the new password
+                var prms = DataProtectionKey.CreateParams(newPassword);
+                var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
+                var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
+                newKey.ValidatePassword(newPassword);
 
-            // creating the key for the new password
-            var prms = DataProtectionKey.CreateParams(newPassword);
-            var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
-            var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
-            newKey.ValidatePassword(newPassword);
+                await ReencryptDatabase(oldKey, newKey);
 
-            await ReencryptDatabase(oldKey, newKey);
+                // delete old key
+                await DeleteDataProtectionEntity(oldKey.KeyId);
 
-            // delete old key
-            await DeleteDataProtectionEntity(oldKey.KeyId);
-
-            // set new key as a current key
-            _key = newKey;
+                // set new key as a current key
+                _key = newKey;
+            }
+            finally
+            {
+                _protectionBusy = false;
+            }
         }
 
         async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
@@ -264,7 +273,7 @@ namespace HES.Core.Services
             var devices = await _deviceRepository.Query().ToListAsync();
             var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
-            
+
             foreach (var device in devices)
             {
                 if (device.MasterPassword != null &&
@@ -438,6 +447,9 @@ namespace HES.Core.Services
 
         public string Encrypt(string plainText)
         {
+            if (plainText == null)
+                return null;
+
             if (!_protectionEnabled)
                 return plainText;
 
@@ -448,6 +460,9 @@ namespace HES.Core.Services
 
         public string Decrypt(string cipherText)
         {
+            if (cipherText == null)
+                return null;
+
             if (!_protectionEnabled)
                 return cipherText;
 
@@ -469,15 +484,11 @@ namespace HES.Core.Services
 
         public void Validate()
         {
-            //if (!_protectionEnabled)
-            //    throw new Exception("Data protection not enabled.");
-
             if (_protectionEnabled && !_protectionActivated)
                 throw new Exception("Data protection not activated.");
 
             if (_protectionBusy)
                 throw new Exception("Data protection is busy.");
         }
-
     }
 }

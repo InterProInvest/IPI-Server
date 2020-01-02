@@ -1,4 +1,5 @@
 ﻿using HES.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -13,14 +14,13 @@ namespace HES.Core.Services
         private string userName;
         private string password;
 
-
-        public EmailSenderService(string host, int port, bool enableSSL, string userName, string password)
+        public EmailSenderService(IConfiguration config)
         {
-            this.host = host;
-            this.port = port;
-            this.enableSSL = enableSSL;
-            this.userName = userName;
-            this.password = password;
+            host = config.GetValue<string>("EmailSender:Host");
+            port = config.GetValue<int>("EmailSender:Port");
+            enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
+            userName = config.GetValue<string>("EmailSender:UserName");
+            password = config.GetValue<string>("EmailSender:Password");
         }
 
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
@@ -35,17 +35,11 @@ namespace HES.Core.Services
 
         private string CreateTamplate(string text)
         {
-            string html = @"<div style='margin: 5px; height: 300px;width: 500px;background-color: #F7F8FC;border-radius: 10px;box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); font-family: Roboto;'>
-                <div style='padding: 25px;'>
-                    <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
-                </div>
-                <div style='padding: 0px 25px;'>
-                    <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>_text_</div>                    
-                </div>
-            </div>";
-
+            string html = @"<div style='font-family: Roboto;'>
+                                  <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
+                                 <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>_text_</div>                    
+                           </div>";
             return html.Replace("_text_", text);
         }
-
     }
 }

@@ -10,6 +10,7 @@ using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
+using HES.Core.Enums;
 
 namespace HES.Core.Services
 {
@@ -256,13 +257,14 @@ namespace HES.Core.Services
             device.EmployeeId = null;
             device.PrimaryAccountId = null;
             device.AcceessProfileId = "default";
-            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId" });
 
             if (device.MasterPassword != null)
             {
-                // Add Task remove device
+                device.State = DeviceState.WaitingForWipe;
                 await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
             }
+
+            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId", "AcceessProfileId", "State" });
         }
 
         #endregion
