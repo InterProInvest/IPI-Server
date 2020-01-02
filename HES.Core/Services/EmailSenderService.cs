@@ -1,4 +1,5 @@
 ﻿using HES.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -13,14 +14,13 @@ namespace HES.Core.Services
         private string userName;
         private string password;
 
-
-        public EmailSenderService(string host, int port, bool enableSSL, string userName, string password)
+        public EmailSenderService(IConfiguration config)
         {
-            this.host = host;
-            this.port = port;
-            this.enableSSL = enableSSL;
-            this.userName = userName;
-            this.password = password;
+            host = config.GetValue<string>("EmailSender:Host");
+            port = config.GetValue<int>("EmailSender:Port");
+            enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
+            userName = config.GetValue<string>("EmailSender:UserName");
+            password = config.GetValue<string>("EmailSender:Password");
         }
 
         public Task SendEmailAsync(string email, string subject, string htmlMessage)

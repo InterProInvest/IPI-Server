@@ -88,6 +88,7 @@ namespace HES.Web
             services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
+            services.AddScoped<IEmailSenderService, EmailSenderService>();
             services.AddScoped<ILicenseService, LicenseService>();
 
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
@@ -106,13 +107,6 @@ namespace HES.Web
                                                  sharedAccountRepository,
                                                  applicationUserService);
             });
-            services.AddSingleton<IEmailSenderService, EmailSenderService>(i =>
-                 new EmailSenderService(
-                     Configuration["EmailSender:Host"],
-                     Configuration.GetValue<int>("EmailSender:Port"),
-                     Configuration.GetValue<bool>("EmailSender:EnableSSL"),
-                     Configuration["EmailSender:UserName"],
-                     Configuration["EmailSender:Password"]));
 
             services.AddHostedService<RemoveLogsFilesHostedService>();
             services.AddHostedService<LicenseOrderStatusHostedService>();
