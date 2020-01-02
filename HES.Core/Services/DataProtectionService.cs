@@ -17,23 +17,25 @@ namespace HES.Core.Services
     {
         Off,
         On,
+        Busy,
         Activate,
-        Busy
+        NotFinishedPasswordChange
     }
 
     public class DataProtectionService : IDataProtectionService
     {
-        readonly IConfiguration _config;
-        readonly IAsyncRepository<DataProtection> _dataProtectionRepository;
-        readonly IAsyncRepository<Device> _deviceRepository;
-        readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
-        readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
-        readonly IApplicationUserService _applicationUserService;
+        private readonly IConfiguration _config;
+        private readonly IAsyncRepository<DataProtection> _dataProtectionRepository;
+        private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
+        private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
+        private readonly IApplicationUserService _applicationUserService;
 
-        bool _protectionEnabled;
-        DataProtectionKey _key;
-        bool _protectionActivated;
-        bool _protectionBusy;
+        private DataProtectionKey _key;
+        private bool _protectionEnabled;
+        private bool _protectionBusy;
+        private bool _protectionActivated;
+        private bool _notFinishedPasswordChange;
 
         public DataProtectionService(IConfiguration config,
                                      IAsyncRepository<DataProtection> dataProtectionRepository,
@@ -50,60 +52,11 @@ namespace HES.Core.Services
             _applicationUserService = applicationUserService;
         }
 
-        #region Data Protection Params
-        async Task<DataProtection> ReadDataProtectionEntity()
-        {
-            var list = await _dataProtectionRepository
-                .Query()
-                .ToListAsync();
-
-            if (list.Count == 0)
-                return null;
-
-            if (list.Count > 1)
-                throw new Exception("Detected not finished password change operation");
-
-            var entity = list[0];
-            if (string.IsNullOrEmpty(entity.Value))
-                throw new Exception("Data Protection parameters is empty");
-
-            entity.Params = JsonConvert.DeserializeObject<DataProtectionParams>(entity.Value);
-
-            return entity;
-        }
-
-        async Task<DataProtection> SaveDataProtectionEntity(DataProtectionParams prms)
-        {
-            var entity = await _dataProtectionRepository.AddAsync(new DataProtection()
-            {
-                Value = JsonConvert.SerializeObject(prms),
-                Params = prms
-            });
-
-            return entity;
-        }
-
-        async Task DeleteDataProtectionEntity(int id)
-        {
-            var entity = await _dataProtectionRepository
-                .Query()
-                .Where(v => v.Id == id)
-                .FirstOrDefaultAsync();
-
-            if (entity != null)
-                await _dataProtectionRepository.DeleteAsync(entity);
-        }
-        #endregion
-
-        string TryGetStoredPassword()
-        {
-            return _config.GetValue<string>("DataProtection:Password");
-        }
-
         public async Task Initialize()
         {
             _protectionEnabled = false;
             _protectionActivated = false;
+            _notFinishedPasswordChange = false;
 
             try
             {
@@ -121,11 +74,68 @@ namespace HES.Core.Services
                     }
                 }
             }
+            catch (NotFinishedPasswordChangeException)
+            {
+                _protectionEnabled = true;
+                _notFinishedPasswordChange = true;
+            }
             finally
             {
                 if (_protectionEnabled && !_protectionActivated)
                     await _applicationUserService.SendEmailDataProtectionNotify();
             }
+        }
+
+        public ProtectionStatus Status()
+        {
+            if (!_protectionEnabled)
+                return ProtectionStatus.Off;
+
+            if (_notFinishedPasswordChange)
+                return ProtectionStatus.NotFinishedPasswordChange;
+
+            if (!_protectionActivated)
+                return ProtectionStatus.Activate;
+
+            return ProtectionStatus.On;
+        }
+
+        public void Validate()
+        {
+            if (_notFinishedPasswordChange)
+                throw new Exception("Data protection not finished password change.");
+
+            if (_protectionEnabled && !_protectionActivated)
+                throw new Exception("Data protection not activated.");
+
+            if (_protectionBusy)
+                throw new Exception("Data protection is busy.");
+        }
+        
+        public string Encrypt(string plainText)
+        {
+            if (plainText == null)
+                return null;
+
+            if (!_protectionEnabled)
+                return plainText;
+
+            Validate();
+
+            return _key.Encrypt(plainText);
+        }
+
+        public string Decrypt(string cipherText)
+        {
+            if (cipherText == null)
+                return null;
+
+            if (!_protectionEnabled)
+                return cipherText;
+
+            Validate();
+
+            return _key.Decrypt(cipherText);
         }
 
         public async Task<bool> ActivateProtectionAsync(string password)
@@ -248,7 +258,7 @@ namespace HES.Core.Services
                 if (!oldKey.ValidatePassword(oldPassword))
                     throw new Exception("Incorrect old password");
 
-                // creating the key for the new password
+                // Creating the key for the new password
                 var prms = DataProtectionKey.CreateParams(newPassword);
                 var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
                 var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
@@ -256,11 +266,14 @@ namespace HES.Core.Services
 
                 await ReencryptDatabase(oldKey, newKey);
 
-                // delete old key
+                // Delete old key
                 await DeleteDataProtectionEntity(oldKey.KeyId);
 
-                // set new key as a current key
+                // Set new key as a current key
                 _key = newKey;
+
+                // Set activated if detected the not finished password change operation.
+                _protectionActivated = true;
             }
             finally
             {
@@ -268,7 +281,7 @@ namespace HES.Core.Services
             }
         }
 
-        async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
+        private async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
         {
             var devices = await _deviceRepository.Query().ToListAsync();
             var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
@@ -379,7 +392,7 @@ namespace HES.Core.Services
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
         }
 
-        async Task EncryptDatabase(DataProtectionKey key)
+        private async Task EncryptDatabase(DataProtectionKey key)
         {
             var devices = await _deviceRepository.Query().ToListAsync();
             var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
@@ -412,7 +425,7 @@ namespace HES.Core.Services
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
         }
 
-        async Task DecryptDatabase(DataProtectionKey key)
+        private async Task DecryptDatabase(DataProtectionKey key)
         {
             var devices = await _deviceRepository.Query().ToListAsync();
             var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
@@ -445,50 +458,56 @@ namespace HES.Core.Services
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
         }
 
-        public string Encrypt(string plainText)
+        private string TryGetStoredPassword()
         {
-            if (plainText == null)
+            return _config.GetValue<string>("DataProtection:Password");
+        }
+
+        #region Data Protection Params
+
+        private async Task<DataProtection> ReadDataProtectionEntity()
+        {
+            var list = await _dataProtectionRepository
+                .Query()
+                .ToListAsync();
+
+            if (list.Count == 0)
                 return null;
 
-            if (!_protectionEnabled)
-                return plainText;
+            if (list.Count > 1)
+                throw new NotFinishedPasswordChangeException("Detected not finished password change operation");
 
-            Validate();
+            var entity = list[0];
+            if (string.IsNullOrEmpty(entity.Value))
+                throw new Exception("Data Protection parameters is empty");
 
-            return _key.Encrypt(plainText);
+            entity.Params = JsonConvert.DeserializeObject<DataProtectionParams>(entity.Value);
+
+            return entity;
         }
 
-        public string Decrypt(string cipherText)
+        private async Task<DataProtection> SaveDataProtectionEntity(DataProtectionParams prms)
         {
-            if (cipherText == null)
-                return null;
+            var entity = await _dataProtectionRepository.AddAsync(new DataProtection()
+            {
+                Value = JsonConvert.SerializeObject(prms),
+                Params = prms
+            });
 
-            if (!_protectionEnabled)
-                return cipherText;
-
-            Validate();
-
-            return _key.Decrypt(cipherText);
+            return entity;
         }
 
-        public ProtectionStatus Status()
+        private async Task DeleteDataProtectionEntity(int id)
         {
-            if (!_protectionEnabled)
-                return ProtectionStatus.Off;
+            var entity = await _dataProtectionRepository
+                .Query()
+                .Where(v => v.Id == id)
+                .FirstOrDefaultAsync();
 
-            if (!_protectionActivated)
-                return ProtectionStatus.Activate;
-
-            return ProtectionStatus.On;
+            if (entity != null)
+                await _dataProtectionRepository.DeleteAsync(entity);
         }
 
-        public void Validate()
-        {
-            if (_protectionEnabled && !_protectionActivated)
-                throw new Exception("Data protection not activated.");
-
-            if (_protectionBusy)
-                throw new Exception("Data protection is busy.");
-        }
+        #endregion
     }
 }

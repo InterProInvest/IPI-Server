@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HES.Web
 {
-    public class SetPasswordModel : PageModel
+    public class ChangePasswordModel : PageModel
     {
         private readonly IDataProtectionService _dataProtectionService;
 
@@ -22,16 +22,17 @@ namespace HES.Web
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
+            [Display(Name = "Old Password")]
+            public string OldPassword { get; set; }
 
+            [Required]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The new password and confirmation password do not match.")]
-            public string ConfirmPassword { get; set; }
+            [Display(Name = "New Password")]
+            public string NewPassword { get; set; }
         }
 
-        public SetPasswordModel(IDataProtectionService dataProtectionService)
+        public ChangePasswordModel(IDataProtectionService dataProtectionService)
         {
             _dataProtectionService = dataProtectionService;
         }
@@ -51,7 +52,7 @@ namespace HES.Web
         {
             try
             {
-                await _dataProtectionService.EnableProtectionAsync(Input.Password);
+                await _dataProtectionService.ChangeProtectionSecretAsync(Input.OldPassword, Input.NewPassword);
             }
             catch (Exception ex)
             {
