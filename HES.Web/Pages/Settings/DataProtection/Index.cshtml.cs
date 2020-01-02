@@ -108,7 +108,7 @@ namespace HES.Web.Pages.Settings.DataProtection
             {
                 await _dataProtectionService.DisableProtectionAsync(currentPassword.Password);
                 _logger.LogInformation($"Data protection disabled by {User.Identity.Name}");
-                SuccessMessage = "Data protection password changed";
+                SuccessMessage = "Data protection disabled";
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ namespace HES.Web.Pages.Settings.DataProtection
 
             try
             {
-                await _dataProtectionService.ChangeProtectionSecretAsync(changePassword.OldPassword, changePassword.NewPassword);
+                await _dataProtectionService.ChangeProtectionPasswordAsync(changePassword.OldPassword, changePassword.NewPassword);
                 _logger.LogInformation($"Data protection password changed by {User.Identity.Name}");
                 SuccessMessage = "Data protection password changed";
             }

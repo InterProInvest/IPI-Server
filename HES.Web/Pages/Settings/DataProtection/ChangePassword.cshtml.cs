@@ -52,7 +52,7 @@ namespace HES.Web
         {
             try
             {
-                await _dataProtectionService.ChangeProtectionSecretAsync(Input.OldPassword, Input.NewPassword);
+                await _dataProtectionService.ChangeProtectionPasswordAsync(Input.OldPassword, Input.NewPassword);
             }
             catch (Exception ex)
             {

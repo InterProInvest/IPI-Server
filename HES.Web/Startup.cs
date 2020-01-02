@@ -97,12 +97,14 @@ namespace HES.Web
                 var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
                 var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
                 var applicationUserService = scope.ServiceProvider.GetService<IApplicationUserService>();
+                var logger = scope.ServiceProvider.GetService<ILogger<DataProtectionService>>();
                 return new DataProtectionService(config,
                                                  dataProtectionRepository,
                                                  deviceRepository,
                                                  deviceTaskRepository,
                                                  sharedAccountRepository,
-                                                 applicationUserService);
+                                                 applicationUserService,
+                                                 logger);
             });
 
             services.AddHostedService<RemoveLogsFilesHostedService>();

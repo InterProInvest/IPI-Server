@@ -7,6 +7,7 @@ using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 //todo - use transactions when enabling/disabling the protection
@@ -30,6 +31,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
         private readonly IApplicationUserService _applicationUserService;
+        private readonly ILogger<DataProtectionService> _logger;
 
         private DataProtectionKey _key;
         private bool _protectionEnabled;
@@ -42,7 +44,8 @@ namespace HES.Core.Services
                                      IAsyncRepository<Device> deviceRepository,
                                      IAsyncRepository<DeviceTask> deviceTaskRepository,
                                      IAsyncRepository<SharedAccount> sharedAccountRepository,
-                                     IApplicationUserService applicationUserService)
+                                     IApplicationUserService applicationUserService,
+                                     ILogger<DataProtectionService> logger)
         {
             _config = config;
             _dataProtectionRepository = dataProtectionRepository;
@@ -50,6 +53,7 @@ namespace HES.Core.Services
             _deviceTaskRepository = deviceTaskRepository;
             _sharedAccountRepository = sharedAccountRepository;
             _applicationUserService = applicationUserService;
+            _logger = logger;
         }
 
         public async Task Initialize()
@@ -111,7 +115,7 @@ namespace HES.Core.Services
             if (_protectionBusy)
                 throw new Exception("Data protection is busy.");
         }
-        
+
         public string Encrypt(string plainText)
         {
             if (plainText == null)
@@ -238,7 +242,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ChangeProtectionSecretAsync(string oldPassword, string newPassword)
+        public async Task ChangeProtectionPasswordAsync(string oldPassword, string newPassword)
         {
             try
             {
@@ -338,7 +342,8 @@ namespace HES.Core.Services
                 }
             }
 
-            Debug.WriteLine($"Data Protection password change for the devices: success - {correctRecords}, fail - {wrongRecords}");
+            if (wrongRecords > 0)
+                _logger.LogInformation($"Password change for the devices: fail - {wrongRecords}");
 
             // deviceTasks validation
             correctRecords = 0;
@@ -361,7 +366,8 @@ namespace HES.Core.Services
                 }
             }
 
-            Debug.WriteLine($"Data Protection password change for the deviceTasks: success - {correctRecords}, fail - {wrongRecords}");
+            if (wrongRecords > 0)
+                _logger.LogInformation($"Password change for the deviceTasks: fail - {wrongRecords}");
 
             // sharedAccounts validation
             correctRecords = 0;
@@ -384,8 +390,8 @@ namespace HES.Core.Services
                 }
             }
 
-            Debug.WriteLine($"Data Protection password change for the sharedAccounts: success - {correctRecords}, fail - {wrongRecords}");
-
+            if (wrongRecords > 0)
+                _logger.LogError($"Password change for the sharedAccounts: fail - {wrongRecords}");
 
             await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
             await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
