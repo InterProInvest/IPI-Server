@@ -12,6 +12,6 @@ namespace HES.Core.Models.API.License
         public DateTime? LicenseStartDate { get; set; }
         public DateTime? LicenseEndDate { get; set; }
         public bool ProlongExistingLicenses { get; set; }
-        public string CustomerId { get; set; } = "BBB26599-81B8-44D5-80C0-31CF830F1578";
+        public string CustomerId { get; set; }
     }
 }

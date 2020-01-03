@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,19 +17,22 @@ namespace HES.Core.Services
 {
     public class LicenseService : ILicenseService
     {
-        //private const string ApiBaseAddress = "https://localhost:44388/";
-        private const string ApiBaseAddress = "http://192.168.10.249:8070/";
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly string customerId;
+        private readonly string apiBaseAddress;
 
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
-                                   IAsyncRepository<Device> deviceRepository)
+                                   IAsyncRepository<Device> deviceRepository,
+                                   IConfiguration config)
         {
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
             _deviceRepository = deviceRepository;
+            customerId = config.GetValue<string>("Licensing:CustomerId");
+            apiBaseAddress = config.GetValue<string>("Licensing:BaseAddress");
         }
 
         #region Order
@@ -84,6 +88,13 @@ namespace HES.Core.Services
             {
                 throw new Exception("Order does not exist.");
             }
+
+            var deviceLicenses = await _deviceLicenseRepository
+                .Query()
+                .Where(d => d.LicenseOrderId == id)
+                .ToListAsync();
+            await _deviceLicenseRepository.DeleteRangeAsync(deviceLicenses);
+
             await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
 
@@ -109,13 +120,13 @@ namespace HES.Core.Services
                 LicenseStartDate = order.StartDate,
                 LicenseEndDate = order.EndDate,
                 ProlongExistingLicenses = order.ProlongExistingLicenses,
-                CustomerId = "BBB26599-81B8-44D5-80C0-31CF830F1578",
+                CustomerId = customerId,
                 Devices = deviceLicenses.Select(d => d.DeviceId).ToList()
             };
 
             using (HttpClient client = new HttpClient())
             {
-                client.BaseAddress = new Uri(ApiBaseAddress);
+                client.BaseAddress = new Uri(apiBaseAddress);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -141,7 +152,7 @@ namespace HES.Core.Services
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri(ApiBaseAddress);
+                    client.BaseAddress = new Uri(apiBaseAddress);
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -203,7 +214,7 @@ namespace HES.Core.Services
 
             using (HttpClient client = new HttpClient())
             {
-                client.BaseAddress = new Uri(ApiBaseAddress);
+                client.BaseAddress = new Uri(apiBaseAddress);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -221,7 +232,7 @@ namespace HES.Core.Services
                     // Get devices to update
                     var devicesIds = newLicenses.Select(d => d.DeviceId).ToList();
                     var devices = await _deviceRepository.Query().Where(x => devicesIds.Contains(x.Id)).ToListAsync();
-                    
+
                     foreach (var newLicense in newLicenses)
                     {
                         var currentLicense = currentLicenses.FirstOrDefault(c => c.DeviceId == newLicense.DeviceId);
