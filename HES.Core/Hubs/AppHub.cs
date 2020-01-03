@@ -227,7 +227,7 @@ namespace HES.Core.Hubs
                         var device = new Device()
                         {
                             Id = dto.DeviceSerialNo,
-                            MAC =  dto.Mac,
+                            MAC = dto.Mac,
                             Model = dto.DeviceSerialNo.Substring(0, 5),
                             RFID = dto.Mac.Replace(":", "").Substring(0, 10),
                             Battery = dto.Battery,
@@ -345,17 +345,35 @@ namespace HES.Core.Hubs
                 return new HideezErrorInfo(ex);
             }
         }
-        
-        public async Task<IList<DeviceLicense>> GetNewDeviceLicenses(string deviceId)
+
+        public async Task<IList<DeviceLicenseDTO>> GetNewDeviceLicenses(string deviceId)
         {
-            return await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+            var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+
+            var deviceLicenseDto = new List<DeviceLicenseDTO>();
+
+            foreach (var license in licenses)
+            {
+                deviceLicenseDto.Add(new DeviceLicenseDTO
+                {
+                    Id = license.Id,
+                    DeviceId = license.DeviceId,
+                    ImportedAt = license.ImportedAt,
+                    AppliedAt = license.AppliedAt,
+                    EndDate = license.EndDate,
+                    LicenseOrderId = license.LicenseOrderId,
+                    Data = license.Data,
+                });
+            }
+
+            return deviceLicenseDto;
         }
 
         public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
         {
             await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
         }
-        
+
         #endregion
     }
 }
