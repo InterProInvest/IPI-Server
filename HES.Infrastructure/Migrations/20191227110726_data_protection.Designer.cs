@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191227110726_data_protection")]
+    partial class data_protection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,15 +133,9 @@ namespace HES.Infrastructure.Migrations
 
                     b.Property<string>("Firmware");
 
-                    b.Property<bool>("HasNewLicense");
-
                     b.Property<DateTime>("ImportedAt");
 
                     b.Property<DateTime?>("LastSynced");
-
-                    b.Property<DateTime?>("LicenseEndDate");
-
-                    b.Property<int>("LicenseStatus");
 
                     b.Property<string>("MAC");
 
@@ -256,30 +252,6 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("DeviceAccounts");
                 });
 
-            modelBuilder.Entity("HES.Core.Entities.DeviceLicense", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime?>("AppliedAt");
-
-                    b.Property<byte[]>("Data");
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired();
-
-                    b.Property<DateTime?>("EndDate");
-
-                    b.Property<DateTime?>("ImportedAt");
-
-                    b.Property<string>("LicenseOrderId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeviceLicenses");
-                });
-
             modelBuilder.Entity("HES.Core.Entities.DeviceTask", b =>
                 {
                     b.Property<string>("Id")
@@ -343,31 +315,6 @@ namespace HES.Infrastructure.Migrations
                     b.HasIndex("PositionId");
 
                     b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("HES.Core.Entities.LicenseOrder", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ContactEmail")
-                        .IsRequired();
-
-                    b.Property<DateTime>("CreatedAt");
-
-                    b.Property<DateTime>("EndDate");
-
-                    b.Property<string>("Note");
-
-                    b.Property<int>("OrderStatus");
-
-                    b.Property<bool>("ProlongExistingLicenses");
-
-                    b.Property<DateTime>("StartDate");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LicenseOrders");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Position", b =>

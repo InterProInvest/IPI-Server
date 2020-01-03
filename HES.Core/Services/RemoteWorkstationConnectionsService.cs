@@ -32,6 +32,7 @@ namespace HES.Core.Services
         readonly IEmployeeService _employeeService;
         readonly IWorkstationService _workstationService;
         readonly IDeviceService _deviceService;
+        readonly IDeviceTaskService _deviceTaskService;
         readonly IDataProtectionService _dataProtectionService;
         readonly IWorkstationAuditService _workstationAuditService;
         readonly ILogger<RemoteWorkstationConnectionsService> _logger;
@@ -42,6 +43,7 @@ namespace HES.Core.Services
                       IEmployeeService employeeService,
                       IWorkstationService workstationService,
                       IDeviceService deviceService,
+                      IDeviceTaskService deviceTaskService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger)
@@ -52,6 +54,7 @@ namespace HES.Core.Services
             _employeeService = employeeService;
             _workstationService = workstationService;
             _deviceService = deviceService;
+            _deviceTaskService = deviceTaskService;
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
             _logger = logger;
@@ -177,12 +180,18 @@ namespace HES.Core.Services
 
             if (device == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
-            
+
             // Getting device info
             await remoteDevice.Initialize();
 
             if (device.EmployeeId == null && remoteDevice.AccessLevel.IsLinkRequired)
             {
+                var taskExist = await _deviceTaskService.Query().AsNoTracking().AnyAsync();
+                if (taskExist)
+                {
+                    await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+                    await _deviceService.RestoreDefaultsAsync(deviceId);
+                }
                 throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
             }
 

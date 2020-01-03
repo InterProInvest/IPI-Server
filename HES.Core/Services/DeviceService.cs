@@ -270,6 +270,24 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
         }
 
+        public async Task RestoreDefaultsAsync(string deviceId)
+        {
+            var device = await _deviceRepository.GetByIdAsync(deviceId);
+
+            device.LastSynced = DateTime.UtcNow;
+            device.AcceessProfileId = "default";
+            device.State = DeviceState.OK;
+
+            var properties = new List<string>()
+            {
+                "LastSynced",
+                "AcceessProfileId",
+                "State"
+            };
+
+            await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
+        }
+
         #endregion
 
         #region Profile
