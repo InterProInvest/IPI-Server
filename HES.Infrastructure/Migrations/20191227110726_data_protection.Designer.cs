@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191227110726_data_protection")]
+    partial class data_protection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,27 +125,23 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("AcceessProfileId")
-                        .IsRequired();
+                    b.Property<string>("AcceessProfileId");
 
                     b.Property<int>("Battery");
 
                     b.Property<string>("EmployeeId");
 
-                    b.Property<string>("Firmware")
-                        .IsRequired();
+                    b.Property<string>("Firmware");
 
                     b.Property<DateTime>("ImportedAt");
 
                     b.Property<DateTime?>("LastSynced");
 
-                    b.Property<string>("MAC")
-                        .IsRequired();
+                    b.Property<string>("MAC");
 
                     b.Property<string>("MasterPassword");
 
-                    b.Property<string>("Model")
-                        .IsRequired();
+                    b.Property<string>("Model");
 
                     b.Property<string>("PrimaryAccountId");
 
@@ -649,8 +647,7 @@ namespace HES.Infrastructure.Migrations
                 {
                     b.HasOne("HES.Core.Entities.DeviceAccessProfile", "DeviceAccessProfile")
                         .WithMany("Devices")
-                        .HasForeignKey("AcceessProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("AcceessProfileId");
 
                     b.HasOne("HES.Core.Entities.Employee", "Employee")
                         .WithMany("Devices")

@@ -30,6 +30,12 @@ namespace HES.Web.Middleware
                             context.Response.Redirect($"/Settings/DataProtection/Activate?returnUrl={context.Request.Path}", true);
                         }
                         break;
+                    case ProtectionStatus.NotFinishedPasswordChange:
+                        if (context.Request.Path != "/Settings/DataProtection/ChangePassword")
+                        {
+                            context.Response.Redirect($"/Settings/DataProtection/ChangePassword?returnUrl={context.Request.Path}", true);
+                        }
+                        break;
                 }
             }
 
