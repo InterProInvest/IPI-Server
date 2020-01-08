@@ -14,6 +14,7 @@ namespace HES.Core.HostedServices
         private readonly IServiceProvider _services;
         private readonly IServiceScope _scope;
         private readonly ILicenseService _licenseService;
+        private readonly IEmailSenderService _emailSenderService;
         private readonly ILogger<LicenseOrderStatusHostedService> _logger;
         private Timer _timer;
 
@@ -24,6 +25,7 @@ namespace HES.Core.HostedServices
 
             _scope = _services.CreateScope();
             _licenseService = _scope.ServiceProvider.GetRequiredService<ILicenseService>();
+            _emailSenderService = _scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -59,8 +61,8 @@ namespace HES.Core.HostedServices
                         await _licenseService.UpdateNewDeviceLicensesAsync(order.Id);
                     }
 
-                    await _licenseService.ChangeOrderStatusAsync(order, status);
-                    // TODO send email with status
+                    await _licenseService.ChangeOrderStatusAsync(order, status);    
+                    await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
                 }
             }
             catch (Exception ex)

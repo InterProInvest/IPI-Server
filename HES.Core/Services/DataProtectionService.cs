@@ -30,7 +30,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
-        private readonly IApplicationUserService _applicationUserService;
+        private readonly IEmailSenderService _emailSenderService;
         private readonly ILogger<DataProtectionService> _logger;
 
         private DataProtectionKey _key;
@@ -44,7 +44,7 @@ namespace HES.Core.Services
                                      IAsyncRepository<Device> deviceRepository,
                                      IAsyncRepository<DeviceTask> deviceTaskRepository,
                                      IAsyncRepository<SharedAccount> sharedAccountRepository,
-                                     IApplicationUserService applicationUserService,
+                                     IEmailSenderService emailSenderService,
                                      ILogger<DataProtectionService> logger)
         {
             _config = config;
@@ -52,7 +52,7 @@ namespace HES.Core.Services
             _deviceRepository = deviceRepository;
             _deviceTaskRepository = deviceTaskRepository;
             _sharedAccountRepository = sharedAccountRepository;
-            _applicationUserService = applicationUserService;
+            _emailSenderService = emailSenderService;
             _logger = logger;
         }
 
@@ -86,7 +86,7 @@ namespace HES.Core.Services
             finally
             {
                 if (_protectionEnabled && !_protectionActivated)
-                    await _applicationUserService.SendEmailDataProtectionNotify();
+                    await _emailSenderService.SendActivateDataProtectionAsync();
             }
         }
 
