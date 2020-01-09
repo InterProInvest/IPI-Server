@@ -2,6 +2,7 @@
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
@@ -9,6 +10,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
     public class DeleteModel : PageModel
     {
         private readonly ILicenseService _licenseService;
+        public IList<DeviceLicense> DeviceLicenses { get; set; }
 
         [BindProperty]
         public LicenseOrder LicenseOrder { get; set; }
@@ -32,6 +34,9 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             {
                 return NotFound();
             }
+
+            DeviceLicenses = await _licenseService.GetDeviceLicensesByOrderIdAsync(id);
+
             return Page();
         }
 

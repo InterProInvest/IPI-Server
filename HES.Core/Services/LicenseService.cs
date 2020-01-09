@@ -252,6 +252,63 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task<List<Device>> UpdateDeviceLicenseStatusAsync()
+        {
+            var devicesChangedStatus = new List<Device>();
+
+            var devices = await _deviceRepository
+                .Query()
+                .Where(d => d.LicenseEndDate != null)
+                .ToListAsync();
+
+            foreach (var device in devices)
+            {
+                if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 90)
+                {
+                    System.Diagnostics.Debug.WriteLine("Valid " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
+                    if (device.LicenseStatus != LicenseStatus.Valid)
+                    {
+                        device.LicenseStatus = LicenseStatus.Valid;
+                        devicesChangedStatus.Add(device);
+                    }
+                }
+                else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 30)
+                {
+                    System.Diagnostics.Debug.WriteLine("Warning " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
+                    if (device.LicenseStatus != LicenseStatus.Warning)
+                    {
+                        device.LicenseStatus = LicenseStatus.Warning;
+                        devicesChangedStatus.Add(device);
+                    }
+                }
+                else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("Critical " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
+                    if (device.LicenseStatus != LicenseStatus.Critical)
+                    {
+                        device.LicenseStatus = LicenseStatus.Critical;
+                        devicesChangedStatus.Add(device);
+                    }
+                }
+                else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays < 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("Expired " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
+                    if (device.LicenseStatus != LicenseStatus.Expired)
+                    {
+                        device.LicenseStatus = LicenseStatus.Expired;
+                        devicesChangedStatus.Add(device);
+                    }
+                }
+            }
+
+            if (devicesChangedStatus.Count > 0)
+            {
+                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
+            }
+
+            return devicesChangedStatus;
+        }
+               
         public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
         {
             return await _deviceLicenseRepository

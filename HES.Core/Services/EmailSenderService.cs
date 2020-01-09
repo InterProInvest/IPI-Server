@@ -1,9 +1,13 @@
-﻿using HES.Core.Enums;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -12,20 +16,17 @@ namespace HES.Core.Services
     {
         private readonly IApplicationUserService _applicationUserService;
         private readonly SmtpClient client;
-        private readonly string host;
-        private readonly int port;
-        private readonly bool enableSSL;
-        private readonly string userName;
-        private readonly string password;
-
+        private readonly string sender;
 
         public EmailSenderService(IConfiguration config, IApplicationUserService applicationUserService)
         {
-            host = config.GetValue<string>("EmailSender:Host");
-            port = config.GetValue<int>("EmailSender:Port");
-            enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
-            userName = config.GetValue<string>("EmailSender:UserName");
-            password = config.GetValue<string>("EmailSender:Password");
+            _applicationUserService = applicationUserService;
+
+            var host = config.GetValue<string>("EmailSender:Host");
+            var port = config.GetValue<int>("EmailSender:Port");
+            var enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
+            var userName = config.GetValue<string>("EmailSender:UserName");
+            var password = config.GetValue<string>("EmailSender:Password");
 
             client = new SmtpClient(host, port)
             {
@@ -33,12 +34,12 @@ namespace HES.Core.Services
                 EnableSsl = enableSSL
             };
 
-            _applicationUserService = applicationUserService;
+            sender = userName;
         }
 
         private async Task SendAsync(string email, string subject, string message)
         {
-            await client.SendMailAsync(new MailMessage(userName, email, subject, message) { IsBodyHtml = true });
+            await client.SendMailAsync(new MailMessage(sender, email, subject, message) { IsBodyHtml = true });
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
@@ -62,6 +63,67 @@ namespace HES.Core.Services
                                 <br/>
                                 <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
                                     The status of your Hideez License order of {createdAt} has been changed to {status}
+                                </div>    
+                                <br/>
+                                <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
+                                    Sincerely,<br/>
+                                    your HES 
+                                </div>  
+                           </div>
+                          ";
+
+            var admins = await _applicationUserService.GetAdministratorsAsync();
+
+            foreach (var admin in admins)
+            {
+                await SendAsync(admin.Email, subject, html);
+            }
+        }
+
+        public async Task SendDeviceLicenseStatus(List<Device> devices)
+        {
+            if (devices == null || devices.Count == 0)
+            {
+                return;
+            }
+
+            var message = new StringBuilder();
+
+            var valid = devices.Where(d => d.LicenseStatus == LicenseStatus.Valid).OrderBy(d => d.Id).ToList();
+            foreach (var item in valid)
+            {
+                message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
+            }
+
+            var warning = devices.Where(d => d.LicenseStatus == LicenseStatus.Warning).OrderBy(d => d.Id).ToList();
+            foreach (var item in warning)
+            {
+                message.Append($"{item.Id} - {item.LicenseStatus} (90 days remainin)<br/>");
+            }
+
+            var critical = devices.Where(d => d.LicenseStatus == LicenseStatus.Critical).OrderBy(d => d.Id).ToList();
+            foreach (var item in critical)
+            {
+                message.Append($"{item.Id} - {item.LicenseStatus} (30 days remainin)<br/>");
+            }
+
+            var expired = devices.Where(d => d.LicenseStatus == LicenseStatus.Expired).OrderBy(d => d.Id).ToList();
+            foreach (var item in expired)
+            {
+                message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
+            }
+
+            string subject = "HES notification";
+
+            string html = $@"
+                           <div style='font-family: Roboto;'>                       
+                                <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
+                                <br/>
+                                <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
+                                    Some of your Hideez Key devices have changes in their license status. Please review the list below and take action if required.
+                                    <br/>
+                                    <br/>
+                                    {message}
                                 </div>    
                                 <br/>
                                 <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>

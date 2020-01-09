@@ -117,6 +117,7 @@ namespace HES.Web
 
             services.AddHostedService<RemoveLogsFilesHostedService>();
             services.AddHostedService<LicenseOrderStatusHostedService>();
+            services.AddHostedService<DeviceLicenseStatusHostedService>();
 
             // SignalR
             services.AddSignalR();
