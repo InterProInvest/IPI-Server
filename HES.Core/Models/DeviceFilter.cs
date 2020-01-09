@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HES.Core.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace HES.Core.Models
@@ -11,6 +12,7 @@ namespace HES.Core.Models
         public DateTime? EndDate { get; set; }
         public int? Battery { get; set; }
         public string Firmware { get; set; }        
+        public LicenseStatus? LicenseStatus { get; set; }        
         [Display(Name = "Employee")]
         public string EmployeeId { get; set; }
         [Display(Name = "Company")]

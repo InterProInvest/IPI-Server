@@ -94,6 +94,10 @@ namespace HES.Core.Services
             {
                 filter = filter.Where(w => w.Firmware.Contains(deviceFilter.Firmware));
             }
+            if (deviceFilter.LicenseStatus != null)
+            {
+                filter = filter.Where(w => w.LicenseStatus == deviceFilter.LicenseStatus);
+            }
             if (deviceFilter.EmployeeId != null)
             {
                 if (deviceFilter.EmployeeId == "N/A")

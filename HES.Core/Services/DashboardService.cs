@@ -85,7 +85,7 @@ namespace HES.Core.Services
             return await _workstationAuditService
                .SessionQuery()
                .Where(w => w.EndDate == null)
-               .CountAsync();         
+               .CountAsync();
         }
 
         public async Task<List<DashboardNotify>> GetEmployeesNotifyAsync()
@@ -193,6 +193,57 @@ namespace HES.Core.Services
                 });
             }
 
+            var licenseWarning = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus == LicenseStatus.Warning)
+                .AsTracking()
+                .CountAsync();
+
+            if (licenseWarning > 0)
+            {
+                list.Add(new DashboardNotify()
+                {
+                    Message = "License Warning",
+                    Count = licenseWarning,
+                    Page = "/Devices/Index",
+                    Handler = "LicenseWarning"
+                });
+            }
+
+            var licenseCritical = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus == LicenseStatus.Critical)
+                .AsTracking()
+                .CountAsync();
+
+            if (licenseCritical > 0)
+            {
+                list.Add(new DashboardNotify()
+                {
+                    Message = "License Critical",
+                    Count = licenseCritical,
+                    Page = "/Devices/Index",
+                    Handler = "LicenseCritical"
+                });
+            }
+
+            var licenseExpired = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus == LicenseStatus.Expired)
+                .AsTracking()
+                .CountAsync();
+
+            if (licenseExpired > 0)
+            {
+                list.Add(new DashboardNotify()
+                {
+                    Message = "License Expired",
+                    Count = licenseExpired,
+                    Page = "/Devices/Index",
+                    Handler = "LicenseExpired"
+                });
+            }
+            
             return list;
         }
 
