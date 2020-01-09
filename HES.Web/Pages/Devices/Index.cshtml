@@ -36,11 +36,8 @@
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label asp-for="DeviceFilter.Battery" class="control-label"></label>
-                <select id="battery" asp-for="DeviceFilter.Battery" class="form-control">
-                    <option selected></option>
-                    <option value="0">Low</option>
-                    <option value="1">Full</option>
-                </select>
+                <input id="battery" asp-for="DeviceFilter.Battery" class="form-control" type="number" />
+                <span asp-validation-for="DeviceFilter.Battery" class="text-danger"></span>
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label asp-for="DeviceFilter.Firmware" class="control-label"></label>
