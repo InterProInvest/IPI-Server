@@ -226,7 +226,7 @@ namespace HES.Core.Services
                 {
                     // Deserialize new licenses
                     var data = await response.Content.ReadAsStringAsync();
-                    var newLicenses = JsonConvert.DeserializeObject<List<DeviceLicense>>(data);
+                    var newLicenses = JsonConvert.DeserializeObject<List<DeviceLicenseDto>>(data);
                     // Get current licenses to update
                     var currentLicenses = await GetDeviceLicensesByOrderIdAsync(orderId);
                     // Get devices to update
@@ -237,8 +237,8 @@ namespace HES.Core.Services
                     {
                         var currentLicense = currentLicenses.FirstOrDefault(c => c.DeviceId == newLicense.DeviceId);
                         currentLicense.ImportedAt = DateTime.UtcNow;
-                        currentLicense.EndDate = newLicense.EndDate;
-                        currentLicense.Data = newLicense.Data;
+                        currentLicense.EndDate = newLicense.LicenseEndDate;
+                        currentLicense.Data = Convert.FromBase64String(newLicense.Data);
 
                         var device = devices.FirstOrDefault(d => d.Id == newLicense.DeviceId);
                         device.HasNewLicense = true;
