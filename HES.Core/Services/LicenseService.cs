@@ -20,8 +20,8 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
-        private readonly string customerId;
-        private readonly string apiBaseAddress;
+        private readonly string apiKey;
+        private readonly string apiAddress;
 
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
@@ -31,8 +31,8 @@ namespace HES.Core.Services
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
             _deviceRepository = deviceRepository;
-            customerId = config.GetValue<string>("Licensing:CustomerId");
-            apiBaseAddress = config.GetValue<string>("Licensing:BaseAddress");
+            apiKey = config.GetValue<string>("Licensing:ApiKey");
+            apiAddress = config.GetValue<string>("Licensing:ApiAddress");
         }
 
         #region Order
@@ -120,15 +120,15 @@ namespace HES.Core.Services
                 LicenseStartDate = order.StartDate,
                 LicenseEndDate = order.EndDate,
                 ProlongExistingLicenses = order.ProlongExistingLicenses,
-                CustomerId = customerId,
+                CustomerId = apiKey,
                 Devices = deviceLicenses.Select(d => d.DeviceId).ToList()
             };
 
             using (HttpClient client = new HttpClient())
             {
-                client.BaseAddress = new Uri(apiBaseAddress);
+                client.BaseAddress = new Uri(apiAddress);
                 client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 var stringContent = new StringContent(JsonConvert.SerializeObject(licenseOrderDto), Encoding.UTF8, "application/json");
                 var path = $"api/Licenses/CreateLicenseOrder";
@@ -152,7 +152,7 @@ namespace HES.Core.Services
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri(apiBaseAddress);
+                    client.BaseAddress = new Uri(apiAddress);
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -214,7 +214,7 @@ namespace HES.Core.Services
 
             using (HttpClient client = new HttpClient())
             {
-                client.BaseAddress = new Uri(apiBaseAddress);
+                client.BaseAddress = new Uri(apiAddress);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -265,7 +265,6 @@ namespace HES.Core.Services
             {
                 if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 90)
                 {
-                    System.Diagnostics.Debug.WriteLine("Valid " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
                     if (device.LicenseStatus != LicenseStatus.Valid)
                     {
                         device.LicenseStatus = LicenseStatus.Valid;
@@ -274,7 +273,6 @@ namespace HES.Core.Services
                 }
                 else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 30)
                 {
-                    System.Diagnostics.Debug.WriteLine("Warning " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
                     if (device.LicenseStatus != LicenseStatus.Warning)
                     {
                         device.LicenseStatus = LicenseStatus.Warning;
@@ -283,7 +281,6 @@ namespace HES.Core.Services
                 }
                 else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Critical " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
                     if (device.LicenseStatus != LicenseStatus.Critical)
                     {
                         device.LicenseStatus = LicenseStatus.Critical;
@@ -292,7 +289,6 @@ namespace HES.Core.Services
                 }
                 else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays < 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Expired " + device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays);
                     if (device.LicenseStatus != LicenseStatus.Expired)
                     {
                         device.LicenseStatus = LicenseStatus.Expired;

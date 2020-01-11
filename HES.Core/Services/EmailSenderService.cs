@@ -17,6 +17,8 @@ namespace HES.Core.Services
         private readonly IApplicationUserService _applicationUserService;
         private readonly SmtpClient client;
         private readonly string sender;
+        private readonly string serverName;
+        private readonly string serverUrl;
 
         public EmailSenderService(IConfiguration config, IApplicationUserService applicationUserService)
         {
@@ -35,10 +37,17 @@ namespace HES.Core.Services
             };
 
             sender = userName;
+            serverName = config.GetValue<string>("Server:Name");
+            serverUrl = config.GetValue<string>("Server:Url");
         }
 
         private async Task SendAsync(string email, string subject, string message)
         {
+            if (!string.IsNullOrWhiteSpace(serverName))
+            {
+                subject = $"({serverName}) {subject}";
+            }
+
             await client.SendMailAsync(new MailMessage(sender, email, subject, message) { IsBodyHtml = true });
         }
 

@@ -25,8 +25,12 @@ namespace HES.Web
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
+            #region Environment variables
+
             var server = configuration["MYSQL_SRV"];
             var port = configuration["MYSQL_PORT"];
             var db = configuration["MYSQL_DB"];
@@ -57,19 +61,27 @@ namespace HES.Web
                 configuration["DataProtection:Password"] = dataprotectoin_pwd;
             }
 
-            var customer_id = configuration["CUSTOMER_ID"];
-            var base_address = configuration["BASE_ADDRESS"];
-            if (customer_id != null && base_address != null)
+            var api_key = configuration["API_KEY"];
+            var api_address = configuration["API_ADDRESS"];
+            if (api_key != null && api_address != null)
             {
-                configuration["Licensing:CustomerId"] = customer_id;
-                configuration["Licensing:BaseAddress"] = base_address;
+                configuration["Licensing:ApiKey"] = api_key;
+                configuration["Licensing:ApiAddress"] = api_address;
             }
 
+            var server_name = configuration["SRV_NAME"];
+            var server_url = configuration["SRV_URL"];
+            if (server_name != null && server_url != null)
+            {
+                configuration["Server:Name"] = server_name;
+                configuration["Server:Url"] = server_url;
+            }
+
+            #endregion
+            
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
-
+        
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
