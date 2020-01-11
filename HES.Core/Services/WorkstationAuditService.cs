@@ -83,8 +83,8 @@ namespace HES.Core.Services
 
             if (workstationEventFilter.StartDate != null && workstationEventFilter.EndDate != null)
             {
-                filter = filter.Where(w => w.Date >= workstationEventFilter.StartDate.Value.Date.AddSeconds(0).AddMilliseconds(0).ToUniversalTime() &&
-                                           w.Date <= workstationEventFilter.EndDate.Value.Date.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                filter = filter.Where(w => w.Date >= workstationEventFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime() &&
+                                           w.Date <= workstationEventFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
             }
             if (workstationEventFilter.EventId != null)
             {
@@ -187,7 +187,6 @@ namespace HES.Core.Services
                 DeviceAccountId = deviceAccountId,
             };
 
-            //await AddEventAsync(workstationEvent);
             await _workstationEventRepository.AddAsync(workstationEvent);
         }
 
