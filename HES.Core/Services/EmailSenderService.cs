@@ -66,6 +66,7 @@ namespace HES.Core.Services
         public async Task SendLicenseChangedAsync(DateTime createdAt, OrderStatus status)
         {
             string subject = "HES notification";
+            string hes = serverUrl == null ? "HES" : $"<a href='{serverUrl}'>HES</a>";
             string html = $@"
                            <div style='font-family: Roboto;'>                       
                                 <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
@@ -76,7 +77,7 @@ namespace HES.Core.Services
                                 <br/>
                                 <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
                                     Sincerely,<br/>
-                                    your HES 
+                                    your {hes} 
                                 </div>  
                            </div>
                           ";
@@ -123,7 +124,7 @@ namespace HES.Core.Services
             }
 
             string subject = "HES notification";
-
+            string hes = serverUrl == null ? "HES" : $"<a href='{serverUrl}'>HES</a>";
             string html = $@"
                            <div style='font-family: Roboto;'>                       
                                 <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
@@ -137,7 +138,7 @@ namespace HES.Core.Services
                                 <br/>
                                 <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
                                     Sincerely,<br/>
-                                    your HES 
+                                    your {hes} 
                                 </div>  
                            </div>
                           ";
