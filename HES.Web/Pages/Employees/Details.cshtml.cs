@@ -297,6 +297,14 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnPostAddDeviceAsync(string employeeId, string[] selectedDevices)
         {
+            var id = employeeId;
+
+            if (selectedDevices.Length <= 0)
+            {
+                ErrorMessage = "Device(s) was not selected";
+                return RedirectToPage("./Details", new { id });
+            }
+
             if (employeeId == null)
             {
                 _logger.LogWarning($"{nameof(employeeId)} is null");
@@ -322,8 +330,7 @@ namespace HES.Web.Pages.Employees
                     ErrorMessage = ex.Message;
                 }
             }
-
-            var id = employeeId;
+                   
             return RedirectToPage("./Details", new { id });
         }
 
