@@ -188,8 +188,9 @@ namespace HES.Web
                 })
                 .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            services.AddRazorPages();
             services.AddControllers();
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
 
             // Register the Swagger generator
             services.AddSwaggerGen(c =>
@@ -260,8 +261,9 @@ namespace HES.Web
                 endpoints.MapHub<DeviceHub>("/deviceHub");
                 endpoints.MapHub<AppHub>("/appHub");
                 endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
-                endpoints.MapRazorPages();
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
+                endpoints.MapBlazorHub();
             });
 
             app.UseSwagger();
