@@ -7,6 +7,7 @@ namespace HES.Core.Entities
     public class SharedAccount
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
         public string Name { get; set; }

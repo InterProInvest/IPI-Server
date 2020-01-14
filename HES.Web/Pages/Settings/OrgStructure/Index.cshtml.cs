@@ -32,6 +32,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
         public string SuccessMessage { get; set; }
         [TempData]
         public string ErrorMessage { get; set; }
+        [ViewData]
+        public SelectList CompanyId { get; set; }
 
         public IndexModel(IOrgStructureService orgStructureService,
                           IWorkstationService workstationService,
@@ -176,7 +178,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task<IActionResult> OnGetCreateDepartment()
         {
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.GetCompaniesAsync(), "Id", "Name");
+            CompanyId = new SelectList(await _orgStructureService.GetCompaniesAsync(), "Id", "Name");
             return Partial("_CreateDepartment", this);
         }
 
@@ -219,7 +221,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.GetCompaniesAsync(), "Id", "Name");
+            CompanyId = new SelectList(await _orgStructureService.GetCompaniesAsync(), "Id", "Name");
             return Partial("_EditDepartment", this);
         }
 

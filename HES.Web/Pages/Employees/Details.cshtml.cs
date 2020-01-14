@@ -48,6 +48,14 @@ namespace HES.Web.Pages.Employees
         public string SuccessMessage { get; set; }
         [TempData]
         public string ErrorMessage { get; set; }
+        [ViewData]
+        public string EmployeeId { get; set; }
+        [ViewData]
+        public SelectList Templates { get; set; }
+        [ViewData]
+        public SelectList WorkstationAccountTypeList { get; set; }
+        [ViewData]
+        public SelectList SharedAccountIdList { get; set; }
 
         public DetailsModel(IEmployeeService employeeService,
                             IDeviceService deviceService,
@@ -396,9 +404,9 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnGetCreatePersonalAccountAsync(string id)
         {
-            ViewData["EmployeeId"] = id;
-            ViewData["Templates"] = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
-            ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            EmployeeId = id;
+            Templates = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
+            WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
             Devices = await _deviceService.DeviceQuery().Where(d => d.EmployeeId == id).ToListAsync();
 
@@ -607,8 +615,8 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnGetAddSharedAccountAsync(string id)
         {
-            ViewData["EmployeeId"] = id;
-            ViewData["SharedAccountId"] = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
+            EmployeeId = id;
+            SharedAccountIdList = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
 
             SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
             Devices = await _deviceService.GetDevicesByEmployeeIdAsync(id);

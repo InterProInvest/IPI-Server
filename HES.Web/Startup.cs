@@ -7,14 +7,12 @@ using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
@@ -113,12 +111,12 @@ namespace HES.Web
             services.AddSignalR();
 
             // Cookie
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            //services.Configure<CookiePolicyOptions>(options =>
+            //{
+            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+            //    options.CheckConsentNeeded = context => true;
+            //    options.MinimumSameSitePolicy = SameSiteMode.None;
+            //});
 
             // Dismiss strong password
             services.Configure<IdentityOptions>(options =>
@@ -137,7 +135,7 @@ namespace HES.Web
 
             // Identity
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
+                .AddDefaultUI()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -188,8 +186,10 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
                 })
-                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.AddRazorPages();
+            services.AddControllers();
 
             // Register the Swagger generator
             services.AddSwaggerGen(c =>
@@ -199,7 +199,7 @@ namespace HES.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -246,40 +246,43 @@ namespace HES.Web
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseRouting();
+
+            //app.UseCookiePolicy();
             app.UseAuthentication();
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<DeviceHub>("/deviceHub");
-                routes.MapHub<AppHub>("/appHub");
-                routes.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
-            });
+            app.UseAuthorization();
 
             app.UseMiddleware<DataProtectionMiddeware>();
-       
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<DeviceHub>("/deviceHub");
+                endpoints.MapHub<AppHub>("/appHub");
+                endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
+                endpoints.MapRazorPages();
+                endpoints.MapControllers();
+            });
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "HES API V1");
             });
 
-            app.UseMvc();
-            app.UseCookiePolicy();
-
-            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
-                logger.LogInformation("Server started");
-                // Apply migration
-                var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
-                context.Database.Migrate();
-                // Db seed if first run
-                var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-                var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-                new ApplicationDbSeed(context, userManager, roleManager).Initialize();
-                // Get status of data protection
-                var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
-                dataProtectionService.Initialize().Wait();
-            }
+            using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
+            logger.LogInformation("Server started");
+            // Apply migration
+            var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
+            context.Database.Migrate();
+            // Db seed if first run
+            var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
+            var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
+            new ApplicationDbSeed(context, userManager, roleManager).Initialize();
+            // Get status of data protection
+            var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
+            dataProtectionService.Initialize().Wait();
         }
     }
 }
