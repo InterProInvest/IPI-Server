@@ -86,7 +86,7 @@
             <div class="form-group col">
                 <label asp-for="Employee.Department.CompanyId" class="control-label text-gray"></label>
                 <div class="d-flex">
-                    <select id="companies" onchange="GetDepartment(this.value)" class="form-control text-navyblue" asp-items="ViewBag.CompanyId"></select>
+                    <select id="companies" onchange="GetDepartment(this.value)" class="form-control text-navyblue" asp-items="ViewBag.CompanyIdList"></select>
                     <button type="button" class="btn btn-success btn-add open-second-modal-dialog" data-id="" data-action="CreateCompany" data-title="Create company">
                         <img src="~/svg/action/add.svg" />
                     </button>
@@ -108,7 +108,7 @@
             <div class="form-group col">
                 <label asp-for="Employee.PositionId" class="control-label text-gray"></label>
                 <div class="d-flex">
-                    <select id="positions" asp-for="Employee.PositionId" class="form-control text-navyblue" asp-items="ViewBag.PositionId"></select>
+                    <select id="positions" asp-for="Employee.PositionId" class="form-control text-navyblue" asp-items="@ViewBag.PositionIdList"></select>
                     <button type="button" class="btn btn-success btn-add open-second-modal-dialog" data-id="" data-action="CreatePosition" data-title="Create position">
                         <img src="~/svg/action/add.svg" />
                     </button>
@@ -125,7 +125,7 @@
         <div class="row justify-content-center">
             <div class="form-group col-4">
                 <label class="control-label">Device</label>
-                <select id="deviceId" class="form-control" asp-for="Wizard.DeviceId" asp-items="ViewBag.DeviceId"></select>
+                <select id="deviceId" class="form-control" asp-for="Wizard.DeviceId" asp-items="ViewBag.DeviceIdList"></select>
             </div>
         </div>
         <div class="row justify-content-center" id="proximity_group">
@@ -142,7 +142,7 @@
         <div class="row justify-content-center d-none" id="workstation_group">
             <div class="form-group col-4">
                 <label class="control-label">Select the workstation for proximity unlock</label>
-                <select id="workstationId" class="form-control" asp-for="Wizard.WorkstationId" asp-items="ViewBag.WorkstationId"></select>
+                <select id="workstationId" class="form-control" asp-for="Wizard.WorkstationId" asp-items="ViewBag.WorkstationIdList"></select>
             </div>
         </div>
     </div>
@@ -163,7 +163,7 @@
                 <div class="row">
                     <div class="form-group col">
                         <label asp-for="Wizard.WorkstationAccount.AccountType" class="text-gray"></label>
-                        <select id="workstation_account_type" asp-for="Wizard.WorkstationAccount.AccountType" class="form-control" asp-items="ViewBag.WorkstationAccountType"></select>
+                        <select id="workstation_account_type" asp-for="Wizard.WorkstationAccount.AccountType" class="form-control" asp-items="ViewBag.WorkstationAccountTypeList"></select>
                     </div>
                     <div id="domain_group" class="form-group col invisible">
                         <label asp-for="Wizard.WorkstationAccount.Domain" class="text-gray"></label>
@@ -193,7 +193,7 @@
             <div class="tab-pane fade" id="pills-shared" role="tabpanel">
                 <div class="form-group col" style="max-width:350px; position:relative;left:50%;transform:translateX(-50%);">
                     <label class="text-gray">Workstation Accounts</label>
-                    <select id="workstation_accounts" class="form-control" asp-items="ViewBag.WorkstationAccounts"></select>
+                    <select id="workstation_accounts" class="form-control" asp-items="ViewBag.WorkstationAccountsList"></select>
                 </div>
             </div>
         </div>

@@ -9,6 +9,7 @@ namespace HES.Core.Entities
     public class Workstation
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         public string Name { get; set; }
         public string Domain { get; set; }

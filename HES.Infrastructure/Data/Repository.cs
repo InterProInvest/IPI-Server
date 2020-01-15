@@ -24,7 +24,7 @@ namespace HES.Infrastructure
 
         public IQueryable<T> SqlQuery(string sql)
         {
-            return _context.Query<T>().FromSql(sql);
+            return _context.Set<T>().FromSqlRaw(sql);
         }
 
         public async Task<T> GetByIdAsync(dynamic id)

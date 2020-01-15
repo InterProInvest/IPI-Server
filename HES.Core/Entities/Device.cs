@@ -10,6 +10,7 @@ namespace HES.Core.Entities
     {
         [Display(Name = "ID")]
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         public string MAC { get; set; }
         public string Model { get; set; }

@@ -9,6 +9,7 @@ namespace HES.Core.Entities
     public class Employee
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
         [Display(Name = "First Name")]
