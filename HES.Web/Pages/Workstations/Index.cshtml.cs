@@ -28,6 +28,10 @@ namespace HES.Web.Pages.Workstations
         public string SuccessMessage { get; set; }
         [TempData]
         public string ErrorMessage { get; set; }
+        [ViewData]
+        public SelectList CompanyIdList { get; set; }
+        [ViewData]
+        public SelectList DepartmentIdList { get; set; }
 
         public IndexModel(IWorkstationService workstationService, IOrgStructureService orgStructureService, ILogger<IndexModel> logger)
         {
@@ -115,8 +119,8 @@ namespace HES.Web.Pages.Workstations
                 departments = await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Workstation.Department.CompanyId).ToListAsync();
             }
 
-            ViewData["CompanyId"] = new SelectList(companies, "Id", "Name");
-            ViewData["DepartmentId"] = new SelectList(departments, "Id", "Name");
+            CompanyIdList = new SelectList(companies, "Id", "Name");
+            DepartmentIdList = new SelectList(departments, "Id", "Name");
 
             return Partial("_EditWorkstation", this);
         }
@@ -160,7 +164,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+           CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
 
             return Partial("_ApproveWorkstation", this);
         }
