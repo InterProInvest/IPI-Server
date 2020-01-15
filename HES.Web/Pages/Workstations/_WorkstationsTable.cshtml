@@ -140,12 +140,11 @@
                                 <img class="icon-devices" style="background:#4E88CE" />
                                 Proximity
                             </a>
-                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditWorkstation" data-title="Edit workstation">
-                                <img src="~/svg/action/edit.svg" />
-                                Edit
-                            </a>
                             @if (item.Approved)
-                            {
+                            {<a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditWorkstation" data-title="Edit workstation">
+                                    <img src="~/svg/action/edit.svg" />
+                                    Edit
+                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UnapproveWorkstation" data-title="Unapprove workstation">
                                     <img src="~/svg/action/clear.svg" />

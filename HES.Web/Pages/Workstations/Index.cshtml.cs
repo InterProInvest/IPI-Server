@@ -161,7 +161,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-
+   
             return Partial("_ApproveWorkstation", this);
         }
 
