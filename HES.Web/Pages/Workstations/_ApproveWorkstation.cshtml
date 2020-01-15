@@ -6,11 +6,11 @@
     <h5 class="text-gray mb-4 ">You want to approve workstation @Model.Workstation.Name?</h5>
     <div class="form-group">
         <label asp-for="Workstation.Department.CompanyId" class="control-label text-gray"></label>
-        <select id="companies" asp-for="Workstation.Department.CompanyId" onchange="GetDepartment(this.value)" class="form-control text-navyblue" asp-items="ViewBag.CompanyId"></select>
+        <select id="companies" asp-for="Workstation.Department.CompanyId" onchange="GetDepartment(this.value)" class="form-control text-navyblue" asp-items="ViewBag.CompanyIdList"></select>
     </div>
     <div class="form-group">
         <label asp-for="Workstation.Department" class="control-label text-gray"></label>
-        <select id="departments" asp-for="Workstation.DepartmentId" asp-items="ViewBag.DepartmentId" class="form-control text-navyblue"></select>
+        <select id="departments" asp-for="Workstation.DepartmentId" asp-items="ViewBag.DepartmentIdList" class="form-control text-navyblue"></select>
     </div>
     <label class="control-label text-gray">Unlock settings</label>
     <ul class="list-group mb-4">
