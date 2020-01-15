@@ -540,6 +540,13 @@ a.navbar-brand {
     padding: 20px;
     border: 1px solid #dee2e6 !important;
 }
+.white-card {
+    background: #FFF;
+    border-radius: 0.25rem !important;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6 !important;
+}
 /*#endregion
 
 /*#region Input group*/

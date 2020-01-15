@@ -2,6 +2,7 @@ using HES.Core.Entities;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
+using HES.Core.HostedServices;
 using HES.Infrastructure;
 using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -24,14 +25,17 @@ namespace HES.Web
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
+            #region Environment variables
+
             var server = configuration["MYSQL_SRV"];
             var port = configuration["MYSQL_PORT"];
             var db = configuration["MYSQL_DB"];
             var uid = configuration["MYSQL_UID"];
             var pwd = configuration["MYSQL_PWD"];
-
             if (server != null && port != null && db != null && uid != null && pwd != null)
             {
                 configuration["ConnectionStrings:DefaultConnection"] = $"server={server};port={port};database={db};uid={uid};pwd={pwd}";
@@ -42,7 +46,6 @@ namespace HES.Web
             var email_ssl = configuration["EMAIL_SSL"];
             var email_user = configuration["EMAIL_USER"];
             var email_pwd = configuration["EMAIL_PWD"];
-
             if (email_host != null && email_port != null && email_ssl != null && email_user != null && email_pwd != null)
             {
                 configuration["EmailSender:Host"] = email_host;
@@ -53,17 +56,32 @@ namespace HES.Web
             }
 
             var dataprotectoin_pwd = configuration["DATAPROTECTION_PWD"];
-
             if (dataprotectoin_pwd != null)
             {
                 configuration["DataProtection:Password"] = dataprotectoin_pwd;
             }
 
+            var api_key = configuration["API_KEY"];
+            var api_address = configuration["API_ADDRESS"];
+            if (api_key != null && api_address != null)
+            {
+                configuration["Licensing:ApiKey"] = api_key;
+                configuration["Licensing:ApiAddress"] = api_address;
+            }
+
+            var server_name = configuration["SRV_NAME"];
+            var server_url = configuration["SRV_URL"];
+            if (server_name != null && server_url != null)
+            {
+                configuration["Server:Name"] = server_name;
+                configuration["Server:Url"] = server_url;
+            }
+
+            #endregion
+            
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
-
+        
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -88,6 +106,8 @@ namespace HES.Web
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<ILicenseService, LicenseService>();
+
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
@@ -96,18 +116,20 @@ namespace HES.Web
                 var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
                 var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
                 var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
-                var applicationUserService = scope.ServiceProvider.GetService<IApplicationUserService>();
+                var emailSenderService = scope.ServiceProvider.GetService<IEmailSenderService>();
                 var logger = scope.ServiceProvider.GetService<ILogger<DataProtectionService>>();
                 return new DataProtectionService(config,
                                                  dataProtectionRepository,
                                                  deviceRepository,
                                                  deviceTaskRepository,
                                                  sharedAccountRepository,
-                                                 applicationUserService,
+                                                 emailSenderService,
                                                  logger);
             });
 
             services.AddHostedService<RemoveLogsFilesHostedService>();
+            services.AddHostedService<LicenseOrderStatusHostedService>();
+            services.AddHostedService<DeviceLicenseStatusHostedService>();
 
             // SignalR
             services.AddSignalR();
@@ -255,7 +277,7 @@ namespace HES.Web
             });
 
             app.UseMiddleware<DataProtectionMiddeware>();
-       
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {

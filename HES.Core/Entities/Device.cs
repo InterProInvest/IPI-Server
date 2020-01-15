@@ -24,7 +24,10 @@ namespace HES.Core.Entities
         public string AcceessProfileId { get; set; } = "default";
         public string MasterPassword { get; set; }
         public DateTime ImportedAt { get; set; }
-
+        public bool HasNewLicense { get; set; }
+        public LicenseStatus LicenseStatus { get; set; }
+        public DateTime? LicenseEndDate { get; set; }
+        
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
 
@@ -34,5 +37,5 @@ namespace HES.Core.Entities
 
         [NotMapped]
         public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);
-    }
+    }    
 }

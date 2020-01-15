@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191211073109_added_hasnewlicense_field")]
+    partial class added_hasnewlicense_field
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,12 +90,12 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("HES.Core.Entities.DataProtection", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("CreatedAt");
-
                     b.Property<string>("Value");
+
+                    b.Property<string>("ValueHash");
 
                     b.HasKey("Id");
 
@@ -136,10 +138,6 @@ namespace HES.Infrastructure.Migrations
                     b.Property<DateTime>("ImportedAt");
 
                     b.Property<DateTime?>("LastSynced");
-
-                    b.Property<DateTime?>("LicenseEndDate");
-
-                    b.Property<int>("LicenseStatus");
 
                     b.Property<string>("MAC");
 
@@ -261,16 +259,21 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime?>("AppliedAt");
+                    b.Property<DateTime>("AppliedAt");
 
-                    b.Property<byte[]>("Data");
+                    b.Property<int>("Capabilities");
+
+                    b.Property<DateTime>("CreatedAt");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired();
 
                     b.Property<string>("DeviceId")
                         .IsRequired();
 
-                    b.Property<DateTime?>("EndDate");
+                    b.Property<DateTime>("ImportedAt");
 
-                    b.Property<DateTime?>("ImportedAt");
+                    b.Property<DateTime>("LicenseEndDate");
 
                     b.Property<string>("LicenseOrderId")
                         .IsRequired();
@@ -343,31 +346,6 @@ namespace HES.Infrastructure.Migrations
                     b.HasIndex("PositionId");
 
                     b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("HES.Core.Entities.LicenseOrder", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ContactEmail")
-                        .IsRequired();
-
-                    b.Property<DateTime>("CreatedAt");
-
-                    b.Property<DateTime>("EndDate");
-
-                    b.Property<string>("Note");
-
-                    b.Property<int>("OrderStatus");
-
-                    b.Property<bool>("ProlongExistingLicenses");
-
-                    b.Property<DateTime>("StartDate");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LicenseOrders");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Position", b =>

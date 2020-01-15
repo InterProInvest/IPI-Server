@@ -1,0 +1,49 @@
+﻿@page
+@model HES.Web.Pages.Settings.LicenseOrders.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1 class="text-navyblue">Edit License Order</h1>
+
+<div class="row white-card">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="LicenseOrder.Id" />
+            <div class="form-group">
+                <label asp-for="LicenseOrder.ContactEmail" class="control-label"></label>
+                <input asp-for="LicenseOrder.ContactEmail" class="form-control" />
+                <span asp-validation-for="LicenseOrder.ContactEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.Note" class="control-label"></label>
+                <textarea class="form-control" asp-for="LicenseOrder.Note" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.StartDate" class="control-label"></label>
+                <input asp-for="LicenseOrder.StartDate" class="form-control" />
+                <span asp-validation-for="LicenseOrder.StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseOrder.EndDate" class="control-label"></label>
+                <input asp-for="LicenseOrder.EndDate" class="form-control" />
+                <span asp-validation-for="LicenseOrder.EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="LicenseOrder.ProlongExistingLicenses" /> @Html.DisplayNameFor(model => model.LicenseOrder.ProlongExistingLicenses)
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary mr-2" />
+                <a  class="btn btn-secondary" asp-page="./Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,157 @@
+﻿@page
+@model HES.Web.Pages.Settings.LicenseOrders.IndexModel
+
+@{
+    ViewData["Title"] = "License Orders";
+    ViewData["ActivePage"] = MenuNavPages.Settings;
+    ViewData["SettingsPage"] = SettingsNavPages.LicenseOrders;
+}
+
+<partial name="_SuccessMessage" for="SuccessMessage" />
+<partial name="_ErrorMessage" for="ErrorMessage" />
+
+<div class="row align-items-center mr-0">
+    <div class="col-auto">
+        <h1 class="text-navyblue">License Orders</h1>
+    </div>
+    <div class="col" id="loading"></div>
+    <div class="col-auto p-1">
+        <div class="form-group has-search-right m-0">
+            <div class="form-control-feedback">
+                <img class="img-size" src="~/svg/action/search.svg" />
+            </div>
+            <input id="searchbox" type="text" class="form-control" placeholder="Search">
+        </div>
+    </div>
+    <div class="col-auto p-1">
+        <a asp-page="Create" class="btn btn-primary open-modal-dialog">
+            New Order
+        </a>
+    </div>
+</div>
+
+<table id="licenseOrders" class="display table table-hover border rounded w-100">
+    <thead>
+        <tr>
+            <th class="d-none"></th>
+            <th data-priority="1">
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].ContactEmail)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].Note)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].ProlongExistingLicenses)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].EndDate)
+            </th>
+            <th data-priority="4">
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].CreatedAt)
+            </th>
+            <th data-priority="3">
+                @Html.DisplayNameFor(model => model.LicenseOrder[0].OrderStatus)
+            </th>
+            <th class="table-col-menu" data-priority="2"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.LicenseOrder)
+        {
+            <tr>
+                <td class="d-none"></td>
+                <td>
+                    @item.ContactEmail
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Note)
+                </td>
+                <td data-sort="@item.ProlongExistingLicenses">
+                    @if (item.ProlongExistingLicenses)
+                    {
+                        <span class="badge badge-secondary">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary">No</span>
+                    }
+                </td>
+                <td data-sort="@(item.ProlongExistingLicenses == true ? 0 : item.StartDate.Ticks)">
+                    @if (!item.ProlongExistingLicenses)
+                    {
+                        @Html.DisplayFor(modelItem => item.StartDate.Date)
+                    }
+                </td>
+                <td data-sort="@item.EndDate.Ticks">
+                    @Html.DisplayFor(modelItem => item.EndDate.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OrderStatus)
+                </td>
+                <td class="table-col-menu">
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img src="~/svg/action/more.svg" />
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
+                            @if (item.OrderStatus == HES.Core.Enums.OrderStatus.New)
+                            {
+                                <form class="form-inline dropdown-item" method="post">
+                                    <input type="hidden" name="orderId" value="@item.Id" />
+                                    <button type="submit" class="nav-link btn btn-link text-dark p-0 w-100 text-left text-decoration-none" asp-page-handler="SendOrder">
+                                        <img src="~/svg/action/send.svg" />
+                                        Send
+                                    </button>
+                                </form>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
+                                    <img src="~/svg/action/details.svg" />
+                                    Details
+                                </a>
+                                @*
+                                    <a class="dropdown-item" asp-page="./Edit" asp-route-id="@item.Id">
+                                        <img src="~/svg/action/edit.svg" />
+                                        Edit
+                                    </a>
+                                *@
+                                <a class="dropdown-item" asp-page="./Delete" asp-route-id="@item.Id">
+                                    <img src="~/svg/action/delete.svg" />
+                                    Delete
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
+                                    <img src="~/svg/action/details.svg" />
+                                    Details
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="row mt-2">
+    <div class="col d-flex justify-content-center justify-content-lg-start align-items-center mb-1 text-nowrap">
+        <span class="d-flex align-items-center mr-1 text-navyblue">Show entries</span>
+        <div id="entries_place"></div>
+    </div>
+    <div id="showing_place" class="col d-flex justify-content-center align-items-center mb-1 text-navyblue text-nowrap"></div>
+    <div id="pagination_place" class="col d-flex justify-content-center justify-content-lg-end align-items-center mb-1"></div>
+</div>
+
+@section Scripts{
+    <script>
+        InitLicenseOrdersDT();
+        LicenseOrdersSetBreadcrumbs();
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
