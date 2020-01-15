@@ -70,6 +70,12 @@ namespace HES.Web.Controllers
 
             try
             {
+                var currentWorkstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
+                if (!currentWorkstation.Approved)
+                {
+                    return BadRequest(new { error = "Workstation not approved" });
+                }
+
                 var workstation = new Workstation()
                 {
                     Id = workstationDto.Id,
