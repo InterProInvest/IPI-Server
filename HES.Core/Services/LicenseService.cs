@@ -97,7 +97,6 @@ namespace HES.Core.Services
                 .Where(o => o.OrderStatus == OrderStatus.Sent ||
                             o.OrderStatus == OrderStatus.Processing ||
                             o.OrderStatus == OrderStatus.WaitingForPayment)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -193,6 +192,7 @@ namespace HES.Core.Services
 
         public async Task ChangeOrderStatusAsync(LicenseOrder licenseOrder, OrderStatus orderStatus)
         {
+
             licenseOrder.OrderStatus = orderStatus;
             await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
         }

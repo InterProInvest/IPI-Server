@@ -1,12 +1,14 @@
 ﻿using HES.Core.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
     public class LicenseOrder
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
         [EmailAddress]
