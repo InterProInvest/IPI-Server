@@ -1,0 +1,36 @@
+﻿@using HES.Core.Models.Web.Breadcrumb
+@inject IJSRuntime JSRuntime;
+@*<p>Current count: @currentCount</p>
+
+    <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>*@
+
+@code {
+    //private int currentCount = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var list = new List<Breadcrumb>();
+            list.Add(new Breadcrumb
+            {
+                Active = "active",
+                Content = "Settings"
+            });
+            list.Add(new Breadcrumb
+            {
+                Active = "active",
+                Content = "Parameters"
+            });
+
+            await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);
+        }
+
+    }
+
+    //private void IncrementCount()
+    //{
+    //    currentCount++;
+    //}
+
+}
