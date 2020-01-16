@@ -107,6 +107,9 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(licenseOrder));
             }
 
+            licenseOrder.StartDate = licenseOrder.StartDate.ToUniversalTime();
+            licenseOrder.EndDate = licenseOrder.EndDate.ToUniversalTime();
+
             return await _licenseOrderRepository.AddAsync(licenseOrder);
         }
 

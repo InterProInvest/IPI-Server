@@ -181,7 +181,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogCritical($"[{dto.DeviceSerialNo}] {ex.Message}");
             }
         }
 
@@ -195,7 +195,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogCritical($"[{deviceId}] {ex.Message}");
             }
             return Task.CompletedTask;
         }
@@ -241,7 +241,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogCritical($"[{dto.DeviceSerialNo}] {ex.Message}");
             }
         }
 
@@ -348,30 +348,45 @@ namespace HES.Core.Hubs
 
         public async Task<IList<DeviceLicenseDTO>> GetNewDeviceLicenses(string deviceId)
         {
-            var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
-
-            var deviceLicenseDto = new List<DeviceLicenseDTO>();
-
-            foreach (var license in licenses)
+            try
             {
-                deviceLicenseDto.Add(new DeviceLicenseDTO
-                {
-                    Id = license.Id,
-                    DeviceId = license.DeviceId,
-                    ImportedAt = license.ImportedAt,
-                    AppliedAt = license.AppliedAt,
-                    EndDate = license.EndDate,
-                    LicenseOrderId = license.LicenseOrderId,
-                    Data = license.Data,
-                });
-            }
+                var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
 
-            return deviceLicenseDto;
+                var deviceLicenseDto = new List<DeviceLicenseDTO>();
+
+                foreach (var license in licenses)
+                {
+                    deviceLicenseDto.Add(new DeviceLicenseDTO
+                    {
+                        Id = license.Id,
+                        DeviceId = license.DeviceId,
+                        ImportedAt = license.ImportedAt,
+                        AppliedAt = license.AppliedAt,
+                        EndDate = license.EndDate,
+                        LicenseOrderId = license.LicenseOrderId,
+                        Data = license.Data,
+                    });
+                }
+
+                return deviceLicenseDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
         }
 
         public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
         {
-            await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+            try
+            {
+                await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
 
         #endregion

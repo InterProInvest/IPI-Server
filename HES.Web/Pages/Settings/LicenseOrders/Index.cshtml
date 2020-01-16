@@ -82,14 +82,14 @@
                 <td data-sort="@(item.ProlongExistingLicenses == true ? 0 : item.StartDate.Ticks)">
                     @if (!item.ProlongExistingLicenses)
                     {
-                        @Html.DisplayFor(modelItem => item.StartDate.Date)
+                        @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.StartDate, TimeZoneInfo.Local).ToShortDateString()
                     }
                 </td>
                 <td data-sort="@item.EndDate.Ticks">
-                    @Html.DisplayFor(modelItem => item.EndDate.Date)
+                    @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.EndDate, TimeZoneInfo.Local).ToShortDateString()
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                <td data-sort="@item.CreatedAt.Ticks">
+                    @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.OrderStatus)
