@@ -10,11 +10,13 @@
 
 #### If the web server is not enabled then use the [official guide](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-2.2#iis-configuration) to enable IIS.
 
+
 Download and install [Git](https://git-scm.com/download/win)
 
 Download and install [.NET Core SDK 2.2 and Hosting Bundle](https://dotnet.microsoft.com/download/dotnet-core/2.2)
 - [.NET Core SDK 2.2](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-2.2.207-windows-x64-installer)
 - [Windows Hosting Bundle](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-aspnetcore-2.2.8-windows-hosting-bundle-installer)
+- [ASP.NET Core Runtime 2.2.8] (https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-aspnetcore-2.2.8-windows-x64-installer)
 
 Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
 - [Docs MySQL initial setup](https://dev.mysql.com/doc/refman/8.0/en/mysql-installer.html)
@@ -29,9 +31,28 @@ Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
   > cd Hideez
   > git clone https://github.com/HideezGroup/HES src
   > cd src\HES.Web
+
 ```
 
-### 2. Building the HES from the sources
+### 2. Creating MySQL User and Database for the Hideez Enterprise Server
+  
+  in MySQL Command Line Client
+
+```sql
+  ### CREATE DATABASE
+  mysql> CREATE DATABASE <your_db>;
+
+  ### CREATE USER ACCOUNT
+  mysql> CREATE USER '<your_user>'@'127.0.0.1' IDENTIFIED BY '<your_secret>';
+
+  ### GRANT PERMISSIONS ON DATABASE
+  mysql> GRANT ALL ON <your_db>.* TO '<your_user>'@'127.0.0.1';
+
+  ###  RELOAD PRIVILEGES
+  mysql> FLUSH PRIVILEGES;
+```
+
+### 3. Building the HES from the sources
 
 ```shell
   > md ..\..\HES
@@ -39,7 +60,7 @@ Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
 ```
   * **[Note]** Requires internet connectivity to download NuGet packages
 
-### 3. Configuring HES
+### 4. Configuring HES
 
 ```shell
   > cd..\..\HES
@@ -85,7 +106,7 @@ Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
 * **<your_email_password>** - Your email name (example `password`)
 * **<protection_password>** - Your password for database encryption (example `password`)
 
-### 4. Configuring IIS
+### 5. Configuring IIS
  
 Create a Self-Signed Certificate for IIS
 
