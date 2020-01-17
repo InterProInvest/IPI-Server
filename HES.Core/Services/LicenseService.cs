@@ -20,6 +20,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly IEmailSenderService _emailSenderService;
         private HttpClient client;
         private string apiKey;
         private string apiAddress;
@@ -27,11 +28,13 @@ namespace HES.Core.Services
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
                                    IAsyncRepository<Device> deviceRepository,
+                                   IEmailSenderService emailSenderService,
                                    IConfiguration config)
         {
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
             _deviceRepository = deviceRepository;
+            _emailSenderService = emailSenderService;
 
             InitializeHttpClient(config);
         }
@@ -73,9 +76,9 @@ namespace HES.Core.Services
 
         #region Order
 
-        public IQueryable<LicenseOrder> LicenseOrderQuery()
+        public async Task<List<LicenseOrder>> GetLicenseOrdersAsync()
         {
-            return _licenseOrderRepository.Query();
+            return await _licenseOrderRepository.Query().ToListAsync();
         }
 
         public async Task<LicenseOrder> GetLicenseOrderByIdAsync(string id)
@@ -83,21 +86,6 @@ namespace HES.Core.Services
             return await _licenseOrderRepository
                 .Query()
                 .FirstOrDefaultAsync(o => o.Id == id);
-        }
-
-        public async Task<List<LicenseOrder>> GetLicenseOrdersAsync()
-        {
-            return await _licenseOrderRepository.Query().ToListAsync();
-        }
-
-        public async Task<List<LicenseOrder>> GetOpenLicenseOrdersAsync()
-        {
-            return await _licenseOrderRepository
-                .Query()
-                .Where(o => o.OrderStatus == OrderStatus.Sent ||
-                            o.OrderStatus == OrderStatus.Processing ||
-                            o.OrderStatus == OrderStatus.WaitingForPayment)
-                .ToListAsync();
         }
 
         public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder)
@@ -135,6 +123,7 @@ namespace HES.Core.Services
 
             await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
+
         // API POST
         public async Task SendOrderAsync(string orderId)
         {
@@ -173,12 +162,56 @@ namespace HES.Core.Services
             var ex = await response.Content.ReadAsStringAsync();
             throw new Exception(ex);
         }
+
+        public async Task UpdateLicenseOrdersAsync()
+        {
+            var orders = await GetOpenLicenseOrdersAsync();
+
+            foreach (var order in orders)
+            {
+                var status = await GetLicenseOrderStatusAsync(order.Id);
+
+                // Http transport error
+                if (status == OrderStatus.Undefined)
+                {
+                    continue;
+                }
+
+                // Status has not changed
+                if (status == order.OrderStatus)
+                {
+                    continue;
+                }
+
+                if (status == OrderStatus.Completed)
+                {
+                    await UpdateNewDeviceLicensesAsync(order.Id);
+                }
+
+                order.OrderStatus = status;
+                await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
+
+                await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
+            }
+        }
+
+        private async Task<List<LicenseOrder>> GetOpenLicenseOrdersAsync()
+        {
+            return await _licenseOrderRepository
+                .Query()
+                .Where(o => o.OrderStatus == OrderStatus.Sent ||
+                            o.OrderStatus == OrderStatus.Processing ||
+                            o.OrderStatus == OrderStatus.WaitingForPayment)
+                .ToListAsync();
+        }
+
         // API GET
-        public async Task<OrderStatus> GetLicenseOrderStatusAsync(string orderId)
+        private async Task<OrderStatus> GetLicenseOrderStatusAsync(string orderId)
         {
             try
             {
                 var response = await HttpClientGetLicenseOrderStatusAsync(orderId);
+
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadAsStringAsync();
@@ -193,16 +226,25 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ChangeOrderStatusAsync(LicenseOrder licenseOrder, OrderStatus orderStatus)
-        {
-
-            licenseOrder.OrderStatus = orderStatus;
-            await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
-        }
-
         #endregion
 
         #region License
+
+        public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
+        {
+            return await _deviceLicenseRepository
+                .Query()
+                .Where(d => d.AppliedAt == null && d.DeviceId == deviceId)
+                .ToListAsync();
+        }
+
+        public async Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId)
+        {
+            return await _deviceLicenseRepository
+                .Query()
+                .Where(d => d.AppliedAt == null && d.LicenseOrderId == orderId)
+                .ToListAsync();
+        }
 
         public async Task<List<DeviceLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds)
         {
@@ -224,49 +266,8 @@ namespace HES.Core.Services
 
             return await _deviceLicenseRepository.AddRangeAsync(deviceLicenses) as List<DeviceLicense>;
         }
-        // API GET
-        public async Task UpdateNewDeviceLicensesAsync(string orderId)
-        {
-            if (orderId == null)
-            {
-                throw new ArgumentNullException(nameof(orderId));
-            }
 
-            var response = await HttpClientGetDeviceLicensesAsync(orderId);
-
-            response.EnsureSuccessStatusCode();
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Deserialize new licenses
-                var data = await response.Content.ReadAsStringAsync();
-                var newLicenses = JsonConvert.DeserializeObject<List<DeviceLicenseDto>>(data);
-                // Get current licenses to update
-                var currentLicenses = await GetDeviceLicensesByOrderIdAsync(orderId);
-                // Get devices to update
-                var devicesIds = newLicenses.Select(d => d.DeviceId).ToList();
-                var devices = await _deviceRepository.Query().Where(x => devicesIds.Contains(x.Id)).ToListAsync();
-
-                foreach (var newLicense in newLicenses)
-                {
-                    var currentLicense = currentLicenses.FirstOrDefault(c => c.DeviceId == newLicense.DeviceId);
-                    currentLicense.ImportedAt = DateTime.UtcNow;
-                    currentLicense.EndDate = newLicense.LicenseEndDate;
-                    currentLicense.Data = Convert.FromBase64String(newLicense.Data);
-
-                    var device = devices.FirstOrDefault(d => d.Id == newLicense.DeviceId);
-                    device.HasNewLicense = true;
-                    device.LicenseEndDate = currentLicense.EndDate;
-                    device.LicenseStatus = LicenseStatus.Valid;
-                }
-
-                await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate", "LicenseStatus" });
-
-            }
-        }
-
-        public async Task<List<Device>> UpdateDeviceLicenseStatusAsync()
+        public async Task UpdateDeviceLicenseStatusAsync()
         {
             var devicesChangedStatus = new List<Device>();
 
@@ -314,25 +315,8 @@ namespace HES.Core.Services
             if (devicesChangedStatus.Count > 0)
             {
                 await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
+                await _emailSenderService.SendDeviceLicenseStatus(devicesChangedStatus);
             }
-
-            return devicesChangedStatus;
-        }
-
-        public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
-        {
-            return await _deviceLicenseRepository
-                .Query()
-                .Where(d => d.AppliedAt == null && d.DeviceId == deviceId)
-                .ToListAsync();
-        }
-
-        public async Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId)
-        {
-            return await _deviceLicenseRepository
-                .Query()
-                .Where(d => d.AppliedAt == null && d.LicenseOrderId == orderId)
-                .ToListAsync();
         }
 
         public async Task SetDeviceLicenseAppliedAsync(string deviceId, string licenseId)
@@ -371,6 +355,48 @@ namespace HES.Core.Services
                 license.AppliedAt = null;
             }
             await _deviceLicenseRepository.UpdateOnlyPropAsync(licenses, new string[] { "AppliedAt" });
+        }
+
+        // API GET
+        private async Task UpdateNewDeviceLicensesAsync(string orderId)
+        {
+            if (orderId == null)
+            {
+                throw new ArgumentNullException(nameof(orderId));
+            }
+
+            var response = await HttpClientGetDeviceLicensesAsync(orderId);
+
+            response.EnsureSuccessStatusCode();
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Deserialize new licenses
+                var data = await response.Content.ReadAsStringAsync();
+                var newLicenses = JsonConvert.DeserializeObject<List<DeviceLicenseDto>>(data);
+                // Get current licenses to update
+                var currentLicenses = await GetDeviceLicensesByOrderIdAsync(orderId);
+                // Get devices to update
+                var devicesIds = newLicenses.Select(d => d.DeviceId).ToList();
+                var devices = await _deviceRepository.Query().Where(x => devicesIds.Contains(x.Id)).ToListAsync();
+
+                foreach (var newLicense in newLicenses)
+                {
+                    var currentLicense = currentLicenses.FirstOrDefault(c => c.DeviceId == newLicense.DeviceId);
+                    currentLicense.ImportedAt = DateTime.UtcNow;
+                    currentLicense.EndDate = newLicense.LicenseEndDate;
+                    currentLicense.Data = Convert.FromBase64String(newLicense.Data);
+
+                    var device = devices.FirstOrDefault(d => d.Id == newLicense.DeviceId);
+                    device.HasNewLicense = true;
+                    device.LicenseEndDate = currentLicense.EndDate;
+                    device.LicenseStatus = LicenseStatus.Valid;
+                }
+
+                await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
+                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate", "LicenseStatus" });
+
+            }
         }
 
         #endregion

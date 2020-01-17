@@ -8,6 +8,7 @@ using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
@@ -76,10 +78,10 @@ namespace HES.Web
             }
 
             #endregion
-            
+
             Configuration = configuration;
         }
-        
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -105,7 +107,6 @@ namespace HES.Web
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
             services.AddScoped<ILicenseService, LicenseService>();
-
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
@@ -124,10 +125,14 @@ namespace HES.Web
                                                  emailSenderService,
                                                  logger);
             });
-
             services.AddHostedService<RemoveLogsFilesHostedService>();
-            services.AddHostedService<LicenseOrderStatusHostedService>();
-            services.AddHostedService<DeviceLicenseStatusHostedService>();
+            services.AddHostedService(s =>
+            {
+                var scope = s.CreateScope();
+                var licenseService = scope.ServiceProvider.GetService<ILicenseService>();
+                var logger = scope.ServiceProvider.GetService<ILogger<LicenseHostedService>>();
+                return new LicenseHostedService(licenseService, logger);
+            });
 
             // SignalR
             services.AddSignalR();
@@ -137,7 +142,18 @@ namespace HES.Web
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(14);
+                options.LoginPath = "/Account/Login";
+                options.LogoutPath = "/Account/Logout";
+                options.Cookie = new CookieBuilder
+                {
+                    IsEssential = true // required for auth to work without explicit user consent; adjust to suit your privacy policy
+                };
             });
 
             // Dismiss strong password
@@ -161,14 +177,16 @@ namespace HES.Web
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            //services.AddAuthentication().AddCookie();
+
             // Auth policy
             services.AddAuthorization(config =>
-            {
-                config.AddPolicy("RequireAdministratorRole",
-                    policy => policy.RequireRole("Administrator"));
-                config.AddPolicy("RequireUserRole",
-                    policy => policy.RequireRole("User"));
-            });
+                        {
+                            config.AddPolicy("RequireAdministratorRole",
+                                policy => policy.RequireRole("Administrator"));
+                            config.AddPolicy("RequireUserRole",
+                                policy => policy.RequireRole("User"));
+                        });
 
             // Override OnRedirectToLogin via API
             services.ConfigureApplicationCookie(config =>
@@ -267,16 +285,21 @@ namespace HES.Web
                 SupportedUICultures = supportedCultures
             });
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
+            app.UseHttpsRedirection();
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseMiddleware<DataProtectionMiddeware>();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HES API V1");
+            });
 
             app.UseEndpoints(endpoints =>
             {
@@ -286,12 +309,6 @@ namespace HES.Web
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
-            });
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HES API V1");
             });
 
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();

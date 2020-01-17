@@ -1,5 +1,4 @@
 ﻿using HES.Core.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,25 +7,22 @@ using System.Threading.Tasks;
 
 namespace HES.Core.HostedServices
 {
-    public class DeviceLicenseStatusHostedService : IHostedService, IDisposable
+    public class LicenseHostedService : IHostedService, IDisposable
     {
-        private readonly IServiceScope _scope;
         private readonly ILicenseService _licenseService;
-        private readonly IEmailSenderService _emailSenderService;
-        private readonly ILogger<LicenseOrderStatusHostedService> _logger;
+        private readonly ILogger<LicenseHostedService> _logger;
         private Timer _timer;
 
-        public DeviceLicenseStatusHostedService(IServiceProvider services, ILogger<LicenseOrderStatusHostedService> logger)
+        public LicenseHostedService(ILicenseService licenseService,
+                                    ILogger<LicenseHostedService> logger)
         {
-            _scope = services.CreateScope();
-            _licenseService = _scope.ServiceProvider.GetRequiredService<ILicenseService>();
-            _emailSenderService = _scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
+            _licenseService = licenseService;
             _logger = logger;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(25));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
             return Task.CompletedTask;
         }
 
@@ -34,8 +30,8 @@ namespace HES.Core.HostedServices
         {
             try
             {
-                var devices = await _licenseService.UpdateDeviceLicenseStatusAsync();
-                await _emailSenderService.SendDeviceLicenseStatus(devices);
+                await _licenseService.UpdateLicenseOrdersAsync();
+                await _licenseService.UpdateDeviceLicenseStatusAsync();
             }
             catch (Exception ex)
             {
@@ -52,7 +48,6 @@ namespace HES.Core.HostedServices
         public void Dispose()
         {
             _timer?.Dispose();
-            _scope.Dispose();
         }
     }
 }

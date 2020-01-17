@@ -91,12 +91,7 @@ namespace HES.Core.Services
         }
 
         public async Task SendDeviceLicenseStatus(List<Device> devices)
-        {
-            if (devices == null || devices.Count == 0)
-            {
-                return;
-            }
-
+        {            
             var message = new StringBuilder();
 
             var valid = devices.Where(d => d.LicenseStatus == LicenseStatus.Valid).OrderBy(d => d.Id).ToList();
