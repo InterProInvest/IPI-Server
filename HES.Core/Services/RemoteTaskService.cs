@@ -18,17 +18,19 @@ namespace HES.Core.Services
 {
     public class RemoteTaskService : IRemoteTaskService
     {
-        readonly IDeviceService _deviceService;
-        readonly IDeviceTaskService _deviceTaskService;
-        readonly IDeviceAccountService _deviceAccountService;
-        readonly IDataProtectionService _dataProtectionService;
-        readonly ILogger<RemoteTaskService> _logger;
-        readonly IHubContext<EmployeeDetailsHub> _hubContext;
+        private readonly IDeviceService _deviceService;
+        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IDeviceAccountService _deviceAccountService;
+        private readonly IDataProtectionService _dataProtectionService;
+        private readonly ILicenseService _licenseService;
+        private readonly ILogger<RemoteTaskService> _logger;
+        private readonly IHubContext<EmployeeDetailsHub> _hubContext;
 
         public RemoteTaskService(IDeviceService deviceService,
                                  IDeviceTaskService deviceTaskService,
                                  IDeviceAccountService deviceAccountService,
                                  IDataProtectionService dataProtectionService,
+                                 ILicenseService licenseService,
                                  ILogger<RemoteTaskService> logger,
                                  IHubContext<EmployeeDetailsHub> hubContext)
         {
@@ -36,6 +38,7 @@ namespace HES.Core.Services
             _deviceTaskService = deviceTaskService;
             _deviceAccountService = deviceAccountService;
             _dataProtectionService = dataProtectionService;
+            _licenseService = licenseService;
             _logger = logger;
             _hubContext = hubContext;
         }
@@ -93,7 +96,9 @@ namespace HES.Core.Services
                 case TaskOperation.Wipe:
                     device.State = Enums.DeviceState.OK;
                     device.MasterPassword = null;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword" });
+                    device.HasNewLicense = true;
+                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword", "HasNewLicense" });
+                    await _licenseService.DiscardAppliedAtByDeviceIdAsync(deviceTask.DeviceId);
                     break;
                 case TaskOperation.UnlockPin:
                     device.State = Enums.DeviceState.OK;

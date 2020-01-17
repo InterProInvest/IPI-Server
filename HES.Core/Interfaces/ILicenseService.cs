@@ -23,5 +23,6 @@ namespace HES.Core.Interfaces
         Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId);
         Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId);
         Task SetDeviceLicenseAppliedAsync(string deviceId, string licenseId);
+        Task DiscardAppliedAtByDeviceIdAsync(string deviceId);
     }
 }

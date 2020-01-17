@@ -133,12 +133,12 @@ namespace HES.Web
             services.AddSignalR();
 
             // Cookie
-            //services.Configure<CookiePolicyOptions>(options =>
-            //{
-            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            //    options.CheckConsentNeeded = context => true;
-            //    options.MinimumSameSitePolicy = SameSiteMode.None;
-            //});
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+            });
 
             // Dismiss strong password
             services.Configure<IdentityOptions>(options =>
@@ -272,7 +272,7 @@ namespace HES.Web
 
             app.UseRouting();
 
-            //app.UseCookiePolicy();
+            app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -288,8 +288,6 @@ namespace HES.Web
                 endpoints.MapBlazorHub();
             });
 
-            app.UseMiddleware<DataProtectionMiddeware>();
-       
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {

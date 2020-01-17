@@ -363,6 +363,16 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task DiscardAppliedAtByDeviceIdAsync(string deviceId)
+        {
+            var licenses = await GetDeviceLicensesByDeviceIdAsync(deviceId);
+            foreach (var license in licenses)
+            {
+                license.AppliedAt = null;
+            }
+            await _deviceLicenseRepository.UpdateOnlyPropAsync(licenses, new string[] { "AppliedAt" });
+        }
+
         #endregion
 
         public void Dispose()
