@@ -242,7 +242,7 @@ namespace HES.Core.Services
         {
             return await _deviceLicenseRepository
                 .Query()
-                .Where(d => d.AppliedAt == null && d.LicenseOrderId == orderId)
+                .Where(d => d.LicenseOrderId == orderId)
                 .ToListAsync();
         }
 
@@ -349,7 +349,11 @@ namespace HES.Core.Services
 
         public async Task DiscardAppliedAtByDeviceIdAsync(string deviceId)
         {
-            var licenses = await GetDeviceLicensesByDeviceIdAsync(deviceId);
+            var licenses = await _deviceLicenseRepository
+                .Query()
+                .Where(d => d.DeviceId == deviceId)
+                .ToListAsync();
+
             foreach (var license in licenses)
             {
                 license.AppliedAt = null;

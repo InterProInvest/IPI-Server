@@ -147,7 +147,7 @@ function InitLicenseOrdersDT() {
     var table_name = '#licenseOrders';
     var table = $(table_name).DataTable({
         responsive: true,
-        "order": [[6, "asc"]],
+        "order": [[6, "desc"]],
         "columnDefs": [
             { "orderable": false, "targets": [8] }
         ]

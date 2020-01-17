@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HES.Web
+namespace HES.Web.Pages.Settings.LicenseOrders
 {
     public class DetailsModel : PageModel
     {
