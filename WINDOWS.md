@@ -16,7 +16,7 @@ Download and install [Git](https://git-scm.com/download/win)
 Download and install [.NET Core SDK 2.2 and Hosting Bundle](https://dotnet.microsoft.com/download/dotnet-core/2.2)
 - [.NET Core SDK 2.2](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-2.2.207-windows-x64-installer)
 - [Windows Hosting Bundle](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-aspnetcore-2.2.8-windows-hosting-bundle-installer)
-- [ASP.NET Core Runtime 2.2.8] (https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-aspnetcore-2.2.8-windows-x64-installer)
+- [ASP.NET Core Runtime 2.2.8](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-aspnetcore-2.2.8-windows-x64-installer)
 
 Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
 - [Docs MySQL initial setup](https://dev.mysql.com/doc/refman/8.0/en/mysql-installer.html)
