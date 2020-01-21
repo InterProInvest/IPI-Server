@@ -20,6 +20,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly IAppSettingsService _appSettingsService;
         private readonly IEmailSenderService _emailSenderService;
         private HttpClient client;
         private string apiKey;
@@ -28,23 +29,26 @@ namespace HES.Core.Services
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
                                    IAsyncRepository<Device> deviceRepository,
+                                   IAppSettingsService appSettingsService,
                                    IEmailSenderService emailSenderService,
                                    IConfiguration config)
         {
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
             _deviceRepository = deviceRepository;
+            _appSettingsService = appSettingsService;
             _emailSenderService = emailSenderService;
 
-            InitializeHttpClient(config);
+            InitializeHttpClient().Wait();
         }
 
         #region HttpClient
 
-        private void InitializeHttpClient(IConfiguration config)
+        private async Task InitializeHttpClient()
         {
-            apiKey = config.GetValue<string>("Licensing:ApiKey");
-            apiAddress = config.GetValue<string>("Licensing:ApiAddress");
+            var licensing = await _appSettingsService.GetLicensingSettingsAsync();
+            apiKey = licensing.ApiKey;//config.GetValue<string>("Licensing:ApiKey");
+            apiAddress = licensing.ApiAddress;//config.GetValue<string>("Licensing:ApiAddress");
 
             client = new HttpClient();
             client.BaseAddress = new Uri(apiAddress);
@@ -94,9 +98,6 @@ namespace HES.Core.Services
             {
                 throw new ArgumentNullException(nameof(licenseOrder));
             }
-
-            licenseOrder.StartDate = licenseOrder.StartDate.ToUniversalTime();
-            licenseOrder.EndDate = licenseOrder.EndDate.ToUniversalTime();
 
             return await _licenseOrderRepository.AddAsync(licenseOrder);
         }
@@ -278,7 +279,7 @@ namespace HES.Core.Services
 
             foreach (var device in devices)
             {
-                if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 90)
+                if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays > 90)
                 {
                     if (device.LicenseStatus != LicenseStatus.Valid)
                     {
@@ -286,7 +287,7 @@ namespace HES.Core.Services
                         devicesChangedStatus.Add(device);
                     }
                 }
-                else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 30)
+                else if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays > 30)
                 {
                     if (device.LicenseStatus != LicenseStatus.Warning)
                     {
@@ -294,7 +295,7 @@ namespace HES.Core.Services
                         devicesChangedStatus.Add(device);
                     }
                 }
-                else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays > 0)
+                else if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays > 0)
                 {
                     if (device.LicenseStatus != LicenseStatus.Critical)
                     {
@@ -302,7 +303,7 @@ namespace HES.Core.Services
                         devicesChangedStatus.Add(device);
                     }
                 }
-                else if (device.LicenseEndDate.Value.Subtract(DateTime.UtcNow).TotalDays < 0)
+                else if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays < 0)
                 {
                     if (device.LicenseStatus != LicenseStatus.Expired)
                     {
