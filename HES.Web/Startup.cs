@@ -87,7 +87,6 @@ namespace HES.Web
         {
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
-            services.AddScoped<IAppService, AppService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDeviceService, DeviceService>();
@@ -107,6 +106,7 @@ namespace HES.Web
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
             services.AddScoped<ILicenseService, LicenseService>();
+            services.AddScoped<IAppSettingsService, AppSettingsService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
             {
                 var scope = s.CreateScope();
@@ -177,8 +177,6 @@ namespace HES.Web
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            //services.AddAuthentication().AddCookie();
-
             // Auth policy
             services.AddAuthorization(config =>
                         {
@@ -229,7 +227,8 @@ namespace HES.Web
                 .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddControllers();
-            services.AddRazorPages();
+            services.AddRazorPages()
+                .AddRazorRuntimeCompilation();
             services.AddServerSideBlazor();
 
             // Register the Swagger generator
@@ -289,7 +288,6 @@ namespace HES.Web
             app.UseRouting();
 
             app.UseHttpsRedirection();
-            app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -310,6 +308,8 @@ namespace HES.Web
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
             });
+
+            app.UseCookiePolicy();
 
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();

@@ -27,7 +27,7 @@ namespace HES.Infrastructure
             return _context.Set<T>().FromSqlRaw(sql);
         }
 
-        public async Task<T> GetByIdAsync(dynamic id)
+        public async Task<T> GetByIdAsync(string id)
         {
             return await _context.Set<T>().FindAsync(id);
         }

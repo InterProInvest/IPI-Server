@@ -30,6 +30,7 @@ namespace HES.Infrastructure
         public DbSet<DataProtection> DataProtection { get; set; }
         public DbSet<DeviceLicense> DeviceLicenses { get; set; }
         public DbSet<LicenseOrder> LicenseOrders { get; set; }
+        public DbSet<AppSettings> AppSettings { get; set; }
 
 
         public DbQuery<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
