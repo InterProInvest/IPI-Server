@@ -27,22 +27,22 @@
                     @Html.DisplayNameFor(model => model.LicenseOrder.StartDate)
                 </dt>
                 <dd class="col-6">
-                    @Html.DisplayFor(model => model.LicenseOrder.StartDate)
+                    @Model.LicenseOrder.StartDate.ToShortDateString()
                 </dd>
             }
             <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.EndDate)
             </dt>
             <dd class="col-6">
-                @Html.DisplayFor(model => model.LicenseOrder.EndDate)
+                @Model.LicenseOrder.EndDate.ToShortDateString()
             </dd>
             <dt class="col-6">
-                @Html.DisplayNameFor(model => model.LicenseOrder.ProlongExistingLicenses)
+                Prolong License
             </dt>
             <dd class="col-6">
                 @if (Model.LicenseOrder.ProlongExistingLicenses)
                 {
-                    <span class="badge badge-secondary">Yes</span>
+                    <span class="badge badge-success">Yes</span>
                 }
                 else
                 {

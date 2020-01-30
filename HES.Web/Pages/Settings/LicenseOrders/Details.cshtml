@@ -6,60 +6,59 @@
 }
 
 <h1 class="text-navyblue">Details License Order</h1>
-
 <div class="row white-card">
     <div class="col-12 col-sm-6">
         <dl class="row">
-            <dt class="col-12">
+            <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.ContactEmail)
             </dt>
-            <dd class="col-12">
+            <dd class="col-6">
                 @Html.DisplayFor(model => model.LicenseOrder.ContactEmail)
             </dd>
-            <dt class="col-12">
+            <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.Note)
             </dt>
-            <dd class="col-12">
+            <dd class="col-6">
                 @Html.DisplayFor(model => model.LicenseOrder.Note)
             </dd>
             @if (!Model.LicenseOrder.ProlongExistingLicenses)
             {
-                <dt class="col-12">
+                <dt class="col-6">
                     @Html.DisplayNameFor(model => model.LicenseOrder.StartDate)
                 </dt>
-                <dd class="col-12">
-                    @Html.DisplayFor(model => model.LicenseOrder.StartDate)
+                <dd class="col-6">
+                    @Model.LicenseOrder.StartDate.ToShortDateString()
                 </dd>
             }
-            <dt class="col-12">
+            <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.EndDate)
             </dt>
-            <dd class="col-12">
-                @Html.DisplayFor(model => model.LicenseOrder.EndDate)
+            <dd class="col-6">
+                @Model.LicenseOrder.EndDate.ToShortDateString()
             </dd>
-            <dt class="col-12">
-                @Html.DisplayNameFor(model => model.LicenseOrder.ProlongExistingLicenses)
+            <dt class="col-6">
+                Prolong License
             </dt>
-            <dd class="col-12">
+            <dd class="col-6">
                 @if (Model.LicenseOrder.ProlongExistingLicenses)
                 {
-                    <span class="badge badge-secondary">Yes</span>
+                    <span class="badge badge-success">Yes</span>
                 }
                 else
                 {
                     <span class="badge badge-secondary">No</span>
                 }
             </dd>
-            <dt class="col-12">
+            <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.CreatedAt)
             </dt>
-            <dd class="col-12">
+            <dd class="col-6">
                 @Html.DisplayFor(model => model.LicenseOrder.CreatedAt)
             </dd>
-            <dt class="col-12">
+            <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.OrderStatus)
             </dt>
-            <dd class="col-12">
+            <dd class="col-6">
                 @Html.DisplayFor(model => model.LicenseOrder.OrderStatus)
             </dd>
         </dl>
