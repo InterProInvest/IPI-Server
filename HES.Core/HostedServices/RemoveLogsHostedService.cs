@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace HES.Core.HostedServices
 {
-    public class RemoveLogsFilesHostedService : IHostedService, IDisposable
+    public class RemoveLogsHostedService : IHostedService, IDisposable
     {
-        private readonly ILogger<RemoveLogsFilesHostedService> _logger;
+        private readonly ILogger<RemoveLogsHostedService> _logger;
         private readonly string _path;
         private Timer _timer;
 
-        public RemoveLogsFilesHostedService(ILogger<RemoveLogsFilesHostedService> logger)
+        public RemoveLogsHostedService(ILogger<RemoveLogsHostedService> logger)
         {
             _logger = logger;
             _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "logs");

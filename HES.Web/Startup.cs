@@ -109,14 +109,9 @@ namespace HES.Web
                                                  emailSenderService,
                                                  logger);
             });
-            services.AddHostedService<RemoveLogsFilesHostedService>();
-            services.AddHostedService(s =>
-            {
-                var scope = s.CreateScope();
-                var licenseService = scope.ServiceProvider.GetService<ILicenseService>();
-                var logger = scope.ServiceProvider.GetService<ILogger<LicenseHostedService>>();
-                return new LicenseHostedService(licenseService, logger);
-            });
+
+            services.AddHostedService<RemoveLogsHostedService>();
+            services.AddHostedService<LicenseHostedService>();
 
             services.AddHttpClient();
             services.AddSignalR();

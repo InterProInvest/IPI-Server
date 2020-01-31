@@ -1,4 +1,5 @@
 ﻿using HES.Core.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,14 +10,14 @@ namespace HES.Core.HostedServices
 {
     public class LicenseHostedService : IHostedService, IDisposable
     {
-        private readonly ILicenseService _licenseService;
+        public IServiceProvider Services { get; }
+
         private readonly ILogger<LicenseHostedService> _logger;
         private Timer _timer;
 
-        public LicenseHostedService(ILicenseService licenseService,
-                                    ILogger<LicenseHostedService> logger)
+        public LicenseHostedService(IServiceProvider services, ILogger<LicenseHostedService> logger)
         {
-            _licenseService = licenseService;
+            Services = services;
             _logger = logger;
         }
 
@@ -30,8 +31,11 @@ namespace HES.Core.HostedServices
         {
             try
             {
-                await _licenseService.UpdateLicenseOrdersAsync();
-                await _licenseService.UpdateDeviceLicenseStatusAsync();
+                using var scope = Services.CreateScope();
+                var scopedLicenseService = scope.ServiceProvider.GetRequiredService<ILicenseService>();
+
+                await scopedLicenseService.UpdateLicenseOrdersAsync();
+                await scopedLicenseService.UpdateDeviceLicenseStatusAsync();
             }
             catch (Exception ex)
             {
