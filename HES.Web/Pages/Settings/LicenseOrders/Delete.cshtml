@@ -53,7 +53,7 @@
                 @Html.DisplayNameFor(model => model.LicenseOrder.CreatedAt)
             </dt>
             <dd class="col-6">
-                @Html.DisplayFor(model => model.LicenseOrder.CreatedAt)
+                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)Model.LicenseOrder.CreatedAt, TimeZoneInfo.Local)
             </dd>
             <dt class="col-6">
                 @Html.DisplayNameFor(model => model.LicenseOrder.OrderStatus)

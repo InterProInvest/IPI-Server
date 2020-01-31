@@ -401,7 +401,6 @@ namespace HES.Core.Services
 
                 await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
                 await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate", "LicenseStatus" });
-
             }
         }
 
