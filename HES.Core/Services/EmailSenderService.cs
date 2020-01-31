@@ -14,41 +14,32 @@ namespace HES.Core.Services
 {
     public class EmailSenderService : IEmailSenderService
     {
+        private readonly IConfiguration _config;
         private readonly IApplicationUserService _applicationUserService;
-        private readonly SmtpClient client;
-        private readonly string sender;
-        private readonly string serverName;
-        private readonly string serverUrl;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public EmailSenderService(IConfiguration config, IApplicationUserService applicationUserService)
+        public EmailSenderService(IConfiguration config, IApplicationUserService applicationUserService, IAppSettingsService appSettingsService)
         {
+            _config = config;
             _applicationUserService = applicationUserService;
+            _appSettingsService = appSettingsService;
+        }
 
-            var host = config.GetValue<string>("EmailSender:Host");
-            var port = config.GetValue<int>("EmailSender:Port");
-            var enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
-            var userName = config.GetValue<string>("EmailSender:UserName");
-            var password = config.GetValue<string>("EmailSender:Password");
+        private async Task SendAsync(string email, string subject, string message)
+        {
+            var host = _config.GetValue<string>("EmailSender:Host");
+            var port = _config.GetValue<int>("EmailSender:Port");
+            var enableSSL = _config.GetValue<bool>("EmailSender:EnableSSL");
+            var userName = _config.GetValue<string>("EmailSender:UserName");
+            var password = _config.GetValue<string>("EmailSender:Password");
 
-            client = new SmtpClient(host, port)
+            using var client = new SmtpClient(host, port)
             {
                 Credentials = new NetworkCredential(userName, password),
                 EnableSsl = enableSSL
             };
 
-            sender = userName;
-            serverName = config.GetValue<string>("Server:Name");
-            serverUrl = config.GetValue<string>("Server:Url");
-        }
-
-        private async Task SendAsync(string email, string subject, string message)
-        {
-            if (!string.IsNullOrWhiteSpace(serverName))
-            {
-                subject = $"({serverName}) {subject}";
-            }
-
-            await client.SendMailAsync(new MailMessage(sender, email, subject, message) { IsBodyHtml = true });
+            await client.SendMailAsync(new MailMessage(userName, email, subject, message) { IsBodyHtml = true });
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
@@ -65,8 +56,9 @@ namespace HES.Core.Services
 
         public async Task SendLicenseChangedAsync(DateTime createdAt, OrderStatus status)
         {
-            string subject = "HES notification";
-            string hes = serverUrl == null ? "HES" : $"<a href='{serverUrl}'>HES</a>";
+            var server = await _appSettingsService.GetServerSettingsAsync();
+            string subject = server.Name == null ? "HES notification" : $"({server.Name}) Notification";
+            string hes = server.Url == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
             string html = $@"
                            <div style='font-family: Roboto;'>                       
                                 <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
@@ -91,7 +83,7 @@ namespace HES.Core.Services
         }
 
         public async Task SendDeviceLicenseStatus(List<Device> devices)
-        {            
+        {
             var message = new StringBuilder();
 
             var valid = devices.Where(d => d.LicenseStatus == LicenseStatus.Valid).OrderBy(d => d.Id).ToList();
@@ -118,8 +110,9 @@ namespace HES.Core.Services
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
             }
 
-            string subject = "HES notification";
-            string hes = serverUrl == null ? "HES" : $"<a href='{serverUrl}'>HES</a>";
+            var server = await _appSettingsService.GetServerSettingsAsync();
+            string subject = server.Name == null ? "HES notification" : $"({server.Name}) Notification";
+            string hes = server.Url == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
             string html = $@"
                            <div style='font-family: Roboto;'>                       
                                 <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
