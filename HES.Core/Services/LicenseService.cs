@@ -15,64 +15,63 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class LicenseService : ILicenseService, IDisposable
+    public class LicenseService : ILicenseService
     {
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IEmailSenderService _emailSenderService;
-        private HttpClient client;
-        private string apiKey;
-        private string apiAddress;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
                                    IAsyncRepository<Device> deviceRepository,
                                    IAppSettingsService appSettingsService,
                                    IEmailSenderService emailSenderService,
-                                   IConfiguration config)
+                                   IHttpClientFactory httpClientFactory)
         {
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
             _deviceRepository = deviceRepository;
             _appSettingsService = appSettingsService;
             _emailSenderService = emailSenderService;
-
-            InitializeHttpClient().Wait();
+            _httpClientFactory = httpClientFactory;
         }
 
         #region HttpClient
 
-        private async Task InitializeHttpClient()
+        private async Task<HttpClient> CreateHttpClient()
         {
             var licensing = await _appSettingsService.GetLicensingSettingsAsync();
-            apiKey = licensing.ApiKey;//config.GetValue<string>("Licensing:ApiKey");
-            apiAddress = licensing.ApiAddress;//config.GetValue<string>("Licensing:ApiAddress");
 
-            client = new HttpClient();
-            client.BaseAddress = new Uri(apiAddress);
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(licensing.ApiAddress);
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            return client;
         }
 
         private async Task<HttpResponseMessage> HttpClientPostOrderAsync(LicenseOrderDto licenseOrderDto)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(licenseOrderDto), Encoding.UTF8, "application/json");
             var path = $"api/Licenses/CreateLicenseOrder";
-
+            var client = await CreateHttpClient();
             return await client.PostAsync(path, stringContent);
         }
 
         private async Task<HttpResponseMessage> HttpClientGetLicenseOrderStatusAsync(string orderId)
         {
             var path = $"api/Licenses/GetLicenseOrderStatus/{orderId}";
+            var client = await CreateHttpClient();
             return await client.GetAsync(path);
         }
 
         private async Task<HttpResponseMessage> HttpClientGetDeviceLicensesAsync(string orderId)
         {
             var path = $"/api/Licenses/GetDeviceLicenses/{orderId}";
+            var client = await CreateHttpClient();
             return await client.GetAsync(path);
         }
 
@@ -139,6 +138,8 @@ namespace HES.Core.Services
             {
                 throw new Exception("Device licenses not found");
             }
+            
+            var licensing = await _appSettingsService.GetLicensingSettingsAsync();
 
             var licenseOrderDto = new LicenseOrderDto()
             {
@@ -148,7 +149,7 @@ namespace HES.Core.Services
                 LicenseStartDate = order.StartDate,
                 LicenseEndDate = order.EndDate,
                 ProlongExistingLicenses = order.ProlongExistingLicenses,
-                CustomerId = apiKey,
+                CustomerId = licensing.ApiKey,
                 Devices = deviceLicenses.Select(d => d.DeviceId).ToList()
             };
 
@@ -405,10 +406,5 @@ namespace HES.Core.Services
         }
 
         #endregion
-
-        public void Dispose()
-        {
-            client.Dispose();
-        }
     }
 }

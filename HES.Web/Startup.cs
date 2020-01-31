@@ -61,22 +61,6 @@ namespace HES.Web
                 configuration["DataProtection:Password"] = dataprotectoin_pwd;
             }
 
-            var api_key = configuration["API_KEY"];
-            var api_address = configuration["API_ADDRESS"];
-            if (api_key != null && api_address != null)
-            {
-                configuration["Licensing:ApiKey"] = api_key;
-                configuration["Licensing:ApiAddress"] = api_address;
-            }
-
-            var server_name = configuration["SRV_NAME"];
-            var server_url = configuration["SRV_URL"];
-            if (server_name != null && server_url != null)
-            {
-                configuration["Server:Name"] = server_name;
-                configuration["Server:Url"] = server_url;
-            }
-
             #endregion
 
             Configuration = configuration;
@@ -134,7 +118,7 @@ namespace HES.Web
                 return new LicenseHostedService(licenseService, logger);
             });
 
-            // SignalR
+            services.AddHttpClient();
             services.AddSignalR();
 
             // Cookie
@@ -227,8 +211,7 @@ namespace HES.Web
                 .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddControllers();
-            services.AddRazorPages()
-                .AddRazorRuntimeCompilation();
+            services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddServerSideBlazor();
 
             // Register the Swagger generator
