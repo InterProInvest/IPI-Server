@@ -91,24 +91,7 @@ namespace HES.Web
             services.AddScoped<IEmailSenderService, EmailSenderService>();
             services.AddScoped<ILicenseService, LicenseService>();
             services.AddScoped<IAppSettingsService, AppSettingsService>();
-            services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
-            {
-                var scope = s.CreateScope();
-                var config = scope.ServiceProvider.GetService<IConfiguration>();
-                var dataProtectionRepository = scope.ServiceProvider.GetService<IAsyncRepository<DataProtection>>();
-                var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
-                var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
-                var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
-                var emailSenderService = scope.ServiceProvider.GetService<IEmailSenderService>();
-                var logger = scope.ServiceProvider.GetService<ILogger<DataProtectionService>>();
-                return new DataProtectionService(config,
-                                                 dataProtectionRepository,
-                                                 deviceRepository,
-                                                 deviceTaskRepository,
-                                                 sharedAccountRepository,
-                                                 emailSenderService,
-                                                 logger);
-            });
+            services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
             services.AddHostedService<LicenseHostedService>();
