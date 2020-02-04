@@ -10,7 +10,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<T> Query();
         IQueryable<T> SqlQuery(string sql);
-        Task<T> GetByIdAsync(dynamic id);
+        Task<T> GetByIdAsync(string id);
         Task<T> AddAsync(T entity);
         Task<IList<T>> AddRangeAsync(IList<T> entity);
         Task UpdateAsync(T entity);

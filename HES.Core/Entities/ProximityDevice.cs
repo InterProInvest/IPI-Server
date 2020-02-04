@@ -6,6 +6,7 @@ namespace HES.Core.Entities
     public class ProximityDevice
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Display(Name = "Device")]
         public string DeviceId { get; set; }

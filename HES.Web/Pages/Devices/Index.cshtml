@@ -46,6 +46,12 @@
                 </select>
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label asp-for="DeviceFilter.LicenseStatus" class="control-label"></label>
+                <select id="licenseStatus" asp-for="DeviceFilter.LicenseStatus" class="form-control" asp-items="ViewBag.LicenseStatus">
+                    <option selected></option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label asp-for="DeviceFilter.EmployeeId" class="control-label"></label>
                 <select id="employeeId" asp-for="DeviceFilter.EmployeeId" class="form-control" asp-items="ViewBag.Employees">
                     <option selected></option>
@@ -213,6 +219,7 @@
             $('#endDate').datepicker().data('datepicker').clear();
             $('#battery').val("");
             $('#firmware').val("");
+            $('#licenseStatus').val("");
             $('#employeeId').val("");
             $('#companyId').val("");
             $('#departmentId').val("");

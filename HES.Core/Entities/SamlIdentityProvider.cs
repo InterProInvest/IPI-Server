@@ -6,6 +6,7 @@ namespace HES.Core.Entities
     public class SamlIdentityProvider
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Display(Name = "SAML IdP Authentication")]
         public bool Enabled { get; set; }

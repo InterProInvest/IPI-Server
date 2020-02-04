@@ -58,7 +58,7 @@ tr {
             width: 20px;
         }
 
-.custom-alert {
+.custom-error-alert {
     position: absolute;
     left: 50%;
     top: 50%;

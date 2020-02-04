@@ -1,4 +1,5 @@
 using HES.Core.Entities;
+using HES.Core.HostedServices;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
@@ -9,14 +10,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
@@ -24,14 +25,17 @@ namespace HES.Web
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
+            #region Environment variables
+
             var server = configuration["MYSQL_SRV"];
             var port = configuration["MYSQL_PORT"];
             var db = configuration["MYSQL_DB"];
             var uid = configuration["MYSQL_UID"];
             var pwd = configuration["MYSQL_PWD"];
-
             if (server != null && port != null && db != null && uid != null && pwd != null)
             {
                 configuration["ConnectionStrings:DefaultConnection"] = $"server={server};port={port};database={db};uid={uid};pwd={pwd}";
@@ -42,7 +46,6 @@ namespace HES.Web
             var email_ssl = configuration["EMAIL_SSL"];
             var email_user = configuration["EMAIL_USER"];
             var email_pwd = configuration["EMAIL_PWD"];
-
             if (email_host != null && email_port != null && email_ssl != null && email_user != null && email_pwd != null)
             {
                 configuration["EmailSender:Host"] = email_host;
@@ -53,23 +56,21 @@ namespace HES.Web
             }
 
             var dataprotectoin_pwd = configuration["DATAPROTECTION_PWD"];
-
             if (dataprotectoin_pwd != null)
             {
                 configuration["DataProtection:Password"] = dataprotectoin_pwd;
             }
 
+            #endregion
+
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
-            services.AddScoped<IAppService, AppService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDeviceService, DeviceService>();
@@ -88,28 +89,15 @@ namespace HES.Web
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
             services.AddScoped<IRemoteTaskService, RemoteTaskService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
-            services.AddSingleton<IDataProtectionService, DataProtectionService>(s =>
-            {
-                var scope = s.CreateScope();
-                var config = scope.ServiceProvider.GetService<IConfiguration>();
-                var dataProtectionRepository = scope.ServiceProvider.GetService<IAsyncRepository<DataProtection>>();
-                var deviceRepository = scope.ServiceProvider.GetService<IAsyncRepository<Device>>();
-                var deviceTaskRepository = scope.ServiceProvider.GetService<IAsyncRepository<DeviceTask>>();
-                var sharedAccountRepository = scope.ServiceProvider.GetService<IAsyncRepository<SharedAccount>>();
-                var applicationUserService = scope.ServiceProvider.GetService<IApplicationUserService>();
-                var logger = scope.ServiceProvider.GetService<ILogger<DataProtectionService>>();
-                return new DataProtectionService(config,
-                                                 dataProtectionRepository,
-                                                 deviceRepository,
-                                                 deviceTaskRepository,
-                                                 sharedAccountRepository,
-                                                 applicationUserService,
-                                                 logger);
-            });
+            services.AddScoped<ILicenseService, LicenseService>();
+            services.AddScoped<IAppSettingsService, AppSettingsService>();
+            services.AddScoped<IToastService, ToastService>();
+            services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
-            services.AddHostedService<RemoveLogsFilesHostedService>();
+            services.AddHostedService<RemoveLogsHostedService>();
+            services.AddHostedService<LicenseHostedService>();
 
-            // SignalR
+            services.AddHttpClient();
             services.AddSignalR();
 
             // Cookie
@@ -118,6 +106,17 @@ namespace HES.Web
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(14);
+                options.LoginPath = "/Account/Login";
+                options.LogoutPath = "/Account/Logout";
+                options.Cookie = new CookieBuilder
+                {
+                    IsEssential = true // required for auth to work without explicit user consent; adjust to suit your privacy policy
+                };
             });
 
             // Dismiss strong password
@@ -137,18 +136,18 @@ namespace HES.Web
 
             // Identity
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
+                .AddDefaultUI()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             // Auth policy
             services.AddAuthorization(config =>
-            {
-                config.AddPolicy("RequireAdministratorRole",
-                    policy => policy.RequireRole("Administrator"));
-                config.AddPolicy("RequireUserRole",
-                    policy => policy.RequireRole("User"));
-            });
+                        {
+                            config.AddPolicy("RequireAdministratorRole",
+                                policy => policy.RequireRole("Administrator"));
+                            config.AddPolicy("RequireUserRole",
+                                policy => policy.RequireRole("User"));
+                        });
 
             // Override OnRedirectToLogin via API
             services.ConfigureApplicationCookie(config =>
@@ -188,8 +187,11 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
                 })
-                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.AddControllers();
+            services.AddRazorPages().AddRazorRuntimeCompilation();
+            services.AddServerSideBlazor();
 
             // Register the Swagger generator
             services.AddSwaggerGen(c =>
@@ -199,7 +201,7 @@ namespace HES.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -244,42 +246,46 @@ namespace HES.Web
                 SupportedUICultures = supportedCultures
             });
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseRouting();
+
+            app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<DeviceHub>("/deviceHub");
-                routes.MapHub<AppHub>("/appHub");
-                routes.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
-            });
+            app.UseAuthorization();
 
             app.UseMiddleware<DataProtectionMiddeware>();
-       
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "HES API V1");
             });
 
-            app.UseMvc();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<DeviceHub>("/deviceHub");
+                endpoints.MapHub<AppHub>("/appHub");
+                endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+                endpoints.MapBlazorHub();
+            });
+
             app.UseCookiePolicy();
 
-            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
-                logger.LogInformation("Server started");
-                // Apply migration
-                var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
-                context.Database.Migrate();
-                // Db seed if first run
-                var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-                var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-                new ApplicationDbSeed(context, userManager, roleManager).Initialize();
-                // Get status of data protection
-                var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
-                dataProtectionService.Initialize().Wait();
-            }
+            using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
+            logger.LogInformation("Server started");
+            // Apply migration
+            var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
+            context.Database.Migrate();
+            // Db seed if first run
+            var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
+            var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
+            new ApplicationDbSeed(context, userManager, roleManager).Initialize();
+            // Get status of data protection
+            var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
+            dataProtectionService.Initialize().Wait();
         }
     }
 }

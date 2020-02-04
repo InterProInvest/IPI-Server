@@ -13,6 +13,8 @@
     <link href="~/lib/air-datepicker/datepicker.min.css" rel="stylesheet" />
     <!-- Main CSS-->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    <base href="~/" />
 </head>
 <body>
     <div class="d-flex">
@@ -46,7 +48,7 @@
                                 Profile
                             </a>
                             <form class="form-inline dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                                <button type="submit" class="nav-link btn btn-link text-dark p-0" style="text-decoration: none;">
+                                <button type="submit" class="nav-link btn btn-link text-dark p-0 w-100 text-left text-decoration-none">
                                     <img src="~/svg/account/round-power-off.svg" />
                                     Logout
                                 </button>
@@ -56,12 +58,14 @@
                 </ul>
             </nav>
             <!-- Main -->
-            <div class="custom-content p-4">
+            <div class="custom-content p-4">              
+                <component type="typeof(Toast)" render-mode="ServerPrerendered" />
                 <partial name="_SpinnerPartial" />
                 @RenderBody()
             </div>
         </div>
     </div>
+    <script src="_framework/blazor.server.js"></script>
     <!-- JQuery -->
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
@@ -76,6 +80,7 @@
     <script src="~/lib/air-datepicker/datepicker.min.js"></script>
     <!-- Main JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/main.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

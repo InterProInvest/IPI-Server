@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HES.Core.Entities;
@@ -20,6 +21,7 @@ namespace HES.Core.Hubs
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IDeviceService _deviceService;
         private readonly IDeviceTaskService _deviceTaskService;
+        private readonly ILicenseService _licenseService;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
@@ -27,6 +29,7 @@ namespace HES.Core.Hubs
                       IWorkstationAuditService workstationAuditService,
                       IDeviceService deviceService,
                       IDeviceTaskService deviceTaskService,
+                      ILicenseService licenseService,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
@@ -34,9 +37,9 @@ namespace HES.Core.Hubs
             _workstationAuditService = workstationAuditService;
             _deviceService = deviceService;
             _deviceTaskService = deviceTaskService;
+            _licenseService = licenseService;
             _logger = logger;
         }
-
 
         #region Workstation
 
@@ -178,7 +181,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogCritical($"[{dto.DeviceSerialNo}] {ex.Message}");
             }
         }
 
@@ -192,7 +195,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogCritical($"[{deviceId}] {ex.Message}");
             }
             return Task.CompletedTask;
         }
@@ -224,7 +227,7 @@ namespace HES.Core.Hubs
                         var device = new Device()
                         {
                             Id = dto.DeviceSerialNo,
-                            MAC =  dto.Mac,
+                            MAC = dto.Mac,
                             Model = dto.DeviceSerialNo.Substring(0, 5),
                             RFID = dto.Mac.Replace(":", "").Substring(0, 10),
                             Battery = dto.Battery,
@@ -238,7 +241,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogCritical($"[{dto.DeviceSerialNo}] {ex.Message}");
             }
         }
 
@@ -320,7 +323,8 @@ namespace HES.Core.Hubs
                 OwnerEmail = device.Employee?.Email,
                 DeviceMac = device.MAC,
                 DeviceSerialNo = device.Id,
-                NeedUpdate = needUpdate
+                NeedUpdate = needUpdate,
+                HasNewLicense = device.HasNewLicense
             };
 
             return info;
@@ -339,6 +343,49 @@ namespace HES.Core.Hubs
             {
                 _logger.LogError($"[{deviceId}] {ex.Message}");
                 return new HideezErrorInfo(ex);
+            }
+        }
+
+        public async Task<IList<DeviceLicenseDTO>> GetNewDeviceLicenses(string deviceId)
+        {
+            try
+            {
+                var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+
+                var deviceLicenseDto = new List<DeviceLicenseDTO>();
+
+                foreach (var license in licenses)
+                {
+                    deviceLicenseDto.Add(new DeviceLicenseDTO
+                    {
+                        Id = license.Id,
+                        DeviceId = license.DeviceId,
+                        ImportedAt = license.ImportedAt,
+                        AppliedAt = license.AppliedAt,
+                        EndDate = license.EndDate,
+                        LicenseOrderId = license.LicenseOrderId,
+                        Data = license.Data,
+                    });
+                }
+
+                return deviceLicenseDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
+        {
+            try
+            {
+                await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
             }
         }
 

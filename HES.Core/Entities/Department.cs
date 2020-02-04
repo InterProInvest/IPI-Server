@@ -6,6 +6,7 @@ namespace HES.Core.Entities
     public class Department
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
         [Display(Name = "Company")]

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.Command;
 using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
@@ -15,6 +9,11 @@ using Hideez.SDK.Communication.Workstation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {

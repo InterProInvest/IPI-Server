@@ -41,14 +41,14 @@ namespace HES.Web.Pages.Dashboard
             _logger = logger;
         }
 
-        public async Task OnGet()
+        public async Task OnGetAsync()
         {
             try
             {
-                await GetServerInfo();
-                await GetEmployeesInfo();
-                await GetDevicesInfo();
-                await GetWorkstationsInfo();
+                await GetServerInfoAsync();
+                await GetEmployeesInfoAsync();
+                await GetDevicesInfoAsync();
+                await GetWorkstationsInfoAsync();
             }
             catch (Exception ex)
             {
@@ -57,7 +57,7 @@ namespace HES.Web.Pages.Dashboard
             }
         }
 
-        private async Task GetServerInfo()
+        private async Task GetServerInfoAsync()
         {
             ServerVersion = _dashboardService.GetServerVersion();
             ServerRemoteTasksCount = await _dashboardService.GetDeviceTasksCount();
@@ -65,7 +65,7 @@ namespace HES.Web.Pages.Dashboard
             ServerNotify = await _dashboardService.GetServerNotifyAsync();
         }
 
-        private async Task GetEmployeesInfo()
+        private async Task GetEmployeesInfoAsync()
         {
             RegisteredEmployeesCount = await _dashboardService.GetEmployeesCountAsync();
             EmployeesSessionsCount = await _dashboardService.GetEmployeesOpenedSessionsCountAsync();
@@ -73,7 +73,7 @@ namespace HES.Web.Pages.Dashboard
             EmployeesNotify = await _dashboardService.GetEmployeesNotifyAsync();
         }
 
-        private async Task GetDevicesInfo()
+        private async Task GetDevicesInfoAsync()
         {
             RegisteredDevicesCount = await _dashboardService.GetDevicesCountAsync();
             FreeDevicesCount = await _dashboardService.GetFreeDevicesCountAsync();
@@ -81,7 +81,7 @@ namespace HES.Web.Pages.Dashboard
             DevicesNotify = await _dashboardService.GetDevicesNotifyAsync();
         }
 
-        private async Task GetWorkstationsInfo()
+        private async Task GetWorkstationsInfoAsync()
         {
             RegisteredWorkstationsCount = await _dashboardService.GetWorkstationsCountAsync();
             WorkstationsOnlineCount = await _dashboardService.GetWorkstationsOnlineCountAsync();

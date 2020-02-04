@@ -1,13 +1,13 @@
-﻿using HES.Core.Entities;
-using HES.Core.Models;
+﻿using HES.Core.Constants;
+using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using HES.Core.Enums;
 
 namespace HES.Core.Services
 {
@@ -18,28 +18,25 @@ namespace HES.Core.Services
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IWorkstationService _workstationService;
         private readonly IDeviceService _deviceService;
-        private readonly IAppService _appService;
 
         public DashboardService(IEmployeeService employeeService,
                                 IWorkstationAuditService workstationAuditService,
                                 IDeviceTaskService deviceTaskService,
                                 IWorkstationService workstationService,
-                                IDeviceService deviceService,
-                                IAppService appService)
+                                IDeviceService deviceService)
         {
             _employeeService = employeeService;
             _workstationAuditService = workstationAuditService;
             _deviceTaskService = deviceTaskService;
             _workstationService = workstationService;
             _deviceService = deviceService;
-            _appService = appService;
         }
 
         #region Server
 
         public string GetServerVersion()
         {
-            return _appService.Version;
+            return AppVersionConstants.Version;
         }
 
         public async Task<int> GetDeviceTasksCount()
@@ -85,7 +82,7 @@ namespace HES.Core.Services
             return await _workstationAuditService
                .SessionQuery()
                .Where(w => w.EndDate == null)
-               .CountAsync();         
+               .CountAsync();
         }
 
         public async Task<List<DashboardNotify>> GetEmployeesNotifyAsync()
@@ -193,6 +190,57 @@ namespace HES.Core.Services
                 });
             }
 
+            var licenseWarning = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus == LicenseStatus.Warning)
+                .AsTracking()
+                .CountAsync();
+
+            if (licenseWarning > 0)
+            {
+                list.Add(new DashboardNotify()
+                {
+                    Message = "License Warning",
+                    Count = licenseWarning,
+                    Page = "/Devices/Index",
+                    Handler = "LicenseWarning"
+                });
+            }
+
+            var licenseCritical = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus == LicenseStatus.Critical)
+                .AsTracking()
+                .CountAsync();
+
+            if (licenseCritical > 0)
+            {
+                list.Add(new DashboardNotify()
+                {
+                    Message = "License Critical",
+                    Count = licenseCritical,
+                    Page = "/Devices/Index",
+                    Handler = "LicenseCritical"
+                });
+            }
+
+            var licenseExpired = await _deviceService
+                .DeviceQuery()
+                .Where(d => d.LicenseStatus == LicenseStatus.Expired)
+                .AsTracking()
+                .CountAsync();
+
+            if (licenseExpired > 0)
+            {
+                list.Add(new DashboardNotify()
+                {
+                    Message = "License Expired",
+                    Count = licenseExpired,
+                    Page = "/Devices/Index",
+                    Handler = "LicenseExpired"
+                });
+            }
+            
             return list;
         }
 

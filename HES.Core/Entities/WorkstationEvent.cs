@@ -8,6 +8,7 @@ namespace HES.Core.Entities
     public class WorkstationEvent
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         public DateTime Date { get; set; }
         [Display(Name = "Event")]
