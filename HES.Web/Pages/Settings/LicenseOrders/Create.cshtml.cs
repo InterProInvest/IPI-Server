@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
+using HES.Core.Models.Web.License;
 using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -19,8 +20,9 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         private readonly ILicenseService _licenseService;
         private readonly IDeviceService _deviceService;
         private readonly ILogger<CreateModel> _logger;
-        public LicenseOrder LicenseOrder { get; set; }
-        public LicenseOrderDto LicenseOrderDto { get; set; }
+
+        public NewLicenseOrderDto NewLicenseOrderDto { get; set; }
+        public RenewLicenseOrderDto RenewLicenseOrderDto { get; set; }
         public List<Device> NonLicensedDevices { get; set; }
         public List<Device> LicensedDevices { get; set; }
 
@@ -42,18 +44,21 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         {
             NonLicensedDevices = await _deviceService
                 .DeviceQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.None)
+                .Where(d => d.LicenseStatus == LicenseStatus.None || d.LicenseStatus == LicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
 
             LicensedDevices = await _deviceService
                 .DeviceQuery()
                 .Where(d => d.LicenseStatus != LicenseStatus.None)
+                .Where(d => d.LicenseStatus != LicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
+            //NonLicensedDevices = new List<Device>();
+            //LicensedDevices = new List<Device>();
         }
 
-        public async Task<IActionResult> OnPostCreateNewLicenseAsync(LicenseOrder licenseOrder, List<string> nonLicensedDevicesIds)
+        public async Task<IActionResult> OnPostCreateNewLicenseAsync(NewLicenseOrderDto newLicenseOrderDto, List<string> nonLicensedDevicesIds)
         {
             if (nonLicensedDevicesIds.Count == 0)
             {
@@ -70,6 +75,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             try
             {
+                var licenseOrder = new LicenseOrder()
+                {
+                    ContactEmail = newLicenseOrderDto.ContactEmail,
+                    Note = newLicenseOrderDto.Note,
+                    ProlongExistingLicenses = false,
+                    StartDate = newLicenseOrderDto.StartDate,
+                    EndDate = newLicenseOrderDto.EndDate
+                };
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
                 await _licenseService.AddDeviceLicensesAsync(createdOrder.Id, nonLicensedDevicesIds);
                 SuccessMessage = "Order created";
@@ -82,7 +95,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostCreateRenewLicenseAsync(LicenseOrder licenseOrder, List<string> licensedDevicesIds)
+        public async Task<IActionResult> OnPostCreateRenewLicenseAsync(RenewLicenseOrderDto renewLicenseOrderDto, List<string> licensedDevicesIds)
         {
             if (licensedDevicesIds.Count == 0)
             {
@@ -99,6 +112,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             try
             {
+                var licenseOrder = new LicenseOrder()
+                {
+                    ContactEmail = renewLicenseOrderDto.ContactEmail,
+                    Note = renewLicenseOrderDto.Note,
+                    ProlongExistingLicenses = true,
+                    EndDate = renewLicenseOrderDto.EndDate
+                };
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
                 await _licenseService.AddDeviceLicensesAsync(createdOrder.Id, licensedDevicesIds);
                 SuccessMessage = "Order created";

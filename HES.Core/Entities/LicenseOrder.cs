@@ -16,12 +16,17 @@ namespace HES.Core.Entities
         public string ContactEmail { get; set; }
         public string Note { get; set; }
         [Required]
+        [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }
         [Required]
+        [Display(Name = "End Date")]
         public DateTime EndDate { get; set; }
         [Required]
+        [Display(Name = "Prolong")]
         public bool ProlongExistingLicenses { get; set; }
+        [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Display(Name = "Order Status")]
         public OrderStatus OrderStatus { get; set; } = OrderStatus.New;
     }
 }

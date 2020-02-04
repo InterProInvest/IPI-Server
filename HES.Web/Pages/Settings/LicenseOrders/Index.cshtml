@@ -102,13 +102,10 @@
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
                             @if (item.OrderStatus == HES.Core.Enums.OrderStatus.New)
                             {
-                                <form class="form-inline dropdown-item" method="post">
-                                    <input type="hidden" name="orderId" value="@item.Id" />
-                                    <button type="submit" class="nav-link btn btn-link text-dark p-0 w-100 text-left text-decoration-none" asp-page-handler="SendOrder">
-                                        <img src="~/svg/action/send.svg" />
-                                        Send
-                                    </button>
-                                </form>
+                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SendOrder" data-title="Send order">
+                                    <img src="~/svg/action/send.svg" />
+                                    Send
+                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" asp-page="./Details" asp-route-id="@item.Id">
                                     <img src="~/svg/action/details.svg" />
@@ -148,8 +145,55 @@
     <div id="pagination_place" class="col d-flex justify-content-center justify-content-lg-end align-items-center mb-1"></div>
 </div>
 
+@* Modal *@
+<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-navyblue" id="modalDialogTitle">Dialog</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts{
     <script>
+        // Open modal dialog
+        $(document).on('click', '.open-modal-dialog', function () {
+            var btn = $(this);
+            var id = btn.data("id");
+            var action = btn.data("action");
+            var title = btn.data("title");
+
+            $('#modalDialogTitle').html(title);
+            $('#modalDialog').modal('toggle');
+
+            $.ajax({
+                url: "/Settings/LicenseOrders?handler=" + action,
+                type: "Get",
+                data: { orderId: id },
+                async: true,
+                success: function (response) {
+                    $("#modalBody").html(response);
+                }
+            });
+        });
+
+        // Clear content on modal hide
+        $('#modalDialog').on('hidden.bs.modal', function (e) {
+            $("#modalBody").html("<div class='d-flex justify-content-center align-items-center'><div class='spinner-grow text-primary' style='width: 3rem; height: 3rem;' role='status'><span class='sr-only'></span></div></div>");
+        })
+
         InitLicenseOrdersDT();
         LicenseOrdersSetBreadcrumbs();
     </script>

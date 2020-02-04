@@ -1,16 +1,10 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Core.Models.API.License;
-using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
@@ -20,6 +14,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         private readonly ILicenseService _licenseService;
         private readonly ILogger<IndexModel> _logger;
         public IList<LicenseOrder> LicenseOrder { get; set; }
+
+        public string OrderId { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -35,6 +31,18 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public async Task OnGetAsync()
         {
             LicenseOrder = await _licenseService.GetLicenseOrdersAsync();
+        }
+        public IActionResult OnGetSendOrder(string orderId)
+        {
+            if (orderId == null)
+            {
+                _logger.LogWarning($"{nameof(orderId)} is null");
+                return NotFound();
+            }
+
+            OrderId = orderId;
+
+            return Partial("_SendOrder", this);
         }
 
         public async Task<IActionResult> OnPostSendOrderAsync(string orderId)
