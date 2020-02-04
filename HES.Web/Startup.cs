@@ -91,6 +91,7 @@ namespace HES.Web
             services.AddScoped<IEmailSenderService, EmailSenderService>();
             services.AddScoped<ILicenseService, LicenseService>();
             services.AddScoped<IAppSettingsService, AppSettingsService>();
+            services.AddScoped<IToastService, ToastService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();

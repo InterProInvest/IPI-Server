@@ -58,7 +58,8 @@
                 </ul>
             </nav>
             <!-- Main -->
-            <div class="custom-content p-4">
+            <div class="custom-content p-4">              
+                <component type="typeof(Toast)" render-mode="ServerPrerendered" />
                 <partial name="_SpinnerPartial" />
                 @RenderBody()
             </div>

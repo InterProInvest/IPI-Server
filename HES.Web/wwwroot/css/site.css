@@ -776,7 +776,7 @@ div.dataTables_scrollHead table.dataTable {
 /*#endregion*/
 
 /*#region Alert */
-.custom-alert {
+.custom-error-alert {
     position: absolute;
     left: 50%;
     top: 50%;

@@ -1,4 +1,5 @@
-﻿using HES.Core.Interfaces;
+﻿using HES.Core.Enums;
+using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
@@ -14,6 +15,8 @@ namespace HES.Web.Pages.Settings.Parameters
     {
         [Inject]
         private IJSRuntime JSRuntime { get; set; }
+        [Inject]
+        private IToastService ToastService { get; set; }
         [Inject]
         private IAppSettingsService AppSettingsService { get; set; }
         [Inject]
@@ -64,10 +67,12 @@ namespace HES.Web.Pages.Settings.Parameters
 
                 licensingIsBusy = true;
                 await AppSettingsService.SetLicensingSettingsAsync(licensing);
+                ToastService.ShowToast("License settings updated.", ToastLevel.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
             finally
             {
@@ -91,10 +96,12 @@ namespace HES.Web.Pages.Settings.Parameters
 
                 serverIsBusy = true;
                 await AppSettingsService.SetServerSettingsAsync(server);
+                ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
             finally
             {
