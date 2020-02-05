@@ -11,7 +11,7 @@
   Disabling SELinux:
 
 ```shell
-  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+  $ sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
   $ sudo setenforce 0
 ```
   Installing EPEL Repository and Nginx
@@ -63,6 +63,12 @@
   Reload privilege tables now? (Press y|Y for Yes, any other key for No) : y
 ```
   * **[Note]** Find default root password using `sudo grep "A temporary password" /var/log/mysqld.log`
+
+  Before starting mysql server for the first time, you must set lower_case_table_names = 1 in the /etc/my.cnf file:
+  
+```shell
+  $ sudo echo "lower_case_table_names=1" >> /etc/my.cnf  
+```
 
   Enabling and running MySQL Service
 
