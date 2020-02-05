@@ -164,7 +164,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-           CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
 
             return Partial("_ApproveWorkstation", this);
         }
