@@ -14,7 +14,9 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
@@ -97,7 +99,7 @@ namespace HES.Web
             services.AddHostedService<RemoveLogsHostedService>();
             services.AddHostedService<LicenseHostedService>();
 
-            services.AddHttpClient();
+            services.AddHttpClient().RemoveAll<IHttpMessageHandlerBuilderFilter>();
             services.AddSignalR();
 
             // Cookie

@@ -138,7 +138,7 @@ namespace HES.Core.Services
             {
                 throw new Exception("Device licenses not found");
             }
-            
+
             var licensing = await _appSettingsService.GetLicensingSettingsAsync();
 
             var licenseOrderDto = new LicenseOrderDto()
@@ -351,6 +351,13 @@ namespace HES.Core.Services
 
         public async Task DiscardAppliedAtByDeviceIdAsync(string deviceId)
         {
+            var device = await _deviceRepository.GetByIdAsync(deviceId);
+            if (device != null)
+            {
+                device.HasNewLicense = true;
+                await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "HasNewLicense" });
+            }
+
             var licenses = await _deviceLicenseRepository
                 .Query()
                 .Where(d => d.DeviceId == deviceId)

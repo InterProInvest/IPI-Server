@@ -22,6 +22,7 @@ namespace HES.Core.Services
         private readonly IDeviceAccountService _deviceAccountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly IWorkstationService _workstationService;
+        private readonly ILicenseService _licenseService;
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
@@ -33,6 +34,7 @@ namespace HES.Core.Services
                                IDeviceAccountService deviceAccountService,
                                ISharedAccountService sharedAccountService,
                                IWorkstationService workstationService,
+                               ILicenseService licenseService,
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                IDataProtectionService dataProtectionService,
@@ -44,6 +46,7 @@ namespace HES.Core.Services
             _deviceAccountService = deviceAccountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
+            _licenseService = licenseService;
             _workstationEventRepository = workstationEventRepository;
             _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
@@ -176,6 +179,18 @@ namespace HES.Core.Services
         public async Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate)
         {
             return await _employeeRepository.ExistAsync(predicate);
+        }
+
+        public async Task UpdateLastSeen(string deviceId)
+        {
+            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+            var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
+
+            if (employee != null)
+            {
+                employee.LastSeen = DateTime.UtcNow;
+                await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { "LastSeen" });
+            }
         }
 
         #endregion
@@ -1031,6 +1046,8 @@ namespace HES.Core.Services
 
             // Remove employee
             await _deviceService.RemoveEmployeeAsync(deviceId);
+
+            await _licenseService.DiscardAppliedAtByDeviceIdAsync(deviceId);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace HES.Core.Hubs
         private readonly IDeviceService _deviceService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
+        private readonly IEmployeeService _employeeService;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
@@ -30,6 +31,7 @@ namespace HES.Core.Hubs
                       IDeviceService deviceService,
                       IDeviceTaskService deviceTaskService,
                       ILicenseService licenseService,
+                      IEmployeeService employeeService,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
@@ -38,6 +40,7 @@ namespace HES.Core.Hubs
             _deviceService = deviceService;
             _deviceTaskService = deviceTaskService;
             _licenseService = licenseService;
+            _employeeService = employeeService;
             _logger = logger;
         }
 
@@ -191,7 +194,10 @@ namespace HES.Core.Hubs
             try
             {
                 if (!string.IsNullOrEmpty(deviceId))
+                {
                     _remoteDeviceConnectionsService.OnDeviceDisconnected(deviceId, GetWorkstationId());
+                    _employeeService.UpdateLastSeen(deviceId);
+                }
             }
             catch (Exception ex)
             {

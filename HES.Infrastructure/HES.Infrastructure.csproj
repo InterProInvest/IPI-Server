@@ -6,13 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20190806113539_added_deviceAccessProfiles_table.cs" />
-    <Compile Remove="Migrations\20190809120753_added_acceessProfileId_field.cs" />
-    <Compile Remove="Migrations\20190904091832_update_workstation_table.cs" />
-    <Compile Remove="Migrations\20190910141916_added_identity_provider_table.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.1">

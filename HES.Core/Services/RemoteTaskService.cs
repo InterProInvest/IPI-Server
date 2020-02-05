@@ -96,8 +96,7 @@ namespace HES.Core.Services
                 case TaskOperation.Wipe:
                     device.State = Enums.DeviceState.OK;
                     device.MasterPassword = null;
-                    device.HasNewLicense = true;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword", "HasNewLicense" });
+                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword" });
                     await _licenseService.DiscardAppliedAtByDeviceIdAsync(deviceTask.DeviceId);
                     break;
                 case TaskOperation.UnlockPin:

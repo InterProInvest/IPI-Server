@@ -15,11 +15,11 @@
 @switch (Model.Status)
 {
     case Core.Services.ProtectionStatus.Off:
-        <a class="btn btn-link" data-toggle="collapse" href="#enableDataProtection" role="button" aria-expanded="false" aria-controls="enableDataProtection">
-            <h6>
+        <p>
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#enableDataProtection" aria-expanded="false" aria-controls="enableDataProtection">
                 Enable data protection
-            </h6>
-        </a>
+            </button>
+        </p>
         <div class="collapse" id="enableDataProtection">
             <div class="profile-fill-card">
                 <form method="post" style="max-width:350px">
@@ -42,11 +42,11 @@
         </div>
         break;
     case Core.Services.ProtectionStatus.On:
-        <a class="btn btn-link" data-toggle="collapse" href="#disableDataProtection" role="button" aria-expanded="false" aria-controls="disableDataProtection">
-            <h6>
+        <p>
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#disableDataProtection" aria-expanded="false" aria-controls="disableDataProtection">
                 Disable data protection
-            </h6>
-        </a>
+            </button>
+        </p>
         <div class="collapse" id="disableDataProtection">
             <div class="profile-fill-card">
                 <form method="post" style="max-width:350px">
@@ -63,11 +63,11 @@
             </div>
         </div>
         <br />
-        <a class="btn btn-link" data-toggle="collapse" href="#changeEncryptionPassword" role="button" aria-expanded="false" aria-controls="changeEncryptionPassword">
-            <h6>
+        <p>
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#changeEncryptionPassword" aria-expanded="false" aria-controls="changeEncryptionPassword">
                 Change encryption password
-            </h6>
-        </a>
+            </button>
+        </p>
         <div class="collapse" id="changeEncryptionPassword">
             <div class="profile-fill-card">
                 <form method="post" style="max-width:350px">
@@ -98,6 +98,53 @@
         <h5>Protection is Busy</h5>
         break;
 }
+
+<hr />
+<h5>
+    Для чего это нужно?
+</h5>
+<p>
+    Data Protection позволяет решить проблему безопасного хранения данных в базе.
+</p>
+<h5>
+    Какие конфиденциальные данные хранятся в базе?
+</h5>
+<p>
+    Прежде всего это Device Keys - ключи шифрования, которые позволяют получить доступ к содержимому устройств Hideez Key. Также в базе временно хранятся пароли и OTP Secrets, которые ожидают передачи на устройства. Если это пароли к Shared Account, то они хранятся в базе постоянно. Если Data Protection не включен, то все пароли и ключи хранятся в открытом виде. При наличии Device Key и наличии самого устройства можно прочитать все содержимое памяти Hideez Key.
+</p>
+<h5>
+    Нужно ли мне включать Data Protection?
+</h5>
+<p>
+    Прежде всего, нужно оценить, у кого из сотрудников есть прямой или потенциальный доступ к базе данных HES. Если среди них есть те, кто не должен иметь доступ к конфиденциальным данным, перечисленным в предыдущем пункте, то Data Protection должен быть обязательно включен. Примите также во внимание, что данные могут быть считаны физически с HDD/SDD на котором они хранятся, т.е. нужно учитывать возможность как программного, так и физического доступа к данным.
+    В некоторых случаях, например, если HES и сервер базы данных работают на одном и том же физическом сервере, доступ к которому ограничен доверенным кругом лиц, то Data Protection можно не включать.
+</p>
+<h5>
+    Как это работает?
+</h5>
+<p>
+    Все конфиденциальные поля в БД шифруются алгоритмом AES-256. Ключ шифрования (пароль) вводится вручную администратором после запуска веб сервера и затем хранится только в оперативной памяти сервера.
+    Если сервер перезагрузится, ключ шифрования будет стерт, а все администраторы получат имейл с просьбой ввести пароль от Data Protection. До того, как пароль будет введен, сервер не выполняет обработку входящих запросов. После того, как пароль введен, сервер переходит в нормальный режим работы, данные расшифровываются налету.
+    <br />
+    <br />
+    Пароль от Data Protection можно поместить в конфиг-файл или Environment Variables на сервере, чтобы не вводить их вручную. В этом случае сервер может перезагрузится без участия администратора. Естественно, что в этом случае доступ к серверу должен быть доступен только для уполномоченных лиц.
+    <br />
+    <br />
+    Пароль для Data Protection может быть сменен. Для этого в интерфейсе HES нужно ввести старый пароль и дважды новый пароль. Все данные в базе будут перешифрованы.
+</p>
+<h5>
+    Risks and best practices
+</h5>
+<p>
+    Основной риск при использовании Data Protection — это потеря пароля для его активации. В этом случае вы теряете доступ к зашифрованным данным на сервере, а также доступ ко всем данным на всех ваших устройствах Hideez Key! Все устройства придется подвергнуть процедуре ручного сброса с полной очисткой памяти. Затем повторно их привязать к сотрудникам и заново добавлять все аккаунты на устройства.
+    Исходя из этого можно дать следующие рекомендации - пароль от Data Protection должен быть известен нескольким сотрудникам. Также он должен хранится в безопасном месте (сейфе) на физическом носителе.
+    <br />
+    <br />
+    Также в случае использования Data Protection есть риск недоступности сервера HES, в случае его аварийной перезагрузки, до того момента, как будет введен пароль для активации Data Protection. Но это не должно сказаться на работе компании, поскольку все аккаунты хранятся на устройствах сотрудников и могут использоваться без наличия связи с сервером HES.
+    <br />
+    <br />
+    Смена пароля Data Protection должна производится в соответствии с регламентом информационной безопасности компании.
+</p>
 
 
 @section Scripts{
