@@ -181,7 +181,7 @@ namespace HES.Core.Services
             return await _employeeRepository.ExistAsync(predicate);
         }
 
-        public async Task UpdateLastSeen(string deviceId)
+        public async Task UpdateLastSeenAsync(string deviceId)
         {
             var device = await _deviceService.GetDeviceByIdAsync(deviceId);
             var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);

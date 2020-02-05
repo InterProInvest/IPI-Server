@@ -189,21 +189,20 @@ namespace HES.Core.Hubs
         }
 
         // Incoming request
-        public Task OnDeviceDisconnected(string deviceId)
+        public async Task OnDeviceDisconnected(string deviceId)
         {
             try
             {
                 if (!string.IsNullOrEmpty(deviceId))
                 {
                     _remoteDeviceConnectionsService.OnDeviceDisconnected(deviceId, GetWorkstationId());
-                    _employeeService.UpdateLastSeen(deviceId);
+                    await _employeeService.UpdateLastSeenAsync(deviceId);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogCritical($"[{deviceId}] {ex.Message}");
             }
-            return Task.CompletedTask;
         }
 
         // Incomming request

@@ -18,7 +18,7 @@ namespace HES.Core.Interfaces
         Task EditEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
         Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
-        Task UpdateLastSeen(string deviceId);
+        Task UpdateLastSeenAsync(string deviceId);
         Task AddDeviceAsync(string employeeId, string[] selectedDevices);
         Task RemoveDeviceAsync(string employeeId, string deviceId);
         Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
