@@ -36,6 +36,12 @@
   $ sudo yum install mysql-server
 ```
 
+Before starting mysql server for the first time, you must set lower_case_table_names = 1 in the /etc/my.cnf file:
+
+```shell
+  $ sudo echo "lower_case_table_names=1" >> /etc/my.cnf  
+```
+
   ## Getting Started (fresh install)
 
 ### 1. Postinstalling and Securing MySQL Server
@@ -64,11 +70,7 @@
 ```
   * **[Note]** Find default root password using `sudo grep "A temporary password" /var/log/mysqld.log`
 
-  Before starting mysql server for the first time, you must set lower_case_table_names = 1 in the /etc/my.cnf file:
-  
-```shell
-  $ sudo echo "lower_case_table_names=1" >> /etc/my.cnf  
-```
+
 
   Enabling and running MySQL Service
 
