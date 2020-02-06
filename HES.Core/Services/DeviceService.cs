@@ -2,12 +2,16 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.API.Device;
 using Hideez.SDK.Communication;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,16 +37,22 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<DeviceAccessProfile> _deviceAccessProfileRepository;
         private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IAppSettingsService _appSettingsService;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IAesCryptographyService _aesService;
 
         public DeviceService(IAsyncRepository<Device> deviceRepository,
                              IAsyncRepository<DeviceAccessProfile> deviceAccessProfileRepository,
                              IDeviceTaskService deviceTaskService,
+                             IAppSettingsService appSettingsService,
+                             IHttpClientFactory httpClientFactory,
                              IAesCryptographyService aesService)
         {
             _deviceRepository = deviceRepository;
-            _deviceTaskService = deviceTaskService;
             _deviceAccessProfileRepository = deviceAccessProfileRepository;
+            _deviceTaskService = deviceTaskService;
+            _appSettingsService = appSettingsService;
+            _httpClientFactory = httpClientFactory;
             _aesService = aesService;
         }
 
@@ -185,6 +195,47 @@ namespace HES.Core.Services
             {
                 message = "File is recognized, but it is no devices to import. Check file structure and try again.";
                 return (devicesExists, devicesImported, message);
+            }
+        }
+
+        public async Task ImportDevicesAsync()
+        {
+            var licensing = await _appSettingsService.GetLicensingSettingsAsync();
+
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(licensing.ApiAddress);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var path = $"api/Devices/GetDevices/{licensing.ApiKey}";
+            var response = await client.GetAsync(path);
+
+            response.EnsureSuccessStatusCode();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadAsStringAsync();
+                var newDevicesDto = JsonConvert.DeserializeObject<List<DeviceImportDto>>(data);
+                
+                var currentDevices = await GetDevicesAsync();
+                var devicesToImport = new List<Device>();
+                newDevicesDto.RemoveAll(x => currentDevices.Select(s => s.Id).Contains(x.DeviceId));
+
+                foreach (var newDeviceDto in newDevicesDto)
+                {
+                    devicesToImport.Add(new Device()
+                    {
+                        Id = newDeviceDto.DeviceId,
+                        MAC = newDeviceDto.MAC,
+                        Model = newDeviceDto.Model,
+                        RFID = newDeviceDto.RFID,
+                        Battery = 100,
+                        Firmware = newDeviceDto.Firmware,
+                        ImportedAt = DateTime.UtcNow
+                    });
+                }
+
+                await _deviceRepository.AddRangeAsync(devicesToImport);
             }
         }
 

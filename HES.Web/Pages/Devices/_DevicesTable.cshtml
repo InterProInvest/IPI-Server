@@ -26,6 +26,9 @@
     <div class="col-auto p-1">
         <a class="btn btn-primary" asp-page="Import">Import</a>
     </div>
+    <div class="col-auto p-1">
+        <component type="typeof(SyncDevices)" render-mode="ServerPrerendered" />
+    </div>
 </div>
 
 <table id="devices" class="display table table-hover border rounded w-100">

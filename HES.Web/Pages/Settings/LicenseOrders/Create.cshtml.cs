@@ -21,8 +21,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         private readonly IDeviceService _deviceService;
         private readonly ILogger<CreateModel> _logger;
 
-        public NewLicenseOrderDto NewLicenseOrderDto { get; set; }
-        public RenewLicenseOrderDto RenewLicenseOrderDto { get; set; }
+        public NewLicenseOrder NewLicenseOrderDto { get; set; }
+        public RenewLicenseOrder RenewLicenseOrderDto { get; set; }
         public List<Device> NonLicensedDevices { get; set; }
         public List<Device> LicensedDevices { get; set; }
 
@@ -58,7 +58,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             //LicensedDevices = new List<Device>();
         }
 
-        public async Task<IActionResult> OnPostCreateNewLicenseAsync(NewLicenseOrderDto newLicenseOrderDto, List<string> nonLicensedDevicesIds)
+        public async Task<IActionResult> OnPostCreateNewLicenseAsync(NewLicenseOrder newLicenseOrderDto, List<string> nonLicensedDevicesIds)
         {
             if (nonLicensedDevicesIds.Count == 0)
             {
@@ -95,7 +95,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostCreateRenewLicenseAsync(RenewLicenseOrderDto renewLicenseOrderDto, List<string> licensedDevicesIds)
+        public async Task<IActionResult> OnPostCreateRenewLicenseAsync(RenewLicenseOrder renewLicenseOrderDto, List<string> licensedDevicesIds)
         {
             if (licensedDevicesIds.Count == 0)
             {

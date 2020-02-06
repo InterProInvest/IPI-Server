@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HES.Core.Models.Web.License
 {
-    public class NewLicenseOrderDto
+    public class NewLicenseOrder
     {
         [Required]
         [EmailAddress]

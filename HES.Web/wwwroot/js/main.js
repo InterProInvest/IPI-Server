@@ -4,3 +4,7 @@
         $('.breadcrumb').append('<li class="breadcrumb-item ' + breadcrumbs[i].active + '">' + breadcrumbs[i].content + '</li>');
     }
 }
+
+function showSpinner(elementId) {
+    $('#' + elementId).toggleClass('d-none');
+}
