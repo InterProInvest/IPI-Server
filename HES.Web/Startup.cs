@@ -284,7 +284,7 @@ namespace HES.Web
             // Db seed if first run
             var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
             var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-            new ApplicationDbSeed(context, userManager, roleManager).Initialize();
+            new ApplicationDbSeed(context, userManager, roleManager).Initialize().Wait();
             // Get status of data protection
             var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
             dataProtectionService.Initialize().Wait();
