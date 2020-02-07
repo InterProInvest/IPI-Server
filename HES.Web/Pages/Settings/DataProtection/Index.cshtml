@@ -101,49 +101,53 @@
 
 <hr />
 <h5>
-    Для чего это нужно?
+    What is the purpose of Data Protection?
 </h5>
 <p>
-    Data Protection позволяет решить проблему безопасного хранения данных в базе.
+    Data Protection solves the problem of secure data storage in the database (DB).
 </p>
 <h5>
-    Какие конфиденциальные данные хранятся в базе?
+    What confidential data is stored in the DB?
 </h5>
 <p>
-    Прежде всего это Device Keys - ключи шифрования, которые позволяют получить доступ к содержимому устройств Hideez Key. Также в базе временно хранятся пароли и OTP Secrets, которые ожидают передачи на устройства. Если это пароли к Shared Account, то они хранятся в базе постоянно. Если Data Protection не включен, то все пароли и ключи хранятся в открытом виде. При наличии Device Key и наличии самого устройства можно прочитать все содержимое памяти Hideez Key.
+    The database stores Device Keys – encryption keys that provide access to the information stored on the Hideez Key. Passwords and OTP Secrets that are awaiting transfer to devices are also temporarily stored in the DB.
+    Passwords to the “Shared Account” are permanently stored in the database. If Data Protection is turned off, all passwords and keys are stored in plain text. If you have a Device Key and the device itself, you can read all the content of the Hideez Key memory.
 </p>
 <h5>
-    Нужно ли мне включать Data Protection?
+    Do I need to enable Data Protection?
 </h5>
 <p>
-    Прежде всего, нужно оценить, у кого из сотрудников есть прямой или потенциальный доступ к базе данных HES. Если среди них есть те, кто не должен иметь доступ к конфиденциальным данным, перечисленным в предыдущем пункте, то Data Protection должен быть обязательно включен. Примите также во внимание, что данные могут быть считаны физически с HDD/SDD на котором они хранятся, т.е. нужно учитывать возможность как программного, так и физического доступа к данным.
-    В некоторых случаях, например, если HES и сервер базы данных работают на одном и том же физическом сервере, доступ к которому ограничен доверенным кругом лиц, то Data Protection можно не включать.
+    First of all, you need to evaluate which employees have a direct to potential access to the HES database.
+    If some of them should not have access to the sensitive data listed above than Data Protection must be enabled.
+    Please also note, that the data can be physically read from the HDD/SDD on which it is stored. It is necessary to consider the possibility of both software and physical access to the data.
+    In some cases, for example, if the HES and the database server are running on the same physical server that can be accessed by a limited number of trusted people, then Data Protection can be omitted.
 </p>
 <h5>
-    Как это работает?
+    How does it work?
 </h5>
 <p>
-    Все конфиденциальные поля в БД шифруются алгоритмом AES-256. Ключ шифрования (пароль) вводится вручную администратором после запуска веб сервера и затем хранится только в оперативной памяти сервера.
-    Если сервер перезагрузится, ключ шифрования будет стерт, а все администраторы получат имейл с просьбой ввести пароль от Data Protection. До того, как пароль будет введен, сервер не выполняет обработку входящих запросов. После того, как пароль введен, сервер переходит в нормальный режим работы, данные расшифровываются налету.
+    All the confidential fields in the DB are encrypted using the AES-256 algorithm. The encryption key (a password) is entered manually by the administrator after the webserver start, and then it is stored only in the server’s RAM.
+    If the server reboots, the encryption key erases, and all the administrators receive an email asking them to enter the Data Protection password. Before the password is entered, the server doesn’t process incoming requests. Once the password is provided, the server switches to the normal mode, and the data is decrypted on the fly.
     <br />
     <br />
-    Пароль от Data Protection можно поместить в конфиг-файл или Environment Variables на сервере, чтобы не вводить их вручную. В этом случае сервер может перезагрузится без участия администратора. Естественно, что в этом случае доступ к серверу должен быть доступен только для уполномоченных лиц.
+    The password to Data Protection can be placed in a config file or Environment Variables on the server to avoid manual input. In this case, the server can reboot without administrator involvement. Such a scenario also means that only authorized persons should have access to the server.
     <br />
     <br />
-    Пароль для Data Protection может быть сменен. Для этого в интерфейсе HES нужно ввести старый пароль и дважды новый пароль. Все данные в базе будут перешифрованы.
+    The password to Data Protection can be changed. To do this, enter the current password and a new password twice in the HES interface. All data in the DB will be re-encrypted.
 </p>
 <h5>
     Risks and best practices
 </h5>
 <p>
-    Основной риск при использовании Data Protection — это потеря пароля для его активации. В этом случае вы теряете доступ к зашифрованным данным на сервере, а также доступ ко всем данным на всех ваших устройствах Hideez Key! Все устройства придется подвергнуть процедуре ручного сброса с полной очисткой памяти. Затем повторно их привязать к сотрудникам и заново добавлять все аккаунты на устройства.
-    Исходя из этого можно дать следующие рекомендации - пароль от Data Protection должен быть известен нескольким сотрудникам. Также он должен хранится в безопасном месте (сейфе) на физическом носителе.
+    The main risk of Data Protection use is the password loss for its activation. In such a case, you lose access to the encrypted data on the server, as well as access to all the data on all of your Hideez Key devices.
+    All the devices will have to undergo manual reset procedure with full memory wipe, and then to be bonded again with the employees. All the accounts should be added to the devices from scratch.
+    Therefore we recommend that the password to Data Protection should be known to several employees and preferably stored on a safe physical token (vault).
     <br />
     <br />
-    Также в случае использования Data Protection есть риск недоступности сервера HES, в случае его аварийной перезагрузки, до того момента, как будет введен пароль для активации Data Protection. Но это не должно сказаться на работе компании, поскольку все аккаунты хранятся на устройствах сотрудников и могут использоваться без наличия связи с сервером HES.
+    In case of using Data Protection, there is a risk that the HES server can be temporarily unavailable due to emergency restart until the activation password to Data Protection is entered. However, it should not affect the company operations, since all the accounts are stored on employees’ devices and can be used without a connection to the HES server.
     <br />
     <br />
-    Смена пароля Data Protection должна производится в соответствии с регламентом информационной безопасности компании.
+    An update of the Data Protection password should be done according to the company’s information security regulations.
 </p>
 
 
