@@ -1,0 +1,143 @@
+﻿<div class="app">
+    <div class="sidebar">
+        <div class="list-group" id="list-tab" role="tablist">
+            @foreach (string logFile in LogsFiles.OrderByDescending(x => x))
+            {
+                <a class="list-group-item list-group-item-action show-log" @onclick="()=> ShowLog(logFile)" data-toggle="list" href="#" role="tab">@logFile</a>
+            }
+        </div>
+    </div>
+    <div class="main">
+        @if (Logs == null)
+        {
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <h5>Select log file</h5>
+            </div>
+        }
+        else
+        {
+            <div class="content-header">
+                <nav class="navbar navbar-light bg-light border-bottom shadow-sm">
+                    <div>
+                        <button id="download_btn" class="btn btn-secondary" data-name="" data-toggle="tooltip" data-placement="bottom" title="Download file">
+                            <img src="/svg/logs/download.svg" />
+                        </button>
+                        <button id="delete_btn" class="btn btn-secondary" data-name="" data-toggle="tooltip" data-placement="bottom" title="Delete file">
+                            <img src="/svg/logs/delete.svg" />
+                        </button>
+                    </div>
+                    <div>
+                        <span class="badge badge-success">INFO</span> <span id="infoLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "INFO").Count()</span>
+                        <span class="badge badge-info">DEBUG</span> <span id="debugLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "DEBUG").Count()</span>
+                        <span class="badge badge-warning">WARN</span> <span id="warnLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "WARN").Count()</span>
+                        <span class="badge badge-danger">ERROR</span> <span id="errorLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "ERROR").Count()</span>
+                        <span class="badge badge-dark">FATAL</span> <span id="fatalLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "FATAL").Count()</span>
+                    </div>
+                    <div class="form-group has-search-right m-0">
+                        <div class="form-control-feedback">
+                            <img class="img-size" src="/svg/action/search.svg" />
+                        </div>
+                        <input id="searchbox" type="text" class="form-control" placeholder="Search">
+                    </div>
+                </nav>
+            </div>
+            <div class="content-body">
+                <table id="logs" class="display table table-hover border rounded m-0 w-100" style="table-layout:fixed; margin:0px !important">
+                    <thead>
+                        <tr>
+                            <th style="width:170px;">
+                                Date
+                            </th>
+                            <th style="width:50px;">
+                                Level
+                            </th>
+                            <th>
+                                Logger
+                            </th>
+                            <th>
+                                Message
+                            </th>
+                            <th style="width:60px;">
+                                Method
+                            </th>
+                            <th>
+                                Url
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Logs)
+                        {
+                            <tr>
+                                <td>
+                                    @item.Date
+                                </td>
+                                <td>
+                                    @{
+                                        switch (item.Level)
+                                        {
+                                            case "INFO":
+                                                <span class="badge badge-success">@item.Level</span>
+                                                break;
+                                            case "DEBUG":
+                                                <span class="badge badge-info">@item.Level</span>
+                                                break;
+                                            case "WARN":
+                                                <span class="badge badge-warning">@item.Level</span>
+                                                break;
+                                            case "ERROR":
+                                                <span class="badge badge-danger">@item.Level</span>
+                                                break;
+                                            case "FATAL":
+                                                <span class="badge badge-dark">@item.Level</span>
+                                                break;
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @item.Logger
+                                </td>
+                                <td>
+                                    @item.Message
+                                </td>
+                                <td>
+                                    @item.Method
+                                </td>
+                                <td>
+                                    @item.Url
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal" id="modalView" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-navyblue">Log</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <h6>Date</h6>
+                <p id="date"></p>
+                <h6>Level</h6>
+                <p id="level"></p>
+                <h6>Logger</h6>
+                <p id="logger"></p>
+                <h6>Message</h6>
+                <p id="message"></p>
+                <h6>Method</h6>
+                <p id="method"></p>
+                <h6>Url</h6>
+                <p id="url"></p>
+            </div>
+        </div>
+    </div>
+</div>

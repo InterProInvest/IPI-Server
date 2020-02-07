@@ -8,3 +8,21 @@
 function showSpinner(elementId) {
     $('#' + elementId).toggleClass('d-none');
 }
+
+function initializeLogsTable() {
+    $('#logs').DataTable({
+        "paging": false,
+        "info": false,
+        "order": [[0, "desc"]]
+    });
+    var dataTable = $('#logs').dataTable();
+    $('#searchbox').keyup(function () {
+        dataTable.fnFilter(this.value);
+    });
+    $('.dataTables_filter').addClass('d-none');
+    window.scrollTo(0, 0);
+}
+
+function destroyLogsTable() {
+    $('#logs').DataTable().destroy();
+}
