@@ -34,7 +34,6 @@ namespace HES.Core.Services
 
         public DeviceRemoteConnections(string deviceId)
         {
-            Debug.WriteLine($"+++++++++++++++ RemoteDeviceDescription {deviceId}");
             _deviceId = deviceId;
         }
 
@@ -42,7 +41,6 @@ namespace HES.Core.Services
         // overwrite if already exists
         public void OnDeviceConnected(string workstationId, IRemoteAppConnection appConnection)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! OnDeviceConnected {_deviceId}");
             _appConnections.AddOrUpdate(workstationId, new RemoteDeviceDescription(appConnection), (conn, old) =>
             {
                 return new RemoteDeviceDescription(appConnection);
@@ -52,8 +50,6 @@ namespace HES.Core.Services
         // device disconnected from the workstation, removing it from the list of the connected devices
         public void OnDeviceDisconnected(string workstationId)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! OnDeviceDisconnected {_deviceId}");
-
             if (_appConnections.TryRemove(workstationId, out RemoteDeviceDescription descr))
             {
                 descr.Device?.Shutdown(HideezErrorCode.DeviceDisconnected);
@@ -63,8 +59,6 @@ namespace HES.Core.Services
         // workstation disconnected from the server, if this device has connections to this workstation, close them
         public void OnAppHubDisconnected(string workstationId)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! OnAppHubDisconnected {_deviceId}");
-
             if (_appConnections.TryRemove(workstationId, out RemoteDeviceDescription descr))
             {
                 descr.Device?.Shutdown(HideezErrorCode.HesAppHubDisconnected);
@@ -73,8 +67,6 @@ namespace HES.Core.Services
 
         public async Task<RemoteDevice> ConnectDevice(string workstationId)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! ConnectDevice {workstationId}");
-
             RemoteDeviceDescription descr = null;
             if (workstationId == null)
             {
@@ -136,8 +128,6 @@ namespace HES.Core.Services
 
         internal void OnDeviceHubConnected(string workstationId, IRemoteCommands caller)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! OnDeviceHubConnected {workstationId}");
-
             Task.Run(async () =>
             {
                 RemoteDeviceDescription descr = null;
@@ -153,10 +143,6 @@ namespace HES.Core.Services
 
                         // Inform clients about connection ready
                         descr.Tcs.TrySetResult(remoteDevice);
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"!!!!!!!!!!!!! ERROR Workstation Not Connected To Any Host {workstationId}");
                     }
                 }
                 catch (Exception ex)
