@@ -195,6 +195,32 @@ namespace HES.Web
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddServerSideBlazor();
 
+            // Localization Options
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("en-US"),
+                    new CultureInfo("en-GB"),
+                    new CultureInfo("en"),
+                    new CultureInfo("fr-FR"),
+                    new CultureInfo("fr"),
+                    new CultureInfo("it-IT"),
+                    new CultureInfo("it"),
+                    new CultureInfo("uk-UA"),
+                    new CultureInfo("uk"),
+                    new CultureInfo("ru-RU"),
+                    new CultureInfo("ru-UA"),
+                    new CultureInfo("ru"),
+                    new CultureInfo("de-DE"),
+                    new CultureInfo("de")
+                };
+
+                options.DefaultRequestCulture = new RequestCulture("en-US");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
+
             // Register the Swagger generator
             services.AddSwaggerGen(c =>
             {
@@ -219,35 +245,7 @@ namespace HES.Web
 
             app.UseStatusCodePages();
 
-            var supportedCultures = new[]
-            {
-                new CultureInfo("en-US"),
-                new CultureInfo("en-GB"),
-                new CultureInfo("en"),
-
-                new CultureInfo("fr-FR"),
-                new CultureInfo("fr"),
-
-                new CultureInfo("it-IT"),
-                new CultureInfo("it"),
-
-                new CultureInfo("uk-UA"),
-                new CultureInfo("uk"),
-
-                new CultureInfo("ru-RU"),
-                new CultureInfo("ru-UA"),
-                new CultureInfo("ru"),
-
-                new CultureInfo("de-DE"),
-                new CultureInfo("de")
-            };
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("en-US"),
-                SupportedCultures = supportedCultures,
-                SupportedUICultures = supportedCultures
-            });
-
+            app.UseRequestLocalization();
             app.UseStaticFiles();
             app.UseRouting();
 
@@ -281,11 +279,11 @@ namespace HES.Web
             // Apply migration
             var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
             context.Database.Migrate();
-            // Db seed if first run
+            // Db seed
             var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
             var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
             new ApplicationDbSeed(context, userManager, roleManager).Initialize().Wait();
-            // Get status of data protection
+            // Data protection status
             var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
             dataProtectionService.Initialize().Wait();
         }
