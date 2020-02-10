@@ -28,7 +28,7 @@ namespace HES.Web.Pages.Logs
         {
             try
             {
-                LogFiles = _logViewerService.GetLogFiles();
+                LogFiles = _logViewerService.GetFiles();
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ namespace HES.Web.Pages.Logs
 
             try
             {
-                SelectedLog = await _logViewerService.GetSelectedLog(name);
+                SelectedLog = await _logViewerService.GetLogAsync(name);
             }
             catch (Exception ex)
             {
