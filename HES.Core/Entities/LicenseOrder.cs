@@ -15,9 +15,8 @@ namespace HES.Core.Entities
         [Display(Name = "Contact Email")]
         public string ContactEmail { get; set; }
         public string Note { get; set; }
-        [Required]
         [Display(Name = "Start Date")]
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
         [Required]
         [Display(Name = "End Date")]
         public DateTime EndDate { get; set; }

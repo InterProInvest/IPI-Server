@@ -54,8 +54,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 .Where(d => d.LicenseStatus != LicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
-            //NonLicensedDevices = new List<Device>();
-            //LicensedDevices = new List<Device>();
         }
 
         public async Task<IActionResult> OnPostCreateNewLicenseAsync(NewLicenseOrder newLicenseOrderDto, List<string> nonLicensedDevicesIds)
@@ -117,6 +115,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     ContactEmail = renewLicenseOrderDto.ContactEmail,
                     Note = renewLicenseOrderDto.Note,
                     ProlongExistingLicenses = true,
+                    StartDate = null,
                     EndDate = renewLicenseOrderDto.EndDate
                 };
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);

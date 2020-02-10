@@ -79,10 +79,10 @@
                         <span class="badge badge-secondary">No</span>
                     }
                 </td>
-                <td data-sort="@(item.ProlongExistingLicenses == true ? 0 : item.StartDate.Ticks)">
+                <td data-sort="@(item.ProlongExistingLicenses == true ? 0 : item.StartDate.Value.Ticks)">
                     @if (!item.ProlongExistingLicenses)
                     {
-                        @item.StartDate.ToShortDateString()
+                        @item.StartDate.Value.ToShortDateString()
                     }
                 </td>
                 <td data-sort="@item.EndDate.Ticks">
