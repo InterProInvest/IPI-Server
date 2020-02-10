@@ -345,7 +345,8 @@ namespace HES.Core.Services
                     throw new Exception("Device not found.");
                 }
                 device.HasNewLicense = false;
-                await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "HasNewLicense" });
+                device.LicenseEndDate = deviceLicense.EndDate;
+                await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "HasNewLicense", "LicenseEndDate" });
             }
         }
 
@@ -403,11 +404,10 @@ namespace HES.Core.Services
                     var device = devices.FirstOrDefault(d => d.Id == newLicense.DeviceId);
                     device.HasNewLicense = true;
                     device.LicenseEndDate = currentLicense.EndDate;
-                    device.LicenseStatus = LicenseStatus.Valid;
                 }
 
                 await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate", "LicenseStatus" });
+                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate"});
             }
         }
 
