@@ -14,8 +14,6 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <!-- DataTables CSS -->
     <link href="~/lib/datatebles/dataTables.bootstrap4.css" rel="stylesheet" />
-    <!-- Logs CSS -->
-    @*<link href="~/css/logs.css" rel="stylesheet" asp-append-version="true" />*@
     <base href="~/" />
 </head>
 <body>
@@ -117,6 +115,25 @@
                 border-right: 1px solid #dee2e6;
             }
         }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            z-index: 1051;
+            width: calc(100vw - 250px);
+            height: 100%;
+            overflow: hidden;
+            outline: 0;
+            background: #FFF;
+        }
+
+        @@media screen and (max-width: 768px) {
+            .loading {
+                left: 68px;
+                width: calc(100vw - 68px);
+            }
+        }
     </style>
 
     <component type="typeof(LogsViewer)" render-mode="ServerPrerendered" />
@@ -131,34 +148,6 @@
     <script src="~/js/main.js" asp-append-version="true"></script>
 
     <script>
-        //$(document).on('click', '#download_btn', function () {
-        //    var name = $(this).attr('data-name');
-        //    document.location.href = "/Logs?name=" + name + "&handler=DownloadFile";
-        //});
-
-        //$(document).on('click', '#delete_btn', function () {
-        //    var name = $(this).attr('data-name');
-        //    document.location.href = "/Logs?name=" + name + "&handler=DeleteFile";
-        //});
-
-        //$(document).on('click', '.show-log', function () {
-        //    $('#content').html("<div class='text-center d-flex align-items-center justify-content-center' style='height: calc(100vh - 90px);'><div class='spinner-border text-primary' role='status'></div></div>");
-        //    var name = $(this).text();
-        //    $('#download_btn').removeClass('d-none');
-        //    $('#download_btn').attr('data-name', name);
-        //    $('#delete_btn').removeClass('d-none');
-        //    $('#delete_btn').attr('data-name', name);
-        //    $.ajax({
-        //        url: "/logs?handler=ShowLog",
-        //        type: "Get",
-        //        data: { name: name },
-        //        async: true,
-        //        success: function (response) {
-        //            $("#content").html(response);
-        //        }
-        //    });
-        //});
-
         $('[data-toggle="tooltip"]').tooltip();
     </script>
 </body>

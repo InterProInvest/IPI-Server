@@ -9,6 +9,7 @@ function showSpinner(elementId) {
     $('#' + elementId).toggleClass('d-none');
 }
 
+// Logs Table
 function initializeLogsTable() {
     $('#logs').DataTable({
         "paging": false,
@@ -20,7 +21,8 @@ function initializeLogsTable() {
         dataTable.fnFilter(this.value);
     });
     $('.dataTables_filter').addClass('d-none');
-    window.scrollTo(0, 0);
+
+    $('.content-body').scrollTop(0);
 }
 
 function destroyLogsTable() {

@@ -1,9 +1,17 @@
-﻿<div class="app">
+﻿@if (isBusy)
+{
+    <div class="loading d-flex justify-content-center align-items-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+}
+<div class="app">
     <div class="sidebar">
         <div class="list-group" id="list-tab" role="tablist">
             @foreach (string logFile in LogsFiles.OrderByDescending(x => x))
             {
-                <a class="list-group-item list-group-item-action show-log" @onclick="()=> ShowLog(logFile)" data-toggle="list" href="#" role="tab">@logFile</a>
+                <a class="list-group-item list-group-item-action show-log" @onclick="()=> ShowLogAsync(logFile)" data-toggle="list" href="#" role="tab">@logFile</a>
             }
         </div>
     </div>
@@ -11,14 +19,15 @@
         @if (Logs == null)
         {
             <div class="d-flex justify-content-center align-items-center vh-100">
-                <h5>Select log file</h5>
+                <img src="/svg/logs/arrow.svg" />
+                <h5 class="px-3 m-0">Select log file</h5>
             </div>
         }
         else
         {
             <div class="content-header">
                 <nav class="navbar navbar-light bg-light border-bottom shadow-sm">
-                    <div>
+                    <div class="invisible">
                         <button id="download_btn" class="btn btn-secondary" data-name="" data-toggle="tooltip" data-placement="bottom" title="Download file">
                             <img src="/svg/logs/download.svg" />
                         </button>
@@ -68,7 +77,7 @@
                     <tbody>
                         @foreach (var item in Logs)
                         {
-                            <tr>
+                            <tr data-toggle="modal" data-target="#modalView" @onclick="() => ShowDetails(item)">
                                 <td>
                                     @item.Date
                                 </td>
@@ -126,17 +135,17 @@
             </div>
             <div id="modalBody" class="modal-body">
                 <h6>Date</h6>
-                <p id="date"></p>
+                <p id="date">@LogModel?.Date</p>
                 <h6>Level</h6>
-                <p id="level"></p>
+                <p id="level">@LogModel?.Level</p>
                 <h6>Logger</h6>
-                <p id="logger"></p>
+                <p id="logger">@LogModel?.Logger</p>
                 <h6>Message</h6>
-                <p id="message"></p>
+                <p id="message">@LogModel?.Message</p>
                 <h6>Method</h6>
-                <p id="method"></p>
+                <p id="method">@LogModel?.Method</p>
                 <h6>Url</h6>
-                <p id="url"></p>
+                <p id="url">@LogModel?.Url</p>
             </div>
         </div>
     </div>
