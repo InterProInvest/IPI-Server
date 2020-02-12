@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -123,9 +124,13 @@ namespace HES.Core.Services
                 .Query()
                 .Where(d => d.LicenseOrderId == id)
                 .ToListAsync();
-            await _deviceLicenseRepository.DeleteRangeAsync(deviceLicenses);
 
-            await _licenseOrderRepository.DeleteAsync(licenseOrder);
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _deviceLicenseRepository.DeleteRangeAsync(deviceLicenses);
+                await _licenseOrderRepository.DeleteAsync(licenseOrder);
+                transactionScope.Complete();
+            }
         }
 
         // API POST
@@ -195,9 +200,13 @@ namespace HES.Core.Services
                 }
 
                 order.OrderStatus = status;
-                await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
 
-                await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
+                    await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
+                    transactionScope.Complete();
+                }
             }
         }
 
@@ -320,8 +329,12 @@ namespace HES.Core.Services
 
             if (devicesChangedStatus.Count > 0)
             {
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
-                await _emailSenderService.SendDeviceLicenseStatus(devicesChangedStatus);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
+                    await _emailSenderService.SendDeviceLicenseStatus(devicesChangedStatus);
+                    transactionScope.Complete();
+                }
             }
         }
 
@@ -354,7 +367,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task DiscardAppliedAtByDeviceIdAsync(string deviceId)
+        public async Task DiscardLicenseAppliedAsync(string deviceId)
         {
             var device = await _deviceRepository.GetByIdAsync(deviceId);
             if (device != null)
@@ -409,9 +422,12 @@ namespace HES.Core.Services
                     device.HasNewLicense = true;
                     device.LicenseEndDate = currentLicense.EndDate;
                 }
-
-                await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate" });
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
+                    await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate" });
+                    transactionScope.Complete();
+                }
             }
         }
 

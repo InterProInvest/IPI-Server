@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -216,7 +217,7 @@ namespace HES.Core.Services
             {
                 var data = await response.Content.ReadAsStringAsync();
                 var newDevicesDto = JsonConvert.DeserializeObject<List<DeviceImportDto>>(data);
-                
+
                 var currentDevices = await GetDevicesAsync();
                 var devicesToImport = new List<Device>();
                 newDevicesDto.RemoveAll(x => currentDevices.Select(s => s.Id).Contains(x.DeviceId));
@@ -454,22 +455,26 @@ namespace HES.Core.Services
                 throw new Exception("Profile not found");
             }
 
-            foreach (var deviceId in devicesId)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var device = await _deviceRepository.GetByIdAsync(deviceId);
-                if (device != null)
+                foreach (var deviceId in devicesId)
                 {
-                    device.AcceessProfileId = profileId;
-                    await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
-
-                    if (device.MasterPassword != null && device.EmployeeId != null)
+                    var device = await _deviceRepository.GetByIdAsync(deviceId);
+                    if (device != null)
                     {
-                        // Delete all previous tasks for update profile
-                        await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
-                        // Add task for update profile
-                        await _deviceTaskService.AddProfileAsync(device);
+                        device.AcceessProfileId = profileId;
+                        await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
+
+                        if (device.MasterPassword != null && device.EmployeeId != null)
+                        {
+                            // Delete all previous tasks for update profile
+                            await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
+                            // Add task for update profile
+                            await _deviceTaskService.AddProfileAsync(device);
+                        }
                     }
                 }
+                transactionScope.Complete();
             }
         }
 

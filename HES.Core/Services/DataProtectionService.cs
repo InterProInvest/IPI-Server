@@ -9,8 +9,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
-// Todo - use transactions when enabling/disabling the protection
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -216,9 +215,12 @@ namespace HES.Core.Services
                 if (!key.ValidatePassword(password))
                     throw new Exception("Incorrect password");
 
-                await DecryptDatabase(key);
-
-                await DeleteDataProtectionEntity(key.KeyId);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await DeleteDataProtectionEntity(key.KeyId);
+                    await DecryptDatabase(key);
+                    transactionScope.Complete();
+                }
 
                 _key = null;
                 _protectionActivated = false;
@@ -250,19 +252,21 @@ namespace HES.Core.Services
                 if (!oldKey.ValidatePassword(oldPassword))
                     throw new Exception("Incorrect old password");
 
-                // Creating the key for the new password
-                var prms = DataProtectionKey.CreateParams(newPassword);
-                var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
-                var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
-                newKey.ValidatePassword(newPassword);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    // Creating the key for the new password
+                    var prms = DataProtectionKey.CreateParams(newPassword);
+                    var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
+                    var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
+                    newKey.ValidatePassword(newPassword);
 
-                await ReencryptDatabase(oldKey, newKey);
-
-                // Delete old key
-                await DeleteDataProtectionEntity(oldKey.KeyId);
-
-                // Set new key as a current key
-                _key = newKey;
+                    await ReencryptDatabase(oldKey, newKey);
+                    // Delete old key
+                    await DeleteDataProtectionEntity(oldKey.KeyId);
+                    // Set new key as a current key
+                    _key = newKey;
+                    transactionScope.Complete();
+                }
 
                 // Set activated if detected the not finished password change operation.
                 _protectionActivated = true;
@@ -321,9 +325,13 @@ namespace HES.Core.Services
                 }
             }
 
-            await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                transactionScope.Complete();
+            }
         }
 
         private async Task EncryptDatabase(DataProtectionKey key)
@@ -359,9 +367,13 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Encrypt(account.OtpSecret);
             }
 
-            await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                transactionScope.Complete();
+            }
         }
 
         private async Task DecryptDatabase(DataProtectionKey key)
@@ -397,9 +409,13 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Decrypt(account.OtpSecret);
             }
 
-            await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                transactionScope.Complete();
+            }
         }
 
         private string TryGetStoredPassword()

@@ -56,7 +56,7 @@ namespace HES.Core.Services
             await _deviceAccountRepository.DeleteRangeAsync(deviceAccounts);
         }
 
-        public async Task RemoveAllByEmployeeIdAsync(string employeeId)
+        public async Task RemoveAllAccountsByEmployeeIdAsync(string employeeId)
         {
             var allAccounts = await _deviceAccountRepository
                 .Query()
@@ -71,7 +71,7 @@ namespace HES.Core.Services
             await _deviceAccountRepository.UpdateOnlyPropAsync(allAccounts, new string[] { "Deleted" });
         }
 
-        public async Task RemoveAllByDeviceIdAsync(string deviceId)
+        public async Task RemoveAllAccountsAsync(string deviceId)
         {
             var allAccounts = await _deviceAccountRepository
                  .Query()

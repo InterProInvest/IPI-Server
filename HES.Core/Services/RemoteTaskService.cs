@@ -97,7 +97,7 @@ namespace HES.Core.Services
                     device.State = Enums.DeviceState.OK;
                     device.MasterPassword = null;
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword" });
-                    await _licenseService.DiscardAppliedAtByDeviceIdAsync(deviceTask.DeviceId);
+                    await _licenseService.DiscardLicenseAppliedAsync(deviceTask.DeviceId);
                     break;
                 case TaskOperation.UnlockPin:
                     device.State = Enums.DeviceState.OK;
@@ -308,17 +308,14 @@ namespace HES.Core.Services
                 MasterKey_Bond = device.DeviceAccessProfile.MasterKeyBonding,
                 MasterKey_Connect = device.DeviceAccessProfile.MasterKeyConnection,
                 MasterKey_Channel = device.DeviceAccessProfile.MasterKeyNewChannel,
-                //MasterKey_Link = device.DeviceAccessProfile.MasterKeyConnection,
 
                 Button_Bond = device.DeviceAccessProfile.ButtonBonding,
                 Button_Connect = device.DeviceAccessProfile.ButtonConnection,
                 Button_Channel = device.DeviceAccessProfile.ButtonNewChannel,
-                //Button_Link = device.DeviceAccessProfile.ButtonConnection,
 
                 Pin_Bond = device.DeviceAccessProfile.PinBonding,
                 Pin_Connect = device.DeviceAccessProfile.PinConnection,
                 Pin_Channel = device.DeviceAccessProfile.PinNewChannel,
-                //Pin_Link = device.DeviceAccessProfile.PinConnection,
 
                 PinMinLength = device.DeviceAccessProfile.PinLength,
                 PinMaxTries = device.DeviceAccessProfile.PinTryCount,
