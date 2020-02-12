@@ -15,7 +15,7 @@ namespace HES.Core.Interfaces
         Task UpdateOnlyPropAsync(IList<DeviceAccount> deviceAccounts, string[] properties);
         Task DeleteAsync(DeviceAccount deviceAccount);
         Task DeleteRangeAsync(IList<DeviceAccount> deviceAccounts);
-        Task RemoveAllByEmployeeIdAsync(string employeeId);
-        Task RemoveAllByDeviceIdAsync(string deviceId);
+        Task RemoveAllAccountsByEmployeeIdAsync(string employeeId);
+        Task RemoveAllAccountsAsync(string deviceId);
     }
 }

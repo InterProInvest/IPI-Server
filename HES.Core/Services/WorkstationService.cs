@@ -345,7 +345,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveAllProximityByDeviceIdAsync(string deviceId)
+        public async Task RemoveAllProximityAsync(string deviceId)
         {
             var allProximity = await _proximityDeviceRepository
              .Query()

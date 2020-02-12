@@ -11,6 +11,7 @@ using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
 using HES.Core.Enums;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -152,6 +153,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(id));
 
             var employee = await _employeeRepository.GetByIdAsync(id);
+
             if (employee == null)
                 throw new Exception("Employee not found");
 
@@ -159,21 +161,27 @@ namespace HES.Core.Services
                 .DeviceQuery()
                 .Where(x => x.EmployeeId == id)
                 .AnyAsync();
+
             if (devices)
             {
                 throw new Exception("The employee has a device attached, first untie the device before removing.");
             }
 
-            // Remove all events
-            var allEvents = await _workstationEventRepository.Query().Where(e => e.EmployeeId == id).ToListAsync();
-            await _workstationEventRepository.DeleteRangeAsync(allEvents);
-            // Remove all sessions
-            var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
-            await _workstationSessionRepository.DeleteRangeAsync(allSessions);
-            // Remove all accounts
-            await _deviceAccountService.RemoveAllByEmployeeIdAsync(id);
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                // Remove all events
+                var allEvents = await _workstationEventRepository.Query().Where(e => e.EmployeeId == id).ToListAsync();
+                await _workstationEventRepository.DeleteRangeAsync(allEvents);
+                // Remove all sessions
+                var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
+                await _workstationSessionRepository.DeleteRangeAsync(allSessions);
+                // Remove all accounts
+                await _deviceAccountService.RemoveAllAccountsByEmployeeIdAsync(id);
 
-            await _employeeRepository.DeleteAsync(employee);
+                await _employeeRepository.DeleteAsync(employee);
+
+                transactionScope.Complete();
+            }
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate)
@@ -227,8 +235,12 @@ namespace HES.Core.Services
                         var masterPassword = GenerateMasterPassword();
 
                         device.EmployeeId = employeeId;
-                        await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
-                        await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Encrypt(masterPassword));
+                        using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                        {
+                            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
+                            await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Encrypt(masterPassword));
+                            transactionScope.Complete();
+                        }
                     }
                 }
             }
@@ -259,27 +271,30 @@ namespace HES.Core.Services
                 throw new Exception($"Device {deviceId} not linked to employee");
             }
 
-            // Remove all tasks
-            await _deviceTaskService.RemoveAllTasksAsync(deviceId);
 
-            // Remove all accounts
-            await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
-
-            // Remove proximity device
-            await _workstationService.RemoveAllProximityByDeviceIdAsync(deviceId);
-
-            // Remove employee from device
-            device.EmployeeId = null;
-            device.PrimaryAccountId = null;
-            device.AcceessProfileId = "default";
-
-            if (device.MasterPassword != null)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                device.State = DeviceState.WaitingForWipe;
-                await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
-            }
+                // Remove all tasks
+                await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+                // Remove all accounts
+                await _deviceAccountService.RemoveAllAccountsAsync(deviceId);
+                // Remove all proximity device
+                await _workstationService.RemoveAllProximityAsync(deviceId);
+                // Remove employee from device
+                device.EmployeeId = null;
+                device.PrimaryAccountId = null;
+                device.AcceessProfileId = "default";
 
-            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId", "AcceessProfileId", "State" });
+                if (device.MasterPassword != null)
+                {
+                    device.State = DeviceState.WaitingForWipe;
+                    await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
+                }
+
+                await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId", "PrimaryAccountId", "AcceessProfileId", "State" });
+
+                transactionScope.Complete();
+            }
         }
 
         #endregion
@@ -579,15 +594,20 @@ namespace HES.Core.Services
                 throw new Exception($"DeviceAccount not found, ID: {deviceAccountId}");
             }
 
-            device.PrimaryAccountId = deviceAccountId;
-            await _deviceService.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                device.PrimaryAccountId = deviceAccountId;
+                await _deviceService.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
 
-            deviceAccount.Status = AccountStatus.Updating;
-            deviceAccount.UpdatedAt = DateTime.UtcNow;
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Status", "UpdatedAt" });
+                deviceAccount.Status = AccountStatus.Updating;
+                deviceAccount.UpdatedAt = DateTime.UtcNow;
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Status", "UpdatedAt" });
 
-            // Add task
-            await _deviceTaskService.AddPrimaryAsync(device.Id, currentPrimaryAccountId, deviceAccountId);
+                // Add task
+                await _deviceTaskService.AddPrimaryAsync(device.Id, currentPrimaryAccountId, deviceAccountId);
+
+                transactionScope.Complete();
+            }
         }
 
         private async Task SetAsWorkstationIfEmptyAsync(string deviceId, string deviceAccountId)
@@ -657,71 +677,69 @@ namespace HES.Core.Services
             List<DeviceAccount> accounts = new List<DeviceAccount>();
             List<DeviceTask> tasks = new List<DeviceTask>();
 
-            foreach (var deviceId in selectedDevices)
+            IList<DeviceAccount> deviceAccounts;
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var exist = await _deviceAccountService
-                    .Query()
-                    .Where(s => s.Name == deviceAccount.Name)
-                    .Where(s => s.Login == deviceAccount.Login)
-                    .Where(s => s.Deleted == false)
-                    .Where(s => s.DeviceId == deviceId)
-                    .AnyAsync();
-
-                if (exist)
-                    throw new Exception("An account with the same name and login exists.");
-
-                // Validate url
-                deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
-
-                // Create Device Account
-                var deviceAccountId = Guid.NewGuid().ToString();
-                accounts.Add(new DeviceAccount
+                foreach (var deviceId in selectedDevices)
                 {
-                    Id = deviceAccountId,
-                    Name = deviceAccount.Name,
-                    Urls = deviceAccount.Urls,
-                    Apps = deviceAccount.Apps,
-                    Login = deviceAccount.Login,
-                    Type = AccountType.Personal,
-                    Status = AccountStatus.Creating,
-                    CreatedAt = DateTime.UtcNow,
-                    PasswordUpdatedAt = DateTime.UtcNow,
-                    OtpUpdatedAt = accountPassword.OtpSecret != null ? new DateTime?(DateTime.UtcNow) : null,
-                    Kind = deviceAccount.Kind,
-                    EmployeeId = deviceAccount.EmployeeId,
-                    DeviceId = deviceId,
-                    SharedAccountId = null
-                });
+                    var exist = await _deviceAccountService
+                        .Query()
+                        .Where(s => s.Name == deviceAccount.Name)
+                        .Where(s => s.Login == deviceAccount.Login)
+                        .Where(s => s.Deleted == false)
+                        .Where(s => s.DeviceId == deviceId)
+                        .AnyAsync();
 
-                // Create Device Task
-                tasks.Add(new DeviceTask
-                {
-                    DeviceAccountId = deviceAccountId,
-                    OldName = deviceAccount.Name,
-                    OldUrls = deviceAccount.Urls,
-                    OldApps = deviceAccount.Apps,
-                    OldLogin = deviceAccount.Login,
-                    Password = _dataProtectionService.Encrypt(accountPassword.Password),
-                    OtpSecret = _dataProtectionService.Encrypt(accountPassword.OtpSecret),
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Create,
-                    DeviceId = deviceId
-                });
+                    if (exist)
+                        throw new Exception("An account with the same name and login exists.");
 
-                // Set primary account
-                await SetAsWorkstationIfEmptyAsync(deviceId, deviceAccountId);
-            }
+                    // Validate url
+                    deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
 
-            var deviceAccounts = await _deviceAccountService.AddRangeAsync(accounts);
+                    // Create Device Account
+                    var deviceAccountId = Guid.NewGuid().ToString();
+                    accounts.Add(new DeviceAccount
+                    {
+                        Id = deviceAccountId,
+                        Name = deviceAccount.Name,
+                        Urls = deviceAccount.Urls,
+                        Apps = deviceAccount.Apps,
+                        Login = deviceAccount.Login,
+                        Type = AccountType.Personal,
+                        Status = AccountStatus.Creating,
+                        CreatedAt = DateTime.UtcNow,
+                        PasswordUpdatedAt = DateTime.UtcNow,
+                        OtpUpdatedAt = accountPassword.OtpSecret != null ? new DateTime?(DateTime.UtcNow) : null,
+                        Kind = deviceAccount.Kind,
+                        EmployeeId = deviceAccount.EmployeeId,
+                        DeviceId = deviceId,
+                        SharedAccountId = null
+                    });
 
-            try
-            {
+                    // Create Device Task
+                    tasks.Add(new DeviceTask
+                    {
+                        DeviceAccountId = deviceAccountId,
+                        OldName = deviceAccount.Name,
+                        OldUrls = deviceAccount.Urls,
+                        OldApps = deviceAccount.Apps,
+                        OldLogin = deviceAccount.Login,
+                        Password = _dataProtectionService.Encrypt(accountPassword.Password),
+                        OtpSecret = _dataProtectionService.Encrypt(accountPassword.OtpSecret),
+                        CreatedAt = DateTime.UtcNow,
+                        Operation = TaskOperation.Create,
+                        DeviceId = deviceId
+                    });
+
+                    // Set primary account
+                    await SetAsWorkstationIfEmptyAsync(deviceId, deviceAccountId);
+                }
+
+                deviceAccounts = await _deviceAccountService.AddRangeAsync(accounts);
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
-            }
-            catch (Exception)
-            {
-                await _deviceAccountService.DeleteRangeAsync(accounts);
-                throw;
+
+                transactionScope.Complete();
             }
 
             return deviceAccounts;
@@ -760,29 +778,24 @@ namespace HES.Core.Services
             deviceAccount.Status = AccountStatus.Updating;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             string[] properties = { "Name", "Login", "Urls", "Apps", "Status", "UpdatedAt" };
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-
-            // Create Device Task
-
-            try
+            // Create Task  
+            var task = new DeviceTask
             {
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    OldName = currentDeviceAccount.Name,
-                    OldUrls = currentDeviceAccount.Urls,
-                    OldApps = currentDeviceAccount.Apps,
-                    OldLogin = currentDeviceAccount.Login,
-                    Operation = TaskOperation.Update,
-                    CreatedAt = DateTime.UtcNow,
-                    DeviceId = deviceAccount.DeviceId,
-                    DeviceAccountId = deviceAccount.Id
-                });
-            }
-            catch (Exception)
+                OldName = currentDeviceAccount.Name,
+                OldUrls = currentDeviceAccount.Urls,
+                OldApps = currentDeviceAccount.Apps,
+                OldLogin = currentDeviceAccount.Login,
+                Operation = TaskOperation.Update,
+                CreatedAt = DateTime.UtcNow,
+                DeviceId = deviceAccount.DeviceId,
+                DeviceAccountId = deviceAccount.Id
+            };
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                deviceAccount.Status = AccountStatus.Error;
                 await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-                throw;
+                await _deviceTaskService.AddTaskAsync(task);
+                transactionScope.Complete();
             }
         }
 
@@ -805,25 +818,21 @@ namespace HES.Core.Services
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             deviceAccount.PasswordUpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt", "PasswordUpdatedAt" };
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-
             // Create Device Task
-            try
+            var task = new DeviceTask
             {
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    Password = _dataProtectionService.Encrypt(accountPassword.Password),
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Update,
-                    DeviceId = deviceAccount.DeviceId,
-                    DeviceAccountId = deviceAccount.Id
-                });
-            }
-            catch (Exception)
+                Password = _dataProtectionService.Encrypt(accountPassword.Password),
+                CreatedAt = DateTime.UtcNow,
+                Operation = TaskOperation.Update,
+                DeviceId = deviceAccount.DeviceId,
+                DeviceAccountId = deviceAccount.Id
+            };
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                deviceAccount.Status = AccountStatus.Error;
                 await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-                throw;
+                await _deviceTaskService.AddTaskAsync(task);
+                transactionScope.Complete();
             }
         }
 
@@ -848,25 +857,21 @@ namespace HES.Core.Services
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             deviceAccount.OtpUpdatedAt = accountPassword.OtpSecret == null ? null : (DateTime?)DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt", "OtpUpdatedAt" };
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-
             // Create Device Task
-            try
+            var task = new DeviceTask
             {
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    OtpSecret = _dataProtectionService.Encrypt(accountPassword.OtpSecret ?? string.Empty),
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Update,
-                    DeviceId = deviceAccount.DeviceId,
-                    DeviceAccountId = deviceAccount.Id
-                });
-            }
-            catch (Exception)
+                OtpSecret = _dataProtectionService.Encrypt(accountPassword.OtpSecret ?? string.Empty),
+                CreatedAt = DateTime.UtcNow,
+                Operation = TaskOperation.Update,
+                DeviceId = deviceAccount.DeviceId,
+                DeviceAccountId = deviceAccount.Id
+            };
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                deviceAccount.Status = AccountStatus.Error;
                 await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-                throw;
+                await _deviceTaskService.AddTaskAsync(task);
+                transactionScope.Complete();
             }
         }
 
@@ -886,73 +891,69 @@ namespace HES.Core.Services
             List<DeviceAccount> accounts = new List<DeviceAccount>();
             List<DeviceTask> tasks = new List<DeviceTask>();
 
-            foreach (var deviceId in devicesIds)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Get Shared Account
-                var sharedAccount = await _sharedAccountService.GetByIdAsync(sharedAccountId);
-                if (sharedAccount == null)
-                    throw new Exception("SharedAccount not found");
-
-                var exist = await _deviceAccountService
-                    .Query()
-                    .Where(s => s.Name == sharedAccount.Name)
-                    .Where(s => s.Login == sharedAccount.Login)
-                    .Where(s => s.Deleted == false)
-                    .Where(d => d.DeviceId == deviceId)
-                    .AnyAsync();
-
-                if (exist)
-                    throw new Exception("An account with the same name and login exists");
-
-                // Create Device Account
-                var deviceAccountId = Guid.NewGuid().ToString();
-                accounts.Add(new DeviceAccount
+                foreach (var deviceId in devicesIds)
                 {
-                    Id = deviceAccountId,
-                    Name = sharedAccount.Name,
-                    Urls = sharedAccount.Urls,
-                    Apps = sharedAccount.Apps,
-                    Login = sharedAccount.Login,
-                    Type = AccountType.Shared,
-                    Status = AccountStatus.Creating,
-                    CreatedAt = DateTime.UtcNow,
-                    PasswordUpdatedAt = DateTime.UtcNow,
-                    OtpUpdatedAt = sharedAccount.OtpSecret != null ? new DateTime?(DateTime.UtcNow) : null,
-                    EmployeeId = employeeId,
-                    DeviceId = deviceId,
-                    SharedAccountId = sharedAccountId
-                });
+                    // Get Shared Account
+                    var sharedAccount = await _sharedAccountService.GetByIdAsync(sharedAccountId);
+                    if (sharedAccount == null)
+                        throw new Exception("SharedAccount not found");
 
-                // Create Device Task
-                tasks.Add(new DeviceTask
-                {
-                    DeviceAccountId = deviceAccountId,
-                    OldName = sharedAccount.Name,
-                    OldUrls = sharedAccount.Urls,
-                    OldApps = sharedAccount.Apps,
-                    OldLogin = sharedAccount.Login,
-                    Password = sharedAccount.Password,
-                    OtpSecret = sharedAccount.OtpSecret,
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Create,
-                    DeviceId = deviceId
-                });
+                    var exist = await _deviceAccountService
+                        .Query()
+                        .Where(s => s.Name == sharedAccount.Name)
+                        .Where(s => s.Login == sharedAccount.Login)
+                        .Where(s => s.Deleted == false)
+                        .Where(d => d.DeviceId == deviceId)
+                        .AnyAsync();
 
-                // Set primary account
-                await SetAsWorkstationIfEmptyAsync(deviceId, deviceAccountId);
-            }
+                    if (exist)
+                        throw new Exception("An account with the same name and login exists");
 
-            await _deviceAccountService.AddRangeAsync(accounts);
-            try
-            {
+                    // Create Device Account
+                    var deviceAccountId = Guid.NewGuid().ToString();
+                    accounts.Add(new DeviceAccount
+                    {
+                        Id = deviceAccountId,
+                        Name = sharedAccount.Name,
+                        Urls = sharedAccount.Urls,
+                        Apps = sharedAccount.Apps,
+                        Login = sharedAccount.Login,
+                        Type = AccountType.Shared,
+                        Status = AccountStatus.Creating,
+                        CreatedAt = DateTime.UtcNow,
+                        PasswordUpdatedAt = DateTime.UtcNow,
+                        OtpUpdatedAt = sharedAccount.OtpSecret != null ? new DateTime?(DateTime.UtcNow) : null,
+                        EmployeeId = employeeId,
+                        DeviceId = deviceId,
+                        SharedAccountId = sharedAccountId
+                    });
+
+                    // Create Device Task
+                    tasks.Add(new DeviceTask
+                    {
+                        DeviceAccountId = deviceAccountId,
+                        OldName = sharedAccount.Name,
+                        OldUrls = sharedAccount.Urls,
+                        OldApps = sharedAccount.Apps,
+                        OldLogin = sharedAccount.Login,
+                        Password = sharedAccount.Password,
+                        OtpSecret = sharedAccount.OtpSecret,
+                        CreatedAt = DateTime.UtcNow,
+                        Operation = TaskOperation.Create,
+                        DeviceId = deviceId
+                    });
+
+                    // Set primary account
+                    await SetAsWorkstationIfEmptyAsync(deviceId, deviceAccountId);
+                }
+
+                await _deviceAccountService.AddRangeAsync(accounts);
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
-            }
-            catch (Exception)
-            {
-                await _deviceAccountService.DeleteRangeAsync(accounts);
-                throw;
-            }
 
+                transactionScope.Complete();
+            }
             return accounts;
         }
 
@@ -969,10 +970,14 @@ namespace HES.Core.Services
 
             if (deviceAccount.Status == AccountStatus.Creating)
             {
-                deviceAccount.Deleted = true;
-                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Deleted" });
-                var task = await _deviceTaskService.Query().FirstOrDefaultAsync(d => d.DeviceAccountId == deviceAccount.Id);
-                await _deviceTaskService.DeleteTaskAsync(task);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    deviceAccount.Deleted = true;
+                    await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, new string[] { "Deleted" });
+                    var task = await _deviceTaskService.Query().FirstOrDefaultAsync(d => d.DeviceAccountId == deviceAccount.Id);
+                    await _deviceTaskService.DeleteTaskAsync(task);
+                    transactionScope.Complete();
+                }
                 return deviceAccount.DeviceId;
             }
 
@@ -980,24 +985,20 @@ namespace HES.Core.Services
             deviceAccount.Status = AccountStatus.Removing;
             deviceAccount.UpdatedAt = DateTime.UtcNow;
             string[] properties = { "Status", "UpdatedAt" };
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
+            // Create Device Task
+            var taskToDelete = new DeviceTask
+            {
+                DeviceAccountId = accountId,
+                CreatedAt = DateTime.UtcNow,
+                Operation = TaskOperation.Delete,
+                DeviceId = deviceAccount.DeviceId
+            };
 
-            try
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Create Device Task
-                await _deviceTaskService.AddTaskAsync(new DeviceTask
-                {
-                    DeviceAccountId = accountId,
-                    CreatedAt = DateTime.UtcNow,
-                    Operation = TaskOperation.Delete,
-                    DeviceId = deviceAccount.DeviceId
-                });
-            }
-            catch (Exception)
-            {
-                deviceAccount.Status = AccountStatus.Error;
                 await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties);
-                throw;
+                await _deviceTaskService.AddTaskAsync(taskToDelete);
+                transactionScope.Complete();
             }
             return deviceAccount.DeviceId;
         }
@@ -1035,19 +1036,15 @@ namespace HES.Core.Services
 
         public async Task HandlingMasterPasswordErrorAsync(string deviceId)
         {
-            // Remove all tasks
-            await _deviceTaskService.RemoveAllTasksAsync(deviceId);
-
-            // Remove all accounts
-            await _deviceAccountService.RemoveAllByDeviceIdAsync(deviceId);
-
-            // Remove all proximity
-            await _workstationService.RemoveAllProximityByDeviceIdAsync(deviceId);
-
-            // Remove employee
-            await _deviceService.RemoveEmployeeAsync(deviceId);
-
-            await _licenseService.DiscardAppliedAtByDeviceIdAsync(deviceId);
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+                await _deviceAccountService.RemoveAllAccountsAsync(deviceId);
+                await _workstationService.RemoveAllProximityAsync(deviceId);
+                await _deviceService.RemoveEmployeeAsync(deviceId);
+                await _licenseService.DiscardLicenseAppliedAsync(deviceId);
+                transactionScope.Complete();
+            }
         }
     }
 }

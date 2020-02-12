@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -181,11 +182,15 @@ namespace HES.Core.Services
                 });
             }
 
-            // Update device accounts
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                // Update device accounts
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                // Create Tasks
+                await _deviceTaskService.AddRangeTasksAsync(tasks);
 
-            // Create Tasks
-            await _deviceTaskService.AddRangeTasksAsync(tasks);
+                transactionScope.Complete();
+            }
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -232,11 +237,15 @@ namespace HES.Core.Services
                 });
             }
 
-            // Update device accounts
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                // Update device accounts
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                // Create Tasks
+                await _deviceTaskService.AddRangeTasksAsync(tasks);
 
-            // Create Tasks
-            await _deviceTaskService.AddRangeTasksAsync(tasks);
+                transactionScope.Complete();
+            }
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -285,11 +294,15 @@ namespace HES.Core.Services
                 });
             }
 
-            // Update device accounts
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                // Update device accounts
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                // Create Tasks
+                await _deviceTaskService.AddRangeTasksAsync(tasks);
 
-            // Create Tasks
-            await _deviceTaskService.AddRangeTasksAsync(tasks);
+                transactionScope.Complete();
+            }
 
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
@@ -337,12 +350,16 @@ namespace HES.Core.Services
                 });
             }
 
-            // Update device accounts
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                // Update device accounts
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                // Create Tasks
+                await _deviceTaskService.AddRangeTasksAsync(tasks);
 
-            // Create Tasks
-            await _deviceTaskService.AddRangeTasksAsync(tasks);
-
+                transactionScope.Complete();
+            }
+                       
             var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
             return devices;
         }

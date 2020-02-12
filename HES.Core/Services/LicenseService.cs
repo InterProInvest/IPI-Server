@@ -4,6 +4,7 @@ using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -23,13 +25,15 @@ namespace HES.Core.Services
         private readonly IAppSettingsService _appSettingsService;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<LicenseService> _logger;
 
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
                                    IAsyncRepository<Device> deviceRepository,
                                    IAppSettingsService appSettingsService,
                                    IEmailSenderService emailSenderService,
-                                   IHttpClientFactory httpClientFactory)
+                                   IHttpClientFactory httpClientFactory,
+                                   ILogger<LicenseService> logger)
         {
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
@@ -37,6 +41,7 @@ namespace HES.Core.Services
             _appSettingsService = appSettingsService;
             _emailSenderService = emailSenderService;
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
         #region HttpClient
@@ -119,9 +124,13 @@ namespace HES.Core.Services
                 .Query()
                 .Where(d => d.LicenseOrderId == id)
                 .ToListAsync();
-            await _deviceLicenseRepository.DeleteRangeAsync(deviceLicenses);
 
-            await _licenseOrderRepository.DeleteAsync(licenseOrder);
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _deviceLicenseRepository.DeleteRangeAsync(deviceLicenses);
+                await _licenseOrderRepository.DeleteAsync(licenseOrder);
+                transactionScope.Complete();
+            }
         }
 
         // API POST
@@ -191,9 +200,13 @@ namespace HES.Core.Services
                 }
 
                 order.OrderStatus = status;
-                await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
 
-                await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
+                    await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
+                    transactionScope.Complete();
+                }
             }
         }
 
@@ -219,7 +232,7 @@ namespace HES.Core.Services
                     var data = await response.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<OrderStatus>(data);
                 }
-
+                _logger.LogCritical($"{response.StatusCode.ToString()} {response.Content.ReadAsStringAsync()}");
                 return OrderStatus.Error;
             }
             catch (Exception)
@@ -316,8 +329,12 @@ namespace HES.Core.Services
 
             if (devicesChangedStatus.Count > 0)
             {
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
-                await _emailSenderService.SendDeviceLicenseStatus(devicesChangedStatus);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
+                    await _emailSenderService.SendDeviceLicenseStatus(devicesChangedStatus);
+                    transactionScope.Complete();
+                }
             }
         }
 
@@ -350,7 +367,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task DiscardAppliedAtByDeviceIdAsync(string deviceId)
+        public async Task DiscardLicenseAppliedAsync(string deviceId)
         {
             var device = await _deviceRepository.GetByIdAsync(deviceId);
             if (device != null)
@@ -405,9 +422,12 @@ namespace HES.Core.Services
                     device.HasNewLicense = true;
                     device.LicenseEndDate = currentLicense.EndDate;
                 }
-
-                await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate"});
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
+                    await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate" });
+                    transactionScope.Complete();
+                }
             }
         }
 
