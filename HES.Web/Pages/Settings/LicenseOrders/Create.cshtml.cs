@@ -110,6 +110,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             try
             {
+                var devices = await _deviceService.DeviceQuery().Where(x => licensedDevicesIds.Contains(x.Id)).ToListAsync();
+                var maxEndDateOfDevices = devices.Select(s => s.LicenseEndDate).Max();
+                if (renewLicenseOrderDto.EndDate <= maxEndDateOfDevices)
+                {
+                    ErrorMessage = "The selected End Date less than current end date for selected devices";
+                    return RedirectToPage("./Create");
+                }
+
                 var licenseOrder = new LicenseOrder()
                 {
                     ContactEmail = renewLicenseOrderDto.ContactEmail,

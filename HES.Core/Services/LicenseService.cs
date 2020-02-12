@@ -4,6 +4,7 @@ using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,13 +24,15 @@ namespace HES.Core.Services
         private readonly IAppSettingsService _appSettingsService;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<LicenseService> _logger;
 
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
                                    IAsyncRepository<DeviceLicense> deviceLicenseRepository,
                                    IAsyncRepository<Device> deviceRepository,
                                    IAppSettingsService appSettingsService,
                                    IEmailSenderService emailSenderService,
-                                   IHttpClientFactory httpClientFactory)
+                                   IHttpClientFactory httpClientFactory,
+                                   ILogger<LicenseService> logger)
         {
             _licenseOrderRepository = licenseOrderRepository;
             _deviceLicenseRepository = deviceLicenseRepository;
@@ -37,6 +40,7 @@ namespace HES.Core.Services
             _appSettingsService = appSettingsService;
             _emailSenderService = emailSenderService;
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
         #region HttpClient
@@ -219,7 +223,7 @@ namespace HES.Core.Services
                     var data = await response.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<OrderStatus>(data);
                 }
-
+                _logger.LogCritical($"{response.StatusCode.ToString()} {response.Content.ReadAsStringAsync()}");
                 return OrderStatus.Error;
             }
             catch (Exception)
@@ -407,7 +411,7 @@ namespace HES.Core.Services
                 }
 
                 await _deviceLicenseRepository.UpdateOnlyPropAsync(currentLicenses, new string[] { "ImportedAt", "EndDate", "Data" });
-                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate"});
+                await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "HasNewLicense", "LicenseEndDate" });
             }
         }
 
