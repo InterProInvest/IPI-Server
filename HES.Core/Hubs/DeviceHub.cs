@@ -1,11 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using HES.Core.Interfaces;
+﻿using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Remote;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace HES.Core.Hubs
 {
@@ -21,7 +20,7 @@ namespace HES.Core.Hubs
             _logger = logger;
         }
 
-        string GetWorkstationId()
+        private string GetWorkstationId()
         {
             if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
                 return (string)workstationId;
@@ -31,7 +30,7 @@ namespace HES.Core.Hubs
             }
         }
 
-        string GetDeviceId()
+        private string GetDeviceId()
         {
             if (Context.Items.TryGetValue("DeviceId", out object deviceId))
                 return (string)deviceId;
@@ -39,6 +38,17 @@ namespace HES.Core.Hubs
             {
                 throw new Exception("DeviceHub does not contain DeviceId!");
             }
+        }
+
+        // Gets a device from the context
+        private RemoteDevice GetDevice()
+        {
+            var remoteDevice = _remoteDeviceConnectionsService.FindRemoteDevice(GetDeviceId(), GetWorkstationId());
+
+            if (remoteDevice == null)
+                throw new Exception($"Cannot find remote device in the DeviceHub");
+
+            return remoteDevice;
         }
 
         // HUB connection is connected
@@ -86,17 +96,6 @@ namespace HES.Core.Hubs
                 _logger.LogCritical(ex, "DeviceHub.OnDisconnectedAsync error");
             }
             return base.OnDisconnectedAsync(exception);
-        }
-
-        // Gets a device from the context
-        RemoteDevice GetDevice()
-        {
-            var remoteDevice = _remoteDeviceConnectionsService.FindRemoteDevice(GetDeviceId(), GetWorkstationId());
-
-            if (remoteDevice == null)
-                throw new Exception($"Cannot find remote device in the DeviceHub");
-
-            return remoteDevice;
         }
 
         // Incoming request

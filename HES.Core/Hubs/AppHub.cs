@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
+using Hideez.SDK.Communication.HES.Client;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Workstation;
@@ -93,25 +94,25 @@ namespace HES.Core.Hubs
         }
 
         // Incomming request
-        public async Task<HideezErrorInfo> RegisterWorkstationInfo(WorkstationInfo workstationInfo)
+        public async Task<HesResponse> RegisterWorkstationInfo(WorkstationInfo workstationInfo)
         {
             try
             {
                 await _remoteWorkstationConnectionsService.RegisterWorkstationInfoAsync(Clients.Caller, workstationInfo);
-                return HideezErrorInfo.Ok;
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"[{workstationInfo?.MachineName}] {ex.Message}");
-                return new HideezErrorInfo(ex);
+                return new HesResponse(ex);
             }
         }
 
         // Incomming request
-        public async Task<HideezErrorInfo> SaveClientEvents(WorkstationEventDto[] workstationEventsDto)
+        public async Task<HesResponse> SaveClientEvents(WorkstationEventDto[] workstationEventsDto)
         {
             if (workstationEventsDto == null)
-                throw new ArgumentNullException(nameof(workstationEventsDto));
+                return new HesResponse(new ArgumentNullException(nameof(workstationEventsDto)));
 
             // Ignore not approved workstation
             //var workstationId = workstationEventsDto.FirstOrDefault().WorkstationId;
@@ -129,19 +130,7 @@ namespace HES.Core.Hubs
                 }
                 catch (Exception ex)
                 {
-                    var objDto = $@"Version:{eventDto.Version}, 
-                                        Id:{eventDto.Id},
-                                        Date:{eventDto.Date},
-                                        EventId:{eventDto.EventId},
-                                        SeverityId:{eventDto.SeverityId},
-                                        Note:{eventDto.Note},
-                                        WorkstationId:{eventDto.WorkstationId},
-                                        UserSession:{eventDto.UserSession},
-                                        WorkstationSessionId:{eventDto.WorkstationSessionId},
-                                        DeviceId:{eventDto.DeviceId},
-                                        AccountName:{eventDto.AccountName},
-                                        AccountLogin:{eventDto.AccountLogin}";
-                    _logger.LogError($"{ex.Message} [AddEventDtoAsync] [Object DTO]: {objDto}");
+                    _logger.LogError($"[AddEventDtoAsync] {ex.Message}");
                 }
 
                 try
@@ -150,23 +139,11 @@ namespace HES.Core.Hubs
                 }
                 catch (Exception ex)
                 {
-                    var objDto = $@"Version:{eventDto.Version}, 
-                                        Id:{eventDto.Id},
-                                        Date:{eventDto.Date},
-                                        EventId:{eventDto.EventId},
-                                        SeverityId:{eventDto.SeverityId},
-                                        Note:{eventDto.Note},
-                                        WorkstationId:{eventDto.WorkstationId},
-                                        UserSession:{eventDto.UserSession},
-                                        WorkstationSessionId:{eventDto.WorkstationSessionId},
-                                        DeviceId:{eventDto.DeviceId},
-                                        AccountName:{eventDto.AccountName},
-                                        AccountLogin:{eventDto.AccountLogin}";
-                    _logger.LogError($"{ex.Message} [AddOrUpdateWorkstationSession] [Object DTO]: {objDto}");
+                    _logger.LogError($"[AddOrUpdateWorkstationSession] {ex.Message}");
                 }
             }
 
-            return HideezErrorInfo.Ok;
+            return HesResponse.Ok;
         }
 
         #endregion
@@ -251,7 +228,7 @@ namespace HES.Core.Hubs
         }
 
         // Incomming request
-        public async Task<DeviceInfoDto> GetInfoByRfid(string rfid)
+        public async Task<HesResponse<DeviceInfoDto>> GetInfoByRfid(string rfid)
         {
             try
             {
@@ -261,17 +238,18 @@ namespace HES.Core.Hubs
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.RFID == rfid);
 
-                return await GetDeviceInfo(device);
+                var info = await GetDeviceInfo(device);
+                return new HesResponse<DeviceInfoDto>(info);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return null;
+                return new HesResponse<DeviceInfoDto>(ex);
             }
         }
 
         // Incomming request
-        public async Task<DeviceInfoDto> GetInfoByMac(string mac)
+        public async Task<HesResponse<DeviceInfoDto>> GetInfoByMac(string mac)
         {
             try
             {
@@ -281,17 +259,18 @@ namespace HES.Core.Hubs
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.MAC == mac);
 
-                return await GetDeviceInfo(device);
+                var info = await GetDeviceInfo(device);
+                return new HesResponse<DeviceInfoDto>(info);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return null;
+                return new HesResponse<DeviceInfoDto>(ex);
             }
         }
 
         // Incomming request
-        public async Task<DeviceInfoDto> GetInfoBySerialNo(string serialNo)
+        public async Task<HesResponse<DeviceInfoDto>> GetInfoBySerialNo(string serialNo)
         {
             try
             {
@@ -301,13 +280,13 @@ namespace HES.Core.Hubs
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == serialNo);
 
-                var deviceInfo = await GetDeviceInfo(device);
-                return deviceInfo;
+                var info = await GetDeviceInfo(device);
+                return new HesResponse<DeviceInfoDto>(info);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex.Message);
-                return null;
+                return new HesResponse<DeviceInfoDto>(ex);
             }
         }
 
@@ -336,22 +315,23 @@ namespace HES.Core.Hubs
         }
 
         // Incoming request
-        public async Task<HideezErrorInfo> FixDevice(string deviceId)
+        public async Task<HesResponse> FixDevice(string deviceId)
         {
             try
             {
                 await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(deviceId, GetWorkstationId(), primaryAccountOnly: true);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
-                return HideezErrorInfo.Ok;
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"[{deviceId}] {ex.Message}");
-                return new HideezErrorInfo(ex);
+                return new HesResponse(ex);
             }
         }
 
-        public async Task<IList<DeviceLicenseDTO>> GetNewDeviceLicenses(string deviceId)
+        // Incoming request
+        public async Task<HesResponse<IList<DeviceLicenseDTO>>> GetNewDeviceLicenses(string deviceId)
         {
             try
             {
@@ -373,15 +353,16 @@ namespace HES.Core.Hubs
                     });
                 }
 
-                return deviceLicenseDto;
+                return new HesResponse<IList<DeviceLicenseDTO>>(deviceLicenseDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return null;
+                return new HesResponse<IList<DeviceLicenseDTO>>(ex);
             }
         }
 
+        // Incoming request
         public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
         {
             try
