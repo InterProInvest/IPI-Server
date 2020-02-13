@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace HES.Core.Interfaces
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
         Task RemoveEmployeeAsync(string deviceId);
         Task RestoreDefaultsAsync(string deviceId);
+        Task SetDeviceStateAsync(string deviceId, DeviceState deviceState);
         IQueryable<DeviceAccessProfile> AccessProfileQuery();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
         Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);

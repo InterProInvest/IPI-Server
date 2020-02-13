@@ -249,7 +249,7 @@ namespace HES.Core.Services
         {
             return await _deviceLicenseRepository
                 .Query()
-                .Where(d => d.AppliedAt == null && d.DeviceId == deviceId)
+                .Where(d => d.AppliedAt == null && d.DeviceId == deviceId && d.Data != null)
                 .ToListAsync();
         }
 

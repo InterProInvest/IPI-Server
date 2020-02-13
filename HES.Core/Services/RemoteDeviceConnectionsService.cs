@@ -1,9 +1,8 @@
-﻿using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using HES.Core.Interfaces;
+﻿using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Remote;
-using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
@@ -11,13 +10,6 @@ namespace HES.Core.Services
     {
         static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
-
-        readonly ILogger<RemoteDeviceConnectionsService> _logger;
-
-        public RemoteDeviceConnectionsService(ILogger<RemoteDeviceConnectionsService> logger)
-        {
-            _logger = logger;
-        }
 
         static DeviceRemoteConnections GetDeviceRemoteConnections(string deviceId)
         {
