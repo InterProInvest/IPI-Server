@@ -12,6 +12,13 @@ namespace HES.Infrastructure
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Device>().HasIndex(b => b.MAC).IsUnique();
+            modelBuilder.Entity<Device>().HasIndex(b => b.RFID).IsUnique();
+            base.OnModelCreating(modelBuilder);
+        }
+
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Workstation> Workstations { get; set; }
         public DbSet<SharedAccount> SharedAccounts { get; set; }
