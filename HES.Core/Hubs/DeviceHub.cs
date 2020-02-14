@@ -1,5 +1,6 @@
 ﻿using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
+using Hideez.SDK.Communication.HES.Client;
 using Hideez.SDK.Communication.Remote;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -99,35 +100,35 @@ namespace HES.Core.Hubs
         }
 
         // Incoming request
-        public Task OnVerifyResponse(byte[] data, string error)
+        public HesResponse OnVerifyResponse(byte[] data, string error)
         {
             try
             {
                 var device = GetDevice();
                 device.OnVerifyResponse(data, error);
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                throw new HubException(ex.Message);
+                return new HesResponse(ex);
             }
-            return Task.CompletedTask;
         }
 
         // Incoming request
-        public Task OnCommandResponse(byte[] data, string error)
+        public HesResponse OnCommandResponse(byte[] data, string error)
         {
             try
             {
                 var device = GetDevice();
                 device.OnCommandResponse(data, error);
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                throw new HubException(ex.Message);
+                return new HesResponse(ex);
             }
-            return Task.CompletedTask;
         }
     }
 }
