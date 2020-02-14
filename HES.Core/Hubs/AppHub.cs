@@ -151,22 +151,23 @@ namespace HES.Core.Hubs
         #region Device
 
         // Incoming request
-        public async Task OnDeviceConnected(BleDeviceDto dto)
+        public async Task<HesResponse> OnDeviceConnected(BleDeviceDto dto)
         {
             try
             {
                 await OnDevicePropertiesChanged(dto);
-
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"[{dto.DeviceSerialNo}] {ex.Message}");
+                _logger.LogError($"[{dto.DeviceSerialNo}] {ex.Message}");
+                return new HesResponse(ex);
             }
         }
 
         // Incoming request
-        public async Task OnDeviceDisconnected(string deviceId)
+        public async Task<HesResponse> OnDeviceDisconnected(string deviceId)
         {
             try
             {
@@ -175,15 +176,17 @@ namespace HES.Core.Hubs
                     _remoteDeviceConnectionsService.OnDeviceDisconnected(deviceId, GetWorkstationId());
                     await _employeeService.UpdateLastSeenAsync(deviceId);
                 }
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"[{deviceId}] {ex.Message}");
+                _logger.LogError($"[{deviceId}] {ex.Message}");
+                return new HesResponse(ex);
             }
         }
 
         // Incomming request
-        public async Task OnDevicePropertiesChanged(BleDeviceDto dto)
+        public async Task<HesResponse> OnDevicePropertiesChanged(BleDeviceDto dto)
         {
             try
             {
@@ -220,10 +223,12 @@ namespace HES.Core.Hubs
                         await _deviceService.AddDeviceAsync(device);
                     }
                 }
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"[{dto.DeviceSerialNo}] {ex.Message}");
+                _logger.LogError($"[{dto.DeviceSerialNo}] {ex.Message}");
+                return new HesResponse(ex);
             }
         }
 
@@ -243,7 +248,7 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogError(ex.Message);
                 return new HesResponse<DeviceInfoDto>(ex);
             }
         }
@@ -264,13 +269,13 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogError(ex.Message);
                 return new HesResponse<DeviceInfoDto>(ex);
             }
         }
 
         // Incomming request
-        public async Task<HesResponse<DeviceInfoDto>> GetInfoBySerialNo(string serialNo)
+        public async Task<HesResponse<DeviceInfoDto>> GetInfoBySerialNo(string deviceId)
         {
             try
             {
@@ -278,14 +283,14 @@ namespace HES.Core.Hubs
                     .DeviceQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(d => d.Id == serialNo);
+                    .FirstOrDefaultAsync(d => d.Id == deviceId);
 
                 var info = await GetDeviceInfo(device);
                 return new HesResponse<DeviceInfoDto>(info);
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogError($"[{deviceId}] {ex.Message}");
                 return new HesResponse<DeviceInfoDto>(ex);
             }
         }
@@ -357,21 +362,23 @@ namespace HES.Core.Hubs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError($"[{deviceId}] {ex.Message}");
                 return new HesResponse<IList<DeviceLicenseDTO>>(ex);
             }
         }
 
         // Incoming request
-        public async Task OnDeviceLicenseApplied(string deviceId, string licenseId)
+        public async Task<HesResponse> OnDeviceLicenseApplied(string deviceId, string licenseId)
         {
             try
             {
                 await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+                return HesResponse.Ok;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError($"[{deviceId}] {ex.Message}");
+                return new HesResponse(ex);
             }
         }
 
