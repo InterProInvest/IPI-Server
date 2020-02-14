@@ -10,13 +10,15 @@ namespace HES.Core.Entities
     {
         [Display(Name = "ID")]
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
+        [Required]
         public string MAC { get; set; }
+        [Required]
         public string Model { get; set; }
         [Required]
         public string RFID { get; set; }
         public int Battery { get; set; }
+        [Required]
         public string Firmware { get; set; }
         public DeviceState State { get; set; }
         [Display(Name = "Last Synced")]
