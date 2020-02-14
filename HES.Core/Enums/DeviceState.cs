@@ -5,8 +5,9 @@
         OK,
         Locked,
         PendingUnlock,
-        Disabled,
+        Compromized,
         Error,
-        WaitingForWipe
+        WaitingForWipe,
+        Disabled
     }
 }
