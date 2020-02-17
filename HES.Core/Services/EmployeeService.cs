@@ -144,7 +144,8 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            await _employeeRepository.UpdateAsync(employee);
+            var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
+            await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
         }
 
         public async Task DeleteEmployeeAsync(string id)
