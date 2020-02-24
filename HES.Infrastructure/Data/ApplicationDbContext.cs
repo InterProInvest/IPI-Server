@@ -14,8 +14,10 @@ namespace HES.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Device>().HasIndex(b => b.MAC).IsUnique();
-            modelBuilder.Entity<Device>().HasIndex(b => b.RFID).IsUnique();
+            modelBuilder.Entity<Device>().HasIndex(x => x.MAC).IsUnique();
+            modelBuilder.Entity<Device>().HasIndex(x => x.RFID).IsUnique();
+            modelBuilder.Entity<Group>().HasIndex(x => x.Name).IsUnique();
+            modelBuilder.Entity<GroupMembership>().HasKey(x => new { x.GroupId, x.EmployeeId });
             base.OnModelCreating(modelBuilder);
         }
 
@@ -38,6 +40,8 @@ namespace HES.Infrastructure
         public DbSet<DeviceLicense> DeviceLicenses { get; set; }
         public DbSet<LicenseOrder> LicenseOrders { get; set; }
         public DbSet<AppSettings> AppSettings { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupMembership> GroupMemberships { get; set; }
 
 
         public DbQuery<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }

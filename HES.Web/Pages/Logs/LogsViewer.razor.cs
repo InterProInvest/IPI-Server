@@ -11,7 +11,6 @@ namespace HES.Web.Pages.Logs
 {
     public partial class LogsViewer : ComponentBase
     {
-        [Inject] IJSRuntime JSRuntime { get; set; }
         [Inject] ILogsViewerService LogsViewerService { get; set; }
         [Inject] ILogger<LogsViewer> Logger { get; set; }
 

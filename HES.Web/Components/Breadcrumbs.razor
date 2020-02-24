@@ -1,0 +1,27 @@
+﻿@using HES.Core.Models.Web.Breadcrumb
+
+@if (Items != null)
+{
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @foreach (var item in Items)
+            {
+                <li class="breadcrumb-item @item.Active">@item.Content</li>
+            }
+        </ol>
+    </nav>
+}
+
+
+@code {
+    public List<Breadcrumb> Items { get; set; }
+
+    public async Task ShowAsync(List<Breadcrumb> items)
+    {
+        await InvokeAsync(() =>
+        {
+            Items = items;
+            StateHasChanged();
+        });
+    }
+}

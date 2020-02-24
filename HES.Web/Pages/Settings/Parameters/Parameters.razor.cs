@@ -13,14 +13,8 @@ namespace HES.Web.Pages.Settings.Parameters
 {
     public partial class Parameters : ComponentBase
     {
-        [Inject]
-        private IJSRuntime JSRuntime { get; set; }
-        [Inject]
-        private IToastService ToastService { get; set; }
-        [Inject]
-        private IAppSettingsService AppSettingsService { get; set; }
-        [Inject]
-        private ILogger<Parameters> Logger { get; set; }
+        [Inject] private IAppSettingsService AppSettingsService { get; set; }
+        [Inject] private ILogger<Parameters> Logger { get; set; }
 
         private Licensing licensing = new Licensing();
         private Server server = new Server();

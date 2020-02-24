@@ -940,6 +940,15 @@ div.dataTables_scrollHead table.dataTable {
     mask: url('../svg/sidebar/round-desktop-windows.svg');
 }
 
+.icon-groups {
+    width: 24px;
+    height: 24px;
+    background: #FFF;
+    -webkit-mask: url('../svg/sidebar/groups.svg');
+    mask: url('../svg/sidebar/groups.svg');
+}
+
+
 .icon-shared-accounts {
     width: 24px;
     height: 24px;

@@ -28,3 +28,22 @@
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.loading-page {
+    position: fixed;
+    top: 0;
+    left: 250px;
+    z-index: 1051;
+    width: calc(100vw - 250px);
+    height: 100%;
+    overflow: hidden;
+    outline: 0;
+    background: #F7F8FC;
+}
+
+@media screen and (max-width: 768px) {
+    .loading-page {
+        left: 68px;
+        width: calc(100vw - 68px);
+    }
+}
