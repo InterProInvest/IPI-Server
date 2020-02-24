@@ -1,6 +1,5 @@
 ﻿<EditForm Model="@Group" OnValidSubmit="EditAsync">
     <DataAnnotationsValidator />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-group">
         <label class="control-label text-gray">Name</label>
         <InputText id="apiKey" @bind-Value="Group.Name" class="form-control text-navyblue" />

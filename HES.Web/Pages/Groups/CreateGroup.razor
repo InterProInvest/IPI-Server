@@ -1,6 +1,6 @@
-﻿<EditForm Model="@Group" OnValidSubmit="CreateAsync">
+﻿<EditForm Model="Group" OnValidSubmit="CreateAsync">
     <DataAnnotationsValidator />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <NameUsage @ref="NameUsageMessage" />
     <div class="form-group">
         <label class="control-label text-gray">Name</label>
         <InputText id="apiKey" @bind-Value="Group.Name" class="form-control text-navyblue" />

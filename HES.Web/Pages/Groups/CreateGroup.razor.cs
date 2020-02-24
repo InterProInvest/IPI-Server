@@ -3,6 +3,8 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -17,21 +19,29 @@ namespace HES.Web.Pages.Groups
 
         public Group Group = new Group();
 
+        public NameUsage NameUsageMessage;
+
         private async Task CreateAsync()
         {
             try
-            {
+            {                
+                var isExist = await GroupService.CheckGroupNameAsync(Group.Name);
+
+                if (isExist)
+                {
+                    NameUsageMessage.DisplayError("Name", "This name is already in use.");
+                    return;
+                }
+
                 await GroupService.CreateGroupAsync(Group);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Group created.", ToastLevel.Success);
+                await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
                 await MainWrapper.ModalDialogComponent.CloseAsync();
             }
         }

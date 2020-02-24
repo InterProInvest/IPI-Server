@@ -80,5 +80,10 @@ namespace HES.Core.Services
         {
             throw new NotImplementedException();
         }
+
+        public async Task<bool> CheckGroupNameAsync(string name)
+        {
+            return await _groupRepository.Query().AnyAsync(x => x.Name == name);
+        }
     }
 }
