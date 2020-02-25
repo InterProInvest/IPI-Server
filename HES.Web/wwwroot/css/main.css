@@ -47,3 +47,13 @@
         width: calc(100vw - 68px);
     }
 }
+
+/*Table component*/
+.table-row {
+    cursor: pointer;
+}
+
+.selected-row {
+    color: white !important;
+    background-color: #007BFF !important;
+}
