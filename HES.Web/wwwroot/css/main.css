@@ -47,3 +47,7 @@
         width: calc(100vw - 68px);
     }
 }
+
+.checkbox-column {
+    width: 1px;
+}

@@ -88,5 +88,18 @@ namespace HES.Web.Pages.Groups
 
             await MainWrapper.ModalDialogComponent.ShowAsync("Delete group", body);
         }
+
+        public async Task OpenModalManageEmployees()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ManageEmployees));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
+                builder.AddAttribute(2, "GroupId", CurrentGroupId);
+                builder.CloseComponent();
+            };
+
+            await MainWrapper.ModalDialogComponent.ShowAsync("Manage employees", body);
+        }
     }
 }

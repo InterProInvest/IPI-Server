@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
@@ -16,5 +17,7 @@ namespace HES.Core.Entities
         [RegularExpression(@"^[a-z0-9][-a-z0-9.!#$%&'*+-=?^_`{|}~\/]+@([-a-z0-9]+\.)+[a-z]{2,5}$", ErrorMessage = "The Email field is not a valid e-mail address.")]
         public string Email { get; set; }
         public string Description { get; set; }
+
+        public List<GroupMembership> GroupMemberships { get; set; }
     }
 }

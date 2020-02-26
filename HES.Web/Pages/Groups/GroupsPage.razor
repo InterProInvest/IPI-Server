@@ -14,10 +14,13 @@ else
         </div>
     </div>
     <div class="d-flex justify-content-end align-items-center mb-3">
-        <button class="btn btn-light p-1" title="Edit Group" @onclick="OpenModalEditGroup" disabled="@(CurrentGroupId == null ? true : false)">
+        <button class="btn btn-light m-1 p-1" title="Add employees" @onclick="OpenModalManageEmployees" disabled="@(CurrentGroupId == null ? true : false)">
+            <img style="width:32px;height:32px;" src="/svg/action/person_add.svg" />
+        </button>
+        <button class="btn btn-light m-1 p-1" title="Edit Group" @onclick="OpenModalEditGroup" disabled="@(CurrentGroupId == null ? true : false)">
             <img style="width:32px;height:32px;" src="/svg/action/edit.svg" />
         </button>
-        <button class="btn btn-light p-1" title="Delete Group" @onclick="OpenModalDeleteGroup" disabled="@(CurrentGroupId == null ? true : false)">
+        <button class="btn btn-light m-1 p-1" title="Delete Group" @onclick="OpenModalDeleteGroup" disabled="@(CurrentGroupId == null ? true : false)">
             <img style="width:32px;height:32px;" src="/svg/action/delete.svg" />
         </button>
         <div class="form-group has-search-right mb-0 ml-3">
@@ -40,12 +43,15 @@ else
                     <th>
                         Description
                     </th>
+                    <th>
+                        Employees
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Groups)
                 {
-                    <tr @onclick="(() => RowSelected(item.Id))" >
+                    <tr @onclick="(() => RowSelected(item.Id))">
                         <td>
                             @item.Name
                         </td>
@@ -54,6 +60,9 @@ else
                         </td>
                         <td>
                             @item.Description
+                        </td>
+                        <td>
+                            @item.GroupMemberships.Count
                         </td>
                     </tr>
                 }
