@@ -46,9 +46,9 @@ namespace HES.Web.Pages.Groups
             await BreadcrumbsWrapper.BreadcrumbsComponent.ShowAsync(items);
         }
 
-        public async Task RowSelected(string groupId)
+        public void RowSelected(string groupId)
         {
-            CurrentGroupId = groupId;
+            CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
         }
 
         public async Task OpenModalGreateGroup()

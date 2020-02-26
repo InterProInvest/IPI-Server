@@ -51,3 +51,12 @@
 .checkbox-column {
     width: 1px;
 }
+
+.table-row {
+    cursor: pointer;
+}
+
+.selected-row {
+    color: white !important;
+    background-color: #007BFF !important;
+}

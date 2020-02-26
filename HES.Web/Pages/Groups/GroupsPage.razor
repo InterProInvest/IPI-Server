@@ -51,7 +51,7 @@ else
             <tbody>
                 @foreach (var item in Groups)
                 {
-                    <tr @onclick="(() => RowSelected(item.Id))">
+                    <tr @onclick="(() => RowSelected(item.Id))" class="table-row @(CurrentGroupId == item.Id ? "selected-row" : string.Empty)">
                         <td>
                             @item.Name
                         </td>
