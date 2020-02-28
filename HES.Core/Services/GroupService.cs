@@ -37,6 +37,7 @@ namespace HES.Core.Services
             if (string.IsNullOrWhiteSpace(search))
             {
                 return await _groupRepository.Query()
+                    .Include(x => x.GroupMemberships)
                     .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
                     .Skip(skip)
                     .Take(take)
@@ -46,6 +47,7 @@ namespace HES.Core.Services
             search = search.ToLower().Trim();
 
             return await _groupRepository.Query()
+                    .Include(x => x.GroupMemberships)
                     .Where(x => x.Name.ToLower().Contains(search) || 
                         x.Email.ToLower().Contains(search) || 
                         x.Description.ToLower().Contains(search))
