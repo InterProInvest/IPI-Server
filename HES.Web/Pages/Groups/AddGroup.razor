@@ -1,0 +1,86 @@
+﻿@if (Groups == null)
+{
+    @if (Login.Server == null)
+    {
+        <h5>Set domain ip address in parameters page to connect the domain.</h5>
+    }
+    else
+    {
+        <EditForm Model="@Login" OnValidSubmit="Connect">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label class="control-label text-gray">UserName</label>
+                <InputText id="userName" @bind-Value="Login.UserName" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => Login.UserName)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">Password</label>
+                <InputText id="password" type="password" @bind-Value="Login.Password" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => Login.Password)" class="text-danger" />
+            </div>
+            <div class="form-group text-right mb-0">
+                <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
+                <input type="submit" value="Connect" class="btn btn-primary" />
+            </div>
+        </EditForm>
+    }
+}
+else
+{
+    <div class="custom-control custom-switch mb-3 m-1">
+        <input type="checkbox" class="custom-control-input" id="onlyUserGroup" @bind="OnlyUserGroups" />
+        <label class="custom-control-label" for="onlyUserGroup">Only user groups</label>
+    </div>
+    <hr />
+    <EditForm Model="@Groups" OnValidSubmit="AddAsync">
+        <table id="groups" class="table table-hover border rounded w-100 disable-selection">
+            <thead>
+                <tr>
+                    <th class="checkbox-column">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
+                            <label class="custom-control-label" for="checkAll"></label>
+                        </div>
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var group in Groups)
+                {
+                    if (OnlyUserGroups && !group.Model.IsUserGroup)
+                    {
+                        continue;
+                    }
+                    <tr @onclick="@(() => OnRowSelected(group.Model.Id))">
+                        <td>
+                            @**@
+                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                                <input type="checkbox" class="custom-control-input" id="@group.Model.Id" @bind="group.Checked" />
+                                <label class="custom-control-label" for="@group.Model.Id"></label>
+                            </div>
+                        </td>
+                        <td title="@group.Model.Description">
+                            @group.Model.Name
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (NotSelected)
+        {
+            <div class="alert alert-danger" role="alert">
+                No group selected
+            </div>
+        }
+        <div class="form-group text-right mb-0">
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Add</span>
+            </button>
+        </div>
+    </EditForm>
+}

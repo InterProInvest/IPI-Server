@@ -60,7 +60,10 @@
     }
 }
 
-/*Table component*/
+.checkbox-column {
+    width: 1px;
+}
+
 .table-row {
     cursor: pointer;
 }

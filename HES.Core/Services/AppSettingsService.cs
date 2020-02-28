@@ -79,5 +79,37 @@ namespace HES.Core.Services
                 await _appSettingsRepository.UpdateAsync(appSettings);
             }
         }
+
+        public async Task<Domain> GetDomainSettingsAsync()
+        {
+            var domain = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
+            if (domain == null)
+            {
+                return new Domain();
+            }
+            return JsonConvert.DeserializeObject<Domain>(domain.Value);
+        }
+
+        public async Task SetDomainSettingsAsync(Domain domain)
+        {
+            var json = JsonConvert.SerializeObject(domain);
+
+            var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
+
+            if (appSettings == null)
+            {
+                appSettings = new AppSettings()
+                {
+                    Id = AppSettingsConstants.Domain,
+                    Value = json
+                };
+                await _appSettingsRepository.AddAsync(appSettings);
+            }
+            else
+            {
+                appSettings.Value = json;
+                await _appSettingsRepository.UpdateAsync(appSettings);
+            }
+        }
     }
 }

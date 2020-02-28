@@ -1,22 +1,30 @@
-﻿using System;
-using System.Linq;
-using HES.Core.Entities;
-using HES.Core.Utilities;
+﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+using HES.Core.Models.Web.Group;
+using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
     public class GroupService : IGroupService
     {
         private readonly IAsyncRepository<Group> _groupRepository;
+        private readonly IAsyncRepository<GroupMembership> _groupMembershipRepository;
+        private readonly IAsyncRepository<Employee> _employeeRepository;
 
-        public GroupService(IAsyncRepository<Group> groupRepository)
+        public GroupService(IAsyncRepository<Group> groupRepository,
+                            IAsyncRepository<GroupMembership> groupMembershipRepository,
+                            IAsyncRepository<Employee> employeeRepository)
         {
             _groupRepository = groupRepository;
+            _groupMembershipRepository = groupMembershipRepository;
+            _employeeRepository = employeeRepository;
         }
 
         public IQueryable<Group> Query()
@@ -93,19 +101,110 @@ namespace HES.Core.Services
             await _groupRepository.DeleteAsync(group);
         }
 
-        public async Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId)
+        public async Task<List<GroupMembership>> GetGruopMembersAsync(string groupId)
         {
-            throw new NotImplementedException();
+            return await _groupMembershipRepository.Query().Where(x => x.GroupId == groupId).ToListAsync();
         }
 
-        public async Task AddGroupsToEmployeeAsync(IList<string> groupIds, string employeeId)
+        public async Task<List<GroupEmployee>> GetMappedGroupEmployeesAsync(string groupId)
         {
-            throw new NotImplementedException();
+            var employees = await _employeeRepository.Query().ToListAsync();
+            var groupMembers = await GetGruopMembersAsync(groupId);
+
+            var mapped = new List<GroupEmployee>();
+
+            foreach (var employee in employees)
+            {
+                var inGroup = groupMembers.Any(x => x.EmployeeId == employee.Id);
+
+                mapped.Add(new GroupEmployee()
+                {
+                    Employee = employee,
+                    InGroup = inGroup
+                });
+            }
+
+            return mapped;
+        }
+
+        public async Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId)
+        {
+            if (employeeIds == null)
+            {
+                throw new ArgumentNullException(nameof(employeeIds));
+            }
+
+            if (groupId == null)
+            {
+                throw new ArgumentNullException(nameof(groupId));
+            }
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                foreach (var employeeId in employeeIds)
+                {
+                    var groupMembership = new GroupMembership()
+                    {
+                        EmployeeId = employeeId,
+                        GroupId = groupId
+                    };
+
+                    await _groupMembershipRepository.AddAsync(groupMembership);
+                }
+                transactionScope.Complete();
+            }
+        }
+
+        public async Task ManageEmployeesAsync(List<GroupEmployee> groupEmployees, string groupId)
+        {
+            if (groupEmployees == null)
+            {
+                throw new ArgumentNullException(nameof(groupEmployees));
+            }
+
+            if (groupId == null)
+            {
+                throw new ArgumentNullException(nameof(groupId));
+            }
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                foreach (var member in groupEmployees)
+                {
+                    var groupMembership = await _groupMembershipRepository.GetByCompositeKeyAsync(new object[] { groupId, member.Employee.Id });
+
+                    if (member.InGroup && groupMembership == null)
+                    {
+                        groupMembership = new GroupMembership() { GroupId = groupId, EmployeeId = member.Employee.Id };
+                        await _groupMembershipRepository.AddAsync(groupMembership);
+                        continue;
+                    }
+
+                    if (!member.InGroup && groupMembership != null)
+                    {
+                        await _groupMembershipRepository.DeleteAsync(groupMembership);
+                    }
+                }
+                transactionScope.Complete();
+            }
         }
 
         public async Task<bool> CheckGroupNameAsync(string name)
         {
             return await _groupRepository.Query().AnyAsync(x => x.Name == name);
+        }
+
+        public async Task CreateGroupRangeAsync(List<Group> groups)
+        {
+            foreach (var group in groups)
+            {
+                var exist = await _groupRepository.ExistAsync(x => x.Name == group.Name);
+                if (exist)
+                {
+                    continue;
+                }
+                await CreateGroupAsync(group);
+            }
         }
     }
 }

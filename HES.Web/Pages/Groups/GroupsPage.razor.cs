@@ -1,15 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using HES.Core.Entities;
 using HES.Core.Enums;
-using HES.Core.Entities;
-using HES.Web.Components;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Breadcrumb;
+using HES.Web.Components;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using HES.Core.Models.Web.Breadcrumb;
-using Microsoft.AspNetCore.Components;
 
 namespace HES.Web.Pages.Groups
 {
@@ -225,6 +224,18 @@ namespace HES.Web.Pages.Groups
             await BreadcrumbsWrapper.BreadcrumbsComponent.ShowAsync(items);
         }
 
+        public async Task OpenModalAddGroup()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddGroup));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
+                builder.CloseComponent();
+            };
+
+            await MainWrapper.ModalDialogComponent.ShowAsync("Add group from AD", body);
+        }
+
         public async Task OpenModalGreateGroup()
         {
             RenderFragment body = (builder) =>
@@ -261,6 +272,19 @@ namespace HES.Web.Pages.Groups
             };
 
             await MainWrapper.ModalDialogComponent.ShowAsync("Delete group", body);
+        }
+
+        public async Task OpenModalManageEmployees()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ManageEmployees));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
+                builder.AddAttribute(2, "GroupId", CurrentGroupId);
+                builder.CloseComponent();
+            };
+
+            await MainWrapper.ModalDialogComponent.ShowAsync("Manage employees", body);
         }
 
         #endregion
