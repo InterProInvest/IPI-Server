@@ -2,6 +2,18 @@
     border-color: #28a745;
 }*/
 
+/*Start common*/
+
+.user-select-none{
+    user-select: none;
+}
+
+.c-pointer {
+    cursor: pointer;
+}
+
+/*End common*/
+
 .invalid {
     border-color: #dc3545;
 }
@@ -56,4 +68,17 @@
 .selected-row {
     color: white !important;
     background-color: #007BFF !important;
+}
+
+.sort-arrow{
+    cursor: pointer;
+    min-width: 20px;
+}
+
+.sort-arrow-up {
+    content: url("/svg/action/arrow-up.svg");
+}
+
+.sort-arrow-down {
+    content: url("/svg/action/arrow-down.svg");
 }

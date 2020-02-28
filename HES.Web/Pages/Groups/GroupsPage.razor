@@ -1,4 +1,6 @@
-﻿@using HES.Web.Components
+﻿@using HES.Core.Enums
+@using HES.Web.Components
+
 @if (Groups == null)
 {
     <LoadingSpinner />
@@ -24,21 +26,24 @@ else
             <div class="form-control-feedback">
                 <img class="img-size" src="/svg/action/search.svg" />
             </div>
-            <input id="searchbox" type="text" class="form-control" placeholder="Search">
+            <input @oninput="@(async (e) => await FilterRecordsAsync(e))" type="text" class="form-control" placeholder="Search">
         </div>
     </div>
     <div class="table-responsive">
         <table id="groups" class="table table-hover border rounded w-100">
-            <thead>
+            <thead style="user-select: none; ">
                 <tr>
-                    <th>
+                    <th @onclick="@(() => SortTable("Name"))">
                         Name
+                        <img class="sort-arrow @SetSortIcon("Name")" />
                     </th>
-                    <th>
+                    <th @onclick="@(() => SortTable("Email"))">
                         Email
+                        <img class="sort-arrow @SetSortIcon("Email")" />
                     </th>
-                    <th>
+                    <th @onclick="@(() => SortTable("Description"))">
                         Description
+                        <img class="sort-arrow @SetSortIcon("Description")" />
                     </th>
                 </tr>
             </thead>
@@ -60,34 +65,39 @@ else
             </tbody>
         </table>
     </div>
-    <div class="d-flex justify-content-between">
-        <div>
-            <label>Show entries</label>
+    <div class="d-flex justify-content-between user-select-none">
+        <div class="d-flex">
+            <label class="col-form-label mr-2">Show entries</label>
+            <div>
+                <select @onchange="ShowEntriesOnChange" class="form-control">
+                    <option selected value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
         </div>
-        <div>
-            <label>
-                Showing 1 to 2 of 2 entries
-            </label>
+        <div class="d-flex">
+            <label class="col-form-label"> Showing @(CurrentPage == 1 ? CurrentPage : CurrentPage * PageSize - PageSize + 1) to @(CurrentPage == TotalPages ? TotalRecords : CurrentPage * PageSize) of @TotalRecords entries </label>
         </div>
-        <div>
-            <nav aria-label="...">
-                <ul class="pagination">
-                    <li class="page-item disabled">
-                        <span class="page-link">Previous</span>
+        <div class="c-pointer">
+            <ul class="pagination">
+                <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" @onclick=@(async ()=>await NavigateToPage(PagerDirection.Previous))>Previous</a>
+                </li>
+                @for (int i = StartPage; i <= EndPage; i++)
+                {
+                    var currentPage = i;
+                    <li class="page-item pagebutton @(currentPage==CurrentPage?"active":"")">
+                        <a class="page-link" @onclick=@(async () =>await RefreshRecords(currentPage))>
+                            @currentPage
+                        </a>
                     </li>
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item active" aria-current="page">
-                        <span class="page-link">
-                            2
-                            <span class="sr-only">(current)</span>
-                        </span>
-                    </li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
-                </ul>
-            </nav>
+                }
+                <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                    <a class="page-link" @onclick=@(async ()=>await NavigateToPage(PagerDirection.Next))>Next</a>
+                </li>
+            </ul>
         </div>
     </div>
 }

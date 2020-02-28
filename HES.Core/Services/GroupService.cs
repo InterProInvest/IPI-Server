@@ -1,10 +1,12 @@
-﻿using HES.Core.Entities;
-using HES.Core.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using HES.Core.Entities;
+using HES.Core.Utilities;
+using HES.Core.Interfaces;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace HES.Core.Services
 {
@@ -22,17 +24,37 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
+        public async Task<IList<Group>> GetAllGroupsAsync(int skip, int take, ListSortDirection sortDirection = ListSortDirection.Descending, string search = null, string orderBy = nameof(Group.Name))
+        {
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return await _groupRepository.Query()
+                    .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync();
+            }
+
+            search = search.ToLower().Trim();
+
+            return await _groupRepository.Query()
+                    .Where(x => x.Name.ToLower().Contains(search) || 
+                        x.Email.ToLower().Contains(search) || 
+                        x.Description.ToLower().Contains(search))
+                    .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync();
+        }
+
+        public async Task<int> GetCountAsync(string search = null)
+        {
+            return await _groupRepository.Query().SearchCountAsync();
+        }
+
         public async Task<Group> GetGroupByIdAsync(string groupId)
         {
             return await _groupRepository.GetByIdAsync(groupId);
-        }
-
-        public async Task<List<Group>> GetGroupsAsync()
-        {
-            return await _groupRepository
-                .Query()
-                .OrderBy(x => x.Name)
-                .ToListAsync();
         }
 
         public async Task<Group> CreateGroupAsync(Group group)
