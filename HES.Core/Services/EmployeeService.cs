@@ -226,24 +226,31 @@ namespace HES.Core.Services
                 throw new Exception("Employee not found");
             }
 
-            foreach (var deviceId in devices)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var device = await _deviceService.GetDeviceByIdAsync(deviceId);
-                if (device != null)
+                foreach (var deviceId in devices)
                 {
-                    if (device.EmployeeId == null)
+                    var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+                    if (device != null)
                     {
-                        var masterPassword = GenerateMasterPassword();
-
-                        device.EmployeeId = employeeId;
-                        using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                        if (device.MasterPassword != null)
                         {
+                            throw new Exception($"{deviceId} already linked to employee.");
+                        }
+                        if (device.EmployeeId == null)
+                        {
+                            var masterPassword = GenerateMasterPassword();
+
+                            device.EmployeeId = employeeId;
+
                             await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
                             await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Encrypt(masterPassword));
-                            transactionScope.Complete();
+
                         }
                     }
                 }
+
+                transactionScope.Complete();
             }
         }
 
