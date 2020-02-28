@@ -237,6 +237,12 @@ namespace HES.Core.Services
                         {
                             throw new Exception($"{deviceId} already linked to employee.");
                         }
+
+                        if (device.State == DeviceState.WaitingForWipe)
+                        {
+                            throw new Exception($"{deviceId} waiting for wipe.");
+                        }
+
                         if (device.EmployeeId == null)
                         {
                             var masterPassword = GenerateMasterPassword();
@@ -677,7 +683,7 @@ namespace HES.Core.Services
 
             if (selectedDevices == null)
                 throw new ArgumentNullException(nameof(selectedDevices));
-
+                     
             ValidationHepler.VerifyOtpSecret(accountPassword.OtpSecret);
 
             _dataProtectionService.Validate();
@@ -691,6 +697,12 @@ namespace HES.Core.Services
             {
                 foreach (var deviceId in selectedDevices)
                 {
+                    var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+                    if (device.EmployeeId != deviceAccount.EmployeeId)
+                    {
+                        throw new Exception("This device and this employee are not linked.");
+                    }
+                    
                     var exist = await _deviceAccountService
                         .Query()
                         .Where(s => s.Name == deviceAccount.Name)
