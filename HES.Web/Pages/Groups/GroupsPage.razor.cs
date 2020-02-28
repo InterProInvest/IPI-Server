@@ -186,8 +186,15 @@ namespace HES.Web.Pages.Groups
         public async Task FilterRecordsAsync(ChangeEventArgs args)
         {
             _searchString = (string)args.Value;
-            EndPage = 0;
-            await InitializeComponentAsync();
+
+            TotalRecords = await GroupService.GetCountAsync(_searchString);
+            TotalPages = (int)Math.Ceiling(TotalRecords / (decimal)PageSize);
+            CurrentPage = 1;
+            PagerSize = TotalPages < 3 ? TotalPages : 3;
+            StartPage = 1;
+            EndPage = PagerSize;
+
+            await LoadGroupsAsync();
         }
 
         public async Task InitializeComponentAsync()
@@ -203,7 +210,7 @@ namespace HES.Web.Pages.Groups
 
         public async Task LoadGroupsAsync()
         {
-            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * PageSize, PageSize, ListSortDirection.Descending, _searchString);
+            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * PageSize, PageSize, ListSortDirection.Ascending, _searchString);
             CurrentGroupId = null;
         }
 

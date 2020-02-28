@@ -59,7 +59,7 @@ namespace HES.Core.Services
 
         public async Task<int> GetCountAsync(string search = null)
         {
-            return await _groupRepository.Query().SearchCountAsync();
+            return await _groupRepository.Query().SearchCountAsync(search);
         }
 
         public async Task<Group> GetGroupByIdAsync(string groupId)

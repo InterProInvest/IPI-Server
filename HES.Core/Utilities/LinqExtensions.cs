@@ -46,7 +46,7 @@ namespace HES.Core.Utilities
 
                 foreach (var item in query)
                 {
-                    foreach (var property in item.GetType().GetProperties())
+                    foreach (var property in item.GetType().GetProperties().Where(p => p.Name.ToLower() == "name" || p.Name.ToLower() == "email" || p.Name.ToLower() == "description"))
                     {
                         var propValue = property.GetValue(item)?.ToString();
 
@@ -55,7 +55,10 @@ namespace HES.Core.Utilities
 
                         var isContains = propValue.ToLower().Contains(search);
                         if (isContains)
+                        {
                             count++;
+                            break;
+                        }
                     }
                 }
 
