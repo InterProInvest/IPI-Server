@@ -144,7 +144,8 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            await _employeeRepository.UpdateAsync(employee);
+            var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
+            await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
         }
 
         public async Task DeleteEmployeeAsync(string id)
@@ -225,24 +226,37 @@ namespace HES.Core.Services
                 throw new Exception("Employee not found");
             }
 
-            foreach (var deviceId in devices)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var device = await _deviceService.GetDeviceByIdAsync(deviceId);
-                if (device != null)
+                foreach (var deviceId in devices)
                 {
-                    if (device.EmployeeId == null)
+                    var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+                    if (device != null)
                     {
-                        var masterPassword = GenerateMasterPassword();
-
-                        device.EmployeeId = employeeId;
-                        using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                        if (device.MasterPassword != null)
                         {
+                            throw new Exception($"{deviceId} already linked to employee.");
+                        }
+
+                        if (device.State == DeviceState.WaitingForWipe)
+                        {
+                            throw new Exception($"{deviceId} waiting for wipe.");
+                        }
+
+                        if (device.EmployeeId == null)
+                        {
+                            var masterPassword = GenerateMasterPassword();
+
+                            device.EmployeeId = employeeId;
+
                             await _deviceService.UpdateOnlyPropAsync(device, new string[] { "EmployeeId" });
                             await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Encrypt(masterPassword));
-                            transactionScope.Complete();
+
                         }
                     }
                 }
+
+                transactionScope.Complete();
             }
         }
 
@@ -669,7 +683,7 @@ namespace HES.Core.Services
 
             if (selectedDevices == null)
                 throw new ArgumentNullException(nameof(selectedDevices));
-
+                     
             ValidationHepler.VerifyOtpSecret(accountPassword.OtpSecret);
 
             _dataProtectionService.Validate();
@@ -683,6 +697,12 @@ namespace HES.Core.Services
             {
                 foreach (var deviceId in selectedDevices)
                 {
+                    var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+                    if (device.EmployeeId != deviceAccount.EmployeeId)
+                    {
+                        throw new Exception("This device and this employee are not linked.");
+                    }
+                    
                     var exist = await _deviceAccountService
                         .Query()
                         .Where(s => s.Name == deviceAccount.Name)

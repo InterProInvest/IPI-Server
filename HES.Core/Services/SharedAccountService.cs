@@ -147,11 +147,6 @@ namespace HES.Core.Services
                 sharedAccount.Urls = ValidationHepler.VerifyUrls(sharedAccount.Urls);
             }
 
-            // Update Shared Account
-            string[] properties = { "Name", "Urls", "Apps", "Login" };
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);
-
-            // Update all device accounts
             // Get all device accounts where equals this shared account
             var deviceAccounts = await _deviceAccountService
                 .Query()
@@ -163,6 +158,10 @@ namespace HES.Core.Services
 
             foreach (var deviceAccount in deviceAccounts)
             {
+                deviceAccount.Name = sharedAccount.Name;
+                deviceAccount.Urls = sharedAccount.Urls;
+                deviceAccount.Apps = sharedAccount.Apps;
+                deviceAccount.Login = sharedAccount.Login;
                 deviceAccount.Status = AccountStatus.Updating;
                 deviceAccount.UpdatedAt = DateTime.UtcNow;
 
@@ -184,16 +183,18 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+                // Update Shared Account        
+                await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { "Name", "Urls", "Apps", "Login" });
+
                 // Update device accounts
-                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Name", "Login", "Urls", "Apps", "Status", "UpdatedAt" });
                 // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
 
                 transactionScope.Complete();
             }
-
-            var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
-            return devices;
+        
+            return deviceAccounts.Select(s => s.DeviceId).ToList();
         }
 
         public async Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount)
@@ -208,10 +209,7 @@ namespace HES.Core.Services
             // Update Shared Account
             sharedAccount.Password = _dataProtectionService.Encrypt(sharedAccount.Password);
             sharedAccount.PasswordChangedAt = DateTime.UtcNow;
-            string[] properties = { "Password", "PasswordChangedAt" };
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);
 
-            // Update all device accounts
             // Get all device accounts where equals this shared account
             var deviceAccounts = await _deviceAccountService
                 .Query()
@@ -225,6 +223,7 @@ namespace HES.Core.Services
             {
                 deviceAccount.Status = AccountStatus.Updating;
                 deviceAccount.UpdatedAt = DateTime.UtcNow;
+                deviceAccount.PasswordUpdatedAt = DateTime.UtcNow;
 
                 // Add Device Task
                 tasks.Add(new DeviceTask
@@ -239,8 +238,10 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+                // Update Shared Account
+                await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { "Password", "PasswordChangedAt" });
                 // Update device accounts
-                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt", "PasswordUpdatedAt" });
                 // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
 
@@ -265,10 +266,7 @@ namespace HES.Core.Services
             // Update Shared Account
             sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? _dataProtectionService.Encrypt(sharedAccount.OtpSecret) : null;
             sharedAccount.OtpSecretChangedAt = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? new DateTime?(DateTime.UtcNow) : null;
-            string[] properties = { "OtpSecret", "OtpSecretChangedAt" };
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, properties);
 
-            // Update all device accounts
             // Get all device accounts where equals this shared account
             var deviceAccounts = await _deviceAccountService
                 .Query()
@@ -282,6 +280,7 @@ namespace HES.Core.Services
             {
                 deviceAccount.Status = AccountStatus.Updating;
                 deviceAccount.UpdatedAt = DateTime.UtcNow;
+                deviceAccount.OtpUpdatedAt = sharedAccount.OtpSecretChangedAt;
 
                 // Add Device Task
                 tasks.Add(new DeviceTask
@@ -296,16 +295,18 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+                // Update Shared Account
+                await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { "OtpSecret", "OtpSecretChangedAt" });
+
                 // Update device accounts
-                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt" });
+                await _deviceAccountService.UpdateOnlyPropAsync(deviceAccounts, new string[] { "Status", "UpdatedAt", "OtpUpdatedAt" });
                 // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
 
                 transactionScope.Complete();
             }
-
-            var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
-            return devices;
+                
+            return deviceAccounts.Select(s => s.DeviceId).ToList();
         }
 
         public async Task<List<string>> DeleteSharedAccountAsync(string id)
@@ -316,6 +317,7 @@ namespace HES.Core.Services
             {
                 throw new Exception("The parameter must not be null.");
             }
+
             var sharedAccount = await _sharedAccountRepository.GetByIdAsync(id);
             if (sharedAccount == null)
             {
@@ -325,7 +327,6 @@ namespace HES.Core.Services
             sharedAccount.Deleted = true;
             await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { "Deleted" });
 
-            // Update all device accounts
             // Get all device accounts where equals this shared account
             var deviceAccounts = await _deviceAccountService
                 .Query()
@@ -359,9 +360,8 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
-                       
-            var devices = deviceAccounts.Select(s => s.DeviceId).ToList();
-            return devices;
+          
+            return deviceAccounts.Select(s => s.DeviceId).ToList();
         }
 
         public async Task<bool> ExistAync(Expression<Func<SharedAccount, bool>> predicate)
