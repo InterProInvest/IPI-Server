@@ -4,7 +4,6 @@ using HES.Core.Models.Web.Breadcrumb;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -49,6 +48,18 @@ namespace HES.Web.Pages.Groups
         public void RowSelected(string groupId)
         {
             CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
+        }
+
+        public async Task OpenModalAddGroup()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddGroup));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
+                builder.CloseComponent();
+            };
+
+            await MainWrapper.ModalDialogComponent.ShowAsync("Add group from AD", body);
         }
 
         public async Task OpenModalGreateGroup()

@@ -13,6 +13,11 @@ function toggleModalDialog(dialogId) {
     $('#' + dialogId).modal('toggle');
 }
 
+function triggerCheckbox(checkboxId) {
+    var chkb = $('#' + checkboxId);
+    chkb.trigger('click');
+}
+
 function toggleCheckbox(checkboxId) {
     var chkb = $('#' + checkboxId);
     chkb.attr("checked", !chkb.attr("checked"));

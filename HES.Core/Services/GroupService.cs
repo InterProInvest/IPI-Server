@@ -44,6 +44,19 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task CreateGroupRangeAsync(List<Group> groups)
+        {
+            foreach (var group in groups)
+            {
+                var exist = await _groupRepository.ExistAsync(x => x.Name == group.Name);
+                if (exist)
+                {
+                    continue;
+                }
+                await CreateGroupAsync(group);
+            }
+        }
+
         public async Task<Group> CreateGroupAsync(Group group)
         {
             if (group == null)

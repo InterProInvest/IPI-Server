@@ -8,13 +8,16 @@ else
     <div class="d-flex justify-content-between align-items-center mb-2">
         <h1 class="text-navyblue">Groups</h1>
         <div>
+            <button type="button" class="btn btn-primary" @onclick="OpenModalAddGroup">
+                Add from AD
+            </button>
             <button type="button" class="btn btn-primary" @onclick="OpenModalGreateGroup">
                 Create group
             </button>
         </div>
     </div>
     <div class="d-flex justify-content-end align-items-center mb-3">
-        <button class="btn btn-light m-1 p-1" title="Add employees" @onclick="OpenModalManageEmployees" disabled="@(CurrentGroupId == null ? true : false)">
+        <button class="btn btn-light m-1 p-1" title="Manage employees" @onclick="OpenModalManageEmployees" disabled="@(CurrentGroupId == null ? true : false)">
             <img style="width:32px;height:32px;" src="/svg/action/person_add.svg" />
         </button>
         <button class="btn btn-light m-1 p-1" title="Edit Group" @onclick="OpenModalEditGroup" disabled="@(CurrentGroupId == null ? true : false)">

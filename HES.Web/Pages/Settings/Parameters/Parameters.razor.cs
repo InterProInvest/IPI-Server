@@ -18,13 +18,16 @@ namespace HES.Web.Pages.Settings.Parameters
 
         private Licensing licensing = new Licensing();
         private Server server = new Server();
+        private Domain domain = new Domain();
         private bool licensingIsBusy;
         private bool serverIsBusy;
+        private bool domainIsBusy;
 
         protected override async Task OnInitializedAsync()
         {
             await LoadLicensingSettingsAsync();
             await LoadServerSettingsAsync();
+            await LoadDomainSettingsAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -100,6 +103,35 @@ namespace HES.Web.Pages.Settings.Parameters
             finally
             {
                 serverIsBusy = false;
+            }
+        }
+
+        private async Task LoadDomainSettingsAsync()
+        {
+            domain = await AppSettingsService.GetDomainSettingsAsync();
+        }
+
+        private async Task UpdateDomainSettingsAsync()
+        {
+            try
+            {
+                if (domainIsBusy)
+                {
+                    return;
+                }
+
+                domainIsBusy = true;
+                await AppSettingsService.SetDomainSettingsAsync(domain);
+                ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+            }
+            finally
+            {
+                domainIsBusy = false;
             }
         }
     }

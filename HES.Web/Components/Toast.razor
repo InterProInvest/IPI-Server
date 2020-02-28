@@ -1,4 +1,4 @@
-﻿<div class="alert alert-dismissible shadow-lg fade @(LevelClass) @(IsVisible ? "show" : null) position-absolute" role="alert">
+﻿<div class="alert alert-dismissible shadow-lg fade @(LevelClass) @(IsVisible ? "show" : "d-none") position-absolute" role="alert">
     <button type="button" class="close" @onclick="@ToastService_OnHide" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <h4 class="alert-heading">@Header</h4>
     <hr>

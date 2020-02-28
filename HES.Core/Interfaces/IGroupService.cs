@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
         Task<Group> GetGroupByIdAsync(string groupId);
         Task<List<Group>> GetGroupsAsync();
         Task<Group> CreateGroupAsync(Group group);
+        Task CreateGroupRangeAsync(List<Group> groups);
         Task EditGroupAsync(Group group);
         Task DeleteGroupAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);

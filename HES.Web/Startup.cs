@@ -95,6 +95,7 @@ namespace HES.Web
             services.AddScoped<IAppSettingsService, AppSettingsService>();
             services.AddScoped<IToastService, ToastService>();
             services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<ILdapService, LdapService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
