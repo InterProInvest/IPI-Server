@@ -122,7 +122,7 @@ namespace HES.Core.Services
 
             try
             {
-                await UpdateRemoteDevice(deviceId, workstationId, primaryAccountOnly).TimeoutAfter(300_000);
+                await UpdateRemoteDevice(deviceId, workstationId, primaryAccountOnly);
                 tcs.SetResult(true);
             }
             catch (Exception ex)

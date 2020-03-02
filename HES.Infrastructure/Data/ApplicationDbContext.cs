@@ -18,6 +18,7 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Device>().HasIndex(x => x.RFID).IsUnique();
             modelBuilder.Entity<Group>().HasIndex(x => x.Name).IsUnique();
             modelBuilder.Entity<GroupMembership>().HasKey(x => new { x.GroupId, x.EmployeeId });
+            modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
             base.OnModelCreating(modelBuilder);
         }
 

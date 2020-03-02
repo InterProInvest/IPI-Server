@@ -20,6 +20,7 @@ namespace HES.Core.Interfaces
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);
         Task<List<GroupEmployee>> GetMappedGroupEmployeesAsync(string groupId);
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
+        Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
         Task ManageEmployeesAsync(List<GroupEmployee> groupEmployees, string groupId);
         Task<bool> CheckGroupNameAsync(string name);
     }

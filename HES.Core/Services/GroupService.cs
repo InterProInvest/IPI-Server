@@ -48,8 +48,8 @@ namespace HES.Core.Services
 
             return await _groupRepository.Query()
                     .Include(x => x.GroupMemberships)
-                    .Where(x => x.Name.ToLower().Contains(search) || 
-                        x.Email.ToLower().Contains(search) || 
+                    .Where(x => x.Name.ToLower().Contains(search) ||
+                        x.Email.ToLower().Contains(search) ||
                         x.Description.ToLower().Contains(search))
                     .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
                     .Skip(skip)
@@ -145,6 +145,40 @@ namespace HES.Core.Services
             {
                 foreach (var employeeId in employeeIds)
                 {
+                    var groupMembership = new GroupMembership()
+                    {
+                        EmployeeId = employeeId,
+                        GroupId = groupId
+                    };
+
+                    await _groupMembershipRepository.AddAsync(groupMembership);
+                }
+                transactionScope.Complete();
+            }
+        }
+
+        public async Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds)
+        {
+            if (employeeId == null)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+
+            if (groupIds == null)
+            {
+                throw new ArgumentNullException(nameof(groupIds));
+            }
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                foreach (var groupId in groupIds)
+                {
+                    var employeeExistInGroup = await _groupMembershipRepository.ExistAsync(x => x.EmployeeId == employeeId && x.GroupId == groupId);
+                    if (employeeExistInGroup)
+                    {
+                        continue;
+                    }
+
                     var groupMembership = new GroupMembership()
                     {
                         EmployeeId = employeeId,

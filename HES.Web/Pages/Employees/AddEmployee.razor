@@ -1,0 +1,39 @@
+﻿@if (ActiveDirectoryUsers == null)
+{
+    @if (_login.Server == null)
+    {
+        <h5>Set domain ip address in parameters page to connect the domain.</h5>
+    }
+    else
+    {
+        <EditForm Model="@_login" OnValidSubmit="Connect">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label class="control-label text-gray">UserName</label>
+                <InputText id="userName" @bind-Value="_login.UserName" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _login.UserName)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">Password</label>
+                <InputText id="password" type="password" @bind-Value="_login.Password" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _login.Password)" class="text-danger" />
+            </div>
+            <div class="form-group text-right mb-0">
+                <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
+                <input type="submit" value="Connect" class="btn btn-primary" />
+            </div>
+        </EditForm>
+    }
+}
+else
+{
+    // TODO table
+
+    <div class="form-group text-right mb-0">
+        <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
+        <button type="submit" class="btn btn-primary" @onclick="AddAsync">
+            <span class="spinner-border spinner-border-sm @(_isBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+            <span>Add</span>
+        </button>
+    </div>
+}
