@@ -32,7 +32,7 @@ else
             <div class="form-control-feedback">
                 <img class="img-size" src="/svg/action/search.svg" />
             </div>
-            <input @oninput="@(async (e) => await FilterRecordsAsync(e))" type="text" class="form-control" placeholder="Search">
+            <input @bind-value="SearchString" @bind-value:event="oninput" @onkeyup="@HandleKeyUp" type="text" class="form-control" placeholder="Search">
         </div>
     </div>
     <div class="table-responsive">
