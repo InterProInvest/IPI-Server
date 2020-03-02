@@ -1,15 +1,14 @@
-﻿using HES.Core.Entities;
-using HES.Core.Enums;
-using HES.Core.Interfaces;
-using HES.Core.Models.ActiveDirectory;
-using HES.Core.Models.Web;
-using HES.Web.Components;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using HES.Core.Enums;
+using HES.Core.Entities;
+using HES.Web.Components;
+using HES.Core.Interfaces;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components;
+using HES.Core.Models.ActiveDirectory;
 
 namespace HES.Web.Pages.Groups
 {
@@ -20,11 +19,15 @@ namespace HES.Web.Pages.Groups
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<AddGroup> Logger { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
-        public List<CheckboxWrapper<Group>> Groups { get; set; }
+
         public bool OnlyUserGroups { get; set; }
         public bool IsBusy { get; set; }
         public bool NotSelected { get; set; }
         public ActiveDirectoryLogin Login = new ActiveDirectoryLogin();
+
+        public bool IsSelectAll { get; set; }
+
+        public Dictionary<Group, bool> Groups = new Dictionary<Group, bool>();
 
         protected override async Task OnInitializedAsync()
         {
@@ -40,12 +43,7 @@ namespace HES.Web.Pages.Groups
             try
             {
                 var groups = LdapService.GetAdGroups(Login.Server, Login.UserName, Login.Password);
-
-                Groups = new List<CheckboxWrapper<Group>>();
-                foreach (var item in groups)
-                {
-                    Groups.Add(new CheckboxWrapper<Group>() { Model = item, Checked = false });
-                }
+                Groups = groups.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)
             {
@@ -59,7 +57,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                if (!Groups.Any(x => x.Checked == true))
+                if (!Groups.Any(x => x.Value == true))
                 {
                     NotSelected = true;
                     return;
@@ -67,18 +65,15 @@ namespace HES.Web.Pages.Groups
 
                 IsBusy = true;
 
+                List<Group> groups;
+
                 if (OnlyUserGroups)
                 {
-                    Groups.RemoveAll(x => x.Model.IsUserGroup == false);
+                    groups = Groups.Keys.Where(x => x.IsUserGroup).ToList();
                 }
-
-                var groups = new List<Group>();
-                foreach (var item in Groups)
+                else
                 {
-                    if (item.Checked)
-                    {
-                        groups.Add(item.Model);
-                    }
+                    groups = Groups.Where(x => x.Value).Select(x => x.Key).ToList();
                 }
 
                 await GroupService.CreateGroupRangeAsync(groups);
@@ -94,15 +89,16 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        private void OnRowSelected(string Id)
+        private void OnRowSelected(Group key)
         {
-            var checkbox = Groups.FirstOrDefault(x => x.Model.Id == Id);
-            checkbox.Checked = !checkbox.Checked;
+            Groups[key] = !Groups[key];
         }
 
         public void OnChangeCheckAll(ChangeEventArgs args)
         {
-            Groups.ForEach(x => x.Checked = (bool)args.Value);
+            IsSelectAll = !IsSelectAll;
+            foreach (var key in Groups.Keys.ToList())
+                Groups[key] = IsSelectAll;
         }
     }
 }

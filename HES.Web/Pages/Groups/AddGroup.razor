@@ -1,4 +1,4 @@
-﻿@if (Groups == null)
+﻿@if (Groups.Count == 0)
 {
     @if (Login.Server == null)
     {
@@ -32,7 +32,6 @@ else
         <label class="custom-control-label" for="onlyUserGroup">Only user groups</label>
     </div>
     <hr />
-    <EditForm Model="@Groups" OnValidSubmit="AddAsync">
         <table id="groups" class="table table-hover border rounded w-100 disable-selection">
             <thead>
                 <tr>
@@ -48,22 +47,17 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var group in Groups)
+                @foreach (var group in Groups.Where(x => x.Key.IsUserGroup == OnlyUserGroups))
                 {
-                    if (OnlyUserGroups && !group.Model.IsUserGroup)
-                    {
-                        continue;
-                    }
-                    <tr @onclick="@(() => OnRowSelected(group.Model.Id))">
+                    <tr @onclick="@(() => OnRowSelected(group.Key))">
                         <td>
-                            @**@
                             <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                                <input type="checkbox" class="custom-control-input" id="@group.Model.Id" @bind="group.Checked" />
-                                <label class="custom-control-label" for="@group.Model.Id"></label>
+                                <input type="checkbox" class="custom-control-input" id="@group.Key.Id" checked="@group.Value"  />
+                                <label class="custom-control-label" for="@group.Key.Id"></label>
                             </div>
                         </td>
-                        <td title="@group.Model.Description">
-                            @group.Model.Name
+                        <td title="@group.Key.Description">
+                            @group.Key.Name
                         </td>
                     </tr>
                 }
@@ -77,10 +71,9 @@ else
         }
         <div class="form-group text-right mb-0">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
-            <button type="submit" class="btn btn-primary">
+            <button type="button" @onclick="AddAsync" class="btn btn-primary">
                 <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
                 <span>Add</span>
             </button>
         </div>
-    </EditForm>
 }
