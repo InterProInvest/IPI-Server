@@ -122,13 +122,12 @@ namespace HES.Core.Services
 
             try
             {
-                await UpdateRemoteDevice(deviceId, workstationId, primaryAccountOnly).TimeoutAfter(300_000);
+                await UpdateRemoteDevice(deviceId, workstationId, primaryAccountOnly);
                 tcs.SetResult(true);
             }
             catch (Exception ex)
             {
                 tcs.SetException(ex);
-                throw;
             }
             finally
             {
@@ -156,17 +155,15 @@ namespace HES.Core.Services
             if (device == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
 
-            await remoteDevice.Initialize();
-
-            await CheckLlinkedAsync(remoteDevice, device);
-            await CheckAcceessAsync(remoteDevice, deviceId);
+            await CheckLinkedAsync(remoteDevice, device);
+            await CheckAccessAsync(remoteDevice, deviceId);
             await CheckStateAsync(remoteDevice, device);
             await CheckTaskAsync(remoteDevice, deviceId, primaryAccountOnly);
 
             return true;            
         }
 
-        private async Task CheckLlinkedAsync(RemoteDevice remoteDevice, Device device)
+        private async Task CheckLinkedAsync(RemoteDevice remoteDevice, Device device)
         {
             if (!remoteDevice.AccessLevel.IsLinkRequired)
             {
@@ -212,7 +209,7 @@ namespace HES.Core.Services
             }
         }
 
-        private async Task CheckAcceessAsync(RemoteDevice remoteDevice, string deviceId)
+        private async Task CheckAccessAsync(RemoteDevice remoteDevice, string deviceId)
         {
             var device = await _deviceService
               .DeviceQuery()
