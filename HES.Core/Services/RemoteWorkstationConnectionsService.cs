@@ -156,11 +156,11 @@ namespace HES.Core.Services
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
 
             await CheckLinkedAsync(remoteDevice, device);
-            await CheckAccessAsync(remoteDevice, deviceId);
+            await CheckPassphraseAsync(remoteDevice, deviceId);
             await CheckStateAsync(remoteDevice, device);
             await CheckTaskAsync(remoteDevice, deviceId, primaryAccountOnly);
 
-            return true;            
+            return true;
         }
 
         private async Task CheckLinkedAsync(RemoteDevice remoteDevice, Device device)
@@ -209,40 +209,18 @@ namespace HES.Core.Services
             }
         }
 
-        private async Task CheckAccessAsync(RemoteDevice remoteDevice, string deviceId)
+        private async Task CheckPassphraseAsync(RemoteDevice remoteDevice, string deviceId)
         {
             var device = await _deviceService
               .DeviceQuery()
-              .Include(d => d.DeviceAccessProfile)
               .AsNoTracking()
               .FirstOrDefaultAsync(d => d.Id == deviceId);
-
-            var accessParams = new AccessParams()
-            {
-                MasterKey_Bond = device.DeviceAccessProfile.MasterKeyBonding,
-                MasterKey_Connect = device.DeviceAccessProfile.MasterKeyConnection,
-                MasterKey_Channel = device.DeviceAccessProfile.MasterKeyNewChannel,
-
-                Button_Bond = device.DeviceAccessProfile.ButtonBonding,
-                Button_Connect = device.DeviceAccessProfile.ButtonConnection,
-                Button_Channel = device.DeviceAccessProfile.ButtonNewChannel,
-
-                Pin_Bond = device.DeviceAccessProfile.PinBonding,
-                Pin_Connect = device.DeviceAccessProfile.PinConnection,
-                Pin_Channel = device.DeviceAccessProfile.PinNewChannel,
-
-                PinMinLength = device.DeviceAccessProfile.PinLength,
-                PinMaxTries = device.DeviceAccessProfile.PinTryCount,
-                PinExpirationPeriod = device.DeviceAccessProfile.PinExpiration,
-                ButtonExpirationPeriod = 0,
-                MasterKeyExpirationPeriod = 0
-            };
 
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(device.MasterPassword));
 
             try
             {
-                await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
+                await remoteDevice.CheckPassphrase(key);
             }
             catch (Exception)
             {

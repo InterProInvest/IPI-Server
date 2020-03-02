@@ -12,11 +12,11 @@
                     <img src="~/svg/action/delete.svg" />
                 </button>
             </div>
-            <div id="deviceUndo" class="col-auto px-1 @(Model.DeviceAccounts.Where(d => d.DeviceId == device.Id).Where(d => d.Status == AccountStatus.Updating || d.Status == AccountStatus.Removing).Any() == true ? "" : "d-none") ">
+            @*<div id="deviceUndo" class="col-auto px-1 @(Model.DeviceAccounts.Where(d => d.DeviceId == device.Id).Where(d => d.Status == AccountStatus.Updating || d.Status == AccountStatus.Removing).Any() == true ? "" : "d-none") ">
                 <button class="btn p-0 open-modal-dialog" data-id="@device.Id" data-action="UndoChanges" data-title="Undo changes" title="Undo changes from device">
                     <img src="~/svg/action/undo.svg" />
                 </button>
-            </div>
+            </div>*@
             @*<div class="col-auto px-1">
                 <button id="show_popover_@device.Id" class="btn popover-btn p-0">
                     <img src="~/svg/action/info.svg" />
