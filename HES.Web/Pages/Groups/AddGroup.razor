@@ -1,22 +1,22 @@
 ﻿@if (Groups.Count == 0)
 {
-    @if (Login.Server == null)
+    @if (_login.Server == null)
     {
         <h5>Set domain ip address in parameters page to connect the domain.</h5>
     }
     else
     {
-        <EditForm Model="@Login" OnValidSubmit="Connect">
+        <EditForm Model="@_login" OnValidSubmit="Connect">
             <DataAnnotationsValidator />
             <div class="form-group">
                 <label class="control-label text-gray">UserName</label>
-                <InputText id="userName" @bind-Value="Login.UserName" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => Login.UserName)" class="text-danger" />
+                <InputText id="userName" @bind-Value="_login.UserName" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _login.UserName)" class="text-danger" />
             </div>
             <div class="form-group">
                 <label class="control-label text-gray">Password</label>
-                <InputText id="password" type="password" @bind-Value="Login.Password" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => Login.Password)" class="text-danger" />
+                <InputText id="password" type="password" @bind-Value="_login.Password" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _login.Password)" class="text-danger" />
             </div>
             <div class="form-group text-right mb-0">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
@@ -28,52 +28,52 @@
 else
 {
     <div class="custom-control custom-switch mb-3 m-1">
-        <input type="checkbox" class="custom-control-input" id="onlyUserGroup" @bind="OnlyUserGroups" />
+        <input type="checkbox" class="custom-control-input" id="onlyUserGroup" @bind="_onlyUserGroups" />
         <label class="custom-control-label" for="onlyUserGroup">Only user groups</label>
     </div>
     <hr />
-        <table id="groups" class="table table-hover border rounded w-100 disable-selection">
-            <thead>
-                <tr>
-                    <th class="checkbox-column">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
-                            <label class="custom-control-label" for="checkAll"></label>
+    <table id="groups" class="table table-hover border rounded w-100 disable-selection">
+        <thead>
+            <tr>
+                <th class="checkbox-column">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
+                        <label class="custom-control-label" for="checkAll"></label>
+                    </div>
+                </th>
+                <th>
+                    Name
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var group in Groups.Where(x => x.Key.IsUserGroup == _onlyUserGroups))
+            {
+                <tr @onclick="@(() => OnRowSelected(group.Key))">
+                    <td>
+                        <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                            <input type="checkbox" class="custom-control-input" id="@group.Key.Id" @onclick="@(() => OnRowSelected(group.Key))" checked="@group.Value" />
+                            <label class="custom-control-label" for="@group.Key.Id"></label>
                         </div>
-                    </th>
-                    <th>
-                        Name
-                    </th>
+                    </td>
+                    <td title="@group.Key.Description">
+                        @group.Key.Name
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var group in Groups.Where(x => x.Key.IsUserGroup == OnlyUserGroups))
-                {
-                    <tr @onclick="@(() => OnRowSelected(group.Key))">
-                        <td>
-                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                                <input type="checkbox" class="custom-control-input" id="@group.Key.Id" checked="@group.Value"  />
-                                <label class="custom-control-label" for="@group.Key.Id"></label>
-                            </div>
-                        </td>
-                        <td title="@group.Key.Description">
-                            @group.Key.Name
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        @if (NotSelected)
-        {
-            <div class="alert alert-danger" role="alert">
-                No group selected
-            </div>
-        }
-        <div class="form-group text-right mb-0">
-            <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
-            <button type="button" @onclick="AddAsync" class="btn btn-primary">
-                <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                <span>Add</span>
-            </button>
+            }
+        </tbody>
+    </table>
+    @if (_notSelected)
+    {
+        <div class="alert alert-danger" role="alert">
+            No group selected
         </div>
+    }
+    <div class="form-group text-right mb-0">
+        <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
+        <button type="button" @onclick="AddAsync" class="btn btn-primary">
+            <span class="spinner-border spinner-border-sm @(_isBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+            <span>Add</span>
+        </button>
+    </div>
 }

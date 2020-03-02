@@ -27,8 +27,43 @@
 }
 else
 {
-    // TODO table
-
+    <table id="groups" class="table table-hover border rounded w-100 disable-selection">
+        <thead>
+            <tr>
+                <th class="checkbox-column">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
+                        <label class="custom-control-label" for="checkAll"></label>
+                    </div>
+                </th>
+                <th>
+                    Name
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in ActiveDirectoryUsers)
+            {
+                <tr @onclick="@(() => OnRowSelected(user.Key))">
+                    <td>
+                        <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                            <input type="checkbox" class="custom-control-input" id="@user.Key.Employee.Id" @onclick="@(() => OnRowSelected(user.Key))" checked="@user.Value" />
+                            <label class="custom-control-label" for="@user.Key.Employee.Id"></label>
+                        </div>
+                    </td>
+                    <td>
+                        @user.Key.Employee.FullName
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (_notSelected)
+    {
+        <div class="alert alert-danger" role="alert">
+            No user selected
+        </div>
+    }
     <div class="form-group text-right mb-0">
         <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
         <button type="submit" class="btn btn-primary" @onclick="AddAsync">

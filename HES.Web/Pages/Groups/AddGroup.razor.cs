@@ -1,14 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using HES.Core.Entities;
 using HES.Core.Enums;
-using HES.Core.Entities;
-using HES.Web.Components;
 using HES.Core.Interfaces;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Components;
 using HES.Core.Models.ActiveDirectory;
+using HES.Web.Components;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
@@ -20,21 +20,20 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<AddGroup> Logger { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
-        public bool OnlyUserGroups { get; set; }
-        public bool IsBusy { get; set; }
-        public bool NotSelected { get; set; }
-        public ActiveDirectoryLogin Login = new ActiveDirectoryLogin();
-
-        public bool IsSelectAll { get; set; }
-
         public Dictionary<Group, bool> Groups = new Dictionary<Group, bool>();
+
+        private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
+        private bool _onlyUserGroups { get; set; }
+        private bool _notSelected { get; set; }
+        private bool _isSelectedAll { get; set; }
+        private bool _isBusy { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             var domain = await AppSettingsService.GetDomainSettingsAsync();
             if (domain != null)
             {
-                Login.Server = domain.IpAddress;
+                _login.Server = domain.IpAddress;
             }
         }
 
@@ -42,7 +41,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                var groups = LdapService.GetAdGroups(Login.Server, Login.UserName, Login.Password);
+                var groups = LdapService.GetAdGroups(_login.Server, _login.UserName, _login.Password);
                 Groups = groups.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)
@@ -59,15 +58,19 @@ namespace HES.Web.Pages.Groups
             {
                 if (!Groups.Any(x => x.Value == true))
                 {
-                    NotSelected = true;
+                    _notSelected = true;
                     return;
                 }
 
-                IsBusy = true;
+                if (_isBusy)
+                {
+                    return;
+                }
 
+                _isBusy = true;
                 List<Group> groups;
 
-                if (OnlyUserGroups)
+                if (_onlyUserGroups)
                 {
                     groups = Groups.Keys.Where(x => x.IsUserGroup).ToList();
                 }
@@ -87,6 +90,10 @@ namespace HES.Web.Pages.Groups
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await MainWrapper.ModalDialogComponent.CloseAsync();
             }
+            finally
+            {
+                _isBusy = false;
+            }
         }
 
         private void OnRowSelected(Group key)
@@ -96,9 +103,9 @@ namespace HES.Web.Pages.Groups
 
         public void OnChangeCheckAll(ChangeEventArgs args)
         {
-            IsSelectAll = !IsSelectAll;
+            _isSelectedAll = !_isSelectedAll;
             foreach (var key in Groups.Keys.ToList())
-                Groups[key] = IsSelectAll;
+                Groups[key] = _isSelectedAll;
         }
     }
 }

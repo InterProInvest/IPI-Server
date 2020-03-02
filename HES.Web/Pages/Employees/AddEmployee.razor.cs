@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -17,11 +18,12 @@ namespace HES.Web.Pages.Employees
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        public List<ActiveDirectoryUser> ActiveDirectoryUsers { get; set; }
+        public Dictionary<ActiveDirectoryUser, bool> ActiveDirectoryUsers { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private bool _isBusy { get; set; }
         private bool _notSelected { get; set; }
+        private bool _isSelectedAll { get; set; }
+        private bool _isBusy { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -36,7 +38,8 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                ActiveDirectoryUsers = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
+                var users = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
+                ActiveDirectoryUsers = users.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)
             {
@@ -50,9 +53,22 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
+                if (!ActiveDirectoryUsers.Any(x => x.Value == true))
+                {
+                    _notSelected = true;
+                    return;
+                }
+
+                if (_isBusy)
+                {
+                    return;
+                }
+
                 _isBusy = true;
-                await LdapService.AddAdUsersAsync(ActiveDirectoryUsers);
+                var users = ActiveDirectoryUsers.Where(x => x.Value).Select(x => x.Key).ToList();
+                await LdapService.AddAdUsersAsync(users);
                 NavigationManager.NavigateTo("/Employees", true);
+                await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             catch (Exception ex)
             {
@@ -64,6 +80,18 @@ namespace HES.Web.Pages.Employees
             {
                 _isBusy = false;
             }
+        }
+
+        private void OnRowSelected(ActiveDirectoryUser key)
+        {
+            ActiveDirectoryUsers[key] = !ActiveDirectoryUsers[key];
+        }
+
+        public void OnChangeCheckAll(ChangeEventArgs args)
+        {
+            _isSelectedAll = !_isSelectedAll;
+            foreach (var key in ActiveDirectoryUsers.Keys.ToList())
+                ActiveDirectoryUsers[key] = _isSelectedAll;
         }
     }
 }
