@@ -1,29 +1,35 @@
-﻿using HES.Core.Enums;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.Group;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class ManageEmployees : ComponentBase
+    public partial class RemoveEmployee : ComponentBase
     {
         [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public ILogger<ManageEmployees> Logger { get; set; }
+        [Inject] public ILogger<RemoveEmployee> Logger { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string GroupId { get; set; }
-        List<GroupEmployee> GroupEmployees { get; set; }
+        [Parameter] public string EmployeeId { get; set; }
+
+        public GroupMembership GroupMembership { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
-                GroupEmployees = await GroupService.GetMappedGroupEmployeesAsync(GroupId);
+                GroupMembership = await GroupService.GetGroupMembershipAsync(EmployeeId, GroupId);
+
+                if (GroupMembership == null)
+                {
+                    throw new Exception("GroupMembership not found");
+                }
+
             }
             catch (Exception ex)
             {
@@ -33,33 +39,23 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        public async Task SaveAsync()
+        public async Task DeleteAsync()
         {
             try
             {
-                await GroupService.ManageEmployeesAsync(GroupEmployees, GroupId);
+                await GroupService.RemoveEmployeeFromGroupAsync(EmployeeId, GroupId);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Members updated.", ToastLevel.Success);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
-
+                ToastService.ShowToast("Employee removed.", ToastLevel.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
+            }
+            finally
+            {
                 await MainWrapper.ModalDialogComponent.CloseAsync();
             }
-        }
-
-        public void RowSelected(string employeeId)
-        {
-            var member = GroupEmployees.FirstOrDefault(x => x.Employee.Id == employeeId);
-            member.InGroup = !member.InGroup;
-        }
-
-        public void OnChangeCheckAll(ChangeEventArgs args)
-        {
-            GroupEmployees.ForEach(x => x.InGroup = (bool)args.Value);
         }
     }
 }

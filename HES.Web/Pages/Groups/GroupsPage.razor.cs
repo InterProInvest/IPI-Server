@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
 using HES.Web.Components;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -15,11 +17,8 @@ namespace HES.Web.Pages.Groups
 {
     public partial class GroupsPage : ComponentBase
     {
-        [Inject] 
-        public IGroupService GroupService { get; set; }
-        
-        [Inject] 
-        public ILogger<GroupsPage> Logger { get; set; }
+        [Inject] public IGroupService GroupService { get; set; }
+        [Inject] public ILogger<GroupsPage> Logger { get; set; }
 
 
         public int DisplayRows { get; set; }
@@ -48,6 +47,10 @@ namespace HES.Web.Pages.Groups
             await CreateBreadcrumbsAsync();
         }
 
+        private void GroupDetails()
+        {
+            NavigationManager.NavigateTo($"/Groups/Details?id={CurrentGroupId}", true);
+        }
 
         #region SortTable
 
@@ -145,7 +148,8 @@ namespace HES.Web.Pages.Groups
 
         public void RowSelected(string groupId)
         {
-            CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
+            //CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
+            CurrentGroupId = groupId;
         }
 
         #region PageUiMethods
@@ -208,20 +212,6 @@ namespace HES.Web.Pages.Groups
 
             await MainWrapper.ModalDialogComponent.ShowAsync("Delete group", body);
         }
-
-        public async Task OpenModalManageEmployees()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(ManageEmployees));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, RefreshTable));
-                builder.AddAttribute(2, "GroupId", CurrentGroupId);
-                builder.CloseComponent();
-            };
-
-            await MainWrapper.ModalDialogComponent.ShowAsync("Manage employees", body);
-        }
-
         #endregion
     }
 }

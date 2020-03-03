@@ -1,7 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models.ActiveDirectory;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -12,37 +11,25 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class AddGroup : ComponentBase
+    public partial class AddEmployee : ComponentBase
     {
-        [Inject] public ILdapService LdapService { get; set; }
         [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
-        [Inject] public ILogger<AddGroup> Logger { get; set; }
+        [Inject] public ILogger<AddEmployee> Logger { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
+        [Parameter] public string GroupId { get; set; }
 
-        public Dictionary<Group, bool> Groups = new Dictionary<Group, bool>();
+        public Dictionary<Employee, bool> Employees = new Dictionary<Employee, bool>();
 
-        private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private bool _onlyUserGroups { get; set; }
         private bool _notSelected { get; set; }
         private bool _isSelectedAll { get; set; }
         private bool _isBusy { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            var domain = await AppSettingsService.GetDomainSettingsAsync();
-            if (domain != null)
-            {
-                _login.Server = domain.IpAddress;
-            }
-        }
-
-        private async Task Connect()
-        {
             try
             {
-                var groups = LdapService.GetAdGroups(_login.Server, _login.UserName, _login.Password);
-                Groups = groups.ToDictionary(k => k, v => false);
+                var employees = await GroupService.GetEmployeesSkipExistingAsync(GroupId);
+                Employees = employees.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)
             {
@@ -52,11 +39,11 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        private async Task AddAsync()
+        public async Task AddAsync()
         {
             try
             {
-                if (!Groups.Any(x => x.Value == true))
+                if (!Employees.Any(x => x.Value == true))
                 {
                     _notSelected = true;
                     return;
@@ -68,20 +55,11 @@ namespace HES.Web.Pages.Groups
                 }
 
                 _isBusy = true;
-                List<Group> groups;
+                var employeeIds = Employees.Where(x => x.Value).Select(x => x.Key.Id).ToList();
 
-                if (_onlyUserGroups)
-                {
-                    groups = Groups.Keys.Where(x => x.IsUserGroup).ToList();
-                }
-                else
-                {
-                    groups = Groups.Where(x => x.Value).Select(x => x.Key).ToList();
-                }
-
-                await GroupService.CreateGroupRangeAsync(groups);
+                await GroupService.AddEmployeesToGroupAsync(employeeIds, GroupId);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Groups added.", ToastLevel.Success);
+                ToastService.ShowToast("Employee added.", ToastLevel.Success);
                 await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             catch (Exception ex)
@@ -96,16 +74,16 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        private void OnRowSelected(Group key)
+        private void OnRowSelected(Employee key)
         {
-            Groups[key] = !Groups[key];
+            Employees[key] = !Employees[key];
         }
 
         public void OnChangeCheckAll(ChangeEventArgs args)
         {
             _isSelectedAll = !_isSelectedAll;
-            foreach (var key in Groups.Keys.ToList())
-                Groups[key] = _isSelectedAll;
+            foreach (var key in Employees.Keys.ToList())
+                Employees[key] = _isSelectedAll;
         }
     }
 }

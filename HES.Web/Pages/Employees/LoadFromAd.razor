@@ -1,0 +1,20 @@
+﻿@using HES.Web.Components
+
+<button class="btn btn-primary" @onclick="Show">
+    <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    <span>Add from AD</span>
+</button>
+
+
+@code {
+    private async Task Show()
+    {
+        RenderFragment body = (builder) =>
+        {
+            builder.OpenComponent(0, typeof(AddEmployee));
+            builder.CloseComponent();
+        };
+
+        await MainWrapper.ModalDialogComponent.ShowAsync("Manage employees", body);
+    }
+}

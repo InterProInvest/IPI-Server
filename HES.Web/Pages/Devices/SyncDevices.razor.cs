@@ -10,7 +10,6 @@ namespace HES.Web.Pages.Devices
 {
     public partial class SyncDevices : ComponentBase
     {
-        [Inject] NavigationManager NavigationManager { get; set; }
         [Inject] IDeviceService DeviceService { get; set; }
         [Inject] ILogger<SyncDevices> Logger { get; set; }
 

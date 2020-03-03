@@ -1,5 +1,4 @@
-﻿using HES.Core.Entities;
-using HES.Core.Enums;
+﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
 using HES.Web.Components;
@@ -10,20 +9,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Groups
+namespace HES.Web.Pages.Employees
 {
-    public partial class AddGroup : ComponentBase
+    public partial class AddEmployee : ComponentBase
     {
         [Inject] public ILdapService LdapService { get; set; }
-        [Inject] public IGroupService GroupService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
-        [Inject] public ILogger<AddGroup> Logger { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
+        [Inject] public ILogger<AddEmployee> Logger { get; set; }
 
-        public Dictionary<Group, bool> Groups = new Dictionary<Group, bool>();
+        public Dictionary<ActiveDirectoryUser, bool> ActiveDirectoryUsers { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private bool _onlyUserGroups { get; set; }
         private bool _notSelected { get; set; }
         private bool _isSelectedAll { get; set; }
         private bool _isBusy { get; set; }
@@ -41,8 +37,8 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                var groups = LdapService.GetAdGroups(_login.Server, _login.UserName, _login.Password);
-                Groups = groups.ToDictionary(k => k, v => false);
+                var users = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
+                ActiveDirectoryUsers = users.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)
             {
@@ -56,7 +52,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                if (!Groups.Any(x => x.Value == true))
+                if (!ActiveDirectoryUsers.Any(x => x.Value == true))
                 {
                     _notSelected = true;
                     return;
@@ -68,20 +64,9 @@ namespace HES.Web.Pages.Groups
                 }
 
                 _isBusy = true;
-                List<Group> groups;
-
-                if (_onlyUserGroups)
-                {
-                    groups = Groups.Keys.Where(x => x.IsUserGroup).ToList();
-                }
-                else
-                {
-                    groups = Groups.Where(x => x.Value).Select(x => x.Key).ToList();
-                }
-
-                await GroupService.CreateGroupRangeAsync(groups);
-                await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Groups added.", ToastLevel.Success);
+                var users = ActiveDirectoryUsers.Where(x => x.Value).Select(x => x.Key).ToList();
+                await LdapService.AddAdUsersAsync(users);
+                NavigationManager.NavigateTo("/Employees", true);
                 await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             catch (Exception ex)
@@ -96,16 +81,16 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        private void OnRowSelected(Group key)
+        private void OnRowSelected(ActiveDirectoryUser key)
         {
-            Groups[key] = !Groups[key];
+            ActiveDirectoryUsers[key] = !ActiveDirectoryUsers[key];
         }
 
         public void OnChangeCheckAll(ChangeEventArgs args)
         {
             _isSelectedAll = !_isSelectedAll;
-            foreach (var key in Groups.Keys.ToList())
-                Groups[key] = _isSelectedAll;
+            foreach (var key in ActiveDirectoryUsers.Keys.ToList())
+                ActiveDirectoryUsers[key] = _isSelectedAll;
         }
     }
 }

@@ -9,7 +9,11 @@ namespace HES.Core.Entities
         /// </summary>
         [ForeignKey("Groups")]
         public string GroupId { get; set; }
+
         [ForeignKey("Employees")]
         public string EmployeeId { get; set; }
+
+        [ForeignKey("EmployeeId")]
+        public Employee Employee { get; set; }
     }
 }
