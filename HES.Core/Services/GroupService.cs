@@ -50,7 +50,7 @@ namespace HES.Core.Services
                     .Include(x => x.GroupMemberships)
                     .Where(x => x.Name.ToLower().Contains(search) ||
                         x.Email.ToLower().Contains(search) ||
-                        x.Description.ToLower().Contains(search))
+                        x.GroupMemberships.Count.ToString().Contains(search))
                     .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
                     .Skip(skip)
                     .Take(take)
@@ -105,28 +105,29 @@ namespace HES.Core.Services
 
         public async Task<List<GroupMembership>> GetGruopMembersAsync(string groupId)
         {
-            return await _groupMembershipRepository.Query().Where(x => x.GroupId == groupId).ToListAsync();
+            return await _groupMembershipRepository
+                .Query()
+                .Include(x => x.Employee)
+                .Where(x => x.GroupId == groupId)
+                .ToListAsync();
         }
 
-        public async Task<List<GroupEmployee>> GetMappedGroupEmployeesAsync(string groupId)
+        public async Task<GroupMembership> GetGroupMembershipAsync(string employeeId, string groupId)
         {
-            var employees = await _employeeRepository.Query().ToListAsync();
-            var groupMembers = await GetGruopMembersAsync(groupId);
+            return await _groupMembershipRepository
+                .Query()
+                .Include(x => x.Employee)
+                .FirstOrDefaultAsync(x => x.GroupId == groupId && x.EmployeeId == employeeId);
+        }
 
-            var mapped = new List<GroupEmployee>();
+        public async Task<List<Employee>> GetEmployeesSkipExistingAsync(string groupId)
+        {
+            var members = await GetGruopMembersAsync(groupId);
 
-            foreach (var employee in employees)
-            {
-                var inGroup = groupMembers.Any(x => x.EmployeeId == employee.Id);
-
-                mapped.Add(new GroupEmployee()
-                {
-                    Employee = employee,
-                    InGroup = inGroup
-                });
-            }
-
-            return mapped;
+            return await _employeeRepository
+                .Query()
+                .Where(x => !members.Select(s => s.EmployeeId).Contains(x.Id))
+                .ToListAsync();
         }
 
         public async Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId)
@@ -189,6 +190,27 @@ namespace HES.Core.Services
                 }
                 transactionScope.Complete();
             }
+        }
+
+        public async Task RemoveEmployeeFromGroupAsync(string employeeId, string groupId)
+        {
+            if (employeeId == null)
+            {
+                throw new ArgumentNullException(nameof(employeeId));
+            }
+
+            if (groupId == null)
+            {
+                throw new ArgumentNullException(nameof(groupId));
+            }
+
+            var groupMembership = await _groupMembershipRepository.GetByCompositeKeyAsync(new object[] { groupId, employeeId });
+            if (groupMembership == null)
+            {
+                throw new Exception("GroupMembership does not exist.");
+            }
+
+            await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
         public async Task ManageEmployeesAsync(List<GroupEmployee> groupEmployees, string groupId)

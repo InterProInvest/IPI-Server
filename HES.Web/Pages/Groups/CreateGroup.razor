@@ -13,7 +13,7 @@
     </div>
     <div class="form-group">
         <label class="control-label text-gray">Description</label>
-        <InputText id="apiKey" @bind-Value="Group.Description" class="form-control text-navyblue" />
+        <InputTextArea id="apiKey" @bind-Value="Group.Description" class="form-control text-navyblue" />
         <ValidationMessage For="@(() => Group.Description)" class="text-danger" />
     </div>
     <div class="form-group text-right mb-0">

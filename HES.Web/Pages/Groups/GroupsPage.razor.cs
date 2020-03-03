@@ -1,33 +1,30 @@
-﻿using System;
-using System.Timers;
+﻿using HES.Core.Entities;
 using HES.Core.Enums;
-using HES.Core.Entities;
-using HES.Web.Components;
 using HES.Core.Interfaces;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using HES.Core.Models.Web.Breadcrumb;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace HES.Web.Pages.Groups
 {
     public partial class GroupsPage : ComponentBase
     {
-        [Inject] 
-        public IGroupService GroupService { get; set; }
-        
-        [Inject] 
-        public ILogger<GroupsPage> Logger { get; set; }
+        [Inject] public IGroupService GroupService { get; set; }
+        [Inject] public ILogger<GroupsPage> Logger { get; set; }
 
         public IList<Group> Groups { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             _timer = new Timer(700);
-            _timer.Elapsed += async (sender, args) => { await FilterRecordsAsync();};
+            _timer.Elapsed += async (sender, args) => { await FilterRecordsAsync(); };
             _timer.AutoReset = false;
 
             await InitializeComponentAsync();
@@ -38,6 +35,10 @@ namespace HES.Web.Pages.Groups
             await CreateBreadcrumbsAsync();
         }
 
+        private void GroupDetails()
+        {
+            NavigationManager.NavigateTo($"/Groups/Details?id={CurrentGroupId}", true);
+        }
 
         #region SortTable
 
@@ -223,7 +224,8 @@ namespace HES.Web.Pages.Groups
 
         public void RowSelected(string groupId)
         {
-            CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
+            //CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
+            CurrentGroupId = groupId;
         }
 
 
@@ -286,19 +288,6 @@ namespace HES.Web.Pages.Groups
             };
 
             await MainWrapper.ModalDialogComponent.ShowAsync("Delete group", body);
-        }
-
-        public async Task OpenModalManageEmployees()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(ManageEmployees));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
-                builder.AddAttribute(2, "GroupId", CurrentGroupId);
-                builder.CloseComponent();
-            };
-
-            await MainWrapper.ModalDialogComponent.ShowAsync("Manage employees", body);
         }
 
         #endregion

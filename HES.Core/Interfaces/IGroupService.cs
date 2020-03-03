@@ -18,9 +18,11 @@ namespace HES.Core.Interfaces
         Task EditGroupAsync(Group group);
         Task DeleteGroupAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);
-        Task<List<GroupEmployee>> GetMappedGroupEmployeesAsync(string groupId);
+        Task<GroupMembership> GetGroupMembershipAsync(string employeeId, string groupId);
+        Task<List<Employee>> GetEmployeesSkipExistingAsync(string groupId);
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
+        Task RemoveEmployeeFromGroupAsync(string employeeId, string groupId);
         Task ManageEmployeesAsync(List<GroupEmployee> groupEmployees, string groupId);
         Task<bool> CheckGroupNameAsync(string name);
     }

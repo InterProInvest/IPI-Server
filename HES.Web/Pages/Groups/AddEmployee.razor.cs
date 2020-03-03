@@ -1,6 +1,6 @@
-﻿using HES.Core.Enums;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models.ActiveDirectory;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -9,36 +9,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Employees
+namespace HES.Web.Pages.Groups
 {
     public partial class AddEmployee : ComponentBase
     {
-        [Inject] public ILdapService LdapService { get; set; }
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
+        [Parameter] public EventCallback Refresh { get; set; }
+        [Parameter] public string GroupId { get; set; }
 
-        public Dictionary<ActiveDirectoryUser, bool> ActiveDirectoryUsers { get; set; }
+        public Dictionary<Employee, bool> Employees = new Dictionary<Employee, bool>();
 
-        private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
         private bool _notSelected { get; set; }
         private bool _isSelectedAll { get; set; }
         private bool _isBusy { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            var domain = await AppSettingsService.GetDomainSettingsAsync();
-            if (domain != null)
-            {
-                _login.Server = domain.IpAddress;
-            }
-        }
-
-        private async Task Connect()
-        {
             try
             {
-                var users = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
-                ActiveDirectoryUsers = users.ToDictionary(k => k, v => false);
+                var employees = await GroupService.GetEmployeesSkipExistingAsync(GroupId);
+                Employees = employees.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)
             {
@@ -48,11 +39,11 @@ namespace HES.Web.Pages.Employees
             }
         }
 
-        private async Task AddAsync()
+        public async Task AddAsync()
         {
             try
             {
-                if (!ActiveDirectoryUsers.Any(x => x.Value == true))
+                if (!Employees.Any(x => x.Value == true))
                 {
                     _notSelected = true;
                     return;
@@ -64,9 +55,11 @@ namespace HES.Web.Pages.Employees
                 }
 
                 _isBusy = true;
-                var users = ActiveDirectoryUsers.Where(x => x.Value).Select(x => x.Key).ToList();
-                await LdapService.AddAdUsersAsync(users);
-                NavigationManager.NavigateTo("/Employees", true);
+                var employeeIds = Employees.Where(x => x.Value).Select(x => x.Key.Id).ToList();
+
+                await GroupService.AddEmployeesToGroupAsync(employeeIds, GroupId);
+                await Refresh.InvokeAsync(this);
+                ToastService.ShowToast("Employee added.", ToastLevel.Success);
                 await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             catch (Exception ex)
@@ -81,16 +74,16 @@ namespace HES.Web.Pages.Employees
             }
         }
 
-        private void OnRowSelected(ActiveDirectoryUser key)
+        private void OnRowSelected(Employee key)
         {
-            ActiveDirectoryUsers[key] = !ActiveDirectoryUsers[key];
+            Employees[key] = !Employees[key];
         }
 
         public void OnChangeCheckAll(ChangeEventArgs args)
         {
             _isSelectedAll = !_isSelectedAll;
-            foreach (var key in ActiveDirectoryUsers.Keys.ToList())
-                ActiveDirectoryUsers[key] = _isSelectedAll;
+            foreach (var key in Employees.Keys.ToList())
+                Employees[key] = _isSelectedAll;
         }
     }
 }
