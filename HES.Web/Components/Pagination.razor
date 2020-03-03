@@ -1,0 +1,35 @@
+﻿<div class="d-flex justify-content-between user-select-none">
+    @if (DisplayRecordsSelector)
+    {
+        <div class="d-flex">
+            <label class="col-form-label mr-2">Show entries</label>
+            <div>
+                <select @onchange="OnChangeShowEntries" class="form-control">
+                    <option selected value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+    }
+    @if (DisplayTotalRecordsInfo)
+    {
+        <div class="d-flex">
+            <label class="col-form-label"> Showing @(CurrentPage == 1 ? CurrentPage : CurrentPage * DisplayRows - DisplayRows + 1) to @(CurrentPage == TotalPages ? TotalRecords : CurrentPage * DisplayRows) of @TotalRecords entries </label>
+        </div>
+    }
+    <div class="c-pointer">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                @foreach (var link in Links)
+                {
+                    <li @onclick="@(async() => await SelectedPageLinkAsync(link))"
+                        class="page-item @(link.Enabled ? null : "disabled") @(link.Active ? "active" : null)">
+                        <span class="page-link" href="#">@link.Text</span>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>
