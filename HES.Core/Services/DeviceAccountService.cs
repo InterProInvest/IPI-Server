@@ -21,39 +21,39 @@ namespace HES.Core.Services
             return _deviceAccountRepository.Query();
         }
 
-        public async Task<DeviceAccount> GetByIdAsync(string accountId)
+        public Task<DeviceAccount> GetByIdAsync(string accountId)
         {
-            return await _deviceAccountRepository.GetByIdAsync(accountId);
+            return _deviceAccountRepository.GetByIdAsync(accountId);
         }
 
-        public async Task<DeviceAccount> AddAsync(DeviceAccount deviceAccount)
+        public Task<DeviceAccount> AddAsync(DeviceAccount deviceAccount)
         {
-            return await _deviceAccountRepository.AddAsync(deviceAccount);
+            return _deviceAccountRepository.AddAsync(deviceAccount);
         }
 
-        public async Task<IList<DeviceAccount>> AddRangeAsync(IList<DeviceAccount> deviceAccounts)
+        public Task<IList<DeviceAccount>> AddRangeAsync(IList<DeviceAccount> deviceAccounts)
         {
-            return await _deviceAccountRepository.AddRangeAsync(deviceAccounts);
+            return _deviceAccountRepository.AddRangeAsync(deviceAccounts);
         }
 
-        public async Task UpdateOnlyPropAsync(DeviceAccount deviceAccount, string[] properties)
+        public Task UpdateOnlyPropAsync(DeviceAccount deviceAccount, string[] properties)
         {
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            return _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
         }
 
-        public async Task UpdateOnlyPropAsync(IList<DeviceAccount> deviceAccounts, string[] properties)
+        public Task UpdateOnlyPropAsync(IList<DeviceAccount> deviceAccounts, string[] properties)
         {
-            await _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccounts, properties);
+            return _deviceAccountRepository.UpdateOnlyPropAsync(deviceAccounts, properties);
         }
 
-        public async Task DeleteAsync(DeviceAccount deviceAccount)
+        public Task DeleteAsync(DeviceAccount deviceAccount)
         {
-            await _deviceAccountRepository.DeleteAsync(deviceAccount);
+            return _deviceAccountRepository.DeleteAsync(deviceAccount);
         }
 
-        public async Task DeleteRangeAsync(IList<DeviceAccount> deviceAccounts)
+        public Task DeleteRangeAsync(IList<DeviceAccount> deviceAccounts)
         {
-            await _deviceAccountRepository.DeleteRangeAsync(deviceAccounts);
+            return _deviceAccountRepository.DeleteRangeAsync(deviceAccounts);
         }
 
         public async Task RemoveAllAccountsByEmployeeIdAsync(string employeeId)
