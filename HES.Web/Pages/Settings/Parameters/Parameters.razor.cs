@@ -41,8 +41,8 @@ namespace HES.Web.Pages.Settings.Parameters
         private async Task CreateBreadcrumbs()
         {
             var list = new List<Breadcrumb>() {
-                new Breadcrumb () { Active = "active", Content = "Settings" },
-                new Breadcrumb () { Active = "active", Content = "Parameters" }
+                new Breadcrumb () { Active = true, Content = "Settings" },
+                new Breadcrumb () { Active = true, Content = "Parameters" }
             };
 
             await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);

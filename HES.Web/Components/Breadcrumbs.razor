@@ -6,7 +6,14 @@
         <ol class="breadcrumb">
             @foreach (var item in Items)
             {
-                <li class="breadcrumb-item @item.Active">@item.Content</li>
+                if (item.Active)
+                {
+                    <li class="breadcrumb-item active">@item.Content</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item"><a href="@item.Link">@item.Content</a></li>
+                }
             }
         </ol>
     </nav>

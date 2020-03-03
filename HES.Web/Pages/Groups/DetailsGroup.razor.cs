@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Breadcrumb;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,11 @@ namespace HES.Web.Pages.Groups
             }
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await CreateBreadcrumbsAsync();
+        }
+
         private async Task LoadGroupMembershipsAsync()
         {
             Group = await GroupService.GetGroupByIdAsync(GroupId);
@@ -41,6 +47,16 @@ namespace HES.Web.Pages.Groups
                 NavigationManager.NavigateTo("/NotFound");
             }
             GroupMemberships = await GroupService.GetGruopMembersAsync(GroupId);
+        }
+
+        private async Task CreateBreadcrumbsAsync()
+        {
+            var items = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = false, Link="/Groups", Content = "Groups" },
+                new Breadcrumb () { Active = true, Content = "Details" }
+            };
+            await BreadcrumbsWrapper.BreadcrumbsComponent.ShowAsync(items);
         }
 
         private async Task OpenModalAddEmployees()

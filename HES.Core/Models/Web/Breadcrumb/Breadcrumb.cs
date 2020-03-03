@@ -2,7 +2,8 @@
 {
     public class Breadcrumb
     {
-        public string Active { get; set; }
+        public bool Active { get; set; }
+        public string Link { get; set; }
         public string Content { get; set; }
     }
 }

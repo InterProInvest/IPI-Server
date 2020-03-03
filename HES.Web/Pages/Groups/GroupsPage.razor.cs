@@ -1,5 +1,4 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
 using HES.Web.Components;
@@ -8,8 +7,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -19,11 +16,11 @@ namespace HES.Web.Pages.Groups
     {
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<GroupsPage> Logger { get; set; }
-
-
+        
         public int DisplayRows { get; set; }
         public int CurrentPage { get; set; }
         public int TotalRecords { get; set; }
+
         public IList<Group> Groups { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -47,18 +44,12 @@ namespace HES.Web.Pages.Groups
             await CreateBreadcrumbsAsync();
         }
 
-        private void GroupDetails()
-        {
-            NavigationManager.NavigateTo($"/Groups/Details?id={CurrentGroupId}", true);
-        }
-
         #region SortTable
 
         private bool _isSortedAscending;
         private string _activeSortColumn;
         public string CurrentGroupId { get; set; }
-
-
+        
         public async Task<IList<Group>> SortRecords(string columnName, ListSortDirection dir)
         {
             return await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, dir, SearchString, columnName);
@@ -117,10 +108,7 @@ namespace HES.Web.Pages.Groups
         }
 
         #endregion
-
-        
-
-
+                
         public async Task RefreshTable(int currentPage, int displayRows)
         {
             TotalRecords = await GroupService.GetCountAsync(SearchString);
@@ -142,23 +130,24 @@ namespace HES.Web.Pages.Groups
         public async Task LoadGroupsAsync()
         {
             Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, ListSortDirection.Ascending, SearchString);
-            CurrentGroupId = Groups.First().Id;
             StateHasChanged();
         }
 
-        public void RowSelected(string groupId)
+        public void OnRowSelected(string groupId)
         {
-            //CurrentGroupId = groupId != CurrentGroupId ? groupId : null;
             CurrentGroupId = groupId;
         }
 
-        #region PageUiMethods
+        private void GroupDetails()
+        {
+            NavigationManager.NavigateTo($"/Groups/Details?id={CurrentGroupId}", true);
+        }
 
         public async Task CreateBreadcrumbsAsync()
         {
             var items = new List<Breadcrumb>()
             {
-                new Breadcrumb () { Active = "active", Content = "Groups" }
+                new Breadcrumb () { Active = true, Content = "Groups" }
             };
             await BreadcrumbsWrapper.BreadcrumbsComponent.ShowAsync(items);
         }
@@ -212,6 +201,5 @@ namespace HES.Web.Pages.Groups
 
             await MainWrapper.ModalDialogComponent.ShowAsync("Delete group", body);
         }
-        #endregion
     }
 }

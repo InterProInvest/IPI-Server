@@ -1,5 +1,4 @@
-﻿@using HES.Core.Enums
-@using HES.Web.Components
+﻿@using HES.Web.Components
 
 @if (Groups == null)
 {
@@ -55,7 +54,7 @@ else
             <tbody>
                 @foreach (var item in Groups)
                 {
-                    <tr @onclick="(() => RowSelected(item.Id))" @ondblclick="GroupDetails" class="table-row @(CurrentGroupId == item.Id ? "selected-row" : string.Empty)">
+                    <tr @onclick="(() => OnRowSelected(item.Id))" @ondblclick="GroupDetails" class="table-row @(CurrentGroupId == item.Id ? "selected-row" : string.Empty)">
                         <td title="@item.Description">
                             @item.Name
                         </td>
@@ -70,11 +69,8 @@ else
             </tbody>
         </table>
     </div>
-
-
-    <Pagination
-        DisplayRecordsSelector="true"
-        DisplayTotalRecordsInfo="true" 
-        SelectedPageAsync="RefreshTable" 
-        TotalRecords="TotalRecords" />
+    <Pagination DisplayRecordsSelector="true"
+                DisplayTotalRecordsInfo="true"
+                SelectedPageAsync="RefreshTable"
+                TotalRecords="TotalRecords" />
 }
