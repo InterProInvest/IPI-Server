@@ -60,7 +60,8 @@
             </nav>
             <!-- Main -->
             <div class="custom-content p-4">  
-                <component type="typeof(MainWrapper)" render-mode="Server"/>
+                @*<component type="typeof(MainWrapper)" render-mode="Server"/>*@
+                <component type="typeof(ModalDialog)" render-mode="Server"/>
                 <component type="typeof(Toast)" render-mode="ServerPrerendered" />
                 <partial name="_SpinnerPartial" />
                 @RenderBody()

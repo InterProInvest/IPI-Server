@@ -7,6 +7,8 @@
 
 
 @code {
+    [Inject] public IModalDialogService ModalDialogService { get; set; }
+
     private async Task Show()
     {
         RenderFragment body = (builder) =>
@@ -15,6 +17,6 @@
             builder.CloseComponent();
         };
 
-        await MainWrapper.ModalDialogComponent.ShowAsync("Manage employees", body);
+        await ModalDialogService.ShowAsync("Manage employees", body);
     }
 }

@@ -15,6 +15,7 @@ namespace HES.Web.Pages.Groups
     {
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<DetailsGroup> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Parameter] public string GroupId { get; set; }
 
         public Group Group { get; set; }
@@ -30,7 +31,7 @@ namespace HES.Web.Pages.Groups
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
         }
 
@@ -69,7 +70,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await MainWrapper.ModalDialogComponent.ShowAsync("Add employees", body);
+            await ModalDialogService.ShowAsync("Add employees", body);
         }
 
         private async Task OpenModalRemoveEmployee(string employeeId)
@@ -83,7 +84,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await MainWrapper.ModalDialogComponent.ShowAsync("Remove employee", body);
+            await ModalDialogService.ShowAsync("Remove employee", body);
         }
     }
 }

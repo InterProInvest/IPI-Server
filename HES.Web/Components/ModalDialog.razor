@@ -1,13 +1,13 @@
-﻿<div class="modal" id="modalDialog" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+﻿<div class="modal" id="genericModalDialog" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered @ModalSize" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-navyblue" id="modalDialogTitle">@ModalTitle</h5>
-                <button type="button" class="close" @onclick="CloseAsync" aria-label="Close">
+                <h5 class="modal-title text-navyblue">@ModalTitle</h5>
+                <button type="button" class="close" @onclick="@(async ()=> await CloseAsync())" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div id="modalBody" class="modal-body">
+            <div class="modal-body">
                 @ModalBody
             </div>
         </div>

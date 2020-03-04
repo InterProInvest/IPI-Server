@@ -18,6 +18,7 @@ namespace HES.Web.Pages.Groups
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<AddGroup> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
         public Dictionary<Group, bool> Groups = new Dictionary<Group, bool>();
@@ -48,7 +49,7 @@ namespace HES.Web.Pages.Groups
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
         }
 
@@ -82,17 +83,16 @@ namespace HES.Web.Pages.Groups
                 await GroupService.CreateGroupRangeAsync(groups);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
             }
             finally
             {
                 _isBusy = false;
+                await ModalDialogService.CloseAsync();
             }
         }
 

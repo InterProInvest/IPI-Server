@@ -13,6 +13,7 @@ namespace HES.Web.Pages.Groups
     {
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<CreateGroup> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
         public Group Group = new Group();
@@ -34,13 +35,13 @@ namespace HES.Web.Pages.Groups
                 await GroupService.CreateGroupAsync(Group);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Group created.", ToastLevel.Success);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
         }
     }
