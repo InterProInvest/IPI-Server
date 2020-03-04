@@ -49,7 +49,7 @@ namespace HES.Core.Services
 
                         try
                         {
-                            activeDirectoryUser.Groups = userPrincipal.GetGroups()
+                            activeDirectoryUser.Groups = userPrincipal.GetGroups(context)
                                 .Select(s => new Group()
                                 {
                                     Id = s.Guid.ToString(),
