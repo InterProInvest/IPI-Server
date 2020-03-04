@@ -70,7 +70,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add employees", body);
+            await ModalDialogService.ShowAsync("Add employees", body, ModalDialogSize.Large);
         }
 
         private async Task OpenModalRemoveEmployee(string employeeId)

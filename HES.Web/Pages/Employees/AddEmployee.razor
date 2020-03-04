@@ -11,7 +11,7 @@
         <EditForm Model="@_login" OnValidSubmit="Connect">
             <DataAnnotationsValidator />
             <div class="form-group">
-                <label class="control-label text-gray">UserName</label>
+                <label class="control-label text-gray">User Name</label>
                 <InputText id="userName" @bind-Value="_login.UserName" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => _login.UserName)" class="text-danger" />
             </div>

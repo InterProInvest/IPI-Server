@@ -159,7 +159,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add group from AD", body);
+            await ModalDialogService.ShowAsync("Add group", body);
         }
 
         public async Task OpenModalGreateGroup()

@@ -49,8 +49,12 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var group in Groups.Where(x => x.Key.IsUserGroup == _onlyUserGroups))
+            @foreach (var group in Groups)
             {
+                if (_onlyUserGroups && !group.Key.IsUserGroup)
+                {
+                    continue;
+                }
                 <tr @onclick="@(() => OnRowSelected(group.Key))">
                     <td>
                         <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
