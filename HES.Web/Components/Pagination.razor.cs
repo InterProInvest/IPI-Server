@@ -40,6 +40,14 @@ namespace HES.Web.Components
 
             for (int i = 1; i <= TotalPages; i++)
             {
+
+                //Buttons from [1] to [7]
+                if (TotalPages <= 7)
+                {
+                    Links.Add(new PageLink(i) { Active = CurrentPage == i });
+                    continue;
+                }
+
                 //Buttons from [TotalPages - 3] to [Last]
                 if (i >= TotalPages - 4 && CurrentPage >= TotalPages - 3)
                 {
