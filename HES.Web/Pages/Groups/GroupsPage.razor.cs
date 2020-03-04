@@ -109,22 +109,20 @@ namespace HES.Web.Pages.Groups
 
         #endregion
                 
+        //Refresh table from pagination
         public async Task RefreshTable(int currentPage, int displayRows)
         {
             TotalRecords = await GroupService.GetCountAsync(SearchString);
             DisplayRows = displayRows;
             CurrentPage = currentPage;
-
             await LoadGroupsAsync();
+            
         }
 
+        //Internal refresh for CRUD
         public async Task RefreshTable()
         {
-            TotalRecords = await GroupService.GetCountAsync(SearchString);
-            CurrentPage = 1;
-            DisplayRows = 10;
-
-            await LoadGroupsAsync();
+            await RefreshTable(1, 10);
         }
 
         public async Task LoadGroupsAsync()
