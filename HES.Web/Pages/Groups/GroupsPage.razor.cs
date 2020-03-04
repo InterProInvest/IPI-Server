@@ -16,7 +16,8 @@ namespace HES.Web.Pages.Groups
     {
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<GroupsPage> Logger { get; set; }
-        
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+
         public int DisplayRows { get; set; }
         public int CurrentPage { get; set; }
         public int TotalRecords { get; set; }
@@ -49,7 +50,7 @@ namespace HES.Web.Pages.Groups
         private bool _isSortedAscending;
         private string _activeSortColumn;
         public string CurrentGroupId { get; set; }
-        
+
         public async Task<IList<Group>> SortRecords(string columnName, ListSortDirection dir)
         {
             return await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, dir, SearchString, columnName);
@@ -116,7 +117,6 @@ namespace HES.Web.Pages.Groups
             DisplayRows = displayRows;
             CurrentPage = currentPage;
             await LoadGroupsAsync();
-            
         }
 
         //Internal refresh for CRUD
@@ -159,7 +159,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await MainWrapper.ModalDialogComponent.ShowAsync("Add group from AD", body);
+            await ModalDialogService.ShowAsync("Add group", body);
         }
 
         public async Task OpenModalGreateGroup()
@@ -171,7 +171,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await MainWrapper.ModalDialogComponent.ShowAsync("Create group", body);
+            await ModalDialogService.ShowAsync("Create group", body);
         }
 
         public async Task OpenModalEditGroup()
@@ -184,7 +184,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await MainWrapper.ModalDialogComponent.ShowAsync("Edit group", body);
+            await ModalDialogService.ShowAsync("Edit group", body);
         }
 
         public async Task OpenModalDeleteGroup()
@@ -197,7 +197,7 @@ namespace HES.Web.Pages.Groups
                 builder.CloseComponent();
             };
 
-            await MainWrapper.ModalDialogComponent.ShowAsync("Delete group", body);
+            await ModalDialogService.ShowAsync("Delete group", body);
         }
     }
 }

@@ -17,7 +17,7 @@
         <ValidationMessage For="@(() => Group.Description)" class="text-danger" />
     </div>
     <div class="form-group text-right mb-0">
-        <button type="button" class="btn btn-secondary" @onclick="@(async () => await MainWrapper.ModalDialogComponent.CloseAsync())">Cancel</button>
+        <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
         <input type="submit" value="Create" class="btn btn-primary" />
     </div>
 </EditForm>

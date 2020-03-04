@@ -11,6 +11,7 @@ namespace HES.Web.Pages.Groups
 {
     public partial class DeleteGroup : ComponentBase
     {
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<CreateGroup> Logger { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
@@ -33,7 +34,7 @@ namespace HES.Web.Pages.Groups
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
         }
 
@@ -52,7 +53,7 @@ namespace HES.Web.Pages.Groups
             }
             finally
             {
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
         }
     }

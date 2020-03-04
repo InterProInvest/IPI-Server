@@ -16,6 +16,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public ILdapService LdapService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
 
         public Dictionary<ActiveDirectoryUser, bool> ActiveDirectoryUsers { get; set; }
 
@@ -44,7 +45,7 @@ namespace HES.Web.Pages.Employees
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
         }
 
@@ -67,13 +68,13 @@ namespace HES.Web.Pages.Employees
                 var users = ActiveDirectoryUsers.Where(x => x.Value).Select(x => x.Key).ToList();
                 await LdapService.AddAdUsersAsync(users);
                 NavigationManager.NavigateTo("/Employees", true);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await MainWrapper.ModalDialogComponent.CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
             finally
             {

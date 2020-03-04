@@ -1,23 +1,32 @@
 ﻿using HES.Core.Enums;
+using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Components
 {
-    public partial class ModalDialog : ComponentBase
+    public partial class ModalDialog : ComponentBase, IDisposable
     {
+        [Inject] IModalDialogService ModalDialogService { get; set; }
         public string ModalTitle { get; set; }
         public string ModalSize { get; set; }
         public RenderFragment ModalBody { get; set; }
 
-        public async Task ShowAsync(string title, RenderFragment body, ModalDialogSize size = ModalDialogSize.Default)
+        protected override void OnInitialized()
+        {
+            ModalDialogService.OnShow += ShowAsync;
+            ModalDialogService.OnClose += CloseAsync;
+        }
+
+        public async Task ShowAsync(string title, RenderFragment body, ModalDialogSize size)
         {
             SetModalSize(size);
             ModalTitle = title;
             ModalBody = body;
 
-            await JSRuntime.InvokeVoidAsync("toggleModalDialog", "modalDialog");
+            await JSRuntime.InvokeVoidAsync("toggleModalDialog", "genericModalDialog");
             await InvokeAsync(StateHasChanged);
         }
 
@@ -27,7 +36,7 @@ namespace HES.Web.Components
             ModalTitle = string.Empty;
             ModalBody = null;
 
-            await JSRuntime.InvokeVoidAsync("toggleModalDialog", "modalDialog");
+            await JSRuntime.InvokeVoidAsync("toggleModalDialog", "genericModalDialog");
             await InvokeAsync(StateHasChanged);
         }
 
@@ -47,6 +56,21 @@ namespace HES.Web.Components
                 case ModalDialogSize.ExtraLarge:
                     ModalSize = "modal-xl";
                     break;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ModalDialogService.OnShow -= ShowAsync;
+                ModalDialogService.OnClose -= CloseAsync;
             }
         }
     }
