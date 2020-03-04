@@ -21,6 +21,7 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
 
         public Dictionary<Group, bool> Groups = new Dictionary<Group, bool>();
+        public List<Group> SelectedGroups { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
         private bool _onlyUserGroups { get; set; }
@@ -52,11 +53,21 @@ namespace HES.Web.Pages.Groups
             }
         }
 
+        private async Task CollectionChanged(List<Group> groups)
+        {
+            SelectedGroups = groups;
+        }
+
         private async Task AddAsync()
         {
             try
             {
-                if (!Groups.Any(x => x.Value == true))
+                //if (!Groups.Any(x => x.Value == true))
+                //{
+                //    _notSelected = true;
+                //    return;
+                //}
+                if (SelectedGroups == null || SelectedGroups.Count == 0)
                 {
                     _notSelected = true;
                     return;
@@ -79,7 +90,7 @@ namespace HES.Web.Pages.Groups
                     groups = Groups.Where(x => x.Value).Select(x => x.Key).ToList();
                 }
 
-                await GroupService.CreateGroupRangeAsync(groups);
+                await GroupService.CreateGroupRangeAsync(SelectedGroups);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
                 await MainWrapper.ModalDialogComponent.CloseAsync();

@@ -1,0 +1,33 @@
+﻿@typeparam TItem
+
+<table class="table table-hover border rounded w-100 disable-selection">
+    <thead>
+
+        <tr class="jsgrid-grid-header">
+            <th class="checkbox-column">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnCheckAllAsync" />
+                    <label class="custom-control-label" for="checkAll"></label>
+                </div>
+            </th>
+
+            @TableHeader
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var wrapItem in WrapedItems)
+        {
+            <tr class="jsgrid-row-item" @onclick="@(() => OnCheckAsync(wrapItem))">
+
+                <td>
+                    <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                        <input type="checkbox" class="custom-control-input" id="@wrapItem.Id" @onclick="@(() => OnCheckAsync(wrapItem))" checked="@wrapItem.Checked" />
+                        <label class="custom-control-label" for="@wrapItem.Id"></label>
+                    </div>
+                </td>
+
+                @TableRow(wrapItem.Item)
+            </tr>
+        }
+    </tbody>
+</table>
