@@ -22,6 +22,7 @@ namespace HES.Web.Pages.Workstations
         public IList<Device> Devices { get; set; }
         public Workstation Workstation { get; set; }
         public ProximityDevice ProximityDevice { get; set; }
+        public bool WarningMessage { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -81,6 +82,11 @@ namespace HES.Web.Pages.Workstations
             }
 
             ProximityDevices = await _workstationService.GetProximityDevicesAsync(id);
+
+            if (ProximityDevices.Count >= 1)
+            {
+                WarningMessage = true;
+            }
 
             var deviceQuery = _deviceService.DeviceQuery();
 
