@@ -1,4 +1,4 @@
-﻿<div class="d-flex justify-content-between user-select-none">
+﻿<div class="d-flex justify-content-between disable-selection">
     @if (DisplayRecordsSelector)
     {
         <div class="d-flex">
@@ -19,7 +19,7 @@
             <label class="col-form-label"> Showing @(CurrentPage == 1 ? CurrentPage : CurrentPage * DisplayRows - DisplayRows + 1) to @(CurrentPage == TotalPages ? TotalRecords : CurrentPage * DisplayRows) of @TotalRecords entries </label>
         </div>
     }
-    <div class="c-pointer">
+    <div class="cursor-pointer">
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center">
                 @foreach (var link in Links)

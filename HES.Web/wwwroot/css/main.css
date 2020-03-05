@@ -1,16 +1,4 @@
-﻿/*Start common*/
-
-.user-select-none {
-    user-select: none;
-}
-
-.c-pointer {
-    cursor: pointer;
-}
-
-/*End common*/
-
-.invalid {
+﻿.invalid {
     border-color: #dc3545;
 }
 
@@ -65,7 +53,7 @@
     width: 1px;
 }
 
-.checkbox-column {
+.table-checkbox-column {
     width: 1px;
 }
 
@@ -73,24 +61,28 @@
     cursor: pointer;
 }
 
-.selected-row {
+.table-selected-row {
     color: white !important;
     background-color: #007BFF !important;
 }
 
-.sort-arrow {
+.table-sort-arrow {
     cursor: pointer;
     min-width: 20px;
 }
 
-.sort-arrow-up {
+.table-sort-arrow-up {
     content: url("/svg/action/arrow-up.svg");
 }
 
-.sort-arrow-down {
+.table-sort-arrow-down {
     content: url("/svg/action/arrow-down.svg");
 }
 
 .button-min-width {
     min-width: 74px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }

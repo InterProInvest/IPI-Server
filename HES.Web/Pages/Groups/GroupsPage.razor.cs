@@ -87,11 +87,11 @@ namespace HES.Web.Pages.Groups
 
             if (_isSortedAscending)
             {
-                return "sort-arrow-up";
+                return "table-sort-arrow-up";
             }
             else
             {
-                return "sort-arrow-down";
+                return "table-sort-arrow-down";
             }
         }
 

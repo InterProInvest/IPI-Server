@@ -40,11 +40,11 @@ else
                 <tr>
                     <th @onclick="@(() => SortTable("Name"))">
                         Name
-                        <img class="sort-arrow @SetSortIcon("Name")" />
+                        <img class="table-sort-arrow @SetSortIcon("Name")" />
                     </th>
                     <th @onclick="@(() => SortTable("Email"))">
                         Email
-                        <img class="sort-arrow @SetSortIcon("Email")" />
+                        <img class="table-sort-arrow @SetSortIcon("Email")" />
                     </th>
                     <th>
                         Employees
@@ -54,7 +54,7 @@ else
             <tbody>
                 @foreach (var item in Groups)
                 {
-                    <tr @onclick="(() => OnRowSelected(item.Id))" @ondblclick="GroupDetails" class="table-row @(CurrentGroupId == item.Id ? "selected-row" : string.Empty)">
+                    <tr @onclick="(() => OnRowSelected(item.Id))" @ondblclick="GroupDetails" class="table-row @(CurrentGroupId == item.Id ? "table-selected-row" : string.Empty)">
                         <td title="@item.Description">
                             @item.Name
                         </td>
