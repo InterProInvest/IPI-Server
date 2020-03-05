@@ -79,7 +79,7 @@ namespace HES.Web.Pages.Groups
 
         #endregion
 
-                
+
         //Refresh table from pagination
         public async Task RefreshTable(int currentPage, int displayRows)
         {
@@ -100,13 +100,13 @@ namespace HES.Web.Pages.Groups
             await LoadGroupsAsync(searchString);
         }
 
-        public async Task LoadGroupsAsync(
-            string searchString = null,
-            string columnName = nameof(Group.Name), 
-            ListSortDirection sortDirection = ListSortDirection.Ascending)
+        public async Task LoadGroupsAsync(string searchString = null,
+                                          string columnName = nameof(Group.Name),
+                                          ListSortDirection sortDirection = ListSortDirection.Ascending)
         {
             TotalRecords = await GroupService.GetCountAsync(searchString);
             Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, sortDirection, searchString, columnName);
+            CurrentGroupId = null;
             StateHasChanged();
         }
 
