@@ -59,7 +59,50 @@ namespace HES.Core.Services
 
         public async Task<int> GetCountAsync(string search = null)
         {
-            return await _groupRepository.Query().SearchCountAsync(search);
+            var groups = _groupRepository.Query();
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return await groups.CountAsync();
+            }
+
+            search = search.Trim().ToLower();
+            int count = 0;
+
+            foreach (var item in groups)
+            {
+                foreach (var property in item.GetType().GetProperties().Where(p => p.Name == nameof(Group.Name) || p.Name == nameof(Group.Email) || p.Name == nameof(Group.GroupMemberships)))
+                {
+                    if (property.Name == nameof(Group.GroupMemberships) && item.GroupMemberships != null)
+                    {
+                        var countProp = property.PropertyType.GetProperty("Count");
+                        var countVal = countProp.GetValue(item.GroupMemberships)?.ToString();
+
+                        if (countVal == null)
+                            continue;
+
+                        var countContains = countVal.ToLower().Contains(search);
+                        if (countContains)
+                        {
+                            count++;
+                            break;
+                        }
+                    }
+
+                    var propValue = property.GetValue(item)?.ToString();
+
+                    if (propValue == null)
+                        continue;
+
+                    var isContains = propValue.ToLower().Contains(search);
+                    if (isContains)
+                    {
+                        count++;
+                        break;
+                    }
+                }
+            }
+
+            return count;
         }
 
         public async Task<Group> GetGroupByIdAsync(string groupId)

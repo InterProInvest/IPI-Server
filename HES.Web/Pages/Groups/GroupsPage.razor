@@ -27,24 +27,19 @@ else
         <button class="btn btn-light m-1 p-1" title="Delete Group" @onclick="OpenModalDeleteGroup" disabled="@(CurrentGroupId == null ? true : false)">
             <img style="width:32px;height:32px;" src="/svg/action/delete.svg" />
         </button>
-        <div class="form-group has-search-right mb-0 ml-3">
-            <div class="form-control-feedback">
-                <img class="img-size" src="/svg/action/search.svg" />
-            </div>
-            <input @bind-value="SearchString" @bind-value:event="oninput" @onkeyup="@HandleKeyUp" type="text" class="form-control" placeholder="Search">
-        </div>
+        <SearchBox Search="RefreshTable"/>
     </div>
     <div class="table-responsive mb-3">
         <table id="groups" class="table table-hover border rounded w-100 mb-0">
             <thead style="user-select: none; ">
                 <tr>
-                    <th @onclick="@(() => SortTable("Name"))">
-                        Name
-                        <img class="table-sort-arrow @SetSortIcon("Name")" />
+                    <th @onclick="@(() => SortTable(nameof(Group.Name)))">
+                        @nameof(Group.Name)
+                        <img class="table-sort-arrow @SetSortIcon(nameof(Group.Name))" />
                     </th>
-                    <th @onclick="@(() => SortTable("Email"))">
-                        Email
-                        <img class="table-sort-arrow @SetSortIcon("Email")" />
+                    <th @onclick="@(() => SortTable(nameof(Group.Email)))">
+                        @nameof(Group.Email)
+                        <img class="table-sort-arrow @SetSortIcon(nameof(Group.Email))" />
                     </th>
                     <th>
                         Employees

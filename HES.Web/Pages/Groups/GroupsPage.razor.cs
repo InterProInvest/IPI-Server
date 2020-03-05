@@ -3,12 +3,10 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace HES.Web.Pages.Groups
 {
@@ -21,22 +19,12 @@ namespace HES.Web.Pages.Groups
         public int DisplayRows { get; set; }
         public int CurrentPage { get; set; }
         public int TotalRecords { get; set; }
+        public string CurrentGroupId { get; set; }
 
         public IList<Group> Groups { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            _timer = new Timer(700);
-            _timer.Elapsed += async (sender, args) =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await RefreshTable();
-                    StateHasChanged();
-                });
-            };
-            _timer.AutoReset = false;
-
             await RefreshTable();
         }
 
@@ -48,29 +36,23 @@ namespace HES.Web.Pages.Groups
         #region SortTable
 
         private bool _isSortedAscending;
-        private string _activeSortColumn;
-        public string CurrentGroupId { get; set; }
-
-        public async Task<IList<Group>> SortRecords(string columnName, ListSortDirection dir)
-        {
-            return await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, dir, SearchString, columnName);
-        }
+        private string _activeSortColumn = nameof(Group.Name);
 
         public async Task SortTable(string columnName)
         {
             if (columnName != _activeSortColumn)
             {
-                Groups = await SortRecords(columnName, ListSortDirection.Descending);
+                await LoadGroupsAsync(string.Empty, columnName, ListSortDirection.Descending);
             }
             else
             {
                 if (_isSortedAscending)
                 {
-                    Groups = await SortRecords(columnName, ListSortDirection.Ascending);
+                    await LoadGroupsAsync(string.Empty, columnName, ListSortDirection.Ascending);
                 }
                 else
                 {
-                    Groups = await SortRecords(columnName, ListSortDirection.Descending);
+                    await LoadGroupsAsync(string.Empty, columnName, ListSortDirection.Descending);
                 }
             }
 
@@ -97,23 +79,10 @@ namespace HES.Web.Pages.Groups
 
         #endregion
 
-        #region Search
-
-        private string SearchString { get; set; }
-        private Timer _timer;
-
-        public void HandleKeyUp(KeyboardEventArgs e)
-        {
-            _timer.Stop();
-            _timer.Start();
-        }
-
-        #endregion
                 
         //Refresh table from pagination
         public async Task RefreshTable(int currentPage, int displayRows)
         {
-            TotalRecords = await GroupService.GetCountAsync(SearchString);
             DisplayRows = displayRows;
             CurrentPage = currentPage;
             await LoadGroupsAsync();
@@ -125,9 +94,19 @@ namespace HES.Web.Pages.Groups
             await RefreshTable(1, 10);
         }
 
-        public async Task LoadGroupsAsync()
+        //Internal refresh for Search
+        public async Task RefreshTable(string searchString)
         {
-            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, ListSortDirection.Ascending, SearchString);
+            await LoadGroupsAsync(searchString);
+        }
+
+        public async Task LoadGroupsAsync(
+            string searchString = null,
+            string columnName = nameof(Group.Name), 
+            ListSortDirection sortDirection = ListSortDirection.Ascending)
+        {
+            TotalRecords = await GroupService.GetCountAsync(searchString);
+            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, sortDirection, searchString, columnName);
             StateHasChanged();
         }
 
