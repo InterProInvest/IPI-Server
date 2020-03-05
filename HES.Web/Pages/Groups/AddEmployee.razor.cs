@@ -61,16 +61,17 @@ namespace HES.Web.Pages.Groups
                 await GroupService.AddEmployeesToGroupAsync(employeeIds, GroupId);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Employee added.", ToastLevel.Success);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CloseAsync();
             }
             finally
             {
                 _isBusy = false;
-                await ModalDialogService.CloseAsync();
             }
         }
 

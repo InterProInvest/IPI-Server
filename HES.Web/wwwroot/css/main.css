@@ -1,10 +1,6 @@
-﻿/*.valid.modified:not([type=checkbox]) {
-    border-color: #28a745;
-}*/
+﻿/*Start common*/
 
-/*Start common*/
-
-.user-select-none{
+.user-select-none {
     user-select: none;
 }
 
@@ -60,9 +56,15 @@
     }
 }
 
+.table-scrollable {
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
 .table-action-column {
     width: 1px;
 }
+
 .checkbox-column {
     width: 1px;
 }
@@ -76,7 +78,7 @@
     background-color: #007BFF !important;
 }
 
-.sort-arrow{
+.sort-arrow {
     cursor: pointer;
     min-width: 20px;
 }
@@ -87,4 +89,8 @@
 
 .sort-arrow-down {
     content: url("/svg/action/arrow-down.svg");
+}
+
+.button-min-width {
+    min-width: 74px;
 }

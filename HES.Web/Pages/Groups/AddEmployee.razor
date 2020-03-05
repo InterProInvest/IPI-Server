@@ -8,48 +8,50 @@ else
     {
         <h5>All employees have already been added.</h5>
         <div class="form-group text-right mb-0">
-            <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>   
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
         </div>
     }
     else
     {
-        <table id="employees" class="table table-hover border rounded w-100 disable-selection">
-            <thead>
-                <tr>
-                    <th class="checkbox-column">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
-                            <label class="custom-control-label" for="checkAll"></label>
-                        </div>
-                    </th>
-                    <th>
-                        Employee
-                    </th>
-                    <th>
-                        Email
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var employee in Employees)
-                {
-                    <tr @onclick="@(() => OnRowSelected(employee.Key))">
-                        <td>
-                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                                <input type="checkbox" class="custom-control-input" id="@employee.Key.Id" @onclick="@(() => OnRowSelected(employee.Key))" checked="@employee.Value" />
-                                <label class="custom-control-label" for="@employee.Key.Id"></label>
+        <div class="table-responsive table-scrollable mb-3">
+            <table id="employees" class="table table-hover border rounded w-100 mb-0 disable-selection">
+                <thead>
+                    <tr>
+                        <th class="checkbox-column">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
+                                <label class="custom-control-label" for="checkAll"></label>
                             </div>
-                        </td>
-                        <td>
-                            @employee.Key.FullName
-                        </td>
-                        <td>
-                            @employee.Key.Email
-                        </td>
+                        </th>
+                        <th>
+                            Employee
+                        </th>
+                        <th>
+                            Email
+                        </th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var employee in Employees)
+                    {
+                        <tr @onclick="@(() => OnRowSelected(employee.Key))">
+                            <td class="checkbox-column">
+                                <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                                    <input type="checkbox" class="custom-control-input" id="@employee.Key.Id" @onclick="@(() => OnRowSelected(employee.Key))" checked="@employee.Value" />
+                                    <label class="custom-control-label" for="@employee.Key.Id"></label>
+                                </div>
+                            </td>
+                            <td>
+                                @employee.Key.FullName
+                            </td>
+                            <td>
+                                @employee.Key.Email
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
         @if (_notSelected)
         {
             <div class="alert alert-danger" role="alert">

@@ -1,6 +1,4 @@
-﻿@using HES.Core.Entities;
-
-@if (Groups.Count == 0)
+﻿@if (Groups == null)
 {
     @if (_login.Server == null)
     {
@@ -31,12 +29,8 @@
 }
 else
 {
-    <div class="custom-control custom-switch mb-3 m-1">
-        <input type="checkbox" class="custom-control-input" id="onlyUserGroup" @bind="_onlyUserGroups" />
-        <label class="custom-control-label" for="onlyUserGroup">Only user groups</label>
-    </div>
-    <hr />
-    <ShortTable Items="@Groups.Keys.ToList()" CollectionChanged="CollectionChanged">
+    <Alert Message="@_warningMessage" />
+    <ShortTable Items="@Groups" CollectionChanged="CollectionChanged">
         <TableHeader>
             <th>
                 Name
@@ -48,46 +42,9 @@ else
             </td>
         </TableRow>
     </ShortTable>
-    @*<table id="groups" class="table table-hover border rounded w-100 disable-selection">
-            <thead>
-                <tr>
-                    <th class="checkbox-column">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
-                            <label class="custom-control-label" for="checkAll"></label>
-                        </div>
-                    </th>
-                    <th>
-                        Name
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var group in Groups.Where(x => x.Key.IsUserGroup == _onlyUserGroups))
-                {
-                    <tr @onclick="@(() => OnRowSelected(group.Key))">
-                        <td>
-                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                                <input type="checkbox" class="custom-control-input" id="@group.Key.Id" @onclick="@(() => OnRowSelected(group.Key))" checked="@group.Value" />
-                                <label class="custom-control-label" for="@group.Key.Id"></label>
-                            </div>
-                        </td>
-                        <td title="@group.Key.Description">
-                            @group.Key.Name
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>*@
-    @if (_notSelected)
-    {
-        <div class="alert alert-danger" role="alert">
-            No group selected
-        </div>
-    }
-    <div class="form-group text-right mb-0">
-        <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-        <button type="button" @onclick="AddAsync" class="btn btn-primary">
+    <div class="text-right">
+        <button type="button" class="btn btn-secondary button-min-width" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
+        <button type="button" @onclick="AddAsync" class="btn btn-primary button-min-width">
             <span class="spinner-border spinner-border-sm @(_isBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
             <span>Add</span>
         </button>
