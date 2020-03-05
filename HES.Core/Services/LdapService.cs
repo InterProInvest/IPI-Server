@@ -122,21 +122,30 @@ namespace HES.Core.Services
                         };
 
                         List<Employee> employees = new List<Employee>();
-                        foreach (var member in groupPrincipal.GetMembers())
+                        try
                         {
-                            UserPrincipal user = UserPrincipal.FindByIdentity(context, member.Name);
-
-                            if (user != null && user.GivenName != null)
+                            foreach (var member in groupPrincipal.GetMembers())
                             {
-                                employees.Add(new Employee()
+                                UserPrincipal user = UserPrincipal.FindByIdentity(context, member.Name);
+
+                                if (user != null && user.GivenName != null)
                                 {
-                                    Id = user.Guid.ToString(),
-                                    FirstName = user.GivenName,
-                                    LastName = user.Surname,
-                                    Email = user.EmailAddress
-                                });
+                                    employees.Add(new Employee()
+                                    {
+                                        Id = user.Guid.ToString(),
+                                        FirstName = user.GivenName,
+                                        LastName = user.Surname,
+                                        Email = user.EmailAddress
+                                    });
+                                }
                             }
                         }
+                        catch (PrincipalOperationException)
+                        {
+                            // If dns is not configured to connect to a domain
+                            // information about the domain could not be retrieved.
+                        }
+
                         activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
 
                         groups.Add(activeDirectoryGroup);
