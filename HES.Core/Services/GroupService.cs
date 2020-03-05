@@ -73,6 +73,14 @@ namespace HES.Core.Services
             {
                 throw new ArgumentNullException(nameof(group));
             }
+
+            var exist = await _groupRepository.ExistAsync(x => x.Name == group.Name);
+
+            if (exist)
+            {
+                throw new Exception("This name is already in use.");
+            }
+
             return await _groupRepository.AddAsync(group);
         }
 

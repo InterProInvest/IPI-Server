@@ -19,12 +19,13 @@ namespace HES.Web.Pages.Groups
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
-        public List<Group> Groups { get; set; }
-        public List<Group> SelectedGroups { get; set; }
+        public List<ActiveDirectoryGroup> Groups { get; set; }
+        public List<ActiveDirectoryGroup> SelectedGroups { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private string _warningMessage { get; set; }
-        private bool _isBusy { get; set; }
+        private bool _createEmployees;
+        private string _warningMessage;
+        private bool _isBusy;
 
         protected override async Task OnInitializedAsync()
         {
@@ -37,6 +38,13 @@ namespace HES.Web.Pages.Groups
 
         private async Task Connect()
         {
+            if (_isBusy)
+            {
+                return;
+            }
+
+            _isBusy = true;
+
             try
             {
                 Groups = LdapService.GetAdGroups(_login.Server, _login.UserName, _login.Password);
@@ -47,9 +55,13 @@ namespace HES.Web.Pages.Groups
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
             }
+            finally
+            {
+                _isBusy = false;
+            }
         }
 
-        private Task CollectionChanged(List<Group> groups)
+        private Task CollectionChanged(List<ActiveDirectoryGroup> groups)
         {
             SelectedGroups = groups;
             return Task.CompletedTask;
@@ -61,7 +73,7 @@ namespace HES.Web.Pages.Groups
             {
                 if (SelectedGroups == null || SelectedGroups.Count == 0)
                 {
-                    _warningMessage = "Please select at least one employee.";
+                    _warningMessage = "Please select at least one group.";
                     return;
                 }
 
@@ -72,7 +84,7 @@ namespace HES.Web.Pages.Groups
 
                 _isBusy = true;
 
-                await GroupService.CreateGroupRangeAsync(SelectedGroups);
+                await LdapService.AddAdGroupsAsync(SelectedGroups, _createEmployees);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();

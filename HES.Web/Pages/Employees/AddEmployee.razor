@@ -29,47 +29,48 @@
 }
 else
 {
-    <table id="groups" class="table table-hover border rounded w-100 disable-selection">
-        <thead>
-            <tr>
-                <th class="table-checkbox-column">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
-                        <label class="custom-control-label" for="checkAll"></label>
-                    </div>
-                </th>
-                <th>
-                    Name
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in ActiveDirectoryUsers)
-            {
-                <tr @onclick="@(() => OnRowSelected(user.Key))">
-                    <td>
-                        <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                            <input type="checkbox" class="custom-control-input" id="@user.Key.Employee.Id" @onclick="@(() => OnRowSelected(user.Key))" checked="@user.Value" />
-                            <label class="custom-control-label" for="@user.Key.Employee.Id"></label>
+    <Alert Message="@_warningMessage" />
+    <div class="table-responsive table-scrollable mb-3">
+        <table id="groups" class="table table-hover border rounded w-100 mb-0 disable-selection">
+            <thead>
+                <tr>
+                    <th class="table-checkbox-column">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="OnChangeCheckAll" />
+                            <label class="custom-control-label" for="checkAll"></label>
                         </div>
-                    </td>
-                    <td>
-                        @user.Key.Employee.FullName
-                    </td>
+                    </th>
+                    <th>
+                        Name
+                    </th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    @if (_notSelected)
-    {
-        <div class="alert alert-danger" role="alert">
-            No user selected
-        </div>
-    }
-    <div class="form-group text-right mb-0">
-        <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-        <button type="submit" class="btn btn-primary" @onclick="AddAsync">
-            <span class="spinner-border spinner-border-sm @(_isBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+            </thead>
+            <tbody>
+                @foreach (var user in ActiveDirectoryUsers)
+                {
+                    <tr @onclick="@(() => OnRowSelected(user.Key))">
+                        <td>
+                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                                <input type="checkbox" class="custom-control-input" id="@user.Key.Employee.Id" @onclick="@(() => OnRowSelected(user.Key))" checked="@user.Value" />
+                                <label class="custom-control-label" for="@user.Key.Employee.Id"></label>
+                            </div>
+                        </td>
+                        <td>
+                            @user.Key.Employee.FullName
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="mb-2 mx-1 custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="createGroup" @bind="_createGroups" />
+        <label class="custom-control-label disable-selection" for="createGroup">Create groups of these employees</label>
+    </div>
+    <div class="text-right">
+        <button type="button" class="btn btn-secondary button-min-width" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
+        <button type="submit" class="btn btn-primary button-min-width" @onclick="AddAsync">
+            <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
             <span>Add</span>
         </button>
     </div>

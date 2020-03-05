@@ -71,7 +71,7 @@ namespace HES.Core.Services
             return users;
         }
 
-        public async Task AddAdUsersAsync(List<ActiveDirectoryUser> users)
+        public async Task AddAdUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
         {
             foreach (var user in users)
             {
@@ -84,7 +84,7 @@ namespace HES.Core.Services
                     // TODO if user exist
                 }
 
-                if (user.Groups != null)
+                if (createGroups && user.Groups != null)
                 {
                     using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
@@ -96,9 +96,9 @@ namespace HES.Core.Services
             }
         }
 
-        public List<Group> GetAdGroups(string server, string userName, string password)
+        public List<ActiveDirectoryGroup> GetAdGroups(string server, string userName, string password)
         {
-            var list = new List<Group>();
+            var groups = new List<ActiveDirectoryGroup>();
 
             using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
             {
@@ -111,18 +111,75 @@ namespace HES.Core.Services
 
                     if (groupPrincipal != null)
                     {
-                        var isUserGroup = groupPrincipal.DistinguishedName.Contains("Builtin") ? false : true;
-                        list.Add(new Group()
+                        var activeDirectoryGroup = new ActiveDirectoryGroup()
                         {
-                            Id = groupPrincipal.Guid.ToString(),
-                            Name = groupPrincipal.Name,
-                            Description = groupPrincipal.Description,
-                            IsUserGroup = isUserGroup
-                        });
+                            Group = new Group()
+                            {
+                                Id = groupPrincipal.Guid.ToString(),
+                                Name = groupPrincipal.Name,
+                                Description = groupPrincipal.Description
+                            }
+                        };
+
+                        List<Employee> employees = new List<Employee>();
+                        foreach (var member in groupPrincipal.GetMembers())
+                        {
+                            UserPrincipal user = UserPrincipal.FindByIdentity(context, member.Name);
+
+                            if (user != null && user.GivenName != null)
+                            {
+                                employees.Add(new Employee()
+                                {
+                                    Id = user.Guid.ToString(),
+                                    FirstName = user.GivenName,
+                                    LastName = user.Surname,
+                                    Email = user.EmailAddress
+                                });
+                            }
+                        }
+                        activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
+
+                        groups.Add(activeDirectoryGroup);
                     }
                 }
             }
-            return list;
+            return groups;
+        }
+
+        public async Task AddAdGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)
+        {
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                foreach (var group in groups)
+                {
+                    try
+                    {
+                        await _groupService.CreateGroupAsync(group.Group);
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO if group exist
+                    }
+
+                    if (createEmployees && group.Employees != null)
+                    {
+                        foreach (var employee in group.Employees)
+                        {
+                            try
+                            {
+                                await _employeeService.CreateEmployeeAsync(employee);
+                            }
+                            catch (Exception ex)
+                            {
+                                // TODO if exist
+                            }
+                        }
+                        await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), group.Group.Id);
+                    }
+                }
+
+                transactionScope.Complete();
+            }
         }
     }
 }

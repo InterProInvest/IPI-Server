@@ -1,7 +1,6 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
-using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
@@ -21,9 +20,10 @@ namespace HES.Web.Pages.Employees
         public Dictionary<ActiveDirectoryUser, bool> ActiveDirectoryUsers { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private bool _notSelected { get; set; }
-        private bool _isSelectedAll { get; set; }
-        private bool _isBusy { get; set; }
+        private bool _createGroups;
+        private bool _isSelectedAll;
+        private bool _isBusy;
+        private string _warningMessage;
 
         protected override async Task OnInitializedAsync()
         {
@@ -55,7 +55,7 @@ namespace HES.Web.Pages.Employees
             {
                 if (!ActiveDirectoryUsers.Any(x => x.Value == true))
                 {
-                    _notSelected = true;
+                    _warningMessage = "Please select at least one employee.";
                     return;
                 }
 
@@ -66,7 +66,7 @@ namespace HES.Web.Pages.Employees
 
                 _isBusy = true;
                 var users = ActiveDirectoryUsers.Where(x => x.Value).Select(x => x.Key).ToList();
-                await LdapService.AddAdUsersAsync(users);
+                await LdapService.AddAdUsersAsync(users, _createGroups);
                 NavigationManager.NavigateTo("/Employees", true);
                 await ModalDialogService.CloseAsync();
             }

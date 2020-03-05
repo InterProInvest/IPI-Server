@@ -18,8 +18,5 @@ namespace HES.Core.Entities
         public string Email { get; set; }
         public string Description { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
-
-        [NotMapped]
-        public bool IsUserGroup { get; set; }
     }
 }
