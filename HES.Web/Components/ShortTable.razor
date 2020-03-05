@@ -17,7 +17,7 @@
             {
                 <tr @onclick="@(() => OnCheckAsync(wrapedItem))">
                     <td>
-                        <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                        <div class="custom-control custom-checkbox" @onclick="@(() => OnCheckAsync(wrapedItem))" @onclick:stopPropagation="true">
                             <input type="checkbox" class="custom-control-input" id="@wrapedItem.Id" @onclick="@(() => OnCheckAsync(wrapedItem))" checked="@wrapedItem.Checked" />
                             <label class="custom-control-label" for="@wrapedItem.Id"></label>
                         </div>
