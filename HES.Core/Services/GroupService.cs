@@ -197,6 +197,12 @@ namespace HES.Core.Services
             {
                 foreach (var employeeId in employeeIds)
                 {
+                    var employeeExist = await _groupMembershipRepository.ExistAsync(x => x.EmployeeId == employeeId && x.GroupId == groupId);
+                    if (employeeExist)
+                    {
+                        continue;
+                    }
+
                     var groupMembership = new GroupMembership()
                     {
                         EmployeeId = employeeId,
@@ -225,8 +231,8 @@ namespace HES.Core.Services
             {
                 foreach (var groupId in groupIds)
                 {
-                    var employeeExistInGroup = await _groupMembershipRepository.ExistAsync(x => x.EmployeeId == employeeId && x.GroupId == groupId);
-                    if (employeeExistInGroup)
+                    var employeeExist = await _groupMembershipRepository.ExistAsync(x => x.EmployeeId == employeeId && x.GroupId == groupId);
+                    if (employeeExist)
                     {
                         continue;
                     }
