@@ -185,6 +185,7 @@ namespace HES.Web
                     options.Conventions.AddPageRoute("/Dashboard/Index", "");
                     options.Conventions.AuthorizeFolder("/Dashboard", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Employees", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Groups", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
