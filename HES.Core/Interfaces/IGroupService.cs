@@ -21,7 +21,7 @@ namespace HES.Core.Interfaces
         Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId);
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
-        Task RemoveEmployeeFromGroupAsync(string employeeId, string groupId);
+        Task RemoveEmployeeFromGroupAsync(string groupMembershipId);
         Task<bool> CheckExistsGroupNameAsync(string name);
     }
 }

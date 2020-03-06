@@ -44,7 +44,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                await GroupService.RemoveEmployeeFromGroupAsync(EmployeeId, GroupId);
+                await GroupService.RemoveEmployeeFromGroupAsync(GroupMembership.Id);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Employee removed.", ToastLevel.Success);
             }

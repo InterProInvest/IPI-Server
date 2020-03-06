@@ -243,19 +243,14 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveEmployeeFromGroupAsync(string employeeId, string groupId)
+        public async Task RemoveEmployeeFromGroupAsync(string groupMembershipId)
         {
-            if (employeeId == null)
+            if (groupMembershipId == null)
             {
-                throw new ArgumentNullException(nameof(employeeId));
+                throw new ArgumentNullException(nameof(groupMembershipId));
             }
-
-            if (groupId == null)
-            {
-                throw new ArgumentNullException(nameof(groupId));
-            }
-
-            var groupMembership = await _groupMembershipRepository.GetByCompositeKeyAsync(new object[] { groupId, employeeId });
+                   
+            var groupMembership = await _groupMembershipRepository.GetByIdAsync(groupMembershipId);
             if (groupMembership == null)
             {
                 throw new Exception("GroupMembership does not exist.");
