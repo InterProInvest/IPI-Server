@@ -10,10 +10,7 @@ namespace HES.Web.Pages.Devices
 {
     public partial class SyncDevices : ComponentBase
     {
-        [Inject] IJSRuntime JSRuntime { get; set; }
-        [Inject] NavigationManager NavigationManager { get; set; }
         [Inject] IDeviceService DeviceService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<SyncDevices> Logger { get; set; }
 
         private async Task Sync()

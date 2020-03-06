@@ -1,5 +1,4 @@
 ﻿using HES.Core.Enums;
-using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using System;
 
@@ -7,8 +6,6 @@ namespace HES.Web.Components
 {
     public partial class Toast : ComponentBase, IDisposable
     {
-        [Inject]
-        IToastService ToastService { get; set; }
         protected string Header { get; set; }
         protected string Message { get; set; }
         protected string LevelClass { get; set; }

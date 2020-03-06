@@ -32,6 +32,11 @@ namespace HES.Infrastructure
             return await _context.Set<T>().FindAsync(id);
         }
 
+        public async Task<T> GetByCompositeKeyAsync(object[] obj)
+        {
+            return await _context.Set<T>().FindAsync(obj);
+        }
+
         public async Task<T> AddAsync(T entity)
         {
             _context.Set<T>().Add(entity);

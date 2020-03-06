@@ -56,5 +56,28 @@
                 </EditForm>
             </div>
         </div>
+        <h4 class="text-navyblue">Domain</h4>
+        <hr />
+        <div class="row mb-3">
+            <div class="col-12 col-sm-4 pb-3">
+                To connect to the domain to synchronize groups and users.
+            </div>
+            <div class="col-12 col-sm-8 pb-2">
+                <EditForm Model="@domain" OnValidSubmit="@UpdateDomainSettingsAsync">
+                    <DataAnnotationsValidator />
+                    <div class="form-group">
+                        <label class="control-label text-gray">IP Address</label>
+                        <InputText id="serverName" @bind-Value="domain.IpAddress" class="form-control text-navyblue" />
+                        <ValidationMessage For="@(() => domain.IpAddress)" class="text-danger" />
+                    </div>
+                    <div class="form-group mt-4 mb-0">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm @(domainIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                            <span>Update</span>
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
     </div>
 </div>

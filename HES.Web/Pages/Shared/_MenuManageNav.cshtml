@@ -24,6 +24,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link @MenuNavPages.GroupsNavClass(ViewContext)" asp-page="/Groups/Index">
+                    <img class="icon-groups i-sidebar" />
+                    <span class="page_labels">Groups</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link @MenuNavPages.SharedAccountsNavClass(ViewContext)" asp-page="/SharedAccounts/Index">
                     <img class="icon-shared-accounts i-sidebar" />
                     <span class="page_labels">Shared Accounts</span>
@@ -114,10 +120,10 @@
                                 </a>
                             </li>
                             @*<li class="nav-item">
-                                          <a class="nav-link @SettingsNavPages.IdentityProviderNavClass(ViewContext)" asp-page="/Settings/IdentityProvider/Index">
-                                              <span>SAML IdP</span>
-                                          </a>
-                                </li>*@
+                                  <a class="nav-link @SettingsNavPages.IdentityProviderNavClass(ViewContext)" asp-page="/Settings/IdentityProvider/Index">
+                                      <span>SAML IdP</span>
+                                  </a>
+                        </li>*@
                         </ul>
                     </div>
                 </div>

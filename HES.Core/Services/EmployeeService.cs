@@ -120,20 +120,19 @@ namespace HES.Core.Services
                 .Take(employeeFilter.Records)
                 .ToListAsync();
         }
-
+               
         public async Task<Employee> CreateEmployeeAsync(Employee employee)
         {
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            var emailExist = await _employeeRepository
-                .Query()
-                .Where(e => e.Email == employee.Email)
-                .AnyAsync();
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
 
-            if (emailExist)
+            var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
+            if (exist)
             {
-                throw new Exception($"Email {employee.Email} already used.");
+                throw new Exception($"{employee.FirstName} {employee.LastName} already in use.");
             }
 
             return await _employeeRepository.AddAsync(employee);

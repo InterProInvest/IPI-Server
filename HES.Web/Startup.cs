@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
@@ -94,6 +95,9 @@ namespace HES.Web
             services.AddScoped<ILicenseService, LicenseService>();
             services.AddScoped<IAppSettingsService, AppSettingsService>();
             services.AddScoped<IToastService, ToastService>();
+            services.AddScoped<IModalDialogService, ModalDialogService>();
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<ILdapService, LdapService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
@@ -181,6 +185,7 @@ namespace HES.Web
                     options.Conventions.AddPageRoute("/Dashboard/Index", "");
                     options.Conventions.AuthorizeFolder("/Dashboard", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Employees", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Groups", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");

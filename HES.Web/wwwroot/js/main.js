@@ -9,6 +9,26 @@ function showSpinner(elementId) {
     $('#' + elementId).toggleClass('d-none');
 }
 
+function toggleModalDialog(dialogId) {
+    $('#' + dialogId).modal('toggle');
+}
+
+function triggerCheckbox(checkboxId) {
+    var chkb = $('#' + checkboxId);
+    chkb.trigger('click');
+}
+
+function toggleCheckbox(checkboxId) {
+    var chkb = $('#' + checkboxId);
+    chkb.attr("checked", !chkb.attr("checked"));
+}
+
+function toggleAllCheckboxes(tableId, state) {
+    $('#' + tableId).find('input[type="checkbox"]').each(function () {
+        $(this).attr('checked', state);
+    });
+}
+
 // Logs Table
 function initializeLogsTable() {
     $('#logs').DataTable({

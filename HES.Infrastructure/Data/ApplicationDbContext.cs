@@ -14,8 +14,16 @@ namespace HES.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Device>().HasIndex(b => b.MAC).IsUnique();
-            modelBuilder.Entity<Device>().HasIndex(b => b.RFID).IsUnique();
+            modelBuilder.Entity<Device>().HasIndex(x => x.MAC).IsUnique();
+            modelBuilder.Entity<Device>().HasIndex(x => x.RFID).IsUnique();
+            modelBuilder.Entity<Group>().HasIndex(x => x.Name).IsUnique();
+            //modelBuilder.Entity<GroupMembership>().HasKey(x => new { x.GroupId, x.EmployeeId });
+            // Cascade remove all Group Memberships when removing Group
+            modelBuilder.Entity<Group>().HasMany(x => x.GroupMemberships).WithOne(p => p.Group).HasForeignKey(p => p.GroupId).OnDelete(DeleteBehavior.Cascade);
+            // Cascade remove all Group Memberships when removing Employee
+            modelBuilder.Entity<Employee>().HasMany(x => x.GroupMemberships).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            // Set Unique 
+            modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
             base.OnModelCreating(modelBuilder);
         }
 
@@ -38,6 +46,8 @@ namespace HES.Infrastructure
         public DbSet<DeviceLicense> DeviceLicenses { get; set; }
         public DbSet<LicenseOrder> LicenseOrders { get; set; }
         public DbSet<AppSettings> AppSettings { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupMembership> GroupMemberships { get; set; }
 
 
         public DbQuery<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }

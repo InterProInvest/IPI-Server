@@ -4,5 +4,6 @@
     {
         public const string Licensing = "licensing";
         public const string Server = "server";
+        public const string Domain = "domain";
     }
 }
