@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                var employees = await GroupService.GetEmployeesSkipExistingAsync(GroupId);
+                var employees = await GroupService.GetEmployeesSkipExistingOnesInGroupAsync(GroupId);
                 Employees = employees.ToDictionary(k => k, v => false);
             }
             catch (Exception ex)

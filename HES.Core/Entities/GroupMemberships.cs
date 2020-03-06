@@ -1,17 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
     public class GroupMembership
     {
-        /// <summary>
-        /// GroupId and EmployeeId is composite key <see cref="ApplicationDbContext"/> 
-        /// </summary>
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public string Id { get; set; }
+
         [ForeignKey("Groups")]
         public string GroupId { get; set; }
 
+
         [ForeignKey("Employees")]
         public string EmployeeId { get; set; }
+
+
+        [ForeignKey("GroupId")]
+        public Group Group { get; set; }
+
 
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }

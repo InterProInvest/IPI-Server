@@ -28,6 +28,7 @@ namespace HES.Core.Entities
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
         public List<Device> Devices { get; set; }
+        public List<GroupMembership> GroupMemberships { get; set; }
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }

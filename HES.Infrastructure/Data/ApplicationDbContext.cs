@@ -17,7 +17,12 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Device>().HasIndex(x => x.MAC).IsUnique();
             modelBuilder.Entity<Device>().HasIndex(x => x.RFID).IsUnique();
             modelBuilder.Entity<Group>().HasIndex(x => x.Name).IsUnique();
-            modelBuilder.Entity<GroupMembership>().HasKey(x => new { x.GroupId, x.EmployeeId });
+            //modelBuilder.Entity<GroupMembership>().HasKey(x => new { x.GroupId, x.EmployeeId });
+            // Cascade remove all Group Memberships when removing Group
+            modelBuilder.Entity<Group>().HasMany(x => x.GroupMemberships).WithOne(p => p.Group).HasForeignKey(p => p.GroupId).OnDelete(DeleteBehavior.Cascade);
+            // Cascade remove all Group Memberships when removing Employee
+            modelBuilder.Entity<Employee>().HasMany(x => x.GroupMemberships).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            // Set Unique 
             modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
             base.OnModelCreating(modelBuilder);
         }

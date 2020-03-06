@@ -171,7 +171,7 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.GroupId == groupId && x.EmployeeId == employeeId);
         }
 
-        public async Task<List<Employee>> GetEmployeesSkipExistingAsync(string groupId)
+        public async Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId)
         {
             var members = await GetGruopMembersAsync(groupId);
 
@@ -263,42 +263,8 @@ namespace HES.Core.Services
 
             await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
-
-        public async Task ManageEmployeesAsync(List<GroupEmployee> groupEmployees, string groupId)
-        {
-            if (groupEmployees == null)
-            {
-                throw new ArgumentNullException(nameof(groupEmployees));
-            }
-
-            if (groupId == null)
-            {
-                throw new ArgumentNullException(nameof(groupId));
-            }
-
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                foreach (var member in groupEmployees)
-                {
-                    var groupMembership = await _groupMembershipRepository.GetByCompositeKeyAsync(new object[] { groupId, member.Employee.Id });
-
-                    if (member.InGroup && groupMembership == null)
-                    {
-                        groupMembership = new GroupMembership() { GroupId = groupId, EmployeeId = member.Employee.Id };
-                        await _groupMembershipRepository.AddAsync(groupMembership);
-                        continue;
-                    }
-
-                    if (!member.InGroup && groupMembership != null)
-                    {
-                        await _groupMembershipRepository.DeleteAsync(groupMembership);
-                    }
-                }
-                transactionScope.Complete();
-            }
-        }
-
-        public async Task<bool> CheckGroupNameAsync(string name)
+        
+        public async Task<bool> CheckExistsGroupNameAsync(string name)
         {
             return await _groupRepository.Query().AnyAsync(x => x.Name == name);
         }

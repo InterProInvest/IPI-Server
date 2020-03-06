@@ -1,5 +1,4 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models.Web.Group;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -19,11 +18,10 @@ namespace HES.Core.Interfaces
         Task DeleteGroupAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);
         Task<GroupMembership> GetGroupMembershipAsync(string employeeId, string groupId);
-        Task<List<Employee>> GetEmployeesSkipExistingAsync(string groupId);
+        Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId);
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
         Task RemoveEmployeeFromGroupAsync(string employeeId, string groupId);
-        Task ManageEmployeesAsync(List<GroupEmployee> groupEmployees, string groupId);
-        Task<bool> CheckGroupNameAsync(string name);
+        Task<bool> CheckExistsGroupNameAsync(string name);
     }
 }

@@ -24,7 +24,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {                
-                var isExist = await GroupService.CheckGroupNameAsync(Group.Name);
+                var isExist = await GroupService.CheckExistsGroupNameAsync(Group.Name);
 
                 if (isExist)
                 {
