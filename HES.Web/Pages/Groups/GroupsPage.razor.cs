@@ -16,8 +16,8 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<GroupsPage> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
 
-        public int DisplayRows { get; set; }
-        public int CurrentPage { get; set; }
+        public int DisplayRows { get; set; } = 10;
+        public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
         public string CurrentGroupId { get; set; }
 
@@ -91,7 +91,7 @@ namespace HES.Web.Pages.Groups
         //Internal refresh for CRUD
         public async Task RefreshTable()
         {
-            await RefreshTable(1, 10);
+            await LoadGroupsAsync();
         }
 
         //Internal refresh for Search
