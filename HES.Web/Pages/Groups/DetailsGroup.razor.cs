@@ -5,6 +5,7 @@ using HES.Core.Models.Web.Breadcrumb;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -37,7 +38,10 @@ namespace HES.Web.Pages.Groups
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await CreateBreadcrumbsAsync();
+            if (firstRender)
+            {
+                await CreateBreadcrumbsAsync();
+            }
         }
 
         private async Task LoadGroupMembershipsAsync()
@@ -57,7 +61,7 @@ namespace HES.Web.Pages.Groups
                 new Breadcrumb () { Active = false, Link="/Groups", Content = "Groups" },
                 new Breadcrumb () { Active = true, Content = "Details" }
             };
-            await BreadcrumbsWrapper.BreadcrumbsComponent.ShowAsync(items);
+            await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
         }
 
         private async Task OpenModalAddEmployees()

@@ -1,7 +1,12 @@
 ﻿function createBreadcrumbs(breadcrumbs) {
     $('#breadcrumb').toggleClass('d-none');
     for (var i = 0; i < breadcrumbs.length; i++) {
-        $('.breadcrumb').append('<li class="breadcrumb-item ' + breadcrumbs[i].active + '">' + breadcrumbs[i].content + '</li>');
+        if (breadcrumbs[i].active) {
+            $('.breadcrumb').append('<li class="breadcrumb-item active">' + breadcrumbs[i].content + '</li>');
+        }
+        else {
+            $('.breadcrumb').append('<li class="breadcrumb-item"><a href="' + breadcrumbs[i].link + '">' + breadcrumbs[i].content + '</a ></li>');
+        }
     }
 }
 
