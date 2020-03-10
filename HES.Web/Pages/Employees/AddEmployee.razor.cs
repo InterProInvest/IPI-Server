@@ -1,4 +1,5 @@
-﻿using HES.Core.Enums;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
 using Microsoft.AspNetCore.Components;
@@ -17,13 +18,15 @@ namespace HES.Web.Pages.Employees
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
 
-        public Dictionary<ActiveDirectoryUser, bool> ActiveDirectoryUsers { get; set; }
+        public List<ActiveDirectoryUser> Users { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
         private bool _createGroups;
-        private bool _isSelectedAll;
-        private bool _isBusy;
         private string _warningMessage;
+        private bool _isBusy;
+        private string _searchText = string.Empty;
+        private bool _isSortedAscending = true;
+        private string _currentSortColumn = nameof(Employee.FullName);
 
         protected override async Task OnInitializedAsync()
         {
@@ -36,10 +39,17 @@ namespace HES.Web.Pages.Employees
 
         private async Task Connect()
         {
+            if (_isBusy)
+            {
+                return;
+            }
+
+            _isBusy = true;
+            await Task.Delay(1); // To display a spinner, without await is not displayed
+            
             try
             {
-                var users = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
-                ActiveDirectoryUsers = users.ToDictionary(k => k, v => false);
+                Users = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
             }
             catch (Exception ex)
             {
@@ -47,15 +57,19 @@ namespace HES.Web.Pages.Employees
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
             }
+            finally
+            {
+                _isBusy = false;
+            }
         }
 
         private async Task AddAsync()
         {
             try
             {
-                if (!ActiveDirectoryUsers.Any(x => x.Value == true))
+                if (!Users.Any(x => x.Checked))
                 {
-                    _warningMessage = "Please select at least one employee.";
+                    _warningMessage = "Please select at least one user.";
                     return;
                 }
 
@@ -65,8 +79,8 @@ namespace HES.Web.Pages.Employees
                 }
 
                 _isBusy = true;
-                var users = ActiveDirectoryUsers.Where(x => x.Value).Select(x => x.Key).ToList();
-                await LdapService.AddAdUsersAsync(users, _createGroups);
+
+                await LdapService.AddAdUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
                 NavigationManager.NavigateTo("/Employees", true);
                 await ModalDialogService.CloseAsync();
             }
@@ -82,16 +96,43 @@ namespace HES.Web.Pages.Employees
             }
         }
 
-        private void OnRowSelected(ActiveDirectoryUser key)
+        private string GetSortIcon(string columnName)
         {
-            ActiveDirectoryUsers[key] = !ActiveDirectoryUsers[key];
+            if (_currentSortColumn != columnName)
+            {
+                return string.Empty;
+            }
+            if (_isSortedAscending)
+            {
+                return "table-sort-arrow-up";
+            }
+            else
+            {
+                return "table-sort-arrow-down";
+            }
         }
 
-        public void OnChangeCheckAll(ChangeEventArgs args)
+        private void SortTable(string columnName)
         {
-            _isSelectedAll = !_isSelectedAll;
-            foreach (var key in ActiveDirectoryUsers.Keys.ToList())
-                ActiveDirectoryUsers[key] = _isSelectedAll;
+            if (columnName != _currentSortColumn)
+            {
+                Users = Users.OrderBy(x => x.Employee.GetType().GetProperty(columnName).GetValue(x.Employee, null)).ToList();
+                _currentSortColumn = columnName;
+                _isSortedAscending = true;
+            }
+            else
+            {
+                if (_isSortedAscending)
+                {
+                    Users = Users.OrderByDescending(x => x.Employee.GetType().GetProperty(columnName).GetValue(x.Employee, null)).ToList();
+                }
+                else
+                {
+                    Users = Users.OrderBy(x => x.Employee.GetType().GetProperty(columnName).GetValue(x.Employee, null)).ToList();
+                }
+
+                _isSortedAscending = !_isSortedAscending;
+            }
         }
     }
 }

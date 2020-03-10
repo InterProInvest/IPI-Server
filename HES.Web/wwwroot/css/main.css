@@ -68,15 +68,15 @@
 
 .table-sort-arrow {
     cursor: pointer;
-    min-width: 20px;
 }
 
 .table-sort-arrow-up {
-    content: url("/svg/action/arrow-up.svg");
+    content: url("/svg/action/table-arrow-sort.svg");
 }
 
 .table-sort-arrow-down {
-    content: url("/svg/action/arrow-down.svg");
+    content: url("/svg/action/table-arrow-sort.svg");
+    transform: rotate(180deg);
 }
 
 .table-fixed {

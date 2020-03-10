@@ -68,7 +68,7 @@ namespace HES.Core.Services
                     }
                 }
             }
-            return users;
+            return users.OrderBy(x => x.Employee.FullName).ToList();
         }
 
         public async Task AddAdUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)

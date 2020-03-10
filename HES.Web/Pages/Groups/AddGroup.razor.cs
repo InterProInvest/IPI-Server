@@ -21,7 +21,6 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
 
         public List<ActiveDirectoryGroup> Groups { get; set; }
-        public List<ActiveDirectoryGroup> SelectedGroups { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
         private string _warningMessage;
@@ -37,8 +36,6 @@ namespace HES.Web.Pages.Groups
             if (domain != null)
             {
                 _login.Server = domain.IpAddress;
-                _login.UserName = "administrator";
-                _login.Password = "1234567aA";
             }
         }
 
@@ -50,7 +47,8 @@ namespace HES.Web.Pages.Groups
             }
 
             _isBusy = true;
-
+            await Task.Delay(1); // To display a spinner, without await is not displayed
+            
             try
             {
                 Groups = LdapService.GetAdGroups(_login.Server, _login.UserName, _login.Password);
@@ -83,7 +81,7 @@ namespace HES.Web.Pages.Groups
                 }
 
                 _isBusy = true;
- 
+
                 await LdapService.AddAdGroupsAsync(Groups.Where(x => x.Checked).ToList(), _createEmployees);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
