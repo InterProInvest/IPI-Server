@@ -105,6 +105,10 @@ namespace HES.Web.Pages.Groups
                                           ListSortDirection sortDirection = ListSortDirection.Ascending)
         {
             TotalRecords = await GroupService.GetCountAsync(searchString);
+            if(!string.IsNullOrWhiteSpace(searchString) && TotalRecords > 0)
+            {
+                CurrentPage = 1;
+            }
             Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, sortDirection, searchString, columnName);
             CurrentGroupId = null;
             StateHasChanged();
