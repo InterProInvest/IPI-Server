@@ -7,6 +7,6 @@ namespace HES.Core.Models.ActiveDirectory
     {
         public Employee Employee { get; set; }
         public List<Group> Groups { get; set; }
-
+        public bool Checked { get; set; }
     }
 }

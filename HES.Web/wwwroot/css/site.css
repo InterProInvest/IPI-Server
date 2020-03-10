@@ -576,7 +576,8 @@ a.navbar-brand {
     .table thead th {
         vertical-align: bottom;
         border-top: 0;
-        border-bottom: 0;
+        /*border-bottom: 0;*/
+        border-bottom: 1px solid #dee2e6;
     }
 
 td:focus {

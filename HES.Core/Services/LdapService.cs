@@ -152,7 +152,7 @@ namespace HES.Core.Services
                     }
                 }
             }
-            return groups;
+            return groups.OrderBy(x => x.Group.Name).ToList();
         }
 
         public async Task AddAdGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)

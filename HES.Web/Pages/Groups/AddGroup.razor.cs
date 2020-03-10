@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
@@ -23,9 +24,12 @@ namespace HES.Web.Pages.Groups
         public List<ActiveDirectoryGroup> SelectedGroups { get; set; }
 
         private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private bool _createEmployees;
         private string _warningMessage;
+        private bool _createEmployees;
         private bool _isBusy;
+        private string _searchText = string.Empty;
+        private bool _isSortedAscending = true;
+        private string _currentSortColumn = nameof(Group.Name);
 
         protected override async Task OnInitializedAsync()
         {
@@ -33,6 +37,8 @@ namespace HES.Web.Pages.Groups
             if (domain != null)
             {
                 _login.Server = domain.IpAddress;
+                _login.UserName = "administrator";
+                _login.Password = "1234567aA";
             }
         }
 
@@ -61,17 +67,11 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        private Task CollectionChanged(List<ActiveDirectoryGroup> groups)
-        {
-            SelectedGroups = groups;
-            return Task.CompletedTask;
-        }
-
         private async Task AddAsync()
         {
             try
             {
-                if (SelectedGroups == null || SelectedGroups.Count == 0)
+                if (!Groups.Any(x => x.Checked))
                 {
                     _warningMessage = "Please select at least one group.";
                     return;
@@ -83,8 +83,8 @@ namespace HES.Web.Pages.Groups
                 }
 
                 _isBusy = true;
-
-                await LdapService.AddAdGroupsAsync(SelectedGroups, _createEmployees);
+ 
+                await LdapService.AddAdGroupsAsync(Groups.Where(x => x.Checked).ToList(), _createEmployees);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
@@ -98,6 +98,45 @@ namespace HES.Web.Pages.Groups
             finally
             {
                 _isBusy = false;
+            }
+        }
+
+        private string GetSortIcon(string columnName)
+        {
+            if (_currentSortColumn != columnName)
+            {
+                return string.Empty;
+            }
+            if (_isSortedAscending)
+            {
+                return "table-sort-arrow-up";
+            }
+            else
+            {
+                return "table-sort-arrow-down";
+            }
+        }
+
+        private void SortTable(string columnName)
+        {
+            if (columnName != _currentSortColumn)
+            {
+                Groups = Groups.OrderBy(x => x.Group.GetType().GetProperty(columnName).GetValue(x.Group, null)).ToList();
+                _currentSortColumn = columnName;
+                _isSortedAscending = true;
+            }
+            else
+            {
+                if (_isSortedAscending)
+                {
+                    Groups = Groups.OrderByDescending(x => x.Group.GetType().GetProperty(columnName).GetValue(x.Group, null)).ToList();
+                }
+                else
+                {
+                    Groups = Groups.OrderBy(x => x.Group.GetType().GetProperty(columnName).GetValue(x.Group, null)).ToList();
+                }
+
+                _isSortedAscending = !_isSortedAscending;
             }
         }
     }
