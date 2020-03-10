@@ -36,6 +36,27 @@ namespace HES.Core.Services
         {
             if (string.IsNullOrWhiteSpace(search))
             {
+                if (orderBy == "Employees")
+                {
+                    if (sortDirection == ListSortDirection.Ascending)
+                    {
+                        return await _groupRepository.Query()
+                            .Include(x => x.GroupMemberships)
+                            .OrderBy(x => x.GroupMemberships.Count)
+                            .Skip(skip)
+                            .Take(take)
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        return await _groupRepository.Query()
+                            .Include(x => x.GroupMemberships)
+                            .OrderByDescending(x => x.GroupMemberships.Count)
+                            .Skip(skip)
+                            .Take(take)
+                            .ToListAsync();
+                    }
+                }
                 return await _groupRepository.Query()
                     .Include(x => x.GroupMemberships)
                     .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)

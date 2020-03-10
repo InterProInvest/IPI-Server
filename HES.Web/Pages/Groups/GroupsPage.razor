@@ -41,8 +41,9 @@ else
                         @nameof(Group.Email)
                         <img class="table-sort-arrow @SetSortIcon(nameof(Group.Email))" />
                     </th>
-                    <th>
+                    <th @onclick="@(() => SortTable("Employees"))">
                         Employees
+                        <img class="table-sort-arrow @SetSortIcon("Employees")" />
                     </th>
                 </tr>
             </thead>
