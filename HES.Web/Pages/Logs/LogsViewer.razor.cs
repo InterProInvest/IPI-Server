@@ -2,7 +2,6 @@
 using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,6 +18,7 @@ namespace HES.Web.Pages.Logs
         public LogModel LogModel { get; set; }
 
         private bool isBusy;
+        public string searchText = string.Empty;
 
         protected override void OnInitialized()
         {
@@ -32,19 +32,12 @@ namespace HES.Web.Pages.Logs
                 return;
             }
 
+            isBusy = true;
+
             try
             {
-                isBusy = true;
-
-                if (Logs != null)
-                {
-                    await JSRuntime.InvokeVoidAsync("destroyLogsTable");
-                }
-
                 Logs = await LogsViewerService.GetLogAsync(name);
                 StateHasChanged();
-
-                await JSRuntime.InvokeVoidAsync("initializeLogsTable");
             }
             catch (Exception ex)
             {
@@ -55,10 +48,5 @@ namespace HES.Web.Pages.Logs
                 isBusy = false;
             }
         }
-
-        private void ShowDetails(LogModel model)
-        {
-            LogModel = model;
-        }       
     }
 }

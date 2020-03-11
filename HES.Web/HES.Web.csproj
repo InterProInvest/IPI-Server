@@ -16,10 +16,6 @@
 
   </PropertyGroup>
 
-  <PropertyGroup>
-    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>

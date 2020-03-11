@@ -33,23 +33,3 @@ function toggleAllCheckboxes(tableId, state) {
         $(this).attr('checked', state);
     });
 }
-
-// Logs Table
-function initializeLogsTable() {
-    $('#logs').DataTable({
-        "paging": false,
-        "info": false,
-        "order": [[0, "desc"]]
-    });
-    var dataTable = $('#logs').dataTable();
-    $('#searchbox').keyup(function () {
-        dataTable.fnFilter(this.value);
-    });
-    $('.dataTables_filter').addClass('d-none');
-
-    $('.content-body').scrollTop(0);
-}
-
-function destroyLogsTable() {
-    $('#logs').DataTable().destroy();
-}
