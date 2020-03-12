@@ -120,7 +120,7 @@ namespace HES.Core.Services
                 .Take(employeeFilter.Records)
                 .ToListAsync();
         }
-               
+
         public async Task<Employee> CreateEmployeeAsync(Employee employee)
         {
             if (employee == null)
@@ -132,7 +132,7 @@ namespace HES.Core.Services
             var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
             if (exist)
             {
-                throw new Exception($"{employee.FirstName} {employee.LastName} already in use.");
+                throw new Exception($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
             return await _employeeRepository.AddAsync(employee);
@@ -142,6 +142,15 @@ namespace HES.Core.Services
         {
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
+
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
+
+            var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id);
+            if (exist)
+            {
+                throw new Exception($"{employee.FirstName} {employee.LastName} already exists.");
+            }
 
             var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
             await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
@@ -682,7 +691,7 @@ namespace HES.Core.Services
 
             if (selectedDevices == null)
                 throw new ArgumentNullException(nameof(selectedDevices));
-                     
+
             ValidationHepler.VerifyOtpSecret(accountPassword.OtpSecret);
 
             _dataProtectionService.Validate();
@@ -701,7 +710,7 @@ namespace HES.Core.Services
                     {
                         throw new Exception("This device and this employee are not linked.");
                     }
-                    
+
                     var exist = await _deviceAccountService
                         .Query()
                         .Where(s => s.Name == deviceAccount.Name)

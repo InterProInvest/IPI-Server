@@ -8,9 +8,11 @@ namespace HES.Core.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
+
         [Required]
         [Display(Name = "Company")]
         public string CompanyId { get; set; }
+
         [Required]
         [Display(Name = "Departments")]
         public string Name { get; set; }

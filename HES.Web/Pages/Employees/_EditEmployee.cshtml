@@ -25,17 +25,22 @@
     </div>
     <div class="form-group">
         <label asp-for="Employee.Department.CompanyId" class="control-label text-gray"></label>
-        <select id="companies" asp-for="Employee.Department.CompanyId" onchange="GetDepartment(this.value)" class="form-control text-navyblue" asp-items="ViewBag.CompanyIdList"></select>
+        <select id="companies" asp-for="CompanyId" onchange="GetDepartment(this.value)" class="form-control text-navyblue" asp-items="ViewBag.CompanyIdList">
+            <option value=""></option>
+        </select>
     </div>
     <div class="form-group">
         <label asp-for="Employee.DepartmentId" class="control-label text-gray"></label>
-        <select id="departments" asp-for="Employee.DepartmentId" class="form-control text-navyblue" asp-items="ViewBag.DepartmentIdList"></select>
-        <input id="departmentName" type="hidden" asp-for="Employee.Department.Name" value="name" />
+        <select id="departments" asp-for="Employee.DepartmentId" class="form-control text-navyblue" asp-items="ViewBag.DepartmentIdList">
+            <option value=""></option>
+        </select>
         <span asp-validation-for="Employee.DepartmentId" class="text-danger"></span>
     </div>
     <div class="form-group mb-4">
         <label asp-for="Employee.PositionId" class="control-label text-gray"></label>
-        <select asp-for="Employee.PositionId" class="form-control text-navyblue" asp-items="ViewBag.PositionIdList"></select>
+        <select asp-for="Employee.PositionId" class="form-control text-navyblue" asp-items="ViewBag.PositionIdList">
+            <option value=""></option>
+        </select>
         <span asp-validation-for="Employee.PositionId" class="text-danger"></span>
     </div>
     <div class="form-group m-0 text-right">

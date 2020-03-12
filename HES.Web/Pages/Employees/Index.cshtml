@@ -384,7 +384,9 @@
         // Dropdown Department
         function GetDepartment(id, current) {
             EnableOrDisableDepartment();
-            if (typeof id == 'undefined'|| id === '') {
+            if (typeof id == 'undefined' || id === '') {
+                var subList = $("#departments");
+                subList.empty();
                 return;
             }
             $.getJSON('/Employees?handler=JsonDepartment', { id: id },
