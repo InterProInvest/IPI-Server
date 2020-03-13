@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Group;
 using HES.Core.Utilities;
@@ -155,6 +156,13 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(group));
             }
 
+            var exist = await _groupRepository.ExistAsync(x => x.Name == group.Name && x.Id != group.Id);
+
+            if (exist)
+            {
+                throw new AlreadyExistException("This name is already in use.");
+            }
+
             await _groupRepository.UpdateAsync(group);
         }
 
@@ -276,7 +284,7 @@ namespace HES.Core.Services
             {
                 throw new ArgumentNullException(nameof(groupMembershipId));
             }
-                   
+
             var groupMembership = await _groupMembershipRepository.GetByIdAsync(groupMembershipId);
             if (groupMembership == null)
             {
@@ -285,7 +293,7 @@ namespace HES.Core.Services
 
             await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
-        
+
         public async Task<bool> CheckExistsGroupNameAsync(string name)
         {
             return await _groupRepository.Query().AnyAsync(x => x.Name == name);

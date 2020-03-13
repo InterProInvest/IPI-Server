@@ -17,7 +17,6 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
 
         public Group Group = new Group();
-
         public NameUsage NameUsageMessage;
 
         private async Task CreateAsync()

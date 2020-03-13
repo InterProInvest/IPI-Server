@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -16,7 +17,9 @@ namespace HES.Web.Pages.Groups
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string GroupId { get; set; }
+
         public Group Group { get; set; }
+        public ValidationErrorMessage ValidationErrorMessage;
 
         protected override async Task OnInitializedAsync()
         {
@@ -45,14 +48,16 @@ namespace HES.Web.Pages.Groups
                 await GroupService.EditGroupAsync(Group);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Group updated.", ToastLevel.Success);
+                await ModalDialogService.CloseAsync();
+            }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(Core.Entities.Group.Name), ex.Message);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
                 await ModalDialogService.CloseAsync();
             }
         }
