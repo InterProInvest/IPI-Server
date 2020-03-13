@@ -676,6 +676,9 @@ namespace HES.Core.Services
                 case WorkstationAccountType.Microsoft:
                     deviceAccount.Login = $"@\\{workstationAccount.Login}";
                     break;
+                case WorkstationAccountType.AzureAD:
+                    deviceAccount.Login = $"AzureAD\\{workstationAccount.Login}";
+                    break;
             }
 
             return await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password }, new string[] { deviceId });

@@ -40,6 +40,7 @@ namespace HES.Core.Models
     {
         Local,
         Domain,
-        Microsoft
+        Microsoft,
+        AzureAD
     }
 }
