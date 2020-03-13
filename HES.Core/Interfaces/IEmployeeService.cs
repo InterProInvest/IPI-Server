@@ -12,7 +12,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Employee> EmployeeQuery();
         Task<Employee> GetEmployeeByIdAsync(string id);
-        Task<List<Employee>> GetAllEmployeesAsync();
+        Task<List<Employee>> GetEmployeesAsync();
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);
@@ -21,23 +21,21 @@ namespace HES.Core.Interfaces
         Task UpdateLastSeenAsync(string deviceId);
         Task AddDeviceAsync(string employeeId, string[] selectedDevices);
         Task RemoveDeviceAsync(string employeeId, string deviceId);
-        Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
-        Task UpdatePasswordSamlIdpAccountAsync(string email, string password);
-        Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
-        Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
-        Task DeleteSamlIdpAccountAsync(string employeeId);
-        Task<List<DeviceAccount>> GetDeviceAccountsByEmployeeIdAsync(string employeeId);
-        Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
-        Task SetAsWorkstationAccountAsync(string deviceId, string deviceAccountId);
-        Task<IList<DeviceAccount>> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string deviceId);
-        Task<IList<DeviceAccount>> CreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices);
-        Task EditPersonalAccountAsync(DeviceAccount deviceAccount);
-        Task EditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
-        Task EditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword);
-        Task<IList<DeviceAccount>> AddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices);
-        Task<string> DeleteAccountAsync(string accountId);
-        Task<DeviceAccount> GetLastChangedAccountAsync(string deviceId);
-        Task UndoChangesAsync(string deviceId);
+        //Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
+        //Task UpdatePasswordSamlIdpAccountAsync(string email, string password);
+        //Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
+        //Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
+        //Task DeleteSamlIdpAccountAsync(string employeeId);
+        Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);
+        Task<Account> GetAccountByIdAsync(string accountId);
+        Task<Account> CreatePersonalAccountAsync(Account account, AccountPassword accountPassword);
+        Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId);
+        Task SetAsWorkstationAccountAsync(string employeeId, string accountId);
+        Task EditPersonalAccountAsync(Account account);
+        Task EditPersonalAccountPwdAsync(Account account, AccountPassword accountPassword);
+        Task EditPersonalAccountOtpAsync(Account account, AccountPassword accountPassword);
+        Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId);
+        Task<Account> DeleteAccountAsync(string accountId);
         Task HandlingMasterPasswordErrorAsync(string deviceId);
     }
 }

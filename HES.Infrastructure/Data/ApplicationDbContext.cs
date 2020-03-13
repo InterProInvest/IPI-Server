@@ -32,7 +32,7 @@ namespace HES.Infrastructure
         public DbSet<SharedAccount> SharedAccounts { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<Device> Devices { get; set; }
-        public DbSet<DeviceAccount> DeviceAccounts { get; set; }
+        public DbSet<Account> DeviceAccounts { get; set; }
         public DbSet<DeviceTask> DeviceTasks { get; set; }
         public DbSet<ProximityDevice> ProximityDevices { get; set; }
         public DbSet<WorkstationEvent> WorkstationEvents { get; set; }

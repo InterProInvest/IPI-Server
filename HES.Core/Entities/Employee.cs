@@ -27,13 +27,18 @@ namespace HES.Core.Entities
         public string PositionId { get; set; }
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
+        public string PrimaryAccountId { get; set; }
         public List<Device> Devices { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
+
         [ForeignKey("PositionId")]
         public Position Position { get; set; }
+
+        [ForeignKey("PrimaryAccountId")]
+        public Account Account { get; set; }
 
         [NotMapped]
         [Display(Name = "Name")]

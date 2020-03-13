@@ -61,8 +61,8 @@ namespace HES.Web.Pages.Settings.IdentityProvider
 
                 if (currentIdentityProvider.Url != samlIdentityProvider.Url)
                 {
-                    var devices = await _employeeService.UpdateUrlSamlIdpAccountAsync(Request.Host.Value);
-                    _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
+                    //var devices = await _employeeService.UpdateUrlSamlIdpAccountAsync(Request.Host.Value);
+                    //_remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
                 }
 
                 SuccessMessage = $"SAML IdP settings updated.";

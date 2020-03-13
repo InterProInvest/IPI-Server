@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
         private readonly IDeviceService _deviceService;
-        private readonly IDeviceAccountService _deviceAccountService;
+        private readonly IAccountService _deviceAccountService;
         private readonly IEmployeeService _employeeService;
         private readonly IOrgStructureService _orgStructureService;
 
@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
         public IndexModel(IWorkstationAuditService workstationAuditService,
                             IWorkstationService workstationService,
                             IDeviceService deviceService,
-                            IDeviceAccountService deviceAccountService,
+                            IAccountService deviceAccountService,
                             IEmployeeService employeeService,
                             IOrgStructureService orgStructureService)
         {
@@ -155,7 +155,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
                 .OrderBy(d => d.Name)
                 .ToListAsync();
 
-            currentAccounts.Insert(0, new DeviceAccount() { Id = "active", Name = "Active" });
+            currentAccounts.Insert(0, new Account() { Id = "active", Name = "Active" });
 
             var deletedAccounts = await _deviceAccountService
                           .Query()
@@ -163,7 +163,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
                           .OrderBy(d => d.Name)
                           .ToListAsync();
 
-            deletedAccounts.Insert(0, new DeviceAccount() { Id = "deleted", Name = "Deleted" });
+            deletedAccounts.Insert(0, new Account() { Id = "deleted", Name = "Deleted" });
 
             var accounts = currentAccounts.Concat(deletedAccounts);
 

@@ -9,19 +9,15 @@ namespace HES.Core.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
-        public string OldName { get; set; }
-        public string OldUrls { get; set; }
-        public string OldApps { get; set; }
-        public string OldLogin { get; set; }
         public string Password { get; set; }
         public string OtpSecret { get; set; }
         public TaskOperation Operation { get; set; }
         public DateTime CreatedAt { get; set; }
         public string DeviceId { get; set; }
-        public string DeviceAccountId { get; set; }
+        public string AccountId { get; set; }
 
-        [ForeignKey("DeviceAccountId")]
-        public DeviceAccount DeviceAccount { get; set; }
+        [ForeignKey("AccountId")]
+        public Account Account { get; set; }
     }
 
     public enum TaskOperation

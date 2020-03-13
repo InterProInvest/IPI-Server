@@ -31,14 +31,14 @@ namespace HES.Web.Pages.Employees
         private readonly ILogger<DetailsModel> _logger;
 
         public IList<Device> Devices { get; set; }
-        public IList<DeviceAccount> DeviceAccounts { get; set; }
+        public IList<Account> Accounts { get; set; }
         public IList<SharedAccount> SharedAccounts { get; set; }
         public WorkstationAccount WorkstationAccount { get; set; }
 
 
         public Device Device { get; set; }
         public Employee Employee { get; set; }
-        public DeviceAccount DeviceAccount { get; set; }
+        public Account DeviceAccount { get; set; }
         public SharedAccount SharedAccount { get; set; }
         public AccountPassword AccountPassword { get; set; }
         public bool SamlIdentityProviderEnabled { get; set; }
@@ -94,7 +94,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(Employee.Id);
+            Accounts = await _employeeService.GetAccountsByEmployeeIdAsync(Employee.Id);
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
 
@@ -120,120 +120,120 @@ namespace HES.Web.Pages.Employees
         public async Task<IActionResult> OnGetUpdateTableAsync(string id)
         {
             Employee = await _employeeService.GetEmployeeByIdAsync(id);
-            DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(id);
+            Accounts = await _employeeService.GetAccountsByEmployeeIdAsync(id);
             return Partial("_EmployeeDeviceAccounts", this);
         }
 
         #region Employee
 
-        public async Task<IActionResult> OnPostEnableSamlIdentityProviderAsync(Employee employee)
-        {
-            try
-            {
-                // User
-                var user = new ApplicationUser
-                {
-                    UserName = employee.Email,
-                    Email = employee.Email,
-                    FirstName = employee.FirstName,
-                    LastName = employee.LastName,
-                    PhoneNumber = employee.PhoneNumber,
-                    DeviceId = employee.CurrentDevice
-                };
-                var password = Guid.NewGuid().ToString();
-                var result = await _userManager.CreateAsync(user, password);
-                if (!result.Succeeded)
-                {
-                    var erorrs = string.Join("; ", result.Errors.Select(s => s.Description).ToArray());
-                    throw new Exception(erorrs);
-                }
+        //public async Task<IActionResult> OnPostEnableSamlIdentityProviderAsync(Employee employee)
+        //{
+        //    try
+        //    {
+        //        // User
+        //        var user = new ApplicationUser
+        //        {
+        //            UserName = employee.Email,
+        //            Email = employee.Email,
+        //            FirstName = employee.FirstName,
+        //            LastName = employee.LastName,
+        //            PhoneNumber = employee.PhoneNumber,
+        //            DeviceId = employee.CurrentDevice
+        //        };
+        //        var password = Guid.NewGuid().ToString();
+        //        var result = await _userManager.CreateAsync(user, password);
+        //        if (!result.Succeeded)
+        //        {
+        //            var erorrs = string.Join("; ", result.Errors.Select(s => s.Description).ToArray());
+        //            throw new Exception(erorrs);
+        //        }
 
-                // Role
-                await _userManager.AddToRoleAsync(user, ApplicationRoles.UserRole);
+        //        // Role
+        //        await _userManager.AddToRoleAsync(user, ApplicationRoles.UserRole);
 
-                // Create link
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var email = employee.Email;
-                var callbackUrl = Url.Page(
-                   "/Account/External/ActivateAccount",
-                    pageHandler: null,
-                    values: new { area = "Identity", code, email },
-                    protocol: Request.Scheme);
+        //        // Create link
+        //        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        //        var email = employee.Email;
+        //        var callbackUrl = Url.Page(
+        //           "/Account/External/ActivateAccount",
+        //            pageHandler: null,
+        //            values: new { area = "Identity", code, email },
+        //            protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(email, "Hideez Enterpise Server - Activation of SAML IdP account",
-                    $"Dear {employee.FullName}, please click the link below to activate your SAML IdP account: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+        //        await _emailSender.SendEmailAsync(email, "Hideez Enterpise Server - Activation of SAML IdP account",
+        //            $"Dear {employee.FullName}, please click the link below to activate your SAML IdP account: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                SuccessMessage = "SAML IdP account enabled.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //        SuccessMessage = "SAML IdP account enabled.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employee.Id;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employee.Id;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
-        public async Task<IActionResult> OnPostDisableSamlIdentityProviderAsync(Employee employee)
-        {
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(employee.Email);
-                if (user == null)
-                {
-                    throw new Exception("Email address does not exist.");
-                }
+        //public async Task<IActionResult> OnPostDisableSamlIdentityProviderAsync(Employee employee)
+        //{
+        //    try
+        //    {
+        //        var user = await _userManager.FindByEmailAsync(employee.Email);
+        //        if (user == null)
+        //        {
+        //            throw new Exception("Email address does not exist.");
+        //        }
 
-                await _userManager.DeleteAsync(user);
-                await _employeeService.DeleteSamlIdpAccountAsync(employee.Id);
+        //        await _userManager.DeleteAsync(user);
+        //        await _employeeService.DeleteSamlIdpAccountAsync(employee.Id);
 
-                SuccessMessage = "SAML IdP account disabled.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //        SuccessMessage = "SAML IdP account disabled.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employee.Id;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employee.Id;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
-        public async Task<IActionResult> OnPostResetSamlIdentityProviderAsync(Employee employee)
-        {
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(employee.Email);
-                if (user == null)
-                {
-                    throw new Exception("Email address does not exist.");
-                }
+        //public async Task<IActionResult> OnPostResetSamlIdentityProviderAsync(Employee employee)
+        //{
+        //    try
+        //    {
+        //        var user = await _userManager.FindByEmailAsync(employee.Email);
+        //        if (user == null)
+        //        {
+        //            throw new Exception("Email address does not exist.");
+        //        }
 
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var email = employee.Email;
-                var callbackUrl = Url.Page(
-                    "/Account/External/ResetAccountPassword",
-                    pageHandler: null,
-                    values: new { area = "Identity", code, email },
-                    protocol: Request.Scheme);
+        //        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        //        var email = employee.Email;
+        //        var callbackUrl = Url.Page(
+        //            "/Account/External/ResetAccountPassword",
+        //            pageHandler: null,
+        //            values: new { area = "Identity", code, email },
+        //            protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    email,
-                    "Hideez Enterpise Server - Reset Password of SAML IdP account",
-                    $"Dear {employee.FullName}, please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+        //        await _emailSender.SendEmailAsync(
+        //            email,
+        //            "Hideez Enterpise Server - Reset Password of SAML IdP account",
+        //            $"Dear {employee.FullName}, please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                SuccessMessage = "SAML IdP account password reseted.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //        SuccessMessage = "SAML IdP account password reseted.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employee.Id;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employee.Id;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
         private async Task<bool> EmployeeExists(string id)
         {
@@ -248,7 +248,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
+            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
@@ -259,12 +259,13 @@ namespace HES.Web.Pages.Employees
             return Partial("_SetPrimaryAccount", this);
         }
 
-        public async Task<IActionResult> OnPostSetPrimaryAccountAsync(string deviceId, string accountId, string employeeId)
+        public async Task<IActionResult> OnPostSetPrimaryAccountAsync(string employeeId, string accountId)
         {
             try
             {
-                await _employeeService.SetAsWorkstationAccountAsync(deviceId, accountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
+                await _employeeService.SetAsWorkstationAccountAsync(employeeId, accountId);
+                var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -373,15 +374,15 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                if (SamlIdentityProviderEnabled)
-                {
-                    var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
-                    if (user != null)
-                    {
-                        await _userManager.DeleteAsync(user);
-                        await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
-                    }
-                }
+                //if (SamlIdentityProviderEnabled)
+                //{
+                //    var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
+                //    if (user != null)
+                //    {
+                //        await _userManager.DeleteAsync(user);
+                //        await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
+                //    }
+                //}
 
                 await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(device.Id);
@@ -420,12 +421,12 @@ namespace HES.Web.Pages.Employees
             Templates = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
             WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
 
-            Devices = await _deviceService.DeviceQuery().Where(d => d.EmployeeId == id).ToListAsync();
+            //Devices = await _deviceService.DeviceQuery().Where(d => d.EmployeeId == id).ToListAsync();
 
             return Partial("_CreatePersonalAccount", this);
         }
 
-        public async Task<IActionResult> OnPostCreatePersonalAccountAsync(DeviceAccount deviceAccount, AccountPassword accountPassword, string[] selectedDevices)
+        public async Task<IActionResult> OnPostCreatePersonalAccountAsync(Account deviceAccount, AccountPassword accountPassword)
         {
             var id = deviceAccount.EmployeeId;
 
@@ -438,8 +439,9 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.CreatePersonalAccountAsync(deviceAccount, accountPassword, selectedDevices);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
+                await _employeeService.CreatePersonalAccountAsync(deviceAccount, accountPassword);
+                var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -473,7 +475,7 @@ namespace HES.Web.Pages.Employees
             {
                 foreach (var deviceId in selectedDevicesW)
                 {
-                    await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId, deviceId);
+                    await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
                 }
 
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevicesW);
@@ -496,7 +498,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
+            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
@@ -507,7 +509,7 @@ namespace HES.Web.Pages.Employees
             return Partial("_EditPersonalAccount", this);
         }
 
-        public async Task<IActionResult> OnPostEditPersonalAccountAsync(DeviceAccount deviceAccount)
+        public async Task<IActionResult> OnPostEditPersonalAccountAsync(Account deviceAccount)
         {
             var id = deviceAccount.EmployeeId;
 
@@ -521,7 +523,8 @@ namespace HES.Web.Pages.Employees
             try
             {
                 await _employeeService.EditPersonalAccountAsync(deviceAccount);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccount.DeviceId);
+                var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -541,7 +544,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
+            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
@@ -552,7 +555,7 @@ namespace HES.Web.Pages.Employees
             return Partial("_EditPersonalAccountPwd", this);
         }
 
-        public async Task<IActionResult> OnPostEditPersonalAccountPwdAsync(DeviceAccount deviceAccount, AccountPassword accountPassword)
+        public async Task<IActionResult> OnPostEditPersonalAccountPwdAsync(Account deviceAccount, AccountPassword accountPassword)
         {
             var id = deviceAccount.EmployeeId;
 
@@ -566,7 +569,8 @@ namespace HES.Web.Pages.Employees
             try
             {
                 await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccount.DeviceId);
+                var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -586,7 +590,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
+            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
@@ -597,14 +601,15 @@ namespace HES.Web.Pages.Employees
             return Partial("_EditPersonalAccountOtp", this);
         }
 
-        public async Task<IActionResult> OnPostEditPersonalAccountOtpAsync(DeviceAccount deviceAccount, AccountPassword accountPassword)
+        public async Task<IActionResult> OnPostEditPersonalAccountOtpAsync(Account deviceAccount, AccountPassword accountPassword)
         {
             var id = deviceAccount.EmployeeId;
 
             try
             {
                 await _employeeService.EditPersonalAccountOtpAsync(deviceAccount, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccount.DeviceId);
+                var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -652,8 +657,9 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId, selectedDevices);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
+                var account = await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId);
+                var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account added and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -678,7 +684,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            DeviceAccount = await _employeeService.GetDeviceAccountByIdAsync(id);
+            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
             if (DeviceAccount == null)
             {
@@ -699,55 +705,10 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                var deviceId = await _employeeService.DeleteAccountAsync(accountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
+                var account = await _employeeService.DeleteAccountAsync(accountId);
+                var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account deleting and will be deleted when the device is connected to the server.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
-
-            var id = employeeId;
-            return RedirectToPage("./Details", new { id });
-        }
-
-        #endregion
-
-        #region Undo
-
-        public async Task<IActionResult> OnGetUndoChangesAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
-
-            DeviceAccount = await _employeeService.GetLastChangedAccountAsync(id);
-
-            if (DeviceAccount == null)
-            {
-                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
-                return NotFound();
-            }
-
-            return Partial("_UndoChanges", this);
-        }
-
-        public async Task<IActionResult> OnPostUndoChangesAsync(string deviceId, string employeeId)
-        {
-            if (deviceId == null)
-            {
-                _logger.LogWarning($"{nameof(deviceId)} is null");
-                return NotFound();
-            }
-
-            try
-            {
-                await _employeeService.UndoChangesAsync(deviceId);
-                SuccessMessage = "Changes were canceled.";
             }
             catch (Exception ex)
             {

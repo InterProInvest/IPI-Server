@@ -301,7 +301,7 @@ namespace HES.Core.Hubs
                 return null;
 
             bool needUpdate = await _deviceTaskService
-                .Query()
+                .TaskQuery()
                 .Where(t => t.DeviceId == device.Id)
                 .AsNoTracking()
                 .AnyAsync();
