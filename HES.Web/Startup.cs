@@ -18,7 +18,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
@@ -281,16 +280,6 @@ namespace HES.Web
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
             logger.LogInformation("Server started");
-            // Apply migration
-            var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
-            context.Database.Migrate();
-            // Db seed
-            var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-            var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-            new ApplicationDbSeed(context, userManager, roleManager).Initialize().Wait();
-            // Data protection status
-            var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
-            dataProtectionService.Initialize().Wait();
         }
     }
 }

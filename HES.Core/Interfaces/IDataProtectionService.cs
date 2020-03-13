@@ -5,7 +5,7 @@ namespace HES.Core.Interfaces
 {
     public interface IDataProtectionService
     {
-        Task Initialize();
+        Task InitializeAsync();
         ProtectionStatus Status();       
         void Validate();
         Task EnableProtectionAsync(string password);
