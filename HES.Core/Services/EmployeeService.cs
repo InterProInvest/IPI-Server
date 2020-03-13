@@ -12,6 +12,7 @@ using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
 using HES.Core.Enums;
 using System.Transactions;
+using HES.Core.Exceptions;
 
 namespace HES.Core.Services
 {
@@ -132,7 +133,7 @@ namespace HES.Core.Services
             var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
             if (exist)
             {
-                throw new Exception($"{employee.FirstName} {employee.LastName} already exists.");
+                throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
             return await _employeeRepository.AddAsync(employee);
@@ -149,7 +150,7 @@ namespace HES.Core.Services
             var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id);
             if (exist)
             {
-                throw new Exception($"{employee.FirstName} {employee.LastName} already exists.");
+                throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
             var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };

@@ -27,21 +27,21 @@ else
         <button class="btn btn-light m-1 p-1" title="Delete Group" @onclick="OpenModalDeleteGroup" disabled="@(CurrentGroupId == null ? true : false)">
             <img style="width:32px;height:32px;" src="/svg/action/delete.svg" />
         </button>
-        <SearchBox Search="RefreshTable"/>
+        <SearchBox Search="RefreshTable" />
     </div>
     <div class="table-responsive mb-3">
         <table id="groups" class="table table-hover border rounded w-100 mb-0">
             <thead style="user-select: none; ">
                 <tr>
-                    <th @onclick="@(() => SortTable(nameof(Group.Name)))">
+                    <th style="width:70%" @onclick="@(() => SortTable(nameof(Group.Name)))">
                         @nameof(Group.Name)
                         <img class="table-sort-arrow @SetSortIcon(nameof(Group.Name))" />
                     </th>
-                    <th @onclick="@(() => SortTable(nameof(Group.Email)))">
+                    <th style="width:20%" @onclick="@(() => SortTable(nameof(Group.Email)))">
                         @nameof(Group.Email)
                         <img class="table-sort-arrow @SetSortIcon(nameof(Group.Email))" />
                     </th>
-                    <th @onclick="@(() => SortTable("Employees"))">
+                    <th style="width:10%" @onclick="@(() => SortTable("Employees"))">
                         Employees
                         <img class="table-sort-arrow @SetSortIcon("Employees")" />
                     </th>
@@ -70,5 +70,5 @@ else
                 SelectedPageAsync="RefreshTable"
                 TotalRecords="TotalRecords"
                 CurrentPage="CurrentPage"
-                DisplayRows="DisplayRows"/>
+                DisplayRows="DisplayRows" />
 }

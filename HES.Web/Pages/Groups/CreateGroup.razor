@@ -1,6 +1,6 @@
 ﻿<EditForm Model="Group" OnValidSubmit="CreateAsync">
     <DataAnnotationsValidator />
-    <NameUsage @ref="NameUsageMessage" />
+    <ValidationErrorMessage @ref="ValidationErrorMessage" />
     <div class="form-group">
         <label class="control-label text-gray">Name</label>
         <InputText id="apiKey" @bind-Value="Group.Name" class="form-control text-navyblue" />

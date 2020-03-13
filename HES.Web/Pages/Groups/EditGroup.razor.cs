@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Groups
         [Parameter] public string GroupId { get; set; }
 
         public Group Group { get; set; }
-        public ValidationErrorMessage ValidationErrorMessage;
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         protected override async Task OnInitializedAsync()
         {

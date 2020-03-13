@@ -143,7 +143,7 @@ namespace HES.Core.Services
 
             if (exist)
             {
-                throw new Exception("This name is already in use.");
+                throw new AlreadyExistException("This name is already in use.");
             }
 
             return await _groupRepository.AddAsync(group);
@@ -294,21 +294,18 @@ namespace HES.Core.Services
             await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
-        public async Task<bool> CheckExistsGroupNameAsync(string name)
-        {
-            return await _groupRepository.Query().AnyAsync(x => x.Name == name);
-        }
-
         public async Task CreateGroupRangeAsync(List<Group> groups)
         {
             foreach (var group in groups)
             {
-                var exist = await _groupRepository.ExistAsync(x => x.Name == group.Name);
-                if (exist)
+                try
                 {
-                    continue;
+                    await CreateGroupAsync(group);
                 }
-                await CreateGroupAsync(group);
+                catch (AlreadyExistException)
+                {
+                    // Continue, if group exist
+                }
             }
         }
     }
