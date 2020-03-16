@@ -1,7 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Models;
 using HES.Core.Interfaces;
-using HES.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -24,7 +23,6 @@ namespace HES.Web.Pages.Employees
         private readonly IDeviceService _deviceService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly ITemplateService _templateService;
-        private readonly ISamlIdentityProviderService _samlIdentityProviderService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSenderService _emailSender;
@@ -34,7 +32,6 @@ namespace HES.Web.Pages.Employees
         public IList<Account> Accounts { get; set; }
         public IList<SharedAccount> SharedAccounts { get; set; }
         public WorkstationAccount WorkstationAccount { get; set; }
-
 
         public Device Device { get; set; }
         public Employee Employee { get; set; }
@@ -61,7 +58,6 @@ namespace HES.Web.Pages.Employees
                             IDeviceService deviceService,
                             ISharedAccountService sharedAccountService,
                             ITemplateService templateService,
-                            ISamlIdentityProviderService samlIdentityProviderService,
                             IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                             UserManager<ApplicationUser> userManager,
                             IEmailSenderService emailSender,
@@ -71,7 +67,6 @@ namespace HES.Web.Pages.Employees
             _deviceService = deviceService;
             _sharedAccountService = sharedAccountService;
             _templateService = templateService;
-            _samlIdentityProviderService = samlIdentityProviderService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _userManager = userManager;
             _emailSender = emailSender;
@@ -97,22 +92,6 @@ namespace HES.Web.Pages.Employees
             Accounts = await _employeeService.GetAccountsByEmployeeIdAsync(Employee.Id);
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
-
-            #region Idp
-            SamlIdentityProviderEnabled = await _samlIdentityProviderService.GetStatusAsync();
-            if (SamlIdentityProviderEnabled)
-            {
-                var user = await _userManager.FindByEmailAsync(Employee.Email);
-                if (user != null)
-                {
-                    UserSamlIdpEnabled = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
-                }
-                else
-                {
-                    UserSamlIdpEnabled = false;
-                }
-            }
-            #endregion
 
             return Page();
         }

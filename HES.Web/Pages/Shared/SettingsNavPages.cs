@@ -18,9 +18,7 @@ namespace HES.Web.Pages
         public static string LicenseOrders => "./LicenseOrders/Index";
 
         public static string Parameters => "./Parameters/Index";
-
-        public static string IdentityProvider => "./IdentityProvider/Index";
-
+        
 
         public static string AdministratorsNavClass(ViewContext viewContext) => PageNavClass(viewContext, Administrators);
 
@@ -35,9 +33,7 @@ namespace HES.Web.Pages
         public static string LicenseOrdersNavClass(ViewContext viewContext) => PageNavClass(viewContext, LicenseOrders);
 
         public static string ParametersNavClass(ViewContext viewContext) => PageNavClass(viewContext, Parameters);
-
-        public static string IdentityProviderNavClass(ViewContext viewContext) => PageNavClass(viewContext, IdentityProvider);
-
+               
 
         private static string PageNavClass(ViewContext viewContext, string page)
         {

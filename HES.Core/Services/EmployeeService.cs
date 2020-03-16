@@ -28,7 +28,6 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
-        private readonly ISamlIdentityProviderService _samlIdentityProviderService;
 
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
                                IDeviceService deviceService,
@@ -39,8 +38,7 @@ namespace HES.Core.Services
                                ILicenseService licenseService,
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                IAsyncRepository<WorkstationSession> workstationSessionRepository,
-                               IDataProtectionService dataProtectionService,
-                               ISamlIdentityProviderService samlIdentityProviderService)
+                               IDataProtectionService dataProtectionService)
         {
             _employeeRepository = employeeRepository;
             _deviceService = deviceService;
@@ -52,7 +50,6 @@ namespace HES.Core.Services
             _workstationEventRepository = workstationEventRepository;
             _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
-            _samlIdentityProviderService = samlIdentityProviderService;
         }
 
         #region Employee
@@ -290,6 +287,12 @@ namespace HES.Core.Services
                 }
 
                 await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.EmployeeId), nameof(Device.AcceessProfileId), nameof(Device.State) });
+
+                var employee = await _employeeRepository.GetByIdAsync(employeeId);
+                if (employee.Devices.Count() == 0)
+                {
+                    await _accountService.RemoveAllAccountsAsync(employeeId);
+                }
 
                 transactionScope.Complete();
             }
@@ -573,7 +576,10 @@ namespace HES.Core.Services
             if (employee.Devices.Count == 0)
                 throw new Exception("Employee has no device");
 
-            var exist = await _accountService.ExistAsync(x => x.Name == account.Name && x.Login == account.Login && x.Deleted == false);
+            var exist = await _accountService.ExistAsync(x => x.EmployeeId == account.EmployeeId &&
+                                                         x.Name == account.Name &&
+                                                         x.Login == account.Login &&
+                                                         x.Deleted == false);
             if (exist)
                 throw new Exception("An account with the same name and login exist.");
 
@@ -837,7 +843,10 @@ namespace HES.Core.Services
             if (sharedAccount == null)
                 throw new Exception("Shared Account not found");
 
-            var exist = await _accountService.ExistAsync(x => x.Name == sharedAccount.Name && x.Login == sharedAccount.Login && x.Deleted == false);
+            var exist = await _accountService.ExistAsync(x => x.EmployeeId == employeeId &&
+                                                         x.Name == sharedAccount.Name &&
+                                                         x.Login == sharedAccount.Login &&
+                                                         x.Deleted == false);
             if (exist)
                 throw new Exception("An account with the same name and login exists");
 
