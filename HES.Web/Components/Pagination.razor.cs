@@ -11,6 +11,7 @@ namespace HES.Web.Components
         [Parameter] public Func<int, int, Task> SelectedPageAsync { get; set; }
         [Parameter] public int ButtonRadius { get; set; } = 1;
         [Parameter] public int DisplayRows { get; set; } = 10;
+        [Parameter] public int DisplayRecords { get; set; } = 10;
         [Parameter] public int CurrentPage { get; set; } = 1;
         [Parameter] public int TotalRecords { get; set; }
         [Parameter] public bool DisplayRecordsSelector { get; set; } = false;
@@ -87,7 +88,7 @@ namespace HES.Web.Components
                 }
             }
 
-            var isNextButtonEnabled = CurrentPage != TotalPages;
+            var isNextButtonEnabled = CurrentPage < TotalPages && TotalPages != 0;
             var nextPage = CurrentPage + 1;
             Links.Add(new PageLink(nextPage, isNextButtonEnabled, NextButton));
         }
