@@ -12,6 +12,7 @@ using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
 using HES.Core.Enums;
 using System.Transactions;
+using HES.Core.Exceptions;
 
 namespace HES.Core.Services
 {
@@ -132,7 +133,7 @@ namespace HES.Core.Services
             var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
             if (exist)
             {
-                throw new Exception($"{employee.FirstName} {employee.LastName} already in use.");
+                throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
             return await _employeeRepository.AddAsync(employee);
@@ -142,6 +143,15 @@ namespace HES.Core.Services
         {
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
+
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
+
+            var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id);
+            if (exist)
+            {
+                throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
+            }
 
             var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
             await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
@@ -629,6 +639,9 @@ namespace HES.Core.Services
                 case WorkstationAccountType.Microsoft:
                     deviceAccount.Login = $"@\\{workstationAccount.Login}";
                     break;
+                case WorkstationAccountType.AzureAD:
+                    deviceAccount.Login = $"AzureAD\\{workstationAccount.Login}";
+                    break;
             }
 
             return await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password });
@@ -846,7 +859,7 @@ namespace HES.Core.Services
 
             Account createdAccount;
             List<DeviceTask> tasks = new List<DeviceTask>();
-            
+
             foreach (var device in employee.Devices)
             {
                 tasks.Add(new DeviceTask

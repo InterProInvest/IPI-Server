@@ -128,6 +128,7 @@ namespace HES.Core.Services
             catch (Exception ex)
             {
                 tcs.SetException(ex);
+                throw;
             }
             finally
             {

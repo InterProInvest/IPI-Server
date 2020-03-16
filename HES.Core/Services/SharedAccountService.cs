@@ -114,6 +114,9 @@ namespace HES.Core.Services
                 case WorkstationAccountType.Microsoft:
                     sharedAccount.Login = $"@\\{workstationAccount.Login}";
                     break;
+                case WorkstationAccountType.AzureAD:
+                    sharedAccount.Login = $"AzureAD\\{workstationAccount.Login}";
+                    break;
             }
 
             return await CreateSharedAccountAsync(sharedAccount);

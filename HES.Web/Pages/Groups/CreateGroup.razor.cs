@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -17,25 +18,20 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
 
         public Group Group = new Group();
-
-        public NameUsage NameUsageMessage;
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         private async Task CreateAsync()
         {
             try
-            {                
-                var isExist = await GroupService.CheckExistsGroupNameAsync(Group.Name);
-
-                if (isExist)
-                {
-                    NameUsageMessage.DisplayError("Name", "This name is already in use.");
-                    return;
-                }
-
+            {     
                 await GroupService.CreateGroupAsync(Group);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Group created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
+            }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(Core.Entities.Group.Name), ex.Message);
             }
             catch (Exception ex)
             {

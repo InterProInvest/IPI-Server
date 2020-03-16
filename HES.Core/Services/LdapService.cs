@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
 using System;
@@ -79,9 +80,9 @@ namespace HES.Core.Services
                 {
                     await _employeeService.CreateEmployeeAsync(user.Employee);
                 }
-                catch (Exception)
+                catch (AlreadyExistException)
                 {
-                    // TODO if user exist
+                    // Continue, if user exist
                 }
 
                 if (createGroups && user.Groups != null)
@@ -165,9 +166,9 @@ namespace HES.Core.Services
                     {
                         await _groupService.CreateGroupAsync(group.Group);
                     }
-                    catch (Exception ex)
+                    catch (AlreadyExistException)
                     {
-                        // TODO if group exist
+                        // Continue, if group exist
                     }
 
                     if (createEmployees && group.Employees != null)
@@ -178,15 +179,14 @@ namespace HES.Core.Services
                             {
                                 await _employeeService.CreateEmployeeAsync(employee);
                             }
-                            catch (Exception ex)
+                            catch (AlreadyExistException)
                             {
-                                // TODO if exist
+                                // Continue, if user exist
                             }
                         }
                         await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), group.Group.Id);
                     }
                 }
-
                 transactionScope.Complete();
             }
         }

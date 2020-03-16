@@ -39,7 +39,7 @@ namespace HES.Core.Services
             _logger = logger;
         }
 
-        public async Task Initialize()
+        public async Task InitializeAsync()
         {
             _protectionEnabled = false;
             _protectionActivated = false;
