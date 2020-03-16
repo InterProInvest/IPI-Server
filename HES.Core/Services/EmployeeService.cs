@@ -73,6 +73,18 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<Employee> GetEmployeeByFullNameAsync(Employee employee)
+        {
+            return await _employeeRepository
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .ThenInclude(e => e.DeviceAccessProfile)
+                .FirstOrDefaultAsync(x => x.FirstName == employee.FirstName &&
+                                          x.LastName == employee.LastName);
+        }
+
         public async Task<List<Employee>> GetAllEmployeesAsync()
         {
             return await _employeeRepository

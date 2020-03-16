@@ -132,6 +132,11 @@ namespace HES.Core.Services
             return await _groupRepository.GetByIdAsync(groupId);
         }
 
+        public async Task<Group> GetGroupByNameAsync(Group group)
+        {
+            return await _groupRepository.Query().FirstOrDefaultAsync(x => x.Name == group.Name);
+        }
+
         public async Task<Group> CreateGroupAsync(Group group)
         {
             if (group == null)
@@ -256,25 +261,22 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(groupIds));
             }
 
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+
+            foreach (var groupId in groupIds)
             {
-                foreach (var groupId in groupIds)
+                var employeeExist = await _groupMembershipRepository.ExistAsync(x => x.EmployeeId == employeeId && x.GroupId == groupId);
+                if (employeeExist)
                 {
-                    var employeeExist = await _groupMembershipRepository.ExistAsync(x => x.EmployeeId == employeeId && x.GroupId == groupId);
-                    if (employeeExist)
-                    {
-                        continue;
-                    }
-
-                    var groupMembership = new GroupMembership()
-                    {
-                        EmployeeId = employeeId,
-                        GroupId = groupId
-                    };
-
-                    await _groupMembershipRepository.AddAsync(groupMembership);
+                    continue;
                 }
-                transactionScope.Complete();
+
+                var groupMembership = new GroupMembership()
+                {
+                    EmployeeId = employeeId,
+                    GroupId = groupId
+                };
+
+                await _groupMembershipRepository.AddAsync(groupMembership);
             }
         }
 

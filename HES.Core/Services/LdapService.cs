@@ -74,26 +74,28 @@ namespace HES.Core.Services
 
         public async Task AddAdUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
         {
-            foreach (var user in users)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                try
+                foreach (var user in users)
                 {
-                    await _employeeService.CreateEmployeeAsync(user.Employee);
-                }
-                catch (AlreadyExistException)
-                {
-                    // Continue, if user exist
-                }
+                    Employee employee = null;
+                    try
+                    {
+                        employee = await _employeeService.CreateEmployeeAsync(user.Employee);
+                    }
+                    catch (AlreadyExistException)
+                    {
+                        // If user exist
+                        employee = await _employeeService.GetEmployeeByFullNameAsync(user.Employee);
+                    }
 
-                if (createGroups && user.Groups != null)
-                {
-                    using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                    if (createGroups && user.Groups != null)
                     {
                         await _groupService.CreateGroupRangeAsync(user.Groups);
-                        await _groupService.AddEmployeeToGroupsAsync(user.Employee.Id, user.Groups.Select(s => s.Id).ToList());
-                        transactionScope.Complete();
+                        await _groupService.AddEmployeeToGroupsAsync(employee.Id, user.Groups.Select(s => s.Id).ToList());
                     }
                 }
+                transactionScope.Complete();
             }
         }
 
@@ -162,29 +164,34 @@ namespace HES.Core.Services
             {
                 foreach (var group in groups)
                 {
+                    Group currentGroup = null;
                     try
                     {
-                        await _groupService.CreateGroupAsync(group.Group);
+                        currentGroup = await _groupService.CreateGroupAsync(group.Group);
                     }
                     catch (AlreadyExistException)
                     {
-                        // Continue, if group exist
+                        // If group exist
+                        currentGroup = await _groupService.GetGroupByNameAsync(group.Group);
                     }
 
                     if (createEmployees && group.Employees != null)
                     {
                         foreach (var employee in group.Employees)
                         {
+                            Employee currentEmployee = null;
                             try
                             {
-                                await _employeeService.CreateEmployeeAsync(employee);
+                                currentEmployee = await _employeeService.CreateEmployeeAsync(employee);
                             }
                             catch (AlreadyExistException)
                             {
-                                // Continue, if user exist
+                                // If user exist
+                                currentEmployee = await _employeeService.GetEmployeeByFullNameAsync(employee);
+                                employee.Id = currentEmployee.Id;
                             }
                         }
-                        await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), group.Group.Id);
+                        await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), currentGroup.Id);
                     }
                 }
                 transactionScope.Complete();
