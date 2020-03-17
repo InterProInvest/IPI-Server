@@ -156,12 +156,27 @@ namespace HES.Core.Services
             if (device == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
 
+            await CheckLockedAsync(remoteDevice, device);
             await CheckLinkedAsync(remoteDevice, device);
             await CheckPassphraseAsync(remoteDevice, deviceId);
             await CheckStateAsync(remoteDevice, device);
             await CheckTaskAsync(remoteDevice, deviceId, primaryAccountOnly);
 
             return true;
+        }
+
+        private async Task CheckLockedAsync(RemoteDevice remoteDevice, Device device)
+        {
+            if (remoteDevice.AccessLevel.IsLocked)
+            {
+                await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.UnlockPin);
+                await remoteDevice.RefreshDeviceInfo();
+
+                if (remoteDevice.AccessLevel.IsLocked)
+                {
+                    throw new Exception($"Device {device.Id} is locked");
+                }
+            }
         }
 
         private async Task CheckLinkedAsync(RemoteDevice remoteDevice, Device device)

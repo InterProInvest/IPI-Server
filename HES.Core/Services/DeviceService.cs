@@ -233,6 +233,7 @@ namespace HES.Core.Services
                         RFID = newDeviceDto.RFID,
                         Battery = 100,
                         Firmware = newDeviceDto.Firmware,
+                        AcceessProfileId= "default",
                         ImportedAt = DateTime.UtcNow
                     });
                 }
