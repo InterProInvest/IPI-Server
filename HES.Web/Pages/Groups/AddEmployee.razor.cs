@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string GroupId { get; set; }
 
-        public Dictionary<Employee, bool> Employees = new Dictionary<Employee, bool>();
+        public Dictionary<Employee, bool> Employees { get; set; }
 
         private bool _notSelected { get; set; }
         private bool _isSelectedAll { get; set; }
