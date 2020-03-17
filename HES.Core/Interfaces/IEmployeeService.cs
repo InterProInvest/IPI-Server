@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Employee> EmployeeQuery();
         Task<Employee> GetEmployeeByIdAsync(string id);
+        Task<IList<string>> GetEmployeeDevicesAsync(string employeeId);
         Task<List<Employee>> GetEmployeesAsync();
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> CreateEmployeeAsync(Employee employee);
@@ -19,7 +20,7 @@ namespace HES.Core.Interfaces
         Task DeleteEmployeeAsync(string id);
         Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
         Task UpdateLastSeenAsync(string deviceId);
-        Task AddDeviceAsync(string employeeId, string[] selectedDevices);
+        Task AddDeviceAsync(string employeeId, string[] devices);
         Task RemoveDeviceAsync(string employeeId, string deviceId);
         //Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
         //Task UpdatePasswordSamlIdpAccountAsync(string email, string password);

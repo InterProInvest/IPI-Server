@@ -5,8 +5,8 @@ namespace HES.Core.Models.API
     public class SetAsWindowsAccountDto
     {
         [Required]
-        public string DeviceId { get; set; }
+        public string EmployeeId { get; set; }
         [Required]
-        public string DeviceAccountId { get; set; }
+        public string AccountId { get; set; }
     }
 }

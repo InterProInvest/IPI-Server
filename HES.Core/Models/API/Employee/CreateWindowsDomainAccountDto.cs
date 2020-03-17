@@ -15,7 +15,5 @@ namespace HES.Core.Models.API
         public string Password { get; set; }
         [Required]
         public string EmployeeId { get; set; }
-        [Required]
-        public string DeviceId { get; set; }
     }
 }

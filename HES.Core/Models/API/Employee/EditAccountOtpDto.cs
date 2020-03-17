@@ -2,12 +2,12 @@
 
 namespace HES.Core.Models.API
 {
-    public class EditDeviceAccountOtpDto
+    public class EditAccountOtpDto
     {
         [Required]
         public string Id { get; set; }
-        public string OtpSercret { get; set; }
         [Required]
-        public string DeviceId { get; set; }
+        public string EmployeeId { get; set; }
+        public string OtpSercret { get; set; }
     }
 }

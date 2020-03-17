@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API;
@@ -197,7 +198,7 @@ namespace HES.Web.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Account>>> GetDeviceAccountsByEmployeeId(string id)
+        public async Task<ActionResult<IEnumerable<Account>>> GetAccountsByEmployeeId(string id)
         {
             return await _employeeService.GetAccountsByEmployeeIdAsync(id);
         }
@@ -205,7 +206,7 @@ namespace HES.Web.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Account>> GetDeviceAccountById(string id)
+        public async Task<ActionResult<Account>> GetAccountById(string id)
         {
             var deviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
@@ -220,28 +221,28 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<Account>> CreateDeviceAccount(CreateDeviceAccountDto deviceAccountDto)
+        public async Task<ActionResult<Account>> CreateAccount(CreateAccountDto accountDto)
         {
             Account createdAccount;
             try
             {
                 var account = new Account()
                 {
-                    Name = deviceAccountDto.Name,
-                    Urls = deviceAccountDto.Urls,
-                    Apps = deviceAccountDto.Apps,
-                    Login = deviceAccountDto.Login,
+                    Name = accountDto.Name,
+                    Urls = accountDto.Urls,
+                    Apps = accountDto.Apps,
+                    Login = accountDto.Login,
                     Kind = AccountKind.WebApp,
-                    EmployeeId = deviceAccountDto.EmployeeId
+                    EmployeeId = accountDto.EmployeeId
                 };
                 var accountPassword = new AccountPassword()
                 {
-                    Password = deviceAccountDto.Password,
-                    OtpSecret = deviceAccountDto.OtpSecret
+                    Password = accountDto.Password,
+                    OtpSecret = accountDto.OtpSecret
                 };
 
                 createdAccount = await _employeeService.CreatePersonalAccountAsync(account, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -249,33 +250,34 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetDeviceAccountById", new { id = createdAccount.Id }, createdAccount);
+            return CreatedAtAction("GetAccountById", new { id = createdAccount.Id }, createdAccount);
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDeviceAccount(string id, EditDeviceAccountDto deviceAccountDto)
+        public async Task<IActionResult> EditAccount(string id, EditAccountDto accountDto)
         {
-            if (id != deviceAccountDto.Id)
+            if (id != accountDto.Id)
             {
                 return BadRequest();
             }
 
             try
             {
-                var deviceAccount = new Account()
+                var account = new Account()
                 {
-                    Id = deviceAccountDto.Id,
-                    Name = deviceAccountDto.Name,
-                    Urls = deviceAccountDto.Urls,
-                    Apps = deviceAccountDto.Apps,
-                    Login = deviceAccountDto.Login,
+                    Id = accountDto.Id,
+                    EmployeeId = accountDto.EmployeeId,
+                    Name = accountDto.Name,
+                    Urls = accountDto.Urls,
+                    Apps = accountDto.Apps,
+                    Login = accountDto.Login,
                     Kind = AccountKind.WebApp
                 };
 
-                await _employeeService.EditPersonalAccountAsync(deviceAccount);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
+                await _employeeService.EditPersonalAccountAsync(account);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(account.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -289,27 +291,28 @@ namespace HES.Web.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDeviceAccountPassword(string id, EditDeviceAccountPasswordDto deviceAccountDto)
+        public async Task<IActionResult> EditAccountPassword(string id, EditAccountPasswordDto accountDto)
         {
-            if (id != deviceAccountDto.Id)
+            if (id != accountDto.Id)
             {
                 return BadRequest();
             }
 
             try
             {
-                var deviceAccount = new Account()
+                var account = new Account()
                 {
-                    Id = deviceAccountDto.Id,
+                    Id = accountDto.Id,
+                    EmployeeId = accountDto.EmployeeId,
                     Kind = AccountKind.WebApp,
                 };
                 var accountPassword = new AccountPassword()
                 {
-                    Password = deviceAccountDto.Password
+                    Password = accountDto.Password
                 };
 
-                await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
+                await _employeeService.EditPersonalAccountPwdAsync(account, accountPassword);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(account.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -323,27 +326,28 @@ namespace HES.Web.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDeviceAccountOtp(string id, EditDeviceAccountOtpDto deviceAccountDto)
+        public async Task<IActionResult> EditAccountOtp(string id, EditAccountOtpDto accountDto)
         {
-            if (id != deviceAccountDto.Id)
+            if (id != accountDto.Id)
             {
                 return BadRequest();
             }
 
             try
             {
-                var deviceAccount = new Account()
+                var account = new Account()
                 {
-                    Id = deviceAccountDto.Id,
+                    Id = accountDto.Id,
+                    EmployeeId = accountDto.EmployeeId,
                     Kind = AccountKind.WebApp,
                 };
                 var accountPassword = new AccountPassword()
                 {
-                    OtpSecret = deviceAccountDto.OtpSercret
+                    OtpSecret = accountDto.OtpSercret
                 };
 
-                await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceAccountDto.DeviceId);
+                await _employeeService.EditPersonalAccountPwdAsync(account, accountPassword);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(account.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -357,19 +361,17 @@ namespace HES.Web.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Account>> DeleteDeviceAccount(string id)
+        public async Task<ActionResult<Account>> DeleteAccount(string id)
         {
-            var deviceAccount = await _deviceAccountService.GetByIdAsync(id);
-            if (deviceAccount == null)
-            {
-                return NotFound();
-            }
-
+            Account account;
             try
             {
-                var account = await _employeeService.DeleteAccountAsync(id);
-                var employee = await _employeeService.GetEmployeeByIdAsync(account.Id);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(s => s.Id).ToArray());
+                account = await _employeeService.DeleteAccountAsync(id);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(account.Employee.Devices.Select(s => s.Id).ToList());
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
             }
             catch (Exception ex)
             {
@@ -377,7 +379,7 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return deviceAccount;
+            return account;
         }
 
         [HttpPost]
@@ -388,7 +390,7 @@ namespace HES.Web.Controllers
             try
             {
                 createdAccount = await _employeeService.AddSharedAccountAsync(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(sharedAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -396,7 +398,7 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetDeviceAccountById", new { id = createdAccount.Id }, createdAccount);
+            return CreatedAtAction("GetAccountById", new { id = createdAccount.Id }, createdAccount);
         }
 
         [HttpPost]
@@ -416,7 +418,7 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, localAccountDto.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(localAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -424,7 +426,7 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetDeviceAccountById", new { id = createdAccount.Id }, createdAccount);
+            return CreatedAtAction("GetAccountById", new { id = createdAccount.Id }, createdAccount);
         }
 
         [HttpPost]
@@ -444,7 +446,7 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, domainAccountDto.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(domainAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -472,7 +474,7 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, microsoftAccountDto.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(microsoftAccountDto.DeviceId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -489,8 +491,8 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.SetAsWorkstationAccountAsync(workstationAccountDto.DeviceId, workstationAccountDto.DeviceAccountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(workstationAccountDto.DeviceId);
+                await _employeeService.SetAsWorkstationAccountAsync(workstationAccountDto.EmployeeId, workstationAccountDto.AccountId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(workstationAccountDto.EmployeeId));
             }
             catch (Exception ex)
             {

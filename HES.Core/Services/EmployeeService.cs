@@ -70,6 +70,12 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<IList<string>> GetEmployeeDevicesAsync(string employeeId)
+        {
+            var employee = await GetEmployeeByIdAsync(employeeId);
+            return employee.Devices.Select(x => x.Id).ToList();
+        }
+
         public async Task<List<Employee>> GetEmployeesAsync()
         {
             return await _employeeRepository
@@ -904,7 +910,7 @@ namespace HES.Core.Services
 
             var account = await GetAccountByIdAsync(accountId);
             if (account == null)
-                throw new Exception("Account not found");
+                throw new NotFoundException("Account not found");
 
             var employee = await GetEmployeeByIdAsync(account.EmployeeId);
             if (employee.Devices.Count == 0)

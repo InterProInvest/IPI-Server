@@ -2,12 +2,10 @@
 
 namespace HES.Core.Models.API
 {
-    public class CreateDeviceAccountDto
+    public class CreateAccountDto
     {
         [Required]
         public string EmployeeId { get; set; }
-        [Required]
-        public string DeviceId { get; set; }
         [Required]
         public string Name { get; set; }
         public string Urls { get; set; }
