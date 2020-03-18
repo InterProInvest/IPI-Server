@@ -292,6 +292,7 @@ namespace HES.Core.Services
 
             var key = ConvertUtils.HexStringToBytes(task.Password);
             await remoteDevice.Link(key);
+            await ProfileDevice(remoteDevice, task);
             return 0;
         }
 

@@ -169,6 +169,7 @@ namespace HES.Core.Services
         {
             if (remoteDevice.AccessLevel.IsLocked)
             {
+                await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.Wipe);
                 await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.UnlockPin);
                 await remoteDevice.RefreshDeviceInfo();
 
