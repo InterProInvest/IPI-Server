@@ -239,7 +239,7 @@ namespace HES.Core.Services
             {
                 await remoteDevice.CheckPassphrase(key);
             }
-            catch (Exception)
+            catch (HideezException ex) when (ex.ErrorCode == HideezErrorCode.ERR_KEY_WRONG)
             {
                 await _deviceService.SetDeviceStateAsync(device.Id, Enums.DeviceState.Error);
                 throw;
