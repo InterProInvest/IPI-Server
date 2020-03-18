@@ -7,7 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Timers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace HES.Web.Pages.Groups
 {
@@ -17,16 +19,38 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<GroupsPage> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
 
+        public IList<Group> Groups { get; set; }
+        public string CurrentGroupId { get; set; }
+
+        #region Search
+
+        public int Delay { get; set; } = 500;
+        public string Placeholder { get; set; } = "Search";
+        public string SearchText { get; set; } = string.Empty;
+
+        private Timer _timer;
+
+        #endregion
+
+        #region Pagination
+
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
-        public string CurrentGroupId { get; set; }
 
-        public IList<Group> Groups { get; set; }
+        #endregion
+
+        #region Sorting
+
+        public string SortColumn { get; set; } = nameof(Group.Name);
+        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
+
+        #endregion
 
         protected override async Task OnInitializedAsync()
         {
-            await RefreshTable();
+            await LoadGroupsAsync();
+            CreateSearchTimer();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -37,41 +61,53 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        #region SortTable
+        #region Search
 
-        private bool _isSortedAscending;
-        private string _activeSortColumn = nameof(Group.Name);
+        private void CreateSearchTimer()
+        {
+            _timer = new Timer(Delay);
+            _timer.Elapsed += async (sender, args) =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadGroupsAsync();
+                });
+            };
+            _timer.AutoReset = false;
+        }
+
+        public void OnKeyUp(KeyboardEventArgs e)
+        {
+            _timer.Stop();
+            _timer.Start();
+        }
+
+        #endregion
+
+        #region SortTable
 
         public async Task SortTable(string columnName)
         {
-            if (columnName != _activeSortColumn)
+            if (columnName != SortColumn)
             {
-                await LoadGroupsAsync(string.Empty, columnName, ListSortDirection.Descending);
+                SortColumn = columnName;
+                await LoadGroupsAsync();
             }
             else
             {
-                if (_isSortedAscending)
-                {
-                    await LoadGroupsAsync(string.Empty, columnName, ListSortDirection.Ascending);
-                }
-                else
-                {
-                    await LoadGroupsAsync(string.Empty, columnName, ListSortDirection.Descending);
-                }
+                SortDirection = SortDirection == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+                await LoadGroupsAsync();
             }
-
-            _activeSortColumn = columnName;
-            _isSortedAscending = !_isSortedAscending;
         }
 
         public string SetSortIcon(string columnName)
         {
-            if (_activeSortColumn != columnName)
+            if (SortColumn != columnName)
             {
                 return string.Empty;
             }
 
-            if (_isSortedAscending)
+            if (SortDirection == ListSortDirection.Ascending)
             {
                 return "table-sort-arrow-up";
             }
@@ -83,8 +119,8 @@ namespace HES.Web.Pages.Groups
 
         #endregion
 
+        #region Pagination
 
-        //Refresh table from pagination
         public async Task RefreshTable(int currentPage, int displayRows)
         {
             DisplayRows = displayRows;
@@ -92,28 +128,18 @@ namespace HES.Web.Pages.Groups
             await LoadGroupsAsync();
         }
 
-        //Internal refresh for CRUD
-        public async Task RefreshTable()
+        #endregion
+                
+        public async Task LoadGroupsAsync()
         {
-            await LoadGroupsAsync();
-        }
+            TotalRecords = await GroupService.GetCountAsync(SearchText);
 
-        //Internal refresh for Search
-        public async Task RefreshTable(string searchString)
-        {
-            await LoadGroupsAsync(searchString);
-        }
-
-        public async Task LoadGroupsAsync(string searchString = null,
-                                          string columnName = nameof(Group.Name),
-                                          ListSortDirection sortDirection = ListSortDirection.Ascending)
-        {
-            TotalRecords = await GroupService.GetCountAsync(searchString);
-            if(!string.IsNullOrWhiteSpace(searchString) && TotalRecords > 0)
+            if (!string.IsNullOrWhiteSpace(SearchText) && TotalRecords > 0)
             {
                 CurrentPage = 1;
             }
-            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, sortDirection, searchString, columnName);
+
+            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortColumn, SortDirection, SearchText);
             CurrentGroupId = null;
             StateHasChanged();
         }
@@ -142,7 +168,7 @@ namespace HES.Web.Pages.Groups
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, RefreshTable));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
                 builder.CloseComponent();
             };
 
@@ -154,7 +180,7 @@ namespace HES.Web.Pages.Groups
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(CreateGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, RefreshTable));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
                 builder.CloseComponent();
             };
 
@@ -166,7 +192,7 @@ namespace HES.Web.Pages.Groups
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, RefreshTable));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
                 builder.AddAttribute(2, "GroupId", CurrentGroupId);
                 builder.CloseComponent();
             };
@@ -179,7 +205,7 @@ namespace HES.Web.Pages.Groups
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, RefreshTable));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
                 builder.AddAttribute(2, "GroupId", CurrentGroupId);
                 builder.CloseComponent();
             };

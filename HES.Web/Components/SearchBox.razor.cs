@@ -12,7 +12,8 @@ namespace HES.Web.Components
         [Parameter] public Func<string, Task> Search { get; set; }
         [Parameter] public string Placeholder { get; set; } = "Search";
 
-        public string SearchString { get; set; }
+        public string SearchText { get; set; } = string.Empty;
+
         private Timer _timer;
 
         protected override void OnInitialized()
@@ -22,7 +23,7 @@ namespace HES.Web.Components
             {
                 await InvokeAsync(async () =>
                 {
-                    await Search.Invoke(SearchString.Trim());
+                    await Search.Invoke(SearchText.ToLower().Trim());
                     StateHasChanged();
                 });
             };

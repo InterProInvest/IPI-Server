@@ -1,8 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.Group;
-using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -33,98 +31,40 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
-        public async Task<IList<Group>> GetAllGroupsAsync(int skip, int take, ListSortDirection sortDirection = ListSortDirection.Descending, string search = null, string orderBy = nameof(Group.Name))
+        public async Task<List<Group>> GetAllGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText)
         {
-            if (string.IsNullOrWhiteSpace(search))
+            searchText = searchText.ToLower().Trim();
+
+            var query = _groupRepository.Query()
+                            .Include(x => x.GroupMemberships)
+                            .Where(x => x.Name.ToLower().Contains(searchText) ||
+                                        x.Email.ToLower().Contains(searchText) ||
+                                        x.GroupMemberships.Count.ToString().Contains(searchText))
+                            .AsQueryable();
+
+            switch (sortColumn)
             {
-                if (orderBy == "Employees")
-                {
-                    if (sortDirection == ListSortDirection.Ascending)
-                    {
-                        return await _groupRepository.Query()
-                            .Include(x => x.GroupMemberships)
-                            .OrderBy(x => x.GroupMemberships.Count)
-                            .Skip(skip)
-                            .Take(take)
-                            .ToListAsync();
-                    }
-                    else
-                    {
-                        return await _groupRepository.Query()
-                            .Include(x => x.GroupMemberships)
-                            .OrderByDescending(x => x.GroupMemberships.Count)
-                            .Skip(skip)
-                            .Take(take)
-                            .ToListAsync();
-                    }
-                }
-                return await _groupRepository.Query()
-                    .Include(x => x.GroupMemberships)
-                    .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
+                case nameof(Group.Name):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    break;
+                case nameof(Group.Email):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Email) : query.OrderByDescending(x => x.Email);
+                    break;
+                case nameof(Group.GroupMemberships):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.GroupMemberships.Count) : query.OrderByDescending(x => x.GroupMemberships.Count);
+                    break;
             }
 
-            search = search.ToLower().Trim();
-
-            return await _groupRepository.Query()
-                    .Include(x => x.GroupMemberships)
-                    .Where(x => x.Name.ToLower().Contains(search) ||
-                        x.Email.ToLower().Contains(search) ||
-                        x.GroupMemberships.Count.ToString().Contains(search))
-                    .OrderByDynamic(orderBy, sortDirection == ListSortDirection.Ascending ? false : true)
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
+            return await query.Skip(skip).Take(take).ToListAsync();
         }
 
-        public async Task<int> GetCountAsync(string search = null)
+        public async Task<int> GetCountAsync(string searchText)
         {
-            var groups = _groupRepository.Query();
-            if (string.IsNullOrWhiteSpace(search))
-            {
-                return await groups.CountAsync();
-            }
-
-            search = search.Trim().ToLower();
-            int count = 0;
-
-            foreach (var item in groups)
-            {
-                foreach (var property in item.GetType().GetProperties().Where(p => p.Name == nameof(Group.Name) || p.Name == nameof(Group.Email) || p.Name == nameof(Group.GroupMemberships)))
-                {
-                    if (property.Name == nameof(Group.GroupMemberships) && item.GroupMemberships != null)
-                    {
-                        var countProp = property.PropertyType.GetProperty("Count");
-                        var countVal = countProp.GetValue(item.GroupMemberships)?.ToString();
-
-                        if (countVal == null)
-                            continue;
-
-                        var countContains = countVal.ToLower().Contains(search);
-                        if (countContains)
-                        {
-                            count++;
-                            break;
-                        }
-                    }
-
-                    var propValue = property.GetValue(item)?.ToString();
-
-                    if (propValue == null)
-                        continue;
-
-                    var isContains = propValue.ToLower().Contains(search);
-                    if (isContains)
-                    {
-                        count++;
-                        break;
-                    }
-                }
-            }
-
-            return count;
+            return await _groupRepository
+                 .Query()
+                 .CountAsync(x => x.Name.ToLower().Contains(searchText.ToLower().Trim()) ||
+                                  x.Email.ToLower().Contains(searchText.ToLower().Trim()) ||
+                                  x.GroupMemberships.Count().ToString().Contains(searchText.ToLower().Trim()));
         }
 
         public async Task<Group> GetGroupByIdAsync(string groupId)

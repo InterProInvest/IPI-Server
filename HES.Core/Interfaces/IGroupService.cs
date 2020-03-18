@@ -9,10 +9,10 @@ namespace HES.Core.Interfaces
     public interface IGroupService
     {
         IQueryable<Group> Query();
-        Task<IList<Group>> GetAllGroupsAsync(int skip, int take, ListSortDirection sortDirection = ListSortDirection.Descending, string search = null, string orderBy = nameof(Group.Name));
+        Task<List<Group>> GetAllGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText);
+        Task<int> GetCountAsync(string searchText);
         Task<Group> GetGroupByIdAsync(string groupId);
         Task<Group> GetGroupByNameAsync(Group group);
-        Task<int> GetCountAsync(string search = null);
         Task<Group> CreateGroupAsync(Group group);
         Task CreateGroupRangeAsync(List<Group> groups);
         Task EditGroupAsync(Group group);
