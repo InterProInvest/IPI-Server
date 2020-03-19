@@ -1,0 +1,38 @@
+version: '3.6'
+# Create networks
+networks:
+  hes:
+    name: hes
+# Create Sevices
+services:
+  # Create HES images
+  hes:
+    container_name: hes-app
+    build: .
+    environment: 
+      ASPNETCORE_URLS: "http://0.0.0.0:5000;https://0.0.0.0:5001"
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    networks:
+      - hes
+    depends_on:
+      - hes-db
+  hes-db:
+    image: mysql
+    container_name: hes-db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+      MYSQL_ROOT_PASSWORD: test
+    ports:
+      - '3306:3306'
+    networks:
+      - hes
+    volumes:
+      - my-db:/var/lib/mysql
+volumes:
+  my-db:
+    name: my-db
