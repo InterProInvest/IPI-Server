@@ -55,7 +55,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(skip).Take(take).ToListAsync();
+            return await query.Skip(skip).Take(take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetCountAsync(string searchText)
