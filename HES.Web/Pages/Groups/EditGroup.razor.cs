@@ -31,7 +31,6 @@ namespace HES.Web.Pages.Groups
                 {
                     throw new Exception("Group not found");
                 }
-
             }
             catch (Exception ex)
             {
@@ -41,7 +40,7 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        public async Task EditAsync()
+        private async Task EditAsync()
         {
             try
             {
@@ -60,6 +59,12 @@ namespace HES.Web.Pages.Groups
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
             }
+        }
+
+        private async Task CloseAsync()
+        {
+            await GroupService.UnchangedGroupAsync(Group);
+            await ModalDialogService.CloseAsync();
         }
     }
 }

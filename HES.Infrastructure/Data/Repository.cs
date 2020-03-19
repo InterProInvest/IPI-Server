@@ -59,6 +59,12 @@ namespace HES.Infrastructure
             await _context.SaveChangesAsync();
         }
 
+        public Task Unchanged(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Unchanged;
+            return Task.CompletedTask;
+        }
+
         public async Task UpdateOnlyPropAsync(T entity, string[] properties)
         {
             foreach (var prop in properties)

@@ -111,6 +111,11 @@ namespace HES.Core.Services
             await _groupRepository.UpdateAsync(group);
         }
 
+        public Task UnchangedGroupAsync(Group group)
+        {
+            return _groupRepository.Unchanged(group);         
+        }
+         
         public async Task DeleteGroupAsync(string groupId)
         {
             if (groupId == null)
