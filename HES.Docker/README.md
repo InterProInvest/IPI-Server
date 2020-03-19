@@ -1,8 +1,11 @@
 Installation of the project:
 
-git clone https://idemian@bitbucket.org/hideez/hes-setup.git
-
+```shell
+git clone https://github.com/HideezGroup/HES.git
+cd 
+cd HES/HES.Docker/
 docker-compose up -d --build
+```
 
 
 
