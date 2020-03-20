@@ -10,6 +10,7 @@ namespace HES.Web.Components
     public partial class ModalDialog : ComponentBase, IDisposable
     {
         [Inject] IModalDialogService ModalDialogService { get; set; }
+        [Inject] IJSRuntime JSRuntime { get; set; }
         public string ModalTitle { get; set; }
         public string ModalSize { get; set; }
         public RenderFragment ModalBody { get; set; }

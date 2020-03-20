@@ -18,6 +18,8 @@ namespace HES.Web.Pages.Groups
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<GroupsPage> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] IJSRuntime JSRuntime { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
 
         public IList<Group> Groups { get; set; }
         public string CurrentGroupId { get; set; }

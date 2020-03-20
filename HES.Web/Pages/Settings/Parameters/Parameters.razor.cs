@@ -15,6 +15,8 @@ namespace HES.Web.Pages.Settings.Parameters
     {
         [Inject] private IAppSettingsService AppSettingsService { get; set; }
         [Inject] private ILogger<Parameters> Logger { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Inject] IJSRuntime JSRuntime { get; set; }
 
         private Licensing licensing = new Licensing();
         private Server server = new Server();

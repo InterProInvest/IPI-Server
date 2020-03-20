@@ -18,6 +18,7 @@ namespace HES.Web.Pages.Groups
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<AddGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] IToastService ToastService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
         public List<ActiveDirectoryGroup> Groups { get; set; }

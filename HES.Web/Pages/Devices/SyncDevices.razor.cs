@@ -12,6 +12,9 @@ namespace HES.Web.Pages.Devices
     {
         [Inject] IDeviceService DeviceService { get; set; }
         [Inject] ILogger<SyncDevices> Logger { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Inject] IJSRuntime JSRuntime { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
 
         private async Task Sync()
         {

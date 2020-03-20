@@ -17,6 +17,8 @@ namespace HES.Web.Pages.Employees
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
 
         public List<ActiveDirectoryUser> Users { get; set; }
 
