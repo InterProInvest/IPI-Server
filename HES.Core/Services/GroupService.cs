@@ -116,7 +116,7 @@ namespace HES.Core.Services
             return _groupRepository.Unchanged(group);         
         }
          
-        public async Task DeleteGroupAsync(string groupId)
+        public async Task<Group> DeleteGroupAsync(string groupId)
         {
             if (groupId == null)
             {
@@ -127,10 +127,10 @@ namespace HES.Core.Services
 
             if (group == null)
             {
-                throw new Exception("Group does not exist.");
+                throw new NotFoundException("Group not found.");
             }
 
-            await _groupRepository.DeleteAsync(group);
+            return await _groupRepository.DeleteAsync(group);
         }
 
         public async Task<List<GroupMembership>> GetGruopMembersAsync(string groupId)
@@ -150,7 +150,7 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.GroupId == groupId && x.EmployeeId == employeeId);
         }
 
-        public async Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId)
+        public async Task<List<Employee>> GetEmployeesSkipExistingInGroupAsync(string groupId)
         {
             var members = await GetGruopMembersAsync(groupId);
 

@@ -18,7 +18,7 @@ namespace HES.Core.Interfaces
         Task Unchanged(T entity);
         Task UpdateOnlyPropAsync(T entity, string[] properties);
         Task UpdateOnlyPropAsync(IList<T> entity, string[] properties);
-        Task DeleteAsync(T entity);
+        Task<T> DeleteAsync(T entity);
         Task DeleteRangeAsync(IList<T> entity);
         Task<bool> ExistAsync(Expression<Func<T, bool>> predicate);
     }

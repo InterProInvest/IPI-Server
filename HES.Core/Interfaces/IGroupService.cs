@@ -17,10 +17,10 @@ namespace HES.Core.Interfaces
         Task CreateGroupRangeAsync(List<Group> groups);
         Task EditGroupAsync(Group group);
         Task UnchangedGroupAsync(Group group);
-        Task DeleteGroupAsync(string groupId);
+        Task<Group> DeleteGroupAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);
         Task<GroupMembership> GetGroupMembershipAsync(string employeeId, string groupId);
-        Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId);
+        Task<List<Employee>> GetEmployeesSkipExistingInGroupAsync(string groupId);
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
         Task RemoveEmployeeFromGroupAsync(string groupMembershipId);
