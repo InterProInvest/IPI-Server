@@ -1,83 +1,58 @@
-﻿<div class="card">
-    <div class="card-body">
-        <h4 class="text-navyblue">Licensing</h4>
-        <hr />
-        <div class="row mb-3">
-            <div class="col-12 col-sm-4 pb-3">
-                API authentication key for ordering licenses and the address of the licensing server.
-            </div>
-            <div class="col-12 col-sm-8 pb-2">
-                <EditForm Model="@licensing" OnValidSubmit="@UpdateLicensingSettingsAsync">
-                    <DataAnnotationsValidator />
-                    <div class="form-group">
-                        <label class="control-label text-gray">Api Key</label>
-                        <InputText id="apiKey" @bind-Value="licensing.ApiKey" class="form-control text-navyblue" />
-                        <ValidationMessage For="@(() => licensing.ApiKey)" class="text-danger" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label text-gray">Api Address</label>
-                        <InputText id="apiAddress" @bind-Value="licensing.ApiAddress" class="form-control text-navyblue" />
-                        <ValidationMessage For="@(() => licensing.ApiAddress)" class="text-danger" />
-                    </div>
-                    <div class="form-group mt-4 mb-0">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm @(licensingIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                            <span>Update</span>
-                        </button>
-                    </div>
-                </EditForm>
-            </div>
+﻿<SettingsCard Title="Licensing" Description="API authentication key for ordering licenses and the address of the licensing server.">
+    <EditForm Model="@licensing" OnValidSubmit="@UpdateLicensingSettingsAsync">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label class="control-label text-gray">Api Key</label>
+            <InputText id="apiKey" @bind-Value="licensing.ApiKey" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => licensing.ApiKey)" class="text-danger" />
         </div>
-        <h4 class="text-navyblue">Server</h4>
-        <hr />
-        <div class="row mb-3">
-            <div class="col-12 col-sm-4 pb-3">
-                Information about this server that will be used in emails.
-            </div>
-            <div class="col-12 col-sm-8 pb-2">
-                <EditForm Model="@server" OnValidSubmit="@UpdateServerSettingsAsync">
-                    <DataAnnotationsValidator />
-                    <div class="form-group">
-                        <label class="control-label text-gray">Server Name</label>
-                        <InputText id="serverName" @bind-Value="server.Name" class="form-control text-navyblue" />
-                        <ValidationMessage For="@(() => server.Name)" class="text-danger" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label text-gray">Server Url</label>
-                        <InputText id="serverUrl" @bind-Value="server.Url" class="form-control text-navyblue" />
-                        <ValidationMessage For="@(() => server.Url)" class="text-danger" />
-                    </div>
-                    <div class="form-group mt-4 mb-0">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm @(serverIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                            <span>Update</span>
-                        </button>
-                    </div>
-                </EditForm>
-            </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Api Address</label>
+            <InputText id="apiAddress" @bind-Value="licensing.ApiAddress" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => licensing.ApiAddress)" class="text-danger" />
         </div>
-        <h4 class="text-navyblue">Domain</h4>
-        <hr />
-        <div class="row mb-3">
-            <div class="col-12 col-sm-4 pb-3">
-                To connect to the domain to synchronize groups and users.
-            </div>
-            <div class="col-12 col-sm-8 pb-2">
-                <EditForm Model="@domain" OnValidSubmit="@UpdateDomainSettingsAsync">
-                    <DataAnnotationsValidator />
-                    <div class="form-group">
-                        <label class="control-label text-gray">IP Address</label>
-                        <InputText id="serverName" @bind-Value="domain.IpAddress" class="form-control text-navyblue" />
-                        <ValidationMessage For="@(() => domain.IpAddress)" class="text-danger" />
-                    </div>
-                    <div class="form-group mt-4 mb-0">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm @(domainIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                            <span>Update</span>
-                        </button>
-                    </div>
-                </EditForm>
-            </div>
+        <div class="form-group mt-4 mb-0">
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm @(licensingIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Update</span>
+            </button>
         </div>
-    </div>
-</div>
+    </EditForm>
+</SettingsCard>
+<SettingsCard Title="Server" Description="Information about this server that will be used in emails.">
+    <EditForm Model="@server" OnValidSubmit="@UpdateServerSettingsAsync">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label class="control-label text-gray">Server Name</label>
+            <InputText id="serverName" @bind-Value="server.Name" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => server.Name)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Server Url</label>
+            <InputText id="serverUrl" @bind-Value="server.Url" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => server.Url)" class="text-danger" />
+        </div>
+        <div class="form-group mt-4 mb-0">
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm @(serverIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Update</span>
+            </button>
+        </div>
+    </EditForm>
+</SettingsCard>
+<SettingsCard Title="Domain" Description="To connect to the domain to synchronize groups and users.">
+    <EditForm Model="@domain" OnValidSubmit="@UpdateDomainSettingsAsync">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label class="control-label text-gray">IP Address</label>
+            <InputText id="serverName" @bind-Value="domain.IpAddress" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => domain.IpAddress)" class="text-danger" />
+        </div>
+        <div class="form-group mt-4 mb-0">
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm @(domainIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Update</span>
+            </button>
+        </div>
+    </EditForm>
+</SettingsCard>

@@ -1,0 +1,19 @@
+﻿<div class="settings-card">
+    <div class="d-flex justify-content-between align-items-center cursor-pointer collapsed" data-toggle="collapse" data-target="#collapse_@collapseId" aria-expanded="false" aria-controls="collapse_@collapseId">
+        <div>
+            <h4 class="text-navyblue">@Title</h4>
+            <div>@Description</div>
+        </div>
+        <img class="icon-collapse-arrow" />
+    </div>
+    <div class="collapse mt-3" id="collapse_@collapseId">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    private readonly string collapseId = Guid.NewGuid().ToString();
+}
