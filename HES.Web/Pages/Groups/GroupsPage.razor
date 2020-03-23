@@ -6,35 +6,35 @@
 }
 else
 {
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h1 class="text-navyblue">Groups</h1>
-        <div>
-            <button type="button" class="btn btn-primary" @onclick="OpenModalAddGroup">
-                Add from AD
-            </button>
-            <button type="button" class="btn btn-primary" @onclick="OpenModalGreateGroup">
-                Create group
-            </button>
-        </div>
+    <!-- Actions -->
+    <div class="d-flex align-items-center flex-wrap mb-2">
+        <button type="button" class="btn btn-primary mb-1 mr-2" @onclick="OpenModalAddGroup">
+            Add from AD
+        </button>
+        <button type="button" class="btn btn-primary mb-1 mr-2" @onclick="OpenModalGreateGroup">
+            Create group
+        </button>
+        <button type="button" class="btn btn-light border mb-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Details" @onclick="GroupDetails">
+            <img class="icon-btn" src="/svg/action/details.svg" />
+            Details
+        </button>
+        <button type="button" class="btn btn-light border mb-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroup">
+            <img class="icon-btn" src="/svg/action/edit.svg" />
+            Edit
+        </button>
+        <button type="button" class="btn btn-light border mb-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroup">
+            <img class="icon-btn" src="/svg/action/delete.svg" />
+            Delete
+        </button>
     </div>
-    <div class="d-flex justify-content-end align-items-center mb-3">
-        <button class="btn btn-light m-1 p-1" title="Details" @onclick="GroupDetails" disabled="@(CurrentGroupId == null ? true : false)">
-            <img style="width:32px;height:32px;" src="/svg/action/details.svg" />
-        </button>
-        <button class="btn btn-light m-1 p-1" title="Edit Group" @onclick="OpenModalEditGroup" disabled="@(CurrentGroupId == null ? true : false)">
-            <img style="width:32px;height:32px;" src="/svg/action/edit.svg" />
-        </button>
-        <button class="btn btn-light m-1 p-1" title="Delete Group" @onclick="OpenModalDeleteGroup" disabled="@(CurrentGroupId == null ? true : false)">
-            <img style="width:32px;height:32px;" src="/svg/action/delete.svg" />
-        </button>
-        <!-- SearchBox -->
-        <div class="form-group has-search-right mb-0 ml-3">
-            <div class="form-control-feedback">
-                <img class="img-size" src="/svg/action/search.svg" />
-            </div>
-            <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control " placeholder="@Placeholder">
+    <!-- SearchBox -->
+    <div class="has-search-right mb-3">
+        <div class="form-control-feedback">
+            <img class="img-size" src="/svg/action/search.svg" />
         </div>
+        <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control " placeholder="@Placeholder">
     </div>
+    <!-- Table -->
     <div class="table-responsive mb-3">
         <table id="groups" class="table table-hover border rounded w-100 mb-0">
             <thead style="user-select: none; ">
