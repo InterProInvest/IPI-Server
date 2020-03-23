@@ -124,7 +124,73 @@ namespace HES.Web.Controllers
         {
             try
             {
-               return await _groupService.DeleteGroupAsync(id);
+                return await _groupService.DeleteGroupAsync(id);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<GroupMembership>>> GetGruopMembers(string id)
+        {
+            return await _groupService.GetGruopMembersAsync(id);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> AddEmployeesToGroup(AddEmployeesToGroupDto employeesToGroupDto)
+        {
+            try
+            {
+                await _groupService.AddEmployeesToGroupAsync(employeesToGroupDto.EmployeeIds, employeesToGroupDto.GroupId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> AddEmployeeToGroups(AddEmployeeToGroupsDto employeeToGroupsDto)
+        {
+            try
+            {
+                await _groupService.AddEmployeeToGroupsAsync(employeeToGroupsDto.EmployeeId, employeeToGroupsDto.GroupIds);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<GroupMembership>> GetGroupMembership(GroupMembershipDto groupMembershipDto)
+        {
+            return await _groupService.GetGroupMembershipAsync(groupMembershipDto.EmployeeId, groupMembershipDto.GroupId);
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<GroupMembership>> DeleteEmployeeFromGroup(string id)
+        {
+            try
+            {
+                return await _groupService.RemoveEmployeeFromGroupAsync(id);
             }
             catch (NotFoundException ex)
             {

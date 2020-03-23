@@ -23,6 +23,6 @@ namespace HES.Core.Interfaces
         Task<List<Employee>> GetEmployeesSkipExistingInGroupAsync(string groupId);
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
-        Task RemoveEmployeeFromGroupAsync(string groupMembershipId);
+        Task<GroupMembership> RemoveEmployeeFromGroupAsync(string groupMembershipId);
     }
 }
