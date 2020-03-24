@@ -113,10 +113,10 @@ namespace HES.Core.Services
 
         public Task UnchangedGroupAsync(Group group)
         {
-            return _groupRepository.Unchanged(group);         
+            return _groupRepository.Unchanged(group);
         }
-         
-        public async Task DeleteGroupAsync(string groupId)
+
+        public async Task<Group> DeleteGroupAsync(string groupId)
         {
             if (groupId == null)
             {
@@ -127,10 +127,10 @@ namespace HES.Core.Services
 
             if (group == null)
             {
-                throw new Exception("Group does not exist.");
+                throw new NotFoundException("Group not found.");
             }
 
-            await _groupRepository.DeleteAsync(group);
+            return await _groupRepository.DeleteAsync(group);
         }
 
         public async Task<List<GroupMembership>> GetGruopMembersAsync(string groupId)
@@ -150,7 +150,7 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.GroupId == groupId && x.EmployeeId == employeeId);
         }
 
-        public async Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId)
+        public async Task<List<Employee>> GetEmployeesSkipExistingInGroupAsync(string groupId)
         {
             var members = await GetGruopMembersAsync(groupId);
 
@@ -225,7 +225,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveEmployeeFromGroupAsync(string groupMembershipId)
+        public async Task<GroupMembership> RemoveEmployeeFromGroupAsync(string groupMembershipId)
         {
             if (groupMembershipId == null)
             {
@@ -235,10 +235,10 @@ namespace HES.Core.Services
             var groupMembership = await _groupMembershipRepository.GetByIdAsync(groupMembershipId);
             if (groupMembership == null)
             {
-                throw new Exception("GroupMembership does not exist.");
+                throw new NotFoundException("GroupMembership not found.");
             }
 
-            await _groupMembershipRepository.DeleteAsync(groupMembership);
+            return await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
         public async Task CreateGroupRangeAsync(List<Group> groups)
