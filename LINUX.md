@@ -10,7 +10,7 @@ The second part describes the installation already for a specific site, there ma
   * Can be installed on a bare metal or virtual server
   * 8GB drive
   * 2GB RAM
-  * Option 1: Clean installation of CentOS Linux x86_64 (tested on version 7.6), select "minimal install" option during installation
+  * Option 1: Clean installation of CentOS Linux x86_64 (tested on version 7.6, Centos 8 is not yet supported), select "minimal install" option during installation
   * Option 2: Clean installation of Ubuntu Server LTS 18.04
   
 # 1. Preparation (Run once)
@@ -35,7 +35,8 @@ The second part describes the installation already for a specific site, there ma
 
 ```shell
   $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
-  $ sudo setenforce 0
+  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+  $ sudo reboot
 ```
 
 ## 1.3 Install git
