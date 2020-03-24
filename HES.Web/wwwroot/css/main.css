@@ -137,3 +137,9 @@ div.collapsed > img.icon-collapse-arrow {
     border-top: .3em solid black;
     border-bottom: 0;
 }
+
+.icon-btn {
+    width: 24px;
+    height: 24px;
+    margin-right: 4px;
+}
