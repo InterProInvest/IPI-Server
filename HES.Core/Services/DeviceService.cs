@@ -1,4 +1,5 @@
-﻿using HES.Core.Entities;
+﻿using HES.Core.Constants;
+using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
@@ -176,9 +177,8 @@ namespace HES.Core.Services
                     Firmware = "3.0.0",
                     LastSynced = null,
                     EmployeeId = null,
-                    PrimaryAccountId = null,
                     MasterPassword = null,
-                    AcceessProfileId = "default",
+                    AcceessProfileId = ServerConstants.DefaulAccessProfileId,
                     ImportedAt = DateTime.UtcNow
                 })
                 .ToList();
@@ -233,7 +233,7 @@ namespace HES.Core.Services
                         RFID = newDeviceDto.RFID,
                         Battery = 100,
                         Firmware = newDeviceDto.Firmware,
-                        AcceessProfileId= "default",
+                        AcceessProfileId = ServerConstants.DefaulAccessProfileId,                        
                         ImportedAt = DateTime.UtcNow
                     });
                 }
@@ -280,6 +280,21 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "Battery", "Firmware", "State", "LastSynced" });
         }
 
+        public async Task UpdateNeedSyncAsync(Device device, bool needSync)
+        {
+            device.NeedSync = needSync;
+            await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { nameof(Device.NeedSync) });
+        }
+
+        public async Task UpdateNeedSyncAsync(IList<Device> devices, bool needSync)
+        {
+            foreach (var device in devices)
+            {
+                device.NeedSync = needSync;
+            }
+            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { nameof(Device.NeedSync) });
+        }
+
         public async Task UnlockPinAsync(string deviceId)
         {
             if (deviceId == null)
@@ -311,18 +326,18 @@ namespace HES.Core.Services
             var device = await _deviceRepository.GetByIdAsync(deviceId);
 
             device.EmployeeId = null;
-            device.PrimaryAccountId = null;
             device.MasterPassword = null;
             device.AcceessProfileId = "default";
             device.LastSynced = DateTime.UtcNow;
+            device.NeedSync = false;
 
             var properties = new List<string>()
             {
-                "EmployeeId",
-                "PrimaryAccountId",
-                "MasterPassword",
-                "AcceessProfileId",
-                "LastSynced"
+                nameof(Device.EmployeeId),
+                nameof(Device.MasterPassword),
+                nameof(Device.AcceessProfileId),
+                nameof(Device.LastSynced),
+                nameof(Device.NeedSync)
             };
 
             await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
@@ -497,7 +512,7 @@ namespace HES.Core.Services
         {
             // Get devices by profile id
             var tasks = await _deviceTaskService
-               .Query()
+               .TaskQuery()
                .Where(d => d.Operation == TaskOperation.Wipe || d.Operation == TaskOperation.Link)
                .Select(s => s.DeviceId)
                .AsNoTracking()

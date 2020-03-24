@@ -11,19 +11,13 @@ namespace HES.Core.Services
     public class DeviceTaskService : IDeviceTaskService
     {
         private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
-        private readonly IDeviceAccountService _deviceAccountService;
-        private readonly IAsyncRepository<Device> _deviceRepository;
 
-        public DeviceTaskService(IAsyncRepository<DeviceTask> deviceTaskRepository,
-                                 IDeviceAccountService deviceAccountService,
-                                 IAsyncRepository<Device> deviceRepository)
+        public DeviceTaskService(IAsyncRepository<DeviceTask> deviceTaskRepository)
         {
             _deviceTaskRepository = deviceTaskRepository;
-            _deviceAccountService = deviceAccountService;
-            _deviceRepository = deviceRepository;
         }
 
-        public IQueryable<DeviceTask> Query()
+        public IQueryable<DeviceTask> TaskQuery()
         {
             return _deviceTaskRepository.Query();
         }
@@ -32,7 +26,7 @@ namespace HES.Core.Services
         {
             return await _deviceTaskRepository
                .Query()
-               .Include(d => d.DeviceAccount)
+               .Include(d => d.Account.Employee.Devices)
                .FirstOrDefaultAsync(d => d.Id == id);
         }
 
@@ -46,15 +40,14 @@ namespace HES.Core.Services
             await _deviceTaskRepository.AddRangeAsync(deviceTasks);
         }
 
-        public async Task AddPrimaryAsync(string deviceId, string currentAccountId, string newAccountId)
+        public async Task AddPrimaryAsync(string deviceId, string accountId)
         {
             var task = new DeviceTask()
             {
                 Operation = TaskOperation.Primary,
                 CreatedAt = DateTime.UtcNow,
-                OldLogin = currentAccountId,
                 DeviceId = deviceId,
-                DeviceAccountId = newAccountId
+                AccountId = accountId
             };
             await _deviceTaskRepository.AddAsync(task);
         }
@@ -112,117 +105,6 @@ namespace HES.Core.Services
         public async Task UpdateOnlyPropAsync(DeviceTask deviceTask, string[] properties)
         {
             await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTask, properties);
-        }
-
-        public async Task<DeviceAccount> GetLastChangedAccountAsync(string deviceId)
-        {
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            var lastTask = await GetLastChangeTaskAsync(deviceId);
-
-            var currentAccount = await _deviceAccountService
-                .Query()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.Id == lastTask.DeviceAccountId);
-
-            return currentAccount;
-        }
-
-        public async Task UndoLastTaskAsync(string deviceId)
-        {
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-
-            }
-
-            var properties = new List<string>() { "Status", "UpdatedAt" };
-
-            // Get last task
-            var lastTask = await GetLastChangeTaskAsync(deviceId);
-            // Current device account
-            var deviceAccount = await _deviceAccountService.GetByIdAsync(lastTask.DeviceAccountId);
-
-            switch (lastTask.Operation)
-            {
-                case TaskOperation.Update:
-                    if (lastTask.Password == null && lastTask.OtpSecret == null)
-                    {
-                        deviceAccount.Name = lastTask.OldName;
-                        deviceAccount.Urls = lastTask.OldUrls;
-                        deviceAccount.Apps = lastTask.OldApps;
-                        deviceAccount.Login = lastTask.OldLogin;
-                        properties.AddRange(new string[] { "Name", "Urls", "Apps", "Login" });
-                    }
-                    break;
-                case TaskOperation.Primary:
-                    var device = await _deviceRepository
-                        .Query()
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(d => d.Id == deviceAccount.DeviceId);
-                    device.PrimaryAccountId = lastTask.OldLogin;
-                    await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "PrimaryAccountId" });
-                    break;
-            }
-
-            // Delete last task
-            await _deviceTaskRepository.DeleteAsync(lastTask);
-
-            // Get previous task             
-            var previousTask = await _deviceTaskRepository
-                .Query()
-                .Where(d => d.DeviceAccountId == deviceAccount.Id &&
-                           (d.Operation == TaskOperation.Create ||
-                            d.Operation == TaskOperation.Update ||
-                            d.Operation == TaskOperation.Delete ||
-                            d.Operation == TaskOperation.Primary))
-                .OrderByDescending(d => d.CreatedAt)
-                .FirstOrDefaultAsync();
-
-            // If exists previous task for device account, update status
-            if (previousTask != null)
-            {
-                switch (previousTask.Operation)
-                {
-                    case TaskOperation.Create:
-                        deviceAccount.Status = AccountStatus.Creating;
-                        deviceAccount.UpdatedAt = null;
-                        break;
-                    case TaskOperation.Update:
-                    case TaskOperation.Primary:
-                        deviceAccount.Status = AccountStatus.Updating;
-                        deviceAccount.UpdatedAt = DateTime.UtcNow;
-                        break;
-                }
-            }
-            else
-            {
-                deviceAccount.Status = AccountStatus.Done;
-                deviceAccount.UpdatedAt = DateTime.UtcNow;
-            }
-
-            await _deviceAccountService.UpdateOnlyPropAsync(deviceAccount, properties.ToArray());
-        }
-
-        private async Task<DeviceTask> GetLastChangeTaskAsync(string deviceId)
-        {
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            return await _deviceTaskRepository
-               .Query()
-               .Where(d => d.DeviceId == deviceId &&
-                          (d.Operation == TaskOperation.Create ||
-                           d.Operation == TaskOperation.Update ||
-                           d.Operation == TaskOperation.Delete ||
-                           d.Operation == TaskOperation.Primary))
-               .OrderByDescending(d => d.CreatedAt)
-               .FirstOrDefaultAsync();
         }
 
         public async Task DeleteTaskAsync(DeviceTask deviceTask)

@@ -77,7 +77,7 @@ namespace HES.Web
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDeviceService, DeviceService>();
             services.AddScoped<IDeviceTaskService, DeviceTaskService>();
-            services.AddScoped<IDeviceAccountService, DeviceAccountService>();
+            services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IWorkstationService, WorkstationService>();
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
             services.AddScoped<ISharedAccountService, SharedAccountService>();
@@ -85,7 +85,6 @@ namespace HES.Web
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<IOrgStructureService, OrgStructureService>();
             services.AddScoped<ILogsViewerService, LogsViewerService>();
-            services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
             services.AddTransient<IAesCryptographyService, AesCryptographyService>();
             services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();

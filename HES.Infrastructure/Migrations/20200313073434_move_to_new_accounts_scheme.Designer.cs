@@ -3,18 +3,20 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200313073434_move_to_new_accounts_scheme")]
+    partial class move_to_new_accounts_scheme
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.2")
+                .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("HES.Core.Entities.Account", b =>
@@ -73,7 +75,7 @@ namespace HES.Infrastructure.Migrations
 
                     b.HasIndex("SharedAccountId");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("DeviceAccounts");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.AppSettings", b =>
@@ -100,6 +102,9 @@ namespace HES.Infrastructure.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("DeviceId")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Email")
@@ -569,6 +574,24 @@ namespace HES.Infrastructure.Migrations
                     b.HasIndex("WorkstationId");
 
                     b.ToTable("ProximityDevices");
+                });
+
+            modelBuilder.Entity("HES.Core.Entities.SamlIdentityProvider", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SamlIdentityProvider");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.SharedAccount", b =>

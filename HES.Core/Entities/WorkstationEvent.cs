@@ -34,6 +34,6 @@ namespace HES.Core.Entities
         public Department Department { get; set; }
         [ForeignKey("DeviceAccountId")]
         [Display(Name = "Account")]
-        public DeviceAccount DeviceAccount { get; set; }
+        public Account DeviceAccount { get; set; }
     }    
 }

@@ -86,8 +86,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.External
             if (result.Succeeded)
             {
                 _logger.LogInformation($"SAML IdP User {user.Email} password reseted and logged in.");
-                await _employeeService.UpdatePasswordSamlIdpAccountAsync(Input.Email, Input.Password);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(user.DeviceId);
+                //await _employeeService.UpdatePasswordSamlIdpAccountAsync(Input.Email, Input.Password);
+                //_remoteWorkstationConnectionsService.StartUpdateRemoteDevice(user.DeviceId);
                 return LocalRedirect("~/Identity/Account/External");
             }
 

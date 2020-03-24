@@ -81,7 +81,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task OnGetAsync()
         {
-            Employees = await _employeeService.GetAllEmployeesAsync();
+            Employees = await _employeeService.GetEmployeesAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
@@ -148,7 +148,7 @@ namespace HES.Web.Pages.Employees
                     // Add workstation account
                     if (!wizard.WorkstationAccount.Skip)
                     {
-                        await _employeeService.CreateWorkstationAccountAsync(wizard.WorkstationAccount, createdEmployee.Id, wizard.DeviceId);
+                        await _employeeService.CreateWorkstationAccountAsync(wizard.WorkstationAccount, createdEmployee.Id);
                     }
 
                     _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(wizard.DeviceId);
