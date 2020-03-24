@@ -9,7 +9,7 @@ The Hideez Enterprise Server (HES) is a web application intended to manage the H
 
 [Learn about Hideez Enterprise Solution](https://hideez.com/pages/hideez-enterprise).
 
-User documention about [Hideez Enterprise Solution](https://support.hideez.com/en/collections/2014634-hideez-enterprise-solution). 
+User documention about [Hideez Enterprise Solution](https://support.hideez.com/hideez-enterprise-server). 
 
 ## Supported platforms
 
@@ -36,7 +36,7 @@ Almost everything you can do with the HES web interface you can do via the HES R
 - change the admin's password
 - invite more admins
 - import the Hideez Devices from the file provided to you when you have bought the devices
-- setup the HES following the [user documentation](https://support.hideez.com/en/collections/2014634-hideez-enterprise-solution)
+- setup the HES following the [user documentation](https://support.hideez.com/hideez-enterprise-server)
 
 ## Related projects
 
