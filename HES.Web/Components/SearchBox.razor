@@ -1,0 +1,6 @@
+﻿<div class="form-group has-search-right mb-0 ml-3">
+    <div class="form-control-feedback">
+        <img class="img-size" src="/svg/action/search.svg" />
+    </div>
+    <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control " placeholder="@Placeholder">
+</div>

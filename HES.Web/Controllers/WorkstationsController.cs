@@ -104,11 +104,11 @@ namespace HES.Web.Controllers
             try
             {
                 var workstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
-
+                
                 workstation.DepartmentId = workstationDto.DepartmentId;
                 workstation.RFID = workstationDto.RfidEnabled;
                 workstation.Approved = true;
-
+     
                 await _workstationService.ApproveWorkstationAsync(workstation);
                 await _workstationService.UpdateRfidStateAsync(workstation.Id);
             }

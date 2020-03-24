@@ -28,6 +28,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 
         [TempData]
         public string SuccessMessage { get; set; }
+        [TempData]
+        public string ErrorMessage { get; set; }
 
         public class InputModel
         {
@@ -84,9 +86,11 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 foreach (var error in changePasswordResult.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+                    ErrorMessage += error.Description + " ";
                 }
                 return Page();
             }
+            TempData.Remove("ErrorMessage");
 
             await _signInManager.RefreshSignInAsync(user);
             _logger.LogInformation("User changed their password successfully.");

@@ -99,17 +99,19 @@ namespace HES.Web.Pages.Employees
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
 
             #region Idp
-            var user = await _userManager.FindByEmailAsync(Employee.Email);
-            if (user != null)
-            {
-                UserSamlIdpEnabled = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
-            }
-            else
-            {
-                UserSamlIdpEnabled = false;
-            }
-
             SamlIdentityProviderEnabled = await _samlIdentityProviderService.GetStatusAsync();
+            if (SamlIdentityProviderEnabled)
+            {
+                var user = await _userManager.FindByEmailAsync(Employee.Email);
+                if (user != null)
+                {
+                    UserSamlIdpEnabled = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
+                }
+                else
+                {
+                    UserSamlIdpEnabled = false;
+                }
+            }
             #endregion
 
             return Page();
@@ -338,7 +340,7 @@ namespace HES.Web.Pages.Employees
                     ErrorMessage = ex.Message;
                 }
             }
-                   
+
             return RedirectToPage("./Details", new { id });
         }
 
@@ -371,11 +373,14 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
-                if (user != null)
+                if (SamlIdentityProviderEnabled)
                 {
-                    await _userManager.DeleteAsync(user);
-                    await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
+                    var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
+                    if (user != null)
+                    {
+                        await _userManager.DeleteAsync(user);
+                        await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
+                    }
                 }
 
                 await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id);

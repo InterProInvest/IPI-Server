@@ -17,7 +17,7 @@ namespace HES.Core.Services
 
         public List<string> GetFiles()
         {
-            return new DirectoryInfo(_folderPath).GetFiles("*.log").Select(s => s.Name).ToList();
+            return new DirectoryInfo(_folderPath).GetFiles("*.log").Select(s => s.Name).OrderByDescending(x => x).ToList();
         }
 
         public async Task<List<LogModel>> GetLogAsync(string name)
@@ -37,7 +37,7 @@ namespace HES.Core.Services
                 }
             }
 
-            return list;
+            return list.OrderByDescending(x => x.Date).ToList();
         }
 
         public string GetFilePath(string name)

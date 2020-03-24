@@ -12,6 +12,7 @@ using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
 using HES.Core.Enums;
 using System.Transactions;
+using HES.Core.Exceptions;
 
 namespace HES.Core.Services
 {
@@ -72,6 +73,18 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public async Task<Employee> GetEmployeeByFullNameAsync(Employee employee)
+        {
+            return await _employeeRepository
+                .Query()
+                .Include(e => e.Department.Company)
+                .Include(e => e.Position)
+                .Include(e => e.Devices)
+                .ThenInclude(e => e.DeviceAccessProfile)
+                .FirstOrDefaultAsync(x => x.FirstName == employee.FirstName &&
+                                          x.LastName == employee.LastName);
+        }
+
         public async Task<List<Employee>> GetAllEmployeesAsync()
         {
             return await _employeeRepository
@@ -126,14 +139,13 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            var emailExist = await _employeeRepository
-                .Query()
-                .Where(e => e.Email == employee.Email)
-                .AnyAsync();
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
 
-            if (emailExist)
+            var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
+            if (exist)
             {
-                throw new Exception($"Email {employee.Email} already used.");
+                throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
             return await _employeeRepository.AddAsync(employee);
@@ -143,6 +155,15 @@ namespace HES.Core.Services
         {
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
+
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
+
+            var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id);
+            if (exist)
+            {
+                throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
+            }
 
             var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
             await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
@@ -668,6 +689,9 @@ namespace HES.Core.Services
                 case WorkstationAccountType.Microsoft:
                     deviceAccount.Login = $"@\\{workstationAccount.Login}";
                     break;
+                case WorkstationAccountType.AzureAD:
+                    deviceAccount.Login = $"AzureAD\\{workstationAccount.Login}";
+                    break;
             }
 
             return await CreatePersonalAccountAsync(deviceAccount, new AccountPassword() { Password = workstationAccount.Password }, new string[] { deviceId });
@@ -683,7 +707,7 @@ namespace HES.Core.Services
 
             if (selectedDevices == null)
                 throw new ArgumentNullException(nameof(selectedDevices));
-                     
+
             ValidationHepler.VerifyOtpSecret(accountPassword.OtpSecret);
 
             _dataProtectionService.Validate();
@@ -702,7 +726,7 @@ namespace HES.Core.Services
                     {
                         throw new Exception("This device and this employee are not linked.");
                     }
-                    
+
                     var exist = await _deviceAccountService
                         .Query()
                         .Where(s => s.Name == deviceAccount.Name)

@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Employee> EmployeeQuery();
         Task<Employee> GetEmployeeByIdAsync(string id);
+        Task<Employee> GetEmployeeByFullNameAsync(Employee employee);
         Task<List<Employee>> GetAllEmployeesAsync();
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> CreateEmployeeAsync(Employee employee);

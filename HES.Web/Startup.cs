@@ -94,6 +94,9 @@ namespace HES.Web
             services.AddScoped<ILicenseService, LicenseService>();
             services.AddScoped<IAppSettingsService, AppSettingsService>();
             services.AddScoped<IToastService, ToastService>();
+            services.AddScoped<IModalDialogService, ModalDialogService>();
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<ILdapService, LdapService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
@@ -181,6 +184,7 @@ namespace HES.Web
                     options.Conventions.AddPageRoute("/Dashboard/Index", "");
                     options.Conventions.AuthorizeFolder("/Dashboard", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Employees", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/Groups", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
@@ -276,16 +280,6 @@ namespace HES.Web
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
             logger.LogInformation("Server started");
-            // Apply migration
-            var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
-            context.Database.Migrate();
-            // Db seed
-            var userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-            var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-            new ApplicationDbSeed(context, userManager, roleManager).Initialize().Wait();
-            // Data protection status
-            var dataProtectionService = scope.ServiceProvider.GetService<IDataProtectionService>();
-            dataProtectionService.Initialize().Wait();
         }
     }
 }

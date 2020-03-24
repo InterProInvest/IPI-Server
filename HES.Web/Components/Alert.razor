@@ -1,0 +1,11 @@
+﻿@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-warning d-flex" role="alert">
+        <img src="/svg/notify-warning.svg" />
+        <span class="mx-2">@Message</span>
+    </div>
+}
+
+@code {
+    [Parameter] public string Message { get; set; }
+}

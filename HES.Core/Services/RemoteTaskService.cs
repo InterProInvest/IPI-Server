@@ -218,7 +218,7 @@ namespace HES.Core.Services
             var pm = new DevicePasswordManager(remoteDevice, null);
 
             ushort key = task.DeviceAccount.IdFromDevice;
-            key = await pm.SaveOrUpdateAccount(key, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary);
+            key = await pm.SaveOrUpdateAccount(key, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
 
             return key;
         }
@@ -240,7 +240,7 @@ namespace HES.Core.Services
             var pm = new DevicePasswordManager(remoteDevice, null);
 
             ushort key = task.DeviceAccount.IdFromDevice;
-            key = await pm.SaveOrUpdateAccount(key, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary);
+            key = await pm.SaveOrUpdateAccount(key, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
 
             return key;
         }
@@ -250,7 +250,7 @@ namespace HES.Core.Services
             var pm = new DevicePasswordManager(remoteDevice, null);
 
             ushort key = task.DeviceAccount.IdFromDevice;
-            key = await pm.SaveOrUpdateAccount(key, null, null, null, null, null, null, true);
+            key = await pm.SaveOrUpdateAccount(key, null, null, null, null, null, null, true, new AccountFlagsOptions() { IsReadOnly = true });
 
             return key;
         }
@@ -292,6 +292,7 @@ namespace HES.Core.Services
 
             var key = ConvertUtils.HexStringToBytes(task.Password);
             await remoteDevice.Link(key);
+            await ProfileDevice(remoteDevice, task);
             return 0;
         }
 

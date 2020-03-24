@@ -139,7 +139,7 @@ namespace HES.Core.Services
                         var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, SdkConfig.DefaultRemoteCommandTimeout, null); //new SdkLogger<RemoteDeviceConnectionsService>(_logger)
                         descr.Device = remoteDevice;
 
-                        await remoteDevice.Verify(channelNo);
+                        await remoteDevice.VerifyAndInitialize();
 
                         // Inform clients about connection ready
                         descr.Tcs.TrySetResult(remoteDevice);

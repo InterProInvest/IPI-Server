@@ -32,6 +32,11 @@ namespace HES.Infrastructure
             return await _context.Set<T>().FindAsync(id);
         }
 
+        public async Task<T> GetByCompositeKeyAsync(object[] obj)
+        {
+            return await _context.Set<T>().FindAsync(obj);
+        }
+
         public async Task<T> AddAsync(T entity)
         {
             _context.Set<T>().Add(entity);
@@ -52,6 +57,12 @@ namespace HES.Infrastructure
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        public Task Unchanged(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Unchanged;
+            return Task.CompletedTask;
         }
 
         public async Task UpdateOnlyPropAsync(T entity, string[] properties)

@@ -28,6 +28,7 @@ namespace HES.Web.Pages.Devices
         public IList<DeviceAccessProfile> DeviceAccessProfiles { get; set; }
         public IList<Device> Devices { get; set; }
         public Device Device { get; set; }
+        public DeviceProperty DeviceProperty { get; set; }
         public DeviceFilter DeviceFilter { get; set; }
 
         [TempData]
@@ -215,10 +216,16 @@ namespace HES.Web.Pages.Devices
                 return NotFound();
             }
 
+            DeviceProperty = new DeviceProperty()
+            {
+                Id = Device.Id,
+                RFID = Device.RFID
+            };
+
             return Partial("_EditDeviceRfid", this);
         }
 
-        public async Task<IActionResult> OnPostEditDeviceRfidAsync(Device device)
+        public async Task<IActionResult> OnPostEditDeviceRfidAsync(DeviceProperty deviceProperty)
         {
             if (!ModelState.IsValid)
             {
@@ -229,7 +236,7 @@ namespace HES.Web.Pages.Devices
 
             try
             {
-                await _deviceService.EditRfidAsync(device);
+                await _deviceService.EditRfidAsync(new Device() { Id = deviceProperty.Id, RFID = deviceProperty.RFID });
                 SuccessMessage = $"RFID updated.";
             }
             catch (Exception ex)

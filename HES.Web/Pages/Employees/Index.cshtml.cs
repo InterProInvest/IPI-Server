@@ -217,7 +217,11 @@ namespace HES.Web.Pages.Employees
             }
 
             CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-            DepartmentIdList = new SelectList(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), "Id", "Name");
+            if (Employee.Department?.CompanyId != null)
+            {
+                CompanyId = Employee.Department.CompanyId;
+                DepartmentIdList = new SelectList(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), "Id", "Name");
+            }
             PositionIdList = new SelectList(await _orgStructureService.PositionQuery().ToListAsync(), "Id", "Name");
 
             return Partial("_EditEmployee", this);

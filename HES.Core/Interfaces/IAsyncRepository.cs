@@ -11,9 +11,11 @@ namespace HES.Core.Interfaces
         IQueryable<T> Query();
         IQueryable<T> SqlQuery(string sql);
         Task<T> GetByIdAsync(string id);
+        Task<T> GetByCompositeKeyAsync(object[] obj);
         Task<T> AddAsync(T entity);
         Task<IList<T>> AddRangeAsync(IList<T> entity);
         Task UpdateAsync(T entity);
+        Task Unchanged(T entity);
         Task UpdateOnlyPropAsync(T entity, string[] properties);
         Task UpdateOnlyPropAsync(IList<T> entity, string[] properties);
         Task DeleteAsync(T entity);

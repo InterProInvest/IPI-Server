@@ -69,6 +69,7 @@ namespace HES.Core.Services
             return await _deviceRepository
                 .Query()
                 .Include(d => d.Employee)
+                .Include(d => d.DeviceAccessProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
@@ -232,6 +233,7 @@ namespace HES.Core.Services
                         RFID = newDeviceDto.RFID,
                         Battery = 100,
                         Firmware = newDeviceDto.Firmware,
+                        AcceessProfileId= "default",
                         ImportedAt = DateTime.UtcNow
                     });
                 }
@@ -342,6 +344,19 @@ namespace HES.Core.Services
             };
 
             await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
+        }
+
+        public async Task SetDeviceStateAsync(string deviceId, DeviceState deviceState)
+        {
+            var device = await GetDeviceByIdAsync(deviceId);
+
+            if (device.State == deviceState)
+            {
+                return;
+            }
+
+            device.State = deviceState;
+            await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "State" });
         }
 
         #endregion

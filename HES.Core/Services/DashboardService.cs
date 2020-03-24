@@ -200,7 +200,7 @@ namespace HES.Core.Services
             {
                 list.Add(new DashboardNotify()
                 {
-                    Message = "License Warning",
+                    Message = "License warning",
                     Count = licenseWarning,
                     Page = "/Devices/Index",
                     Handler = "LicenseWarning"
@@ -217,7 +217,7 @@ namespace HES.Core.Services
             {
                 list.Add(new DashboardNotify()
                 {
-                    Message = "License Critical",
+                    Message = "License critical",
                     Count = licenseCritical,
                     Page = "/Devices/Index",
                     Handler = "LicenseCritical"
@@ -234,7 +234,7 @@ namespace HES.Core.Services
             {
                 list.Add(new DashboardNotify()
                 {
-                    Message = "License Expired",
+                    Message = "License expired",
                     Count = licenseExpired,
                     Page = "/Devices/Index",
                     Handler = "LicenseExpired"
