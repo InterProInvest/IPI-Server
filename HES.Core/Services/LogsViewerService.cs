@@ -1,6 +1,7 @@
 ﻿using HES.Core.Interfaces;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -14,22 +15,12 @@ namespace HES.Core.Services
             _folderPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "logs");
         }
 
-        public List<string> GetLogFiles()
+        public List<string> GetFiles()
         {
-            var list = new List<string>();
-
-            var directoryInfo = new DirectoryInfo(_folderPath);
-            FileInfo[] fileInfo = directoryInfo.GetFiles("*.log");
-
-            foreach (var item in fileInfo)
-            {
-                list.Add(item.Name);
-            }
-
-            return list;
+            return new DirectoryInfo(_folderPath).GetFiles("*.log").Select(s => s.Name).ToList();
         }
 
-        public async Task<List<LogModel>> GetSelectedLog(string name)
+        public async Task<List<LogModel>> GetLogAsync(string name)
         {
             var list = new List<LogModel>();
 

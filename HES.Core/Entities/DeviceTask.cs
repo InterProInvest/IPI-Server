@@ -7,6 +7,7 @@ namespace HES.Core.Entities
     public class DeviceTask
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         public string OldName { get; set; }
         public string OldUrls { get; set; }

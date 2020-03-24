@@ -18,17 +18,19 @@ namespace HES.Core.Services
 {
     public class RemoteTaskService : IRemoteTaskService
     {
-        readonly IDeviceService _deviceService;
-        readonly IDeviceTaskService _deviceTaskService;
-        readonly IDeviceAccountService _deviceAccountService;
-        readonly IDataProtectionService _dataProtectionService;
-        readonly ILogger<RemoteTaskService> _logger;
-        readonly IHubContext<EmployeeDetailsHub> _hubContext;
+        private readonly IDeviceService _deviceService;
+        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IDeviceAccountService _deviceAccountService;
+        private readonly IDataProtectionService _dataProtectionService;
+        private readonly ILicenseService _licenseService;
+        private readonly ILogger<RemoteTaskService> _logger;
+        private readonly IHubContext<EmployeeDetailsHub> _hubContext;
 
         public RemoteTaskService(IDeviceService deviceService,
                                  IDeviceTaskService deviceTaskService,
                                  IDeviceAccountService deviceAccountService,
                                  IDataProtectionService dataProtectionService,
+                                 ILicenseService licenseService,
                                  ILogger<RemoteTaskService> logger,
                                  IHubContext<EmployeeDetailsHub> hubContext)
         {
@@ -36,6 +38,7 @@ namespace HES.Core.Services
             _deviceTaskService = deviceTaskService;
             _deviceAccountService = deviceAccountService;
             _dataProtectionService = dataProtectionService;
+            _licenseService = licenseService;
             _logger = logger;
             _hubContext = hubContext;
         }
@@ -94,6 +97,7 @@ namespace HES.Core.Services
                     device.State = Enums.DeviceState.OK;
                     device.MasterPassword = null;
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { "State", "MasterPassword" });
+                    await _licenseService.DiscardLicenseAppliedAsync(deviceTask.DeviceId);
                     break;
                 case TaskOperation.UnlockPin:
                     device.State = Enums.DeviceState.OK;
@@ -304,17 +308,14 @@ namespace HES.Core.Services
                 MasterKey_Bond = device.DeviceAccessProfile.MasterKeyBonding,
                 MasterKey_Connect = device.DeviceAccessProfile.MasterKeyConnection,
                 MasterKey_Channel = device.DeviceAccessProfile.MasterKeyNewChannel,
-                //MasterKey_Link = device.DeviceAccessProfile.MasterKeyConnection,
 
                 Button_Bond = device.DeviceAccessProfile.ButtonBonding,
                 Button_Connect = device.DeviceAccessProfile.ButtonConnection,
                 Button_Channel = device.DeviceAccessProfile.ButtonNewChannel,
-                //Button_Link = device.DeviceAccessProfile.ButtonConnection,
 
                 Pin_Bond = device.DeviceAccessProfile.PinBonding,
                 Pin_Connect = device.DeviceAccessProfile.PinConnection,
                 Pin_Channel = device.DeviceAccessProfile.PinNewChannel,
-                //Pin_Link = device.DeviceAccessProfile.PinConnection,
 
                 PinMinLength = device.DeviceAccessProfile.PinLength,
                 PinMaxTries = device.DeviceAccessProfile.PinTryCount,

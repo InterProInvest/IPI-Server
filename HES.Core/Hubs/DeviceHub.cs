@@ -27,7 +27,6 @@ namespace HES.Core.Hubs
                 return (string)workstationId;
             else
             {
-                _logger.LogCritical("DeviceHub does not contain WorkstationId!");
                 throw new Exception("DeviceHub does not contain WorkstationId!");
             }
         }
@@ -38,7 +37,6 @@ namespace HES.Core.Hubs
                 return (string)deviceId;
             else
             {
-                _logger.LogCritical("DeviceHub does not contain DeviceId!");
                 throw new Exception("DeviceHub does not contain DeviceId!");
             }
         }
@@ -51,7 +49,6 @@ namespace HES.Core.Hubs
                 var httpContext = Context.GetHttpContext();
                 string deviceId = httpContext.Request.Headers["DeviceId"].ToString();
                 string workstationId = httpContext.Request.Headers["WorkstationId"].ToString();
-                Debug.WriteLine($"!!!!!!!!!!!!!!!!!!!!! OnConnectedAsync {deviceId}:{workstationId}");
 
                 if (string.IsNullOrWhiteSpace(deviceId))
                 {
@@ -82,8 +79,6 @@ namespace HES.Core.Hubs
         {
             try
             {
-                Debug.WriteLine($"!!!!!!!!!!!!!!!!!!!!! OnDisconnectedAsync");
-
                 _remoteDeviceConnectionsService.OnDeviceHubDisconnected(GetDeviceId(), GetWorkstationId());
             }
             catch (Exception ex)
@@ -115,7 +110,6 @@ namespace HES.Core.Hubs
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                Debug.WriteLine(ex.Message);
                 throw new HubException(ex.Message);
             }
             return Task.CompletedTask;
@@ -132,7 +126,6 @@ namespace HES.Core.Hubs
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                Debug.WriteLine(ex.Message);
                 throw new HubException(ex.Message);
             }
             return Task.CompletedTask;

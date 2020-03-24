@@ -6,8 +6,8 @@ namespace HES.Core.Interfaces
 {
     public interface ILogsViewerService
     {
-        List<string> GetLogFiles();
-        Task<List<LogModel>> GetSelectedLog(string name);
+        List<string> GetFiles();
+        Task<List<LogModel>> GetLogAsync(string name);
         string GetFilePath(string name);
         void DeleteFile(string name);
     }

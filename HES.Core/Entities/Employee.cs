@@ -9,6 +9,7 @@ namespace HES.Core.Entities
     public class Employee
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
         [Display(Name = "First Name")]
@@ -17,7 +18,7 @@ namespace HES.Core.Entities
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
         [Remote(action: "VerifyEmail", controller: "Validation", AdditionalFields = "Id")]
-        [EmailAddress]
+        [RegularExpression(@"^[a-z0-9][-a-z0-9.!#$%&'*+-=?^_`{|}~\/]+@([-a-z0-9]+\.)+[a-z]{2,5}$", ErrorMessage = "The Email field is not a valid e-mail address.")]
         [Required]
         public string Email { get; set; }
         [Display(Name = "Phone Number")]

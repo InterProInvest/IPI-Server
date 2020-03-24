@@ -8,10 +8,9 @@ namespace HES.Core.Interfaces
     public interface IApplicationUserService
     {
         IQueryable<ApplicationUser> Query();
-        Task<ApplicationUser> GetByIdAsync(dynamic id);
-        Task<IList<ApplicationUser>> GetAllAsync();
-        Task<IList<ApplicationUser>> GetOnlyAdministrators();
+        Task<ApplicationUser> GetUserByIdAsync(string id);
         Task DeleteUserAsync(string id);
-        Task SendEmailDataProtectionNotify();
+        Task<IList<ApplicationUser>> GetAllAsync();
+        Task<IList<ApplicationUser>> GetAdministratorsAsync();
     }
 }

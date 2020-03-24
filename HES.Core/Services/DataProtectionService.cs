@@ -1,16 +1,15 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using HES.Core.Crypto;
+﻿using HES.Core.Crypto;
 using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
-//todo - use transactions when enabling/disabling the protection
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -25,12 +24,7 @@ namespace HES.Core.Services
 
     public class DataProtectionService : IDataProtectionService
     {
-        private readonly IConfiguration _config;
-        private readonly IAsyncRepository<DataProtection> _dataProtectionRepository;
-        private readonly IAsyncRepository<Device> _deviceRepository;
-        private readonly IAsyncRepository<DeviceTask> _deviceTaskRepository;
-        private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
-        private readonly IApplicationUserService _applicationUserService;
+        public IServiceProvider Services { get; }
         private readonly ILogger<DataProtectionService> _logger;
 
         private DataProtectionKey _key;
@@ -39,20 +33,9 @@ namespace HES.Core.Services
         private bool _protectionActivated;
         private bool _notFinishedPasswordChange;
 
-        public DataProtectionService(IConfiguration config,
-                                     IAsyncRepository<DataProtection> dataProtectionRepository,
-                                     IAsyncRepository<Device> deviceRepository,
-                                     IAsyncRepository<DeviceTask> deviceTaskRepository,
-                                     IAsyncRepository<SharedAccount> sharedAccountRepository,
-                                     IApplicationUserService applicationUserService,
-                                     ILogger<DataProtectionService> logger)
+        public DataProtectionService(IServiceProvider services, ILogger<DataProtectionService> logger)
         {
-            _config = config;
-            _dataProtectionRepository = dataProtectionRepository;
-            _deviceRepository = deviceRepository;
-            _deviceTaskRepository = deviceTaskRepository;
-            _sharedAccountRepository = sharedAccountRepository;
-            _applicationUserService = applicationUserService;
+            Services = services;
             _logger = logger;
         }
 
@@ -86,7 +69,11 @@ namespace HES.Core.Services
             finally
             {
                 if (_protectionEnabled && !_protectionActivated)
-                    await _applicationUserService.SendEmailDataProtectionNotify();
+                {
+                    using var scope = Services.CreateScope();
+                    var scopedEmailSenderService = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
+                    await scopedEmailSenderService.SendActivateDataProtectionAsync();
+                }
             }
         }
 
@@ -228,9 +215,12 @@ namespace HES.Core.Services
                 if (!key.ValidatePassword(password))
                     throw new Exception("Incorrect password");
 
-                await DecryptDatabase(key);
-
-                await DeleteDataProtectionEntity(key.KeyId);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await DeleteDataProtectionEntity(key.KeyId);
+                    await DecryptDatabase(key);
+                    transactionScope.Complete();
+                }
 
                 _key = null;
                 _protectionActivated = false;
@@ -262,19 +252,21 @@ namespace HES.Core.Services
                 if (!oldKey.ValidatePassword(oldPassword))
                     throw new Exception("Incorrect old password");
 
-                // Creating the key for the new password
-                var prms = DataProtectionKey.CreateParams(newPassword);
-                var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
-                var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
-                newKey.ValidatePassword(newPassword);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    // Creating the key for the new password
+                    var prms = DataProtectionKey.CreateParams(newPassword);
+                    var newDataProtectionEntity = await SaveDataProtectionEntity(prms);
+                    var newKey = new DataProtectionKey(newDataProtectionEntity.Id, newDataProtectionEntity.Params);
+                    newKey.ValidatePassword(newPassword);
 
-                await ReencryptDatabase(oldKey, newKey);
-
-                // Delete old key
-                await DeleteDataProtectionEntity(oldKey.KeyId);
-
-                // Set new key as a current key
-                _key = newKey;
+                    await ReencryptDatabase(oldKey, newKey);
+                    // Delete old key
+                    await DeleteDataProtectionEntity(oldKey.KeyId);
+                    // Set new key as a current key
+                    _key = newKey;
+                    transactionScope.Complete();
+                }
 
                 // Set activated if detected the not finished password change operation.
                 _protectionActivated = true;
@@ -287,122 +279,71 @@ namespace HES.Core.Services
 
         private async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
         {
-            var devices = await _deviceRepository.Query().ToListAsync();
-            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+            using var scope = Services.CreateScope();
+            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Device>>();
+            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DeviceTask>>();
+            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+
+            var devices = await scopedDeviceRepository.Query().ToListAsync();
+            var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
 
             foreach (var device in devices)
             {
-                if (device.MasterPassword != null &&
-                    key.TryDecrypt(device.MasterPassword, out string plainText))
+                if (device.MasterPassword != null)
                 {
+                    var plainText = key.Decrypt(device.MasterPassword);
                     device.MasterPassword = newKey.Encrypt(plainText);
                 }
             }
 
             foreach (var task in deviceTasks)
             {
-                if (task.Password != null &&
-                    key.TryDecrypt(task.Password, out string plainText))
+                if (task.Password != null)
                 {
+                    var plainText = key.Decrypt(task.Password);
                     task.Password = newKey.Encrypt(plainText);
                 }
-                if (task.OtpSecret != null &&
-                    key.TryDecrypt(task.OtpSecret, out plainText))
+                if (task.OtpSecret != null)
                 {
+                    var plainText = key.Decrypt(task.OtpSecret);
                     task.OtpSecret = newKey.Encrypt(plainText);
                 }
             }
 
             foreach (var account in sharedAccounts)
             {
-                if (account.Password != null &&
-                    key.TryDecrypt(account.Password, out string plainText))
+                if (account.Password != null)
                 {
+                    var plainText = key.Decrypt(account.Password);
                     account.Password = newKey.Encrypt(plainText);
                 }
-                if (account.OtpSecret != null &&
-                    key.TryDecrypt(account.OtpSecret, out plainText))
+                if (account.OtpSecret != null)
                 {
+                    var plainText = key.Decrypt(account.OtpSecret);
                     account.OtpSecret = newKey.Encrypt(plainText);
                 }
             }
 
-            // devices validation - go through all records and check if each has a new key-id
-            int correctRecords = 0;
-            int wrongRecords = 0;
-            foreach (var device in devices)
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                if (device.MasterPassword != null)
-                {
-                    if (newKey.TryDecrypt(device.MasterPassword, out string plainText))
-                        correctRecords++;
-                    else
-                        wrongRecords++;
-                }
+                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                transactionScope.Complete();
             }
-
-            if (wrongRecords > 0)
-                _logger.LogInformation($"Password change for the devices: fail - {wrongRecords}");
-
-            // deviceTasks validation
-            correctRecords = 0;
-            wrongRecords = 0;
-            foreach (var task in deviceTasks)
-            {
-                if (task.Password != null)
-                {
-                    if (newKey.TryDecrypt(task.Password, out string plainText))
-                        correctRecords++;
-                    else
-                        wrongRecords++;
-                }
-                if (task.OtpSecret != null)
-                {
-                    if (newKey.TryDecrypt(task.OtpSecret, out string plainText))
-                        correctRecords++;
-                    else
-                        wrongRecords++;
-                }
-            }
-
-            if (wrongRecords > 0)
-                _logger.LogInformation($"Password change for the deviceTasks: fail - {wrongRecords}");
-
-            // sharedAccounts validation
-            correctRecords = 0;
-            wrongRecords = 0;
-            foreach (var account in sharedAccounts)
-            {
-                if (account.Password != null)
-                {
-                    if (newKey.TryDecrypt(account.Password, out string plainText))
-                        correctRecords++;
-                    else
-                        wrongRecords++;
-                }
-                if (account.OtpSecret != null)
-                {
-                    if (newKey.TryDecrypt(account.OtpSecret, out string plainText))
-                        correctRecords++;
-                    else
-                        wrongRecords++;
-                }
-            }
-
-            if (wrongRecords > 0)
-                _logger.LogError($"Password change for the sharedAccounts: fail - {wrongRecords}");
-
-            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
         }
 
         private async Task EncryptDatabase(DataProtectionKey key)
         {
-            var devices = await _deviceRepository.Query().ToListAsync();
-            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+            using var scope = Services.CreateScope();
+            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Device>>();
+            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DeviceTask>>();
+            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+
+            var devices = await scopedDeviceRepository.Query().ToListAsync();
+            var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
 
             foreach (var device in devices)
             {
@@ -426,16 +367,25 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Encrypt(account.OtpSecret);
             }
 
-            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                transactionScope.Complete();
+            }
         }
 
         private async Task DecryptDatabase(DataProtectionKey key)
         {
-            var devices = await _deviceRepository.Query().ToListAsync();
-            var deviceTasks = await _deviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await _sharedAccountRepository.Query().ToListAsync();
+            using var scope = Services.CreateScope();
+            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Device>>();
+            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DeviceTask>>();
+            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+
+            var devices = await scopedDeviceRepository.Query().ToListAsync();
+            var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
+            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
 
             foreach (var device in devices)
             {
@@ -459,21 +409,31 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Decrypt(account.OtpSecret);
             }
 
-            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
+                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                transactionScope.Complete();
+            }
         }
 
         private string TryGetStoredPassword()
         {
-            return _config.GetValue<string>("DataProtection:Password");
+            using var scope = Services.CreateScope();
+            var scopedConfiguration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+            return scopedConfiguration.GetValue<string>("DataProtection:Password");
         }
 
         #region Data Protection Params
 
         private async Task<DataProtection> ReadDataProtectionEntity()
         {
-            var list = await _dataProtectionRepository
+            using var scope = Services.CreateScope();
+            var scopedDataProtectionRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DataProtection>>();
+
+            var list = await scopedDataProtectionRepository
                 .Query()
                 .ToListAsync();
 
@@ -494,7 +454,10 @@ namespace HES.Core.Services
 
         private async Task<DataProtection> SaveDataProtectionEntity(DataProtectionParams prms)
         {
-            var entity = await _dataProtectionRepository.AddAsync(new DataProtection()
+            using var scope = Services.CreateScope();
+            var scopedDataProtectionRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DataProtection>>();
+
+            var entity = await scopedDataProtectionRepository.AddAsync(new DataProtection()
             {
                 Value = JsonConvert.SerializeObject(prms),
                 Params = prms
@@ -505,13 +468,16 @@ namespace HES.Core.Services
 
         private async Task DeleteDataProtectionEntity(int id)
         {
-            var entity = await _dataProtectionRepository
+            using var scope = Services.CreateScope();
+            var scopedDataProtectionRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DataProtection>>();
+
+            var entity = await scopedDataProtectionRepository
                 .Query()
                 .Where(v => v.Id == id)
                 .FirstOrDefaultAsync();
 
             if (entity != null)
-                await _dataProtectionRepository.DeleteAsync(entity);
+                await scopedDataProtectionRepository.DeleteAsync(entity);
         }
 
         #endregion

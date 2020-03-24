@@ -2,29 +2,27 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HES.Core.Services
+namespace HES.Core.HostedServices
 {
-    public class RemoveLogsFilesHostedService : IHostedService, IDisposable
+    public class RemoveLogsHostedService : IHostedService, IDisposable
     {
-        private readonly ILogger<RemoveLogsFilesHostedService> _logger;
-        private readonly string _folderPath;
+        private readonly ILogger<RemoveLogsHostedService> _logger;
+        private readonly string _path;
         private Timer _timer;
 
-        public RemoveLogsFilesHostedService(ILogger<RemoveLogsFilesHostedService> logger)
+        public RemoveLogsHostedService(ILogger<RemoveLogsHostedService> logger)
         {
             _logger = logger;
-            _folderPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "logs");
+            _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "logs");
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            //_logger.LogInformation("Remove logs service is starting.");
-
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-
             return Task.CompletedTask;
         }
 
@@ -32,15 +30,14 @@ namespace HES.Core.Services
         {
             try
             {
-                var directoryInfo = new DirectoryInfo(_folderPath);
-                FileInfo[] fileInfo = directoryInfo.GetFiles("*.log");
-
-                foreach (var item in fileInfo)
+                if (Directory.Exists(_path))
                 {
-                    if (item.CreationTime < DateTime.Now.AddDays(-30))
+                    var files = new DirectoryInfo(_path).GetFiles("*.log").Where(x => x.CreationTime < DateTime.Now.AddDays(-30)).ToList();
+
+                    foreach (var file in files)
                     {
-                        File.Delete(item.FullName);
-                        _logger.LogInformation($"File deleted {item.Name}");
+                        File.Delete(file.FullName);
+                        _logger.LogInformation($"File has been deleted {file.Name}");
                     }
                 }
             }
@@ -52,10 +49,7 @@ namespace HES.Core.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            //_logger.LogInformation("Remove logs service is stopping.");
-
             _timer?.Change(Timeout.Infinite, 0);
-
             return Task.CompletedTask;
         }
 

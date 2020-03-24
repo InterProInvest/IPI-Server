@@ -42,6 +42,23 @@ namespace HES.Web.Pages.Employees
         public string SuccessMessage { get; set; }
         [TempData]
         public string ErrorMessage { get; set; }
+        [ViewData]
+        public string CompanyId { get; set; }
+        [ViewData]
+        public SelectList CompanyIdList { get; set; }
+        [ViewData]
+        public SelectList DepartmentIdList { get; set; }
+        [ViewData]
+        public SelectList PositionIdList { get; set; }
+        [ViewData]
+        public SelectList DeviceIdList { get; set; }
+        [ViewData]
+        public SelectList WorkstationIdList { get; set; }
+        [ViewData]
+        public SelectList WorkstationAccountTypeList { get; set; }
+        [ViewData]
+        public SelectList WorkstationAccountsList { get; set; }
+
 
         public IndexModel(IEmployeeService employeeService,
                           IDeviceService deviceService,
@@ -84,12 +101,12 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnGetCreateEmployeeAsync()
         {
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["DeviceId"] = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null && d.State == Core.Enums.DeviceState.OK).ToListAsync(), "Id", "Id");
-            ViewData["WorkstationId"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
-            ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["WorkstationAccounts"] = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            PositionIdList = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            DeviceIdList = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null && d.State == Core.Enums.DeviceState.OK).ToListAsync(), "Id", "Id");
+            WorkstationIdList = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
+            WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            WorkstationAccountsList = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
 
             Devices = await _deviceService
                .DeviceQuery()
@@ -199,9 +216,9 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            ViewData["CompanyId"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-            ViewData["DepartmentId"] = new SelectList(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), "Id", "Name");
-            ViewData["PositionId"] = new SelectList(await _orgStructureService.PositionQuery().ToListAsync(), "Id", "Name");
+            CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            DepartmentIdList = new SelectList(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), "Id", "Name");
+            PositionIdList = new SelectList(await _orgStructureService.PositionQuery().ToListAsync(), "Id", "Name");
 
             return Partial("_EditEmployee", this);
         }
@@ -330,7 +347,7 @@ namespace HES.Web.Pages.Employees
 
         public IActionResult OnGetCreateDepartment(string id)
         {
-            ViewData["CompanyId"] = id;
+            CompanyId = id;
             return Partial("_CreateDepartment", this);
         }
 

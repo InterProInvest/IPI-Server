@@ -4,7 +4,7 @@
     <input type="hidden" value="@ViewBag.EmployeeId" name="employeeId" />
     <div class="form-group">
         <label asp-for="SharedAccount.Name" class="control-label text-gray"></label>
-        <select asp-for="SharedAccount.Id" onchange="GetSharedAccount(this.value)" class="form-control text-navyblue" asp-items="ViewBag.SharedAccountId" name="sharedAccountId"></select>
+        <select asp-for="SharedAccount.Id" onchange="GetSharedAccount(this.value)" class="form-control text-navyblue" asp-items="ViewBag.SharedAccountIdList" name="sharedAccountId"></select>
     </div>
     <div class="form-group">
         <label asp-for="SharedAccount.Login" class="control-label text-gray"></label>

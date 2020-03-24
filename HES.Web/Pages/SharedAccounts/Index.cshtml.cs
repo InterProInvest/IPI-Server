@@ -30,6 +30,8 @@ namespace HES.Web.Pages.SharedAccounts
         public string SuccessMessage { get; set; }
         [TempData]
         public string ErrorMessage { get; set; }
+        [ViewData]
+        public SelectList WorkstationAccountTypeList { get; set; }
 
         public IndexModel(ISharedAccountService sharedAccountService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
@@ -49,7 +51,7 @@ namespace HES.Web.Pages.SharedAccounts
 
         public IActionResult OnGetCreateSharedAccount()
         {
-            ViewData["WorkstationAccountType"] = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             return Partial("_CreateSharedAccount", this);
         }
 

@@ -26,6 +26,9 @@
     <div class="col-auto p-1">
         <a class="btn btn-primary" asp-page="Import">Import</a>
     </div>
+    <div class="col-auto p-1">
+        <component type="typeof(SyncDevices)" render-mode="ServerPrerendered" />
+    </div>
 </div>
 
 <table id="devices" class="display table table-hover border rounded w-100">
@@ -63,6 +66,12 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Devices[0].LastSynced)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Devices[0].LicenseStatus)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Devices[0].LicenseEndDate)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Devices[0].Employee)
@@ -129,6 +138,15 @@
                     {
                         <span class="d-none">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.LastSynced, TimeZoneInfo.Local).Ticks</span>
                         @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.LastSynced, TimeZoneInfo.Local)
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LicenseStatus)
+                </td>
+                <td data-sort="@(item.LicenseEndDate == null ? 0 : item.LicenseEndDate.Value.Ticks)">
+                    @if (item.LicenseEndDate != null)
+                    {
+                        @item.LicenseEndDate.Value.ToShortDateString()
                     }
                 </td>
                 <td>

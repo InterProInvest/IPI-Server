@@ -14,51 +14,82 @@ namespace HES.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "3.1.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("HES.Core.Entities.AppSettings", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppSettings");
+                });
 
             modelBuilder.Entity("HES.Core.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<int>("AccessFailedCount");
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Email")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
-                    b.Property<bool>("EmailConfirmed");
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("FirstName");
+                    b.Property<string>("FirstName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("LastName");
+                    b.Property<string>("LastName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("LockoutEnabled");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<DateTimeOffset?>("LockoutEnd");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("NormalizedEmail")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedUserName")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
-                    b.Property<string>("PasswordHash");
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("PhoneNumber");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("PhoneNumberConfirmed");
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("SecurityStamp");
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("TwoFactorEnabled");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("UserName")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -76,10 +107,12 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Company", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -89,11 +122,14 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.DataProtection", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -103,13 +139,16 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Department", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("CompanyId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -121,36 +160,54 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Device", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("AcceessProfileId")
-                        .IsRequired();
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<int>("Battery");
+                    b.Property<int>("Battery")
+                        .HasColumnType("int");
 
-                    b.Property<string>("EmployeeId");
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("Firmware")
-                        .IsRequired();
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("ImportedAt");
+                    b.Property<bool>("HasNewLicense")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<DateTime?>("LastSynced");
+                    b.Property<DateTime>("ImportedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("LastSynced")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("LicenseEndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("LicenseStatus")
+                        .HasColumnType("int");
 
                     b.Property<string>("MAC")
-                        .IsRequired();
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("MasterPassword");
+                    b.Property<string>("MasterPassword")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Model")
-                        .IsRequired();
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("PrimaryAccountId");
+                    b.Property<string>("PrimaryAccountId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("RFID")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("State");
+                    b.Property<int>("State")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -164,38 +221,54 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.DeviceAccessProfile", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("ButtonBonding");
+                    b.Property<bool>("ButtonBonding")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("ButtonConnection");
+                    b.Property<bool>("ButtonConnection")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("ButtonNewChannel");
+                    b.Property<bool>("ButtonNewChannel")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("MasterKeyBonding");
+                    b.Property<bool>("MasterKeyBonding")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("MasterKeyConnection");
+                    b.Property<bool>("MasterKeyConnection")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("MasterKeyNewChannel");
+                    b.Property<bool>("MasterKeyNewChannel")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("PinBonding");
+                    b.Property<bool>("PinBonding")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("PinConnection");
+                    b.Property<bool>("PinConnection")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("PinExpiration");
+                    b.Property<int>("PinExpiration")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PinLength");
+                    b.Property<int>("PinLength")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("PinNewChannel");
+                    b.Property<bool>("PinNewChannel")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("PinTryCount");
+                    b.Property<int>("PinTryCount")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("UpdatedAt");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -205,43 +278,61 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.DeviceAccount", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Apps");
+                    b.Property<string>("Apps")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("EmployeeId");
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<ushort>("IdFromDevice");
+                    b.Property<ushort>("IdFromDevice")
+                        .HasColumnType("smallint unsigned");
 
-                    b.Property<int>("Kind");
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("LastSyncedAt");
+                    b.Property<DateTime?>("LastSyncedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Login")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("OtpUpdatedAt");
+                    b.Property<DateTime?>("OtpUpdatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("PasswordUpdatedAt");
+                    b.Property<DateTime>("PasswordUpdatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("SharedAccountId");
+                    b.Property<string>("SharedAccountId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Type");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("UpdatedAt");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Urls");
+                    b.Property<string>("Urls")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -254,30 +345,72 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("DeviceAccounts");
                 });
 
+            modelBuilder.Entity("HES.Core.Entities.DeviceLicense", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime?>("AppliedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("longblob");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("ImportedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("LicenseOrderId")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeviceLicenses");
+                });
+
             modelBuilder.Entity("HES.Core.Entities.DeviceTask", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("DeviceAccountId");
+                    b.Property<string>("DeviceAccountId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("OldApps");
+                    b.Property<string>("OldApps")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("OldLogin");
+                    b.Property<string>("OldLogin")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("OldName");
+                    b.Property<string>("OldName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("OldUrls");
+                    b.Property<string>("OldUrls")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("Operation");
+                    b.Property<int>("Operation")
+                        .HasColumnType("int");
 
-                    b.Property<string>("OtpSecret");
+                    b.Property<string>("OtpSecret")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Password");
+                    b.Property<string>("Password")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -289,26 +422,34 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Employee", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("DepartmentId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("Email")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("FirstName")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("LastName")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("LastSeen");
+                    b.Property<DateTime?>("LastSeen")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("PhoneNumber");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("PositionId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -319,13 +460,48 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("Employees");
                 });
 
+            modelBuilder.Entity("HES.Core.Entities.LicenseOrder", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ProlongExistingLicenses")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LicenseOrders");
+                });
+
             modelBuilder.Entity("HES.Core.Entities.Position", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -335,17 +511,23 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.ProximityDevice", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<int>("LockProximity");
+                    b.Property<int>("LockProximity")
+                        .HasColumnType("int");
 
-                    b.Property<int>("LockTimeout");
+                    b.Property<int>("LockTimeout")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UnlockProximity");
+                    b.Property<int>("UnlockProximity")
+                        .HasColumnType("int");
 
-                    b.Property<string>("WorkstationId");
+                    b.Property<string>("WorkstationId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -359,12 +541,15 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.SamlIdentityProvider", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("Enabled");
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Url")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -374,29 +559,40 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.SharedAccount", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Apps");
+                    b.Property<string>("Apps")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("Kind");
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
 
                     b.Property<string>("Login")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("OtpSecret");
+                    b.Property<string>("OtpSecret")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("OtpSecretChangedAt");
+                    b.Property<DateTime?>("OtpSecretChangedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Password");
+                    b.Property<string>("Password")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("PasswordChangedAt");
+                    b.Property<DateTime?>("PasswordChangedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Urls");
+                    b.Property<string>("Urls")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -406,16 +602,21 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Template", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Apps");
+                    b.Property<string>("Apps")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Urls");
+                    b.Property<string>("Urls")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -425,25 +626,35 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Workstation", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("Approved");
+                    b.Property<bool>("Approved")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("ClientVersion");
+                    b.Property<string>("ClientVersion")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DepartmentId");
+                    b.Property<string>("DepartmentId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Domain");
+                    b.Property<string>("Domain")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("IP");
+                    b.Property<string>("IP")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("LastSeen");
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("OS");
+                    b.Property<string>("OS")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("RFID");
+                    b.Property<bool>("RFID")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 
@@ -455,27 +666,38 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.WorkstationEvent", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("Date");
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("DepartmentId");
+                    b.Property<string>("DepartmentId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceAccountId");
+                    b.Property<string>("DeviceAccountId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("EmployeeId");
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<int>("EventId");
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Note");
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("SeverityId");
+                    b.Property<int>("SeverityId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("UserSession");
+                    b.Property<string>("UserSession")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("WorkstationId");
+                    b.Property<string>("WorkstationId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -495,25 +717,35 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.WorkstationSession", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DepartmentId");
+                    b.Property<string>("DepartmentId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceAccountId");
+                    b.Property<string>("DeviceAccountId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("DeviceId");
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("EmployeeId");
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime?>("EndDate");
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<int>("UnlockedBy");
+                    b.Property<int>("UnlockedBy")
+                        .HasColumnType("int");
 
-                    b.Property<string>("UserSession");
+                    b.Property<string>("UserSession")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("WorkstationId");
+                    b.Property<string>("WorkstationId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -530,18 +762,143 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("WorkstationSessions");
                 });
 
+            modelBuilder.Entity("HES.Core.Models.SummaryByDayAndEmployee", b =>
+                {
+                    b.Property<TimeSpan>("AvgSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("Company")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Employee")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("SessionsCount")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("TotalSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<int>("WorkstationsCount")
+                        .HasColumnType("int");
+
+                    b.ToTable("SummaryByDayAndEmployee");
+                });
+
+            modelBuilder.Entity("HES.Core.Models.SummaryByDepartments", b =>
+                {
+                    b.Property<TimeSpan>("AvgSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<TimeSpan>("AvgTotalDuartionByEmployee")
+                        .HasColumnType("time(6)");
+
+                    b.Property<decimal>("AvgTotalSessionsCountByEmployee")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("Company")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("EmployeesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalSessionsCount")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("TotalSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<int>("WorkstationsCount")
+                        .HasColumnType("int");
+
+                    b.ToTable("SummaryByDepartments");
+                });
+
+            modelBuilder.Entity("HES.Core.Models.SummaryByEmployees", b =>
+                {
+                    b.Property<decimal>("AvgSessionsCountPerDay")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<TimeSpan>("AvgSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<TimeSpan>("AvgWorkingHoursPerDay")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("Company")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Employee")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("TotalSessionsCount")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("TotalSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<int>("WorkingDaysCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkstationsCount")
+                        .HasColumnType("int");
+
+                    b.ToTable("SummaryByEmployees");
+                });
+
+            modelBuilder.Entity("HES.Core.Models.SummaryByWorkstations", b =>
+                {
+                    b.Property<TimeSpan>("AvgSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<TimeSpan>("AvgTotalDuartionByEmployee")
+                        .HasColumnType("time(6)");
+
+                    b.Property<decimal>("AvgTotalSessionsCountByEmployee")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<int>("EmployeesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalSessionsCount")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("TotalSessionsDuration")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("Workstation")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.ToTable("SummaryByWorkstations");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedName")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -556,14 +913,18 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("RoleId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -575,14 +936,18 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("UserId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -593,14 +958,18 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("ProviderKey");
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("ProviderDisplayName");
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("UserId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -611,9 +980,11 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("RoleId");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -624,13 +995,17 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -642,15 +1017,15 @@ namespace HES.Infrastructure.Migrations
                     b.HasOne("HES.Core.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Device", b =>
                 {
                     b.HasOne("HES.Core.Entities.DeviceAccessProfile", "DeviceAccessProfile")
                         .WithMany("Devices")
-                        .HasForeignKey("AcceessProfileId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("AcceessProfileId");
 
                     b.HasOne("HES.Core.Entities.Employee", "Employee")
                         .WithMany("Devices")
@@ -684,12 +1059,14 @@ namespace HES.Infrastructure.Migrations
                     b.HasOne("HES.Core.Entities.Department", "Department")
                         .WithMany()
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("HES.Core.Entities.Position", "Position")
                         .WithMany()
                         .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HES.Core.Entities.ProximityDevice", b =>
@@ -758,47 +1135,53 @@ namespace HES.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("HES.Core.Entities.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("HES.Core.Entities.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("HES.Core.Entities.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("HES.Core.Entities.ApplicationUser")
+                    b.HasOne("HES.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

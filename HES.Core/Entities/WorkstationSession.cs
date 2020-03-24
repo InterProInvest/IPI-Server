@@ -8,6 +8,7 @@ namespace HES.Core.Entities
     public class WorkstationSession
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }

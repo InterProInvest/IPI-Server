@@ -13,15 +13,12 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<ApplicationUser> _applicationUserRepository;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IEmailSenderService _emailSender;
 
         public ApplicationUserService(IAsyncRepository<ApplicationUser> applicationUserRepository,
-                                      UserManager<ApplicationUser> userManager,
-                                      IEmailSenderService emailSender)
+                                      UserManager<ApplicationUser> userManager)
         {
             _applicationUserRepository = applicationUserRepository;
             _userManager = userManager;
-            _emailSender = emailSender;
         }
 
         public IQueryable<ApplicationUser> Query()
@@ -29,31 +26,9 @@ namespace HES.Core.Services
             return _applicationUserRepository.Query();
         }
 
-        public async Task<ApplicationUser> GetByIdAsync(dynamic id)
+        public async Task<ApplicationUser> GetUserByIdAsync(string id)
         {
             return await _applicationUserRepository.GetByIdAsync(id);
-        }
-
-        public async Task<IList<ApplicationUser>> GetAllAsync()
-        {
-            return await _applicationUserRepository.Query().ToListAsync();
-        }
-
-        public async Task<IList<ApplicationUser>> GetOnlyAdministrators()
-        {
-            var administrators = new List<ApplicationUser>();
-
-            var users = await _applicationUserRepository.Query().ToListAsync();
-
-            foreach (var user in users)
-            {
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Administrator");
-                if (isAdmin)
-                {
-                    administrators.Add(user);
-                }
-            }
-            return administrators;
         }
 
         public async Task DeleteUserAsync(string id)
@@ -71,16 +46,14 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendEmailDataProtectionNotify()
+        public async Task<IList<ApplicationUser>> GetAllAsync()
         {
-            var administrators = await GetOnlyAdministrators();
-            var title = "Hideez Enterpise Server - Activate Data Protection";
-            var body = $"The server has been restarted, you need to activate the data protection, please go to the server.";
+            return await _applicationUserRepository.Query().ToListAsync();
+        }
 
-            foreach (var user in administrators)
-            {
-                await _emailSender.SendEmailAsync(user.Email, title, body);
-            }
+        public async Task<IList<ApplicationUser>> GetAdministratorsAsync()
+        {
+            return await _userManager.GetUsersInRoleAsync("Administrator");
         }
     }
 }

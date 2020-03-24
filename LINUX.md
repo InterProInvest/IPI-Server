@@ -10,7 +10,7 @@ The second part describes the installation already for a specific site, there ma
   * Can be installed on a bare metal or virtual server
   * 8GB drive
   * 2GB RAM
-  * Option 1: Clean installation of CentOS Linux x86_64 (tested on version 8.1), select "minimal install" option during installation
+  * Option 1: Clean installation of CentOS Linux x86_64 (tested on version 7.6), select "minimal install" option during installation
   * Option 2: Clean installation of Ubuntu Server LTS 18.04
   
 # 1. Preparation (Run once)
@@ -34,7 +34,7 @@ The second part describes the installation already for a specific site, there ma
 ## 1.2 Disable SELinux (CentOS only)
 
 ```shell
-  $ sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
   $ sudo setenforce 0
 ```
 
@@ -52,48 +52,30 @@ The second part describes the installation already for a specific site, there ma
 ## 1.4 Download HES repository from GitHub
 
 ```shell
-  $ sudo git clone https://github.com/HideezGroup/HES /opt/src/HES
-  $ cd /opt/src/HES/HES.Web/
+  $ sudo rpm -Uvh https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
+  $ sudo yum install dotnet-sdk-2.2
 ```
 
 ## 1.5 Add Microsoft Package Repository and install .NET Core
 
-*CentOS*
 ```shell
-  $ sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
-  $ sudo yum install dotnet-sdk-2.2 -y
-```
-*Ubuntu*
-```shell
-  $ wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-  $ sudo dpkg -i packages-microsoft-prod.deb
-  $ sudo apt update
-  $ sudo apt install dotnet-sdk-2.2 -y
+  $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+  $ sudo yum install mysql-server
 ```
 
-If the installation was successful, the output of the *dotnet* command will look something like this:
+  ## Getting Started (fresh install)
+
+### 1. Postinstalling and Securing MySQL Server
 
 ```shell
-  $ dotnet
- 
-Usage: dotnet [options]
-Usage: dotnet [path-to-application]
-
-Options:
-  -h|--help         Display help.
-  --info            Display .NET Core information.
-  --list-sdks       Display the installed SDKs.
-  --list-runtimes   Display the installed runtimes.
-
-path-to-application:
-  The path to an application .dll file to execute.
+  $ dotnet --version
+3.1.200
 ```
 
-## 1.6 Install MySQL version 8:
+  It is recommended to say yes to the following questions:
 
-*CentOS*
 ```shell
-  $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el8-1.noarch.rpm
+  $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
   $ sudo yum install mysql-server -y
 ```
 *Ubuntu*
@@ -103,15 +85,6 @@ path-to-application:
   $ sudo apt update
   $ sudo apt install mysql-server -y
 ```
-
-
-Before starting mysql server for the first time, you must set lower_case_table_names = 1 in the /etc/my.cnf file:
-
-
-```shell
-sudo echo "lower_case_table_names=1" >> /etc/my.cnf 
-```
-
 
 Enable and start MySQL service:
 
@@ -156,9 +129,11 @@ MySQL expects that your new password should consist of at least 8 characters, co
   Reload privilege tables now? (Press y|Y for Yes, any other key for No) : Y
 ```
 
-To verify that everything is okay, you can run
+
+To verify that everything is correct, you can run
 ```shell
-  $ mysql -h localhost -u root -p
+  $ sudo systemctl restart mysqld.service
+  $ sudo systemctl enable mysqld.service
 ```
 After entering password, you will see MySQL console with a prompt:
 ```shell
@@ -167,7 +142,7 @@ Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 13
 Server version: 8.0.19 MySQL Community Server - GPL
 
-Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+### 2. Creating MySQL User and Database for the Hideez Enterprise Server
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -182,8 +157,9 @@ To exit from mySql console, press Ctrl+D.
 
 ## 1.7 Install Nginx
 
-*CentOS*
+*CentOS 7*
 ```shell
+  $ sudo yum install epel-release -y
   $ sudo yum install nginx -y
   $ sudo systemctl enable nginx
   $ systemctl restart nginx
@@ -249,19 +225,16 @@ You should remember database name, username and password, they will come in hand
 Instead of <Name_Of_Domain>, specify the name of your site
 
 ```shell
-  $ cd /opt/src/HES/HES.Web/
-  $ sudo mkdir -p /opt/HES/<Name_Of_Domain>
-  $ sudo dotnet publish -c release -v d -o "/opt/HES/<Name_Of_Domain>" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES/HES.Web/Crypto_linux.dll /opt/HES/<Name_Of_Domain>/Crypto.dll
+  $ sudo yum install git && cd /opt
+  $ sudo git clone https://github.com/HideezGroup/HES src && cd src/HES.Web/
 ```
 
 here is an example for the case when our site will be called hideez.example.com
 
 ```shell
-  $ cd /opt/src/HES.Web/
-  $ sudo mkdir -p /opt/HES/hideez.example.com
-  $ sudo dotnet publish -c release -v d -o "/opt/HES/hideez.example.com" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/hideez.example.com/Crypto.dll
+  $ sudo mkdir /opt/HES
+  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
 ```
 **[Note]** Internet connection required to download NuGet packages
 
@@ -416,57 +389,50 @@ To access your server from the local network as well as from the Internet, you h
  $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/hideez.example.com.key -out /etc/nginx/certs/hideez.example.com.crt
 ```
 
-** Virtual site configuration on Nginx reverse proxy **
+  Basic Configuration for the Nginx Reverse Proxy
 
-Port numbers should match the settings specified in `/lib/systemd/system/HES-<Name_Of_Domain>.service`
-
-for example, domain hideez.example.com:
-
-Create a file `/etc/nginx/conf.d/<Name_Of_Domain>.conf`
-
-```shell
-  vi /etc/nginx/conf.d/hideez.example.com.conf
-```
 ```conf
     server {
-        listen       80;
-        #or if it is one single server
-        #listen       80 default_server;
-        listen       [::]:80;
-        #or if it is one single server
-        #listen       [::]:80 default_server;
+        listen       80 default_server;
+        listen       [::]:80 default_server;
         server_name  hideez.example.com;
 
-        location / {
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
             # Enable proxy websockets for the Hideez Client to work
             proxy_http_version 1.1;
             proxy_buffering off;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection $http_connection;
-            proxy_pass https://localhost:5001;
+            proxy_pass http://localhost:5000;
         }
-    }
- 
+  ...
+```
+
+```conf
     server {
-        listen       443 ssl http2;
-        #or if it is one single server
-        #listen       443 ssl http2 default_server;
-        listen       [::]:443 ssl;
-        #or if it is one single server
-        #listen       [::]:443 ssl default_server;
+        listen       443 ssl http2 default_server;
+        listen       [::]:443 ssl http2 default_server;
         server_name  hideez.example.com;
 
-        ssl_certificate "certs/hideez.example.com.crt";
-        ssl_certificate_key "certs/hideez.example.com.key";
 
-        location / {
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    server {
+          server_name hideez.example.com;
+          listen [::]:443 ssl ;
+          listen 443 ssl; 
+          ssl_certificate "certs/hideez.example.com.crt";
+          ssl_certificate_key "certs/hideez.example.com.key";
+
+          location / {
+                 proxy_pass https://localhost:5001;
+                 proxy_http_version 1.1;
+                 proxy_set_header Upgrade $http_upgrade;
+                 proxy_set_header  Connection $connection_upgrade;
+                 proxy_set_header Host $host;
+                 proxy_cache_bypass $http_upgrade;
+                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                 proxy_set_header X-Forwarded-Proto $scheme;
+          }
 
             # Enable proxy websockets for the hideez Client to work
             proxy_http_version 1.1;
@@ -475,7 +441,7 @@ Create a file `/etc/nginx/conf.d/<Name_Of_Domain>.conf`
             proxy_set_header Connection $http_connection;
             proxy_pass https://localhost:5001;
         }
- }
+  ...
 ```
 
 After saving the file, it is recommended to check nginx settings:

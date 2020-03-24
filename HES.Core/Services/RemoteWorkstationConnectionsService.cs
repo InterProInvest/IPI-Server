@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.Command;
 using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
@@ -15,6 +9,11 @@ using Hideez.SDK.Communication.Workstation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
@@ -106,7 +105,6 @@ namespace HES.Core.Services
 
         public async Task UpdateRemoteDeviceAsync(string deviceId, string workstationId, bool primaryAccountOnly)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! UpdateRemoteDeviceAsync start {deviceId}");
             if (deviceId == null)
                 throw new ArgumentNullException(nameof(deviceId));
 
@@ -119,7 +117,6 @@ namespace HES.Core.Services
 
             if (!isNew)
             {
-                Debug.WriteLine($"!!!!!!!!!!!!! UpdateRemoteDeviceAsync already running {deviceId}");
                 await tcs.Task;
                 return;
             }
@@ -160,7 +157,6 @@ namespace HES.Core.Services
 
         private async Task<bool> UpdateRemoteDevice(string deviceId, string workstationId, bool primaryAccountOnly)
         {
-            Debug.WriteLine($"!!!!!!!!!!!!! UpdateRemoteDevice {deviceId}");
             //todo
             //if (true) //conection not approved
             //throw new HideezException(HideezErrorCode.HesWorkstationNotApproved);
@@ -273,8 +269,6 @@ namespace HES.Core.Services
                 await _remoteTaskService.ExecuteRemoteTasks(deviceId, remoteDevice, TaskOperation.Primary);
             else
                 await _remoteTaskService.ExecuteRemoteTasks(deviceId, remoteDevice, TaskOperation.None);
-
-            Debug.WriteLine($"!!!!!!!!!!!!! UpdateRemoteDevice OK");
 
             return true;
         }

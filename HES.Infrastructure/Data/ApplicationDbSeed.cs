@@ -18,33 +18,33 @@ namespace HES.Infrastructure
             _roleManager = roleManager;
         }
 
-        public void Initialize()
+        public async Task Initialize()
         {
-            InitRoleAndUser().Wait();
-            InitDefaultDeviceAccessProfile().Wait();
-            InitIdentityProviderSettings().Wait();
+            await InitializeRoleAndAdmin();
+            await InitializeDeviceAccessProfile();
+            await InitializeIdentityProviderSettings();
         }
 
-        private async Task InitRoleAndUser()
+        private async Task InitializeRoleAndAdmin()
         {
             var roleResult = await _roleManager.RoleExistsAsync(ApplicationRoles.AdminRole);
             if (!roleResult)
             {
+                // Create credentials
                 string adminName = "admin@hideez.com";
                 string adminPassword = "admin";
-
                 // Create role
                 await _roleManager.CreateAsync(new IdentityRole(ApplicationRoles.AdminRole));
                 await _roleManager.CreateAsync(new IdentityRole(ApplicationRoles.UserRole));
-                // Create user
-                var user = new ApplicationUser { UserName = adminName, Email = adminName, EmailConfirmed = true };
-                var createResult = await _userManager.CreateAsync(user, adminPassword);
-                // Add user to role
-                await _userManager.AddToRoleAsync(user, ApplicationRoles.AdminRole);
+                // Create admin
+                var admin = new ApplicationUser { UserName = adminName, Email = adminName, EmailConfirmed = true };
+                await _userManager.CreateAsync(admin, adminPassword);
+                // Add admin to role
+                await _userManager.AddToRoleAsync(admin, ApplicationRoles.AdminRole);
             }
         }
 
-        private async Task InitDefaultDeviceAccessProfile()
+        private async Task InitializeDeviceAccessProfile()
         {
             var profile = await _context.DeviceAccessProfiles.FindAsync("default");
 
@@ -73,7 +73,7 @@ namespace HES.Infrastructure
             }
         }
 
-        private async Task InitIdentityProviderSettings()
+        private async Task InitializeIdentityProviderSettings()
         {
             var samlIdPEnabled = await _context.SamlIdentityProvider.FindAsync(SamlIdentityProvider.PrimaryKey);
             if (samlIdPEnabled == null)

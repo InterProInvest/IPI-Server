@@ -1,7 +1,4 @@
-﻿@using HES.Core.Interfaces
-@inject IAppService AppService
-
-<div class="navigation-menu">
+﻿<div class="navigation-menu">
     <div class="navigation-menu__body">
         <a class="navbar-brand mt-3 mb-3 w-100" asp-area="" asp-page="/Dashboard/Index">
             <img class="icon-hideez" />
@@ -106,10 +103,20 @@
                                     <span>Positions</span>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.LicenseOrdersNavClass(ViewContext)" asp-page="/Settings/LicenseOrders/Index">
+                                    <span>License Orders</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @SettingsNavPages.ParametersNavClass(ViewContext)" asp-page="/Settings/Parameters/Index">
+                                    <span>Parameters</span>
+                                </a>
+                            </li>
                             @*<li class="nav-item">
-                                    <a class="nav-link @SettingsNavPages.IdentityProviderNavClass(ViewContext)" asp-page="/Settings/IdentityProvider/Index">
-                                        <span>SAML IdP</span>
-                                    </a>
+                                          <a class="nav-link @SettingsNavPages.IdentityProviderNavClass(ViewContext)" asp-page="/Settings/IdentityProvider/Index">
+                                              <span>SAML IdP</span>
+                                          </a>
                                 </li>*@
                         </ul>
                     </div>
@@ -119,8 +126,8 @@
     </div>
 
     <div class="navigation-menu__footer copyright">
-        <span class="d-block">© 2019 Hideez Group Inc.</span>
+        <span class="d-block">© 2020 Hideez Group Inc.</span>
         <span class="d-block">Hideez Enterprise Server</span>
-        <span class="d-block">Version: @AppService.Version</span>
+        <span class="d-block">Version: @HES.Core.Constants.AppVersionConstants.Version</span>
     </div>
 </div>

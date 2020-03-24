@@ -271,9 +271,9 @@ namespace HES.Core.Services
                     {
                         WorkstationId = workstationId,
                         DeviceId = deviceId,
-                        LockProximity = 50,
-                        UnlockProximity = 75,
-                        LockTimeout = 3
+                        LockProximity = 30,
+                        UnlockProximity = 70,
+                        LockTimeout = 5
                     });
                 }
             }
@@ -345,7 +345,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveAllProximityByDeviceIdAsync(string deviceId)
+        public async Task RemoveAllProximityAsync(string deviceId)
         {
             var allProximity = await _proximityDeviceRepository
              .Query()

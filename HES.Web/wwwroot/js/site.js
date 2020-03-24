@@ -51,7 +51,7 @@ $('#modalDialog').on('hidden.bs.modal', function (e) {
     $("#modalBody").html("<div class='d-flex justify-content-center align-items-center'><div class='spinner-grow text-primary' style='width: 3rem; height: 3rem;' role='status'><span class='sr-only'></span></div></div>");
 });
 
-// ~ Device Access Profile ~
+// Device Access Profile
 // Initialize DataTables
 function InitDeviceAccessProfileDT() {
     var table_name = '#deviceAccessProfiles';
@@ -141,6 +141,38 @@ function InitSlidersText() {
     $('#pin_try_count_value').html($('#pin_try_count').val());
 }
 
+// License Orders
+// Initialize DataTables
+function InitLicenseOrdersDT() {
+    var table_name = '#licenseOrders';
+    var table = $(table_name).DataTable({
+        responsive: true,
+        "order": [[6, "desc"]],
+        "columnDefs": [
+            { "orderable": false, "targets": [8] }
+        ]
+    });
+    var dataTable = $(table_name).dataTable();
+    // Search box
+    $('#searchbox').keyup(function () {
+        dataTable.fnFilter(this.value);
+    });
+    $('.dataTables_filter').addClass('d-none');
+    // Length
+    $('#entries_place').html($('.dataTables_length select').removeClass('custom-select-sm form-control-sm'));
+    $('.dataTables_length').addClass('d-none');
+    // Info
+    $('#showing_place').html($('.dataTables_info'));
+    // Paginate
+    $('#pagination_place').html($('.dataTables_paginate'));
+}
+
+// Breadcrumbs
+function LicenseOrdersSetBreadcrumbs() {
+    $('#breadcrumb').toggleClass('d-none');
+    $('.breadcrumb').append('<li class="breadcrumb-item active">Settings</li>');
+    $('.breadcrumb').append('<li class="breadcrumb-item active">License Orders</li>');
+}
 
 // DataTables initialization
 function InitDeviceTasksDT() {

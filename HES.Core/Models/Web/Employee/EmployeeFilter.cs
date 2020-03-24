@@ -5,9 +5,9 @@ namespace HES.Core.Models
 {
     public class EmployeeFilter
     {
-        [Display(Name = "Start Date")]
+        [Display(Name = "Last Seen Start Date")]
         public DateTime? StartDate { get; set; }
-        [Display(Name = "End Date")]
+        [Display(Name = "Last Seen End Date")]
         public DateTime? EndDate { get; set; }
         [Display(Name = "Company")]
         public string CompanyId { get; set; }

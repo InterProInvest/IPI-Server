@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Hideez.SDK.Communication.Utils;
 
 namespace HES.Core.Utilities
 {
@@ -18,23 +19,10 @@ namespace HES.Core.Utilities
             List<string> verifiedUrls = new List<string>();
             foreach (var url in urls.Split(";"))
             {
-                string uriString = url;
-                string domain = string.Empty;
-
-                if (string.IsNullOrWhiteSpace(uriString))
+                if (!UrlUtils.TryGetDomain(url, out string domain))
                 {
-                    throw new Exception("Not correct url");
+                    throw new Exception($"'{url}' incorrect url.");
                 }
-
-                if (!uriString.Contains(Uri.SchemeDelimiter))
-                {
-                    uriString = string.Concat(Uri.UriSchemeHttp, Uri.SchemeDelimiter, uriString);
-                }
-
-                domain = new Uri(uriString).Host;
-
-                if (domain.StartsWith("www."))
-                    domain = domain.Remove(0, 4);
 
                 verifiedUrls.Add(domain);
             }

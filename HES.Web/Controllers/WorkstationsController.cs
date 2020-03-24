@@ -70,18 +70,15 @@ namespace HES.Web.Controllers
 
             try
             {
-                var currentWorkstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
-                if (!currentWorkstation.Approved)
+                var workstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
+                if (!workstation.Approved)
                 {
                     return BadRequest(new { error = "Workstation not approved" });
                 }
 
-                var workstation = new Workstation()
-                {
-                    Id = workstationDto.Id,
-                    DepartmentId = workstationDto.DepartmentId,
-                    RFID = workstationDto.RfidEnabled
-                };
+                workstation.DepartmentId = workstationDto.DepartmentId;
+                workstation.RFID = workstationDto.RfidEnabled;
+
                 await _workstationService.EditWorkstationAsync(workstation);
                 await _workstationService.UpdateRfidStateAsync(workstation.Id);
             }
@@ -106,13 +103,12 @@ namespace HES.Web.Controllers
 
             try
             {
-                var workstation = new Workstation()
-                {
-                    Id = workstationDto.Id,
-                    DepartmentId = workstationDto.DepartmentId,
-                    RFID = workstationDto.RfidEnabled,
-                    Approved = true
-                };
+                var workstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
+
+                workstation.DepartmentId = workstationDto.DepartmentId;
+                workstation.RFID = workstationDto.RfidEnabled;
+                workstation.Approved = true;
+
                 await _workstationService.ApproveWorkstationAsync(workstation);
                 await _workstationService.UpdateRfidStateAsync(workstation.Id);
             }
