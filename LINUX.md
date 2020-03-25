@@ -371,19 +371,14 @@ sudo systemctl status HES-<Name_Of_Domain>
 The output of the command should be something like this:
 
 ```shell
-* HES-hideez.example.com.service - hideez.example.com Hideez Enterprise Service
+● HES-hideez.example.com.service - hideez.example.com Hideez Enterprise Service
    Loaded: loaded (/usr/lib/systemd/system/HES-hideez.example.com.service; enabled; vendor preset: disabled)
-   Active: active (running) since Sat 2020-01-25 10:31:13 UTC; 54min ago
- Main PID: 12976 (HES.Web)
+   Active: active (running) since Wed 2020-03-25 09:05:04 UTC; 34s ago
+ Main PID: 2964 (HES.Web)
    CGroup: /system.slice/HES-hideez.example.com.service
-            +-12976 /opt/HES/hideez.example.com/HES.Web
+           └─2964 /opt/HES/hideez.example.com/HES.Web
 
-Jan 25 10:31:13 HESServerTest systemd[1]: Started hideez.example.com Hideez Enterprise Service.
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Hosting environment: Production
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Content root path: /opt/HES/hideez.example.com
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Now listening on: http://localhost:5000
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Now listening on: https://localhost:5001
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Application started. Press Ctrl+C to shut down.
+Mar 25 09:05:04 hesservertest systemd[1]: Started hideez.example.com Hideez Enterprise Service.
 ```
 
 ## 2.5 Reverse proxy configuration
