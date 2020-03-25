@@ -35,7 +35,7 @@ The second part describes the installation already for a specific site, there ma
 
 ```shell
   $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
-  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
   $ sudo reboot
 ```
 
@@ -53,28 +53,34 @@ The second part describes the installation already for a specific site, there ma
 ## 1.4 Download HES repository from GitHub
 
 ```shell
-  $ sudo rpm -Uvh https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
-  $ sudo yum install dotnet-sdk-2.2
+  $ sudo git clone https://github.com/HideezGroup/HES /opt/src/HES
 ```
 
 ## 1.5 Add Microsoft Package Repository and install .NET Core
 
+*CentOS*
 ```shell
-  $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-  $ sudo yum install mysql-server
+  $ sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+  $ sudo yum install dotnet-sdk-3.1 -y
+```
+*Ubuntu*
+```shell
+  $ wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+  $ sudo dpkg -i packages-microsoft-prod.deb
+  $ sudo apt update
+  $ sudo apt install dotnet-sdk-3.1 -y
 ```
 
-  ## Getting Started (fresh install)
-
-### 1. Postinstalling and Securing MySQL Server
+If the installation was successful, the output of the *dotnet* command will look something like this:
 
 ```shell
   $ dotnet --version
 3.1.200
 ```
 
-  It is recommended to say yes to the following questions:
+## 1.6 Install MySQL version 8:
 
+*CentOS*
 ```shell
   $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
   $ sudo yum install mysql-server -y
@@ -110,40 +116,45 @@ mysql  Ver 8.0.17 for Linux on x86_64 (Source Distribution)
 **Setting a permanent real root password and MySQL security settings**
 
 MySQL expects that your new password should consist of at least 8 characters, contain uppercase and lowercase letters, numbers and special characters (do not forget the password you set, it will come in handy later). After a successful password change, the following questions are recommended to answer "Y":
+[Note] Find default root password using   sudo grep "A temporary password" /var/log/mysqld.log
+
 
 ```shell
   $ sudo mysql_secure_installation
 ```
 
 ```shell
-  Please set a new password for user root:
+Enter password for user root:
+
+  The existing password for the user account root has expired. Please set a new password.
+
+  New password:
   Re-enter new password:
 
-  Do you wish to continue with the password provided?(Press y|Y for Yes, any other key for No) : Y
+  Remove anonymous users? (Press y|Y for Yes, any other key for No) : y
 
-  Remove anonymous users? (Press y|Y for Yes, any other key for No) : Y
+  Disallow root login remotely? (Press y|Y for Yes, any other key for No) : y
 
-  Disallow root login remotely? (Press y|Y for Yes, any other key for No) : Y
+  Remove test database and access to it? (Press y|Y for Yes, any other key for No) : y
 
-  Remove test database and access to it? (Press y|Y for Yes, any other key for No) : Y
-
-  Reload privilege tables now? (Press y|Y for Yes, any other key for No) : Y
+  Reload privilege tables now? (Press y|Y for Yes, any other key for No) : y
 ```
 
 
 To verify that everything is correct, you can run
 ```shell
-  $ sudo systemctl restart mysqld.service
-  $ sudo systemctl enable mysqld.service
+  $ mysql -h localhost -u root -p
 ```
+
 After entering password, you will see MySQL console with a prompt:
+
 ```shell
   Enter password: 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 13
 Server version: 8.0.19 MySQL Community Server - GPL
 
-### 2. Creating MySQL User and Database for the Hideez Enterprise Server
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -223,21 +234,16 @@ You should remember database name, username and password, they will come in hand
 
 ## 2.2 Installing Hideez Enterprise Server from source
 
-Instead of <Name_Of_Domain>, specify the name of your site
+here is an example for the case when our site will be in folder "/opt/HES/hideez.example.com" 
 
 ```shell
-  $ sudo yum install git && cd /opt
-  $ sudo git clone https://github.com/HideezGroup/HES src && cd src/HES.Web/
-```
-
-here is an example for the case when our site will be called hideez.example.com
-
-```shell
-  $ sudo mkdir /opt/HES
-  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
+  $ cd /opt/src/HES.Web/
+  $ sudo mkdir -p /opt/HES/hideez.example.com
+  $ sudo dotnet publish -c release -v d -o "/opt/HES/hideez.example.com" --framework netcoreapp3.1 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/hideez.example.com/Crypto.dll
 ```
 **[Note]** Internet connection required to download NuGet packages
+
 
 ## 2.3 Hideez Enterprise Server Configuration
 
@@ -289,6 +295,26 @@ The following is an example of how to open a configuration file for editing, for
 * **your_email_password** - Your email name (example `password`)
 * **protection_password** - Your password for database encryption (example `password`)
 
+
+
+Important note. By default, .net Core uses ports 5000 and 5001. Therefore, if only one domain 
+is running on the server, port numbers can be skipped. But if it is supposed to run a few sites
+on one computer, then it is necessary to specify different ports for each site in json file. For example, for a site to listen to ports 6000 and 6001, after "AllowedHosts": "*" add the following (via comma) :
+
+```json
+,
+ "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://localhost:6000"
+      },
+      "Https": {
+        "Url": "https://localhost:6001"
+      }
+    }
+  }
+
+```
 After saving the settings file, you can check that HES server is up and running:
 ```shell
   $ cd /opt/HES/<Name_Of_Domain>
@@ -307,14 +333,7 @@ this means that HES server is successfully configured and started.
 
 ## 2.4 Daemonizing of Enterprise Server
 
-Important note. By default, .net Core uses ports 5000 and 5001. Therefore, if only one domain 
-is running on the server, port numbers can be skipped. But if it is supposed to run a few sites
-on one computer, then it is necessary to specify different ports for each site.
-
 Create the file `/lib/systemd/system/HES-<Name_Of_Domain>.service`
-
-
-Below is an example for hideez.example.com, ports 5000 è 5001:
 
 ```shell
   $ sudo cat > /lib/systemd/system/HES-hideez.example.com.service << EOF
@@ -327,7 +346,7 @@ Below is an example for hideez.example.com, ports 5000 è 5001:
   Group=root
 
   WorkingDirectory=/opt/HES/hideez.example.com
-  ExecStart=/opt/HES/hideez.example.com/HES.Web --server.urls "http://localhost:5000;https://localhost:5001"
+  ExecStart=/opt/HES/hideez.example.com/HES.Web 
   Restart=on-failure
   ExecReload=/bin/kill -HUP $MAINPID
   KillMode=process
@@ -338,9 +357,6 @@ Below is an example for hideez.example.com, ports 5000 è 5001:
   WantedBy=multi-user.target
 EOF
 ```
-
-if there will be only one HES service per server, you can omit parameter
---server.urls "http://localhost:5000;https://localhost:5001"
 
 **enabling autostart (using hideez.example.com as an example)**
 
@@ -503,39 +519,39 @@ Setup is complete. The server should be accessible in a browser at the address `
   $ sudo git pull
 ```
 
-### 2. Back up Hideez Enterprise Server
-
-```shell
-  $ sudo systemctl stop hideez.service
-  $ sudo mv /opt/HES /opt/HES.old
-```
-
-### 3. Build a new version of Hideez Enterprise Server from sources
-
-```shell
-  $ sudo mkdir /opt/HES
-  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
-```
-
-### 4. Back up MySQL Database (optional)
+### 2. Back up MySQL Database (optional)
 
 ```shell
   $ sudo mkdir /opt/backups && cd /opt/backups
   $ sudo mysqldump -u <your_user> -p <your_secret> <your_db> | gzip -c > <your_db>.sql.gz
 ```
 
-### 5. Copy your configuration file
+### 3. Back up Hideez Enterprise Server
 
 ```shell
-  $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
+  $ sudo systemctl stop HES-<Name_Of_Domain>
+  $ sudo mv /opt/HES/<Name_Of_Domain> /opt/HES/<Name_Of_Domain>.old
+```
+
+### 4. Build a new version of Hideez Enterprise Server from sources
+
+```shell
+  $ sudo mkdir /opt/HES/<Name_Of_Domain>
+  $ sudo dotnet publish -c release -v d -o "/opt/HES/<Name_Of_Domain>" --framework netcoreapp3.1 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/<Name_Of_Domain>/Crypto.dll
+```
+
+### 5. Restore your configuration file
+
+```shell
+  $ sudo cp /opt/HES.<Name_Of_Domain>.old/appsettings.json /opt/HES/<Name_Of_Domain>/appsettings.json
 ```
 
 ### 6. Restart Hideez Enterprise Server and check its status
 
 ```shell
-  $ sudo systemctl restart hideez.service
-  $ sudo systemctl status hideez.service
+  $ sudo systemctl restart HES-<Name_Of_Domain>
+  $ sudo systemctl status HES-<Name_Of_Domain>
   * hideez.service - Hideez Web service
      Loaded: loaded (/usr/lib/systemd/system/hideez.service; enabled; vendor preset: disabled)
      Active: active (running) since Tue 2019-11-05 15:34:39 EET; 2 weeks 2 days ago
