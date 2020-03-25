@@ -324,23 +324,26 @@ After saving the settings file, you can check that HES server is up and running:
 
 
 If you do not see any errors, this means that HES server is successfully configured and started.
+Press Ctrl+C for exit
 
 ## 2.4 Daemonizing of Enterprise Server
 
-Create the file `/lib/systemd/system/HES-<Name_Of_Domain>.service`
+Create the file `/lib/systemd/system/HES-<Name_Of_Domain>.service`  with the following content
 
 ```shell
-  $ sudo cat > /lib/systemd/system/HES-hideez.example.com.service << EOF
+  $ sudo vi /lib/systemd/system/HES-<Name_Of_Domain>.service 
+```
+```conf
 [Unit]
-  Description=hideez.example.com Hideez Enterprise Service
+  Description=<Name_Of_Domain> Hideez Enterprise Service
 
 [Service]
 
   User=root
   Group=root
 
-  WorkingDirectory=/opt/HES/hideez.example.com
-  ExecStart=/opt/HES/hideez.example.com/HES.Web 
+  WorkingDirectory=/opt/HES/<Name_Of_Domain>
+  ExecStart=/opt/HES/<Name_Of_Domain>/HES.Web 
   Restart=on-failure
   ExecReload=/bin/kill -HUP $MAINPID
   KillMode=process
@@ -349,23 +352,21 @@ Create the file `/lib/systemd/system/HES-<Name_Of_Domain>.service`
 
 [Install]
   WantedBy=multi-user.target
-EOF
 ```
 
 **enabling autostart (using hideez.example.com as an example)**
 
 ```shell
-  $ sudo systemctl enable HES-hideez.example.com.service
-  $ sudo systemctl restart HES-hideez.example.com.service
+  $ sudo systemctl enable HES-<Name_Of_Domain>.service
+  $ sudo systemctl restart HES-<Name_Of_Domain>.service
 ```
 
 You can verify that HES server is running with the command
 
 ```shell
-sudo systemctl status HES-hideez.example.com
+sudo systemctl status HES-<Name_Of_Domain>
 
 ```
-(of course, instead of "HES-hideez.example.com", there should be a service name created earlier)
 
 The output of the command should be something like this:
 
