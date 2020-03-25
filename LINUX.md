@@ -321,16 +321,9 @@ After saving the settings file, you can check that HES server is up and running:
   $ cd /opt/HES/<Name_Of_Domain>
   $ sudo ./HES.Web 
 ```
-The output should look something like this:
 
-```shell
-Hosting environment: Production
-Content root path: /opt/HES/hideez.example.com
-Now listening on: http://localhost:5000
-Now listening on: https://localhost:5001
-Application started. Press Ctrl+C to shut down.
-```
-this means that HES server is successfully configured and started.
+
+If you do not see any errors, this means that HES server is successfully configured and started.
 
 ## 2.4 Daemonizing of Enterprise Server
 
