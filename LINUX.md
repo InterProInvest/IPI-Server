@@ -409,39 +409,30 @@ To access your server from the local network as well as from the Internet, you h
  $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/<Name_Of_Domain>.key -out /etc/nginx/certs/<Name_Of_Domain>.crt
 ```
 
-  Basic Configuration for the Nginx Reverse Proxy
+** Virtual site configuration on Nginx reverse proxy **
+
+You can configure virtual sites in the **http** section of /etc/nginx/nginx.conf or by creating separate configuration files. In this example, we will add new sections to /etc/nginx/nginx.conf
+
 
 ```conf
-    server {
-        listen       80 default_server;
-        listen       [::]:80 default_server;
-        server_name  hideez.example.com;
 
+ # redirect all traffic to https
+ server {
+          server_name <Name_Of_Domain>;
+          listen 80;
+          listen [::]:80;
+          if ($host = <Name_Of_Domain>) {
+                return 301 https://$host$request_uri;
+          }
+          return 404;
+    }
 
-            # Enable proxy websockets for the Hideez Client to work
-            proxy_http_version 1.1;
-            proxy_buffering off;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $http_connection;
-            proxy_pass http://localhost:5000;
-        }
-  ...
-```
-
-```conf
-    server {
-        listen       443 ssl http2 default_server;
-        listen       [::]:443 ssl http2 default_server;
-        server_name  hideez.example.com;
-
-
-
-    server {
-          server_name hideez.example.com;
+  server {
+          server_name <Name_Of_Domain>;
           listen [::]:443 ssl ;
-          listen 443 ssl; 
-          ssl_certificate "certs/hideez.example.com.crt";
-          ssl_certificate_key "certs/hideez.example.com.key";
+          listen 443 ssl;
+          ssl_certificate "certs/<Name_Of_Domain>.crt";
+          ssl_certificate_key "certs/<Name_Of_Domain>.key";
 
           location / {
                  proxy_pass https://localhost:5001;
@@ -454,15 +445,15 @@ To access your server from the local network as well as from the Internet, you h
                  proxy_set_header X-Forwarded-Proto $scheme;
           }
 
-            # Enable proxy websockets for the hideez Client to work
-            proxy_http_version 1.1;
-            proxy_buffering off;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $http_connection;
-            proxy_pass https://localhost:5001;
-        }
-  ...
+    }
+
+
 ```
+
+● Replace <Name_Of_Domain> with you domain name
+● Port numbers should match the settings specified in /opt/HES/<Name_Of_Domain>/appsettings.json (defauls is 5000 for http  and 5001 for https)
+● note we added a map directive with the "connection_upgrade" variable declaration during the initial nginx configuration
+
 
 After saving the file, it is recommended to check nginx settings:
 ```shell
@@ -496,13 +487,6 @@ Otherwise, you should carefully review the settings and correct the errors.
 
 To access the server from the network, ports 22, 80, and 443 should be opened:
 
-*CentOS*
-```shell
-$ sudo firewall-cmd --zone=public --permanent --add-port=22/tcp
-$ sudo firewall-cmd --zone=public --permanent --add-port=80/tcp
-$ sudo firewall-cmd --zone=public --permanent --add-port=443/tcp
-$ sudo firewall-cmd --reload
-```
 *Ubuntu*
 ```shell
 $ sudo ufw allow 22
@@ -525,8 +509,9 @@ Setup is complete. The server should be accessible in a browser at the address `
 ### 2. Back up MySQL Database (optional)
 
 ```shell
-  $ sudo mkdir /opt/backups && cd /opt/backups
-  $ sudo mysqldump -u <your_user> -p <your_secret> <your_db> | gzip -c > <your_db>.sql.gz
+  $ sudo mkdir /opt/backups
+  $ cd /opt/backups
+  $ sudo mysqldump -u <your_user> -p<your_secret> <your_db> | gzip -c > <your_db>.sql.gz
 ```
 
 ### 3. Back up Hideez Enterprise Server
@@ -540,14 +525,15 @@ Setup is complete. The server should be accessible in a browser at the address `
 
 ```shell
   $ sudo mkdir /opt/HES/<Name_Of_Domain>
+  $ cd /opt/src/HES/HES.Web/
   $ sudo dotnet publish -c release -v d -o "/opt/HES/<Name_Of_Domain>" --framework netcoreapp3.1 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/<Name_Of_Domain>/Crypto.dll
+  $ sudo cp /opt/src/HES/HES.Web/Crypto_linux.dll /opt/HES/<Name_Of_Domain>/Crypto.dll
 ```
 
 ### 5. Restore your configuration file
 
 ```shell
-  $ sudo cp /opt/HES.<Name_Of_Domain>.old/appsettings.json /opt/HES/<Name_Of_Domain>/appsettings.json
+  $ sudo cp /opt/HES/<Name_Of_Domain>.old/appsettings.json /opt/HES/<Name_Of_Domain>/appsettings.json
 ```
 
 ### 6. Restart Hideez Enterprise Server and check its status
@@ -555,10 +541,13 @@ Setup is complete. The server should be accessible in a browser at the address `
 ```shell
   $ sudo systemctl restart HES-<Name_Of_Domain>
   $ sudo systemctl status HES-<Name_Of_Domain>
-  * hideez.service - Hideez Web service
-     Loaded: loaded (/usr/lib/systemd/system/hideez.service; enabled; vendor preset: disabled)
-     Active: active (running) since Tue 2019-11-05 15:34:39 EET; 2 weeks 2 days ago
-   Main PID: 10816 (HES.Web)
-     CGroup: /system.slice/hideez.service
-             +-10816 /opt/HES/HES.Web
-```
+  
+  ● HES-hideez.example.com.service - hideez.example.com Hideez Enterprise Service
+   Loaded: loaded (/usr/lib/systemd/system/HES-hideez.example.com.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2020-03-25 10:48:12 UTC; 16s ago
+ Main PID: 4657 (HES.Web)
+   CGroup: /system.slice/HES-thideez.example.com.service
+           └─4657 /opt/HES/hideez.example.com/HES.Web
+
+Mar 25 10:48:12 hesservertest systemd[1]: Started hideez.example.com Hideez Enterprise Service.
+ 
