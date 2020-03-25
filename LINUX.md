@@ -175,14 +175,29 @@ To exit from mySql console, press Ctrl+D.
   $ sudo yum install epel-release -y
   $ sudo yum install nginx -y
   $ sudo systemctl enable nginx
-  $ systemctl restart nginx
 ```
 *Ubuntu*
 ```shell
   $ sudo apt install nginx -y
   $ sudo systemctl enable nginx
-  $ systemctl restart nginx
 ```
+
+add to **http** section in /etc/nginx/nginx.conf
+
+```conf
+...
+map $http_upgrade $connection_upgrade {
+                default Upgrade;
+                ''      close;
+    }
+...
+```
+
+and restart nginx
+```shell
+  $ sudo systemctl restart nginx
+```
+
 
 Check that nginx service is installed and started:
 ```shell
