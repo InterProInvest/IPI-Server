@@ -387,13 +387,11 @@ To access your server from the local network as well as from the Internet, you h
  Creating a Self-Signed SSL Certificate for Nginx
  Note For a "real" site, you should take care of acquiring a certificate from a certificate authority.
  For self-signed certificate, browser will alert you that site has security issues.
- 
- Below is an example for hideez.example.com
- (when generating a certificate, answer a few simple questions)
-
+ Replace <Name_Of_Domain> with you domain name
+ (when generating a certificate, answer a few simple questions)
 ```shell
  $ sudo mkdir /etc/nginx/certs
- $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/hideez.example.com.key -out /etc/nginx/certs/hideez.example.com.crt
+ $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/<Name_Of_Domain>.key -out /etc/nginx/certs/<Name_Of_Domain>.crt
 ```
 
   Basic Configuration for the Nginx Reverse Proxy
