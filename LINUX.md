@@ -116,6 +116,7 @@ mysql  Ver 8.0.17 for Linux on x86_64 (Source Distribution)
 **Setting a permanent real root password and MySQL security settings**
 
 MySQL expects that your new password should consist of at least 8 characters, contain uppercase and lowercase letters, numbers and special characters (do not forget the password you set, it will come in handy later). After a successful password change, the following questions are recommended to answer "Y":
+
 [Note] Find default root password using   sudo grep "A temporary password" /var/log/mysqld.log
 
 
