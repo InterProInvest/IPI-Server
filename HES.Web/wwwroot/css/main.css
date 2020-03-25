@@ -139,7 +139,15 @@ div.collapsed > img.icon-collapse-arrow {
 }
 
 .icon-btn {
-    width: 24px;
-    height: 24px;
-    margin-right: 4px;
+    width: 20px;
+    height: 20px;
+    margin-right: 3px;
+}
+
+.is-search {
+    padding-right: calc(1.5em + .75rem);
+    background-image: url("/svg/action/search.svg");
+    background-repeat: no-repeat;
+    background-position: right calc(.375em + .1875rem) center;
+    background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 }

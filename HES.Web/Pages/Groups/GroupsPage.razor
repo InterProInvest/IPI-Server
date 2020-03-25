@@ -8,31 +8,57 @@ else
 {
     <!-- Actions -->
     <div class="d-flex align-items-center flex-wrap mb-2">
-        <button type="button" class="btn btn-primary mb-1 mr-2" @onclick="OpenModalAddGroup">
+        <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalAddGroup">
             Add from AD
         </button>
-        <button type="button" class="btn btn-primary mb-1 mr-2" @onclick="OpenModalGreateGroup">
+        <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalGreateGroup">
             Create group
         </button>
-        <button type="button" class="btn btn-light border mb-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Details" @onclick="GroupDetails">
+        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Details" @onclick="GroupDetails">
             <img class="icon-btn" src="/svg/action/details.svg" />
             Details
         </button>
-        <button type="button" class="btn btn-light border mb-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroup">
+        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroup">
             <img class="icon-btn" src="/svg/action/edit.svg" />
             Edit
         </button>
-        <button type="button" class="btn btn-light border mb-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroup">
+        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroup">
             <img class="icon-btn" src="/svg/action/delete.svg" />
             Delete
         </button>
     </div>
+    <!-- Filter -->
+    <div id="filter-collapse" class="filter-card collapse">
+        <EditForm Model="GroupFilter" OnValidSubmit="FilterGroupsAsync">
+            <div class="d-flex flex-wrap">
+                <div class="filter-card-item mt-2">
+                    <label class="mb-0 text-gray">Name</label>
+                    <InputText id="groupName" @bind-Value="GroupFilter.Name" class="form-control text-navyblue" />
+                </div>  
+                <div class="filter-card-item mt-2">
+                    <label class="mb-0 text-gray">Email</label>
+                    <InputText id="groupEmail" @bind-Value="GroupFilter.Email" class="form-control text-navyblue" />
+                </div>
+                <div class="filter-card-item mt-2">
+                    <label class="mb-0 text-gray">Members Count</label>
+                    <InputText id="groupMembersCount" @bind-Value="GroupFilter.MembersCount" class="form-control text-navyblue" />
+                </div>
+                <div class="flex-fill align-self-end text-right mt-2">
+                    <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearFilterAsync">Clear</button>
+                    <input id="filterBtn" type="submit" value="Filter" class="btn btn-primary" />
+                </div>
+            </div>
+        </EditForm>
+    </div>
     <!-- SearchBox -->
-    <div class="has-search-right mb-3">
-        <div class="form-control-feedback">
-            <img class="img-size" src="/svg/action/search.svg" />
+    <div class="d-flex align-items-center flex-wrap mb-3">
+        <button type="button" class="btn btn-light border my-1 mr-2" data-toggle="collapse" data-target="#filter-collapse" title="Filter">
+            <img class="icon-btn" src="/svg/action/filter.svg" />
+            Filter
+        </button>
+        <div class="flex-fill">
+            <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control is-search" placeholder="@Placeholder">
         </div>
-        <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control " placeholder="@Placeholder">
     </div>
     <!-- Table -->
     <div class="table-responsive mb-3">

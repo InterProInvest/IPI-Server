@@ -517,6 +517,10 @@ a.navbar-brand {
     border: 1px solid #dee2e6 !important;
 }
 
+.filter-card-item:not(:last-child) {
+    margin-right: 15px;
+}
+
 .details-card {
     background: #fff;
     border-radius: 0.25rem !important;
@@ -540,6 +544,7 @@ a.navbar-brand {
     padding: 20px;
     border: 1px solid #dee2e6 !important;
 }
+
 .white-card {
     background: #FFF;
     border-radius: 0.25rem !important;

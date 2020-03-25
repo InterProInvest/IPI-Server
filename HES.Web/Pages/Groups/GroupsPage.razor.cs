@@ -1,15 +1,15 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
-using HES.Web.Components;
+using HES.Core.Models.Web.Group;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Timers;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web;
+using System.Timers;
 
 namespace HES.Web.Pages.Groups
 {
@@ -31,6 +31,12 @@ namespace HES.Web.Pages.Groups
         public string SearchText { get; set; } = string.Empty;
 
         private Timer _timer;
+
+        #endregion
+
+        #region Filter
+
+        public GroupFilter GroupFilter = new GroupFilter();
 
         #endregion
 
@@ -86,6 +92,21 @@ namespace HES.Web.Pages.Groups
 
         #endregion
 
+        #region Filter
+
+        private async Task FilterGroupsAsync()
+        {
+            await LoadGroupsAsync();
+        }
+
+        private async Task ClearFilterAsync()
+        {
+            GroupFilter = new GroupFilter();
+            await LoadGroupsAsync();
+        }
+
+        #endregion
+
         #region SortTable
 
         public async Task SortTable(string columnName)
@@ -131,17 +152,16 @@ namespace HES.Web.Pages.Groups
         }
 
         #endregion
-                
+
         public async Task LoadGroupsAsync()
         {
-            TotalRecords = await GroupService.GetCountAsync(SearchText);
+            var currentTotalRows = TotalRecords;
+            TotalRecords = await GroupService.GetCountAsync(SearchText, GroupFilter);
 
-            if (!string.IsNullOrWhiteSpace(SearchText) && TotalRecords > 0)
-            {
+            if (currentTotalRows != TotalRecords)
                 CurrentPage = 1;
-            }
 
-            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortColumn, SortDirection, SearchText);
+            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortColumn, SortDirection, SearchText, GroupFilter);
             CurrentGroupId = null;
             StateHasChanged();
         }
