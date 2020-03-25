@@ -235,13 +235,13 @@ You should remember database name, username and password, they will come in hand
 
 ## 2.2 Installing Hideez Enterprise Server from source
 
-here is an example for the case when our site will be in folder "/opt/HES/hideez.example.com" 
+here is an example for the case when our site will be in folder "/opt/HES/hideez.example.com". You usually have to choose another folder that works for you
 
 ```shell
-  $ cd /opt/src/HES.Web/
+  $ cd /opt/src/HES/HES.Web/
   $ sudo mkdir -p /opt/HES/hideez.example.com
   $ sudo dotnet publish -c release -v d -o "/opt/HES/hideez.example.com" --framework netcoreapp3.1 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/hideez.example.com/Crypto.dll
+  $ sudo cp /opt/src/HES/HES.Web/Crypto_linux.dll /opt/HES/hideez.example.com/Crypto.dll
 ```
 **[Note]** Internet connection required to download NuGet packages
 
