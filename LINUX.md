@@ -34,8 +34,8 @@ The second part describes the installation already for a specific site, there ma
 ## 1.2 Disable SELinux (CentOS only)
 
 ```shell
-  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
-  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+  $ sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+  $ sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
   $ sudo reboot
 ```
 
