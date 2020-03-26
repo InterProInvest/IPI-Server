@@ -96,6 +96,8 @@ namespace HES.Web
             services.AddScoped<IModalDialogService, ModalDialogService>();
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<ILdapService, LdapService>();
+            services.AddScoped<ISoftwareVaultService, SoftwareVaultService>();
+
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();

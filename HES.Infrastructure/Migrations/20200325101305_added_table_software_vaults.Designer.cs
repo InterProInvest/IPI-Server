@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200325101305_added_table_software_vaults")]
+    partial class added_table_software_vaults
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -661,43 +663,6 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("SoftwareVaults");
                 });
 
-            modelBuilder.Entity("HES.Core.Entities.SoftwareVaultInvitation", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.Property<DateTime?>("AcceptedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("ActivationCode")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("EmployeeId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.Property<string>("SoftwareVaultId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ValidTo")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("SoftwareVaultId");
-
-                    b.ToTable("SoftwareVaultInvitations");
-                });
-
             modelBuilder.Entity("HES.Core.Entities.Template", b =>
                 {
                     b.Property<string>("Id")
@@ -1197,19 +1162,6 @@ namespace HES.Infrastructure.Migrations
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("HES.Core.Entities.SoftwareVaultInvitation", b =>
-                {
-                    b.HasOne("HES.Core.Entities.Employee", "Employee")
-                        .WithMany("SoftwareVaultInvitations")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HES.Core.Entities.SoftwareVault", "SoftwareVault")
-                        .WithMany()
-                        .HasForeignKey("SoftwareVaultId");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Workstation", b =>
