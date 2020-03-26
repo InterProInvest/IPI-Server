@@ -1,9 +1,10 @@
+
 1. System update and installation of necessary packages 
  
- CentOS 8/RHEL 8 Server
+ CentOS 7
  ```shell
- # dnf update -y
- # dnf install git -y
+ # yum update -y
+ # yum install git -y
  ```
 Ubuntu 18.04
  ```shell
@@ -13,9 +14,10 @@ Ubuntu 18.04
  ```
 2. Enable Docker CE Repository 
 
-CentOS 8/RHEL 8 Server
+CentOS 7
 ```shell
- # dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+ # sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+ # sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
  ```
 Ubuntu 18.04  
 ```shell
@@ -25,9 +27,9 @@ Ubuntu 18.04
 ``` 
 3. Install Docker CE
 
-CentOS 8/RHEL 8 Server
+CentOS 7
 ```shell
-# dnf install docker-ce --nobest -y
+# sudo yum install docker-ce -y
 # systemctl start docker
 # systemctl enable docker
 ```
@@ -38,7 +40,7 @@ Ubuntu 18.04
 ``` 
 Run the following command to verify installed docker version
  ```shell
-$ docker --version
+ $ docker --version
 ```
 ```shell
 Docker version 19.03.8, build afacb8b
@@ -52,11 +54,11 @@ Note: Replace “1.25.4” with docker compose version that you want to install 
 
 5. Clone repository
 ```shell
-git clone https://github.com/HideezGroup/HES.git
-cd HES/HES.Docker
+$ git clone https://github.com/HideezGroup/HES.git
+$ cd HES/HES.Docker
 ```
 6. Installation of the project:
 these commands should be executed in the directory where the main files are: Dockerfile, docker-compose.yml, appsettings.json
 ```shell
-# docker-compose up -d --build && docker-compose down &&docker-compose up -d && docker-compose ps
+# docker-compose up -d --build && docker-compose down && docker-compose up -d && docker-compose ps
 ```
