@@ -9,12 +9,15 @@
 <partial name="_SuccessMessage" for="SuccessMessage" />
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
-@* Employee items *@
-<div class="row align-items-center details-card">
+@* Employee header *@
+<div class="row align-items-center details-card mb-3">
     <div class="col-auto">
         <h1 class="text-navyblue m-0">@Model.Employee.FullName</h1>
     </div>
     <div class="col"></div>
+    <div class="col-auto pl-1 pr-1">
+        <component type="typeof(DetailsButtonSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
+    </div>
     <div class="col-auto pl-1 pr-1">
         <button type="button" class="btn btn-primary open-modal-dialog" data-id="@Model.Employee.Id" data-action="AddDevice" data-title="Add device">
             Add device
@@ -32,55 +35,102 @@
     </div>
 </div>
 
-@*SAML IdP*@
-@*<div class="@((Model.SamlIdentityProviderEnabled == true && Model.Employee.Devices.Count > 0) ? "" : "d-none")">
-        <h4 class="text-navyblue mb-2 mt-3">SAML IdP Account</h4>
-        <form method="post" class="samlidp-card">
-            <input type="hidden" asp-for="Employee.Id" />
-            <input type="hidden" asp-for="Employee.Email" />
-            <input type="hidden" asp-for="Employee.FirstName" />
-            <input type="hidden" asp-for="Employee.LastName" />
-            <div class="d-flex flex-row">
-                <div class="d-inline-flex align-self-center mr-3">
-                    <label class="control-label mb-0 mr-2">Enable</label>
-                    <div class="custom-control custom-switch">
-                        <input id="idpEnabled" type="checkbox" class="custom-control-input" checked="@Model.UserSamlIdpEnabled">
-                        <label class="custom-control-label" for="idpEnabled"></label>
-                    </div>
-                </div>
+@* Invitations *@
+@if (Model.Employee.SoftwareVaultInvitations.Count > 0)
+{
+    <component type="typeof(DetailsSoftwareVaultsInvitationSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
+}
 
-                @if (!Model.UserSamlIdpEnabled)
+@* Vaults *@
+@if (Model.Employee.SoftwareVaults.Count > 0)
+{
+    <component type="typeof(DetailsSoftwareVaultsSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
+}
+
+@* Devices *@
+@if (Model.Employee.Devices.Count > 0)
+{
+    <h4 class="text-navyblue">Devices</h4>
+    <div class="table-responsive mb-3">
+        <table id="softwareVaultInvitations" class="table table-hover border rounded w-100">
+            <thead>
+                <tr>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        MAC
+                    </th>
+                    <th>
+                        Model
+                    </th>
+                    <th>
+                        RFID
+                    </th>
+                    <th>
+                        Battery
+                    </th>
+                    <th>
+                        Firmware
+                    </th>
+                    <th>
+                        LastSynced
+                    <th>
+                        NeedSync
+                    </th>
+                    <th class="table-action-column"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var device in Model.Employee.Devices)
                 {
-                    <div id="device_group" class="d-none mr-3">
-                        <select class="form-control" asp-for="Employee.CurrentDevice" asp-items="ViewBag.Devices"></select>
-                    </div>
+                    <tr>
+                        <td>
+                            @device.Id
+                        </td>
+                        <td>
+                            @device.MAC
+                        </td>
+                        <td>
+                            @device.Model
+                        </td>
+                        <td>
+                            @device.RFID
+                        </td>
+                        <td>
+                            @device.Battery <span>%</span>
+                        </td>
+                        <td>
+                            @device.Firmware
+                        </td>
+                        <td>
+                            @if (device.LastSynced != null)
+                            {
+                                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)device.LastSynced, TimeZoneInfo.Local)
+                            }
+                        </td>
+                        <td>
+                            @device.NeedSync
+                        </td>
+                        <td>
+                            <button class="btn p-0 open-modal-dialog" data-id="@device.Id" data-action="DeleteDevice" data-title="Remove device" title="Remove device from employee">
+                                <img src="~/svg/action/delete.svg" />
+                            </button>
+                        </td>
+                    </tr>
                 }
-                else
-                {
-                    <div class="mr-3">
-                        <input type="submit" value="Reset password" class="btn btn-primary" asp-page-handler="ResetSamlIdentityProvider" />
-                    </div>
-                }
-                <div>
-                    @if (!Model.UserSamlIdpEnabled)
-                    {
-                        <input id="idpSaveBtn" type="submit" value="Save" class="btn btn-primary d-none" asp-page-handler="EnableSamlIdentityProvider" />
-                    }
-                    else
-                    {
-                        <input id="idpSaveBtn" type="submit" value="Save" class="btn btn-primary d-none" asp-page-handler="DisableSamlIdentityProvider" />
-                    }
-                </div>
-            </div>
-        </form>
-    </div>*@
+            </tbody>
+        </table>
+    </div>
+}
 
 @* Devices tables *@
-<div id="employeeDeviceAccounts">
-    <partial name="_EmployeeDeviceAccounts" />
-</div>
-
-<component type="typeof(SoftwareVaultsSection)" render-mode="ServerPrerendered" param-Employee="@Model.Employee" />
+@if (Model.Accounts.Count > 0)
+{
+    <div id="employeeDeviceAccounts">
+        <partial name="_EmployeeDeviceAccounts" />
+    </div>
+}
 
 @* Modal *@
 <div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
@@ -189,37 +239,30 @@
         }
 
         // Set DataTables
-        SetDT();
-        function SetDT() {
-            $("table").each(function () {
-                var currentTable = $(this);
-                var currentId = currentTable.attr('id');
+        var table_name = '#accounts';
+        var currentId = 'accounts';
+        $(table_name).DataTable({
+            responsive: true,
+            "order": [[1, "asc"]],
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 9] }
+            ]
+        });
 
-                if (currentId != 'undefined') {
-                    $('#' + currentId).DataTable({
-                        responsive: true,
-                        "order": [[1, "asc"]],
-                        "columnDefs": [
-                            { "orderable": false, "targets": [0, 9] }
-                        ]
-                    });
+        var dataTable = $(table_name).dataTable();
+        // Search box
+        $('#searchbox_' + currentId).keyup(function () {
+            dataTable.fnFilter(this.value);
+        });
+        $('.dataTables_filter').addClass('d-none');
+        // Length
+        $('#entries_place_' + currentId).html($('.dataTables_length select').removeClass('custom-select-sm form-control-sm'));
+        $('.dataTables_length').addClass('d-none');
+        // Info
+        $('#showing_place_' + currentId).html($('#' + currentId + '_info'));
+        // Paginate
+        $('#pagination_place_' + currentId).html($('#' + currentId + '_paginate'));
 
-                    var dataTable = $('#' + currentId).dataTable();
-                    // Search box
-                    $('#searchbox_' + currentId).keyup(function () {
-                        dataTable.fnFilter(this.value);
-                    });
-                    $('.dataTables_filter').addClass('d-none');
-                    // Length
-                    $('#entries_place_' + currentId).html($('.dataTables_length select').removeClass('custom-select-sm form-control-sm'));
-                    $('.dataTables_length').addClass('d-none');
-                    // Info
-                    $('#showing_place_' + currentId).html($('#' + currentId + '_info'));
-                    // Paginate
-                    $('#pagination_place_' + currentId).html($('#' + currentId + '_paginate'));
-                }
-            });
-        }
 
         // SAML IdP
         $(document).on("change", "#idpEnabled", function () {

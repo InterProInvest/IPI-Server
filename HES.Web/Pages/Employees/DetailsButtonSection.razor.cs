@@ -1,16 +1,22 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class SoftwareVaultsSection : ComponentBase
+    public partial class DetailsButtonSection : ComponentBase
     {
-        [Inject] public ILogger<SoftwareVaultsSection> Logger { get; set; }
+        [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Parameter] public Employee Employee { get; set; }
+        [Parameter] public string EmployeeId { get; set; }
+
+        public Employee Employee { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+        }
 
         public async Task OpenModalAddSoftwareVaultAsync()
         {
