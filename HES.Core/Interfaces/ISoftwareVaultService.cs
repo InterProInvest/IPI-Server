@@ -2,13 +2,14 @@
 using HES.Core.Models.Web.AppSettings;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
     public interface ISoftwareVaultService
     {
+        Task<List<SoftwareVault>> GetSoftwareVaultsAsync();
+        Task<List<SoftwareVaultInvitation>> GetSoftwareVaultInvitationsAsync();
         Task CreateAndSendInvitationAsync(Employee employee, Server server, DateTime validTo);
     }
 }

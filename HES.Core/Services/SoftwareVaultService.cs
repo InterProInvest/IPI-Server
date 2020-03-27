@@ -3,7 +3,9 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -23,6 +25,24 @@ namespace HES.Core.Services
             _emailSenderService = emailSenderService;
         }
 
+        public async Task<List<SoftwareVault>> GetSoftwareVaultsAsync()
+        {
+            return await _softwareVaultRepository
+               .Query()
+               .Include(x => x.Employee)
+               .AsTracking()
+               .ToListAsync();
+        }
+
+        public async Task<List<SoftwareVaultInvitation>> GetSoftwareVaultInvitationsAsync()
+        {
+            return await _softwareVaultInvitationRepository
+               .Query()
+               .Include(x => x.Employee)
+               .AsTracking()
+               .ToListAsync();
+        }
+
         public async Task CreateAndSendInvitationAsync(Employee employee, Server server, DateTime validTo)
         {
             if (employee == null)
@@ -34,7 +54,7 @@ namespace HES.Core.Services
             if (employee.Email == null)
                 throw new ArgumentNullException(nameof(employee.Email));
 
-            var activationCode = GenerateActivationCode();     
+            var activationCode = GenerateActivationCode();
 
             var invitation = new SoftwareVaultInvitation()
             {

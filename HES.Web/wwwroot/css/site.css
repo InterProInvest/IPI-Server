@@ -979,6 +979,14 @@ div.dataTables_scrollHead table.dataTable {
     mask: url('../svg/sidebar/round-device.svg');
 }
 
+.icon-software-vault {
+    width: 24px;
+    height: 24px;
+    background: #FFF;
+    -webkit-mask: url('../svg/sidebar-software-vault.svg');
+    mask: url('../svg/sidebar-software-vault.svg');
+}
+
 .icon-audit {
     width: 24px;
     height: 24px;

@@ -1,0 +1,49 @@
+﻿@if (SoftwareVaultInvitations == null)
+{
+    <LoadingText />
+}
+else
+{
+    <div class="table-responsive mb-3">
+        <table id="softwareVaultInvitations" class="table table-hover border rounded w-100">
+            <thead>
+                <tr>
+                    <th>
+                        Status
+                    </th>
+                    <th>
+                        CreatedAt
+                    </th>
+                    <th>
+                        ValidTo
+                    </th>
+                    <th>
+                        AcceptedAt
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var vault in SoftwareVaultInvitations)
+                {
+                    <tr>
+                        <td>
+                            @vault.Status
+                        </td>
+                        <td>
+                            @TimeZoneInfo.ConvertTimeFromUtc((DateTime)vault.CreatedAt, TimeZoneInfo.Local)
+                        </td>
+                        <td>
+                            @TimeZoneInfo.ConvertTimeFromUtc((DateTime)vault.ValidTo, TimeZoneInfo.Local)
+                        </td>
+                        <td>
+                            @if (vault.AcceptedAt != null)
+                            {
+                                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)vault.AcceptedAt, TimeZoneInfo.Local)
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

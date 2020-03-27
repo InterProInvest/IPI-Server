@@ -190,6 +190,7 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Devices", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/SoftwareVaults", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
