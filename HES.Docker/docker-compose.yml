@@ -8,6 +8,7 @@ services:
   # Create HES images
   hes:
     container_name: hes-app
+    command: ./HES.Web
     build: .
     environment: 
       ASPNETCORE_URLS: "http://0.0.0.0:5000;https://0.0.0.0:5001"
@@ -18,21 +19,38 @@ services:
       - hes
     depends_on:
       - hes-db
+    volumes:
+      - ./hes/appsettings.json:/opt/HES/appsettings.json      
   hes-db:
     image: mysql
     container_name: hes-db
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_DATABASE: test
-      MYSQL_USER: test
-      MYSQL_PASSWORD: test
-      MYSQL_ROOT_PASSWORD: test
+      # these variables specify the name of the database and passwords 
+      # (the same database, user and password must be written in the appsettings.json file)
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
     ports:
       - '3306:3306'
     networks:
       - hes
     volumes:
-      - my-db:/var/lib/mysql
-volumes:
-  my-db:
-    name: my-db
+      #./mysql/data is a real folder on the local machine that will host the MySQL databaseґ
+      # you can change it to a more appropriate one 
+      - ./mysql/data:/var/lib/mysql
+  hes-nginx:
+    image: nginx
+    container_name: hes-nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - hes
+    depends_on:
+      - hes
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certs:/etc/nginx/certs
+
