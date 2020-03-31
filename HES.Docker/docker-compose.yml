@@ -7,7 +7,7 @@ networks:
 services:
   # Create HES images
   hes:
-    container_name: hes-app
+    container_name: hes-<Name_Of_Domain>
     command: ./HES.Web
     build: .
     environment: 
@@ -20,7 +20,8 @@ services:
     depends_on:
       - hes-db
     volumes:
-      - ./hes/appsettings.json:/opt/HES/appsettings.json      
+      - ./<Name_Of_Domain>/appsettings.json:/opt/HES/appsettings.json
+      - ./<Name_Of_Domain>/logs:/opt/HES/logs
   hes-db:
     image: mysql
     container_name: hes-db
