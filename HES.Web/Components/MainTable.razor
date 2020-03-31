@@ -1,0 +1,16 @@
+﻿@typeparam TItem
+<div class="table-responsive mb-3">
+    <table class="table table-hover border rounded w-100 mb-0 disable-selection">
+        <thead>
+            <tr>
+                @TableHeader
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr @onclick="(() => OnRowSelected(item))" @ondblclick="OnRowDblClick" class="table-row @GetRowStyle(item)">@TableRow(item)</tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -4,70 +4,83 @@
 }
 else
 {
-    <div class="table-responsive mb-3">
-        <table id="softwareVaults" class="table table-hover border rounded w-100">
-            <thead>
-                <tr>
-                    <th>
-                        OS
-                    </th>
-                    <th>
-                        Model
-                    </th>
-                    <th>
-                        ClientAppVersion
-                    </th>
-                    <th>
-                        CreatedAt
-                    </th>
-                    <th>
-                        Status
-                    </th>
-                    <th>
-                        LicenseStatus
-                    </th>
-                    <th>
-                        LicenseEndDate
-                    </th>
-                    <th>
-                        NeedSync
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var vault in SoftwareVaults)
-                {
-                    <tr>
-                        <td>
-                            @vault.OS
-                        </td>
-                        <td>
-                            @vault.Model
-                        </td>
-                        <td>
-                            @vault.ClientAppVersion
-                        </td>
-                        <td>
-                            @TimeZoneInfo.ConvertTimeFromUtc((DateTime)vault.CreatedAt, TimeZoneInfo.Local)
-                        </td>
-                        <td>
-                            @vault.Status
-                        </td>
-                        <td>
-                            @vault.LicenseStatus
-                        </td>
-                        <td>
-                            @if (vault.LicenseEndDate != null)
-                            {
-                                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)vault.LicenseEndDate, TimeZoneInfo.Local)
-                            }
-                        </td>
-                        <td>
-                            @vault.NeedSync
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <TableFilter SearchTextChanged="SearchTextChanged">
+        <VaultFilter FilterChanged="FilterChangedAsync" />
+    </TableFilter>
+    <MainTable Items="SoftwareVaults">
+        <TableHeader>
+            <MainTableHeader Title="OS"
+                             SortColumn="@nameof(SoftwareVault.OS)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="Model"
+                             SortColumn="@nameof(SoftwareVault.Model)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="Version"
+                             SortColumn="@nameof(SoftwareVault.ClientAppVersion)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="Status"
+                             SortColumn="@nameof(SoftwareVault.Status)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="License Status"
+                             SortColumn="@nameof(SoftwareVault.LicenseStatus)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="Employee"
+                             SortColumn="@nameof(SoftwareVault.Employee)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="Company"
+                             SortColumn="@nameof(SoftwareVault.Employee.Department.Company)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+            <MainTableHeader Title="Company"
+                             SortColumn="@nameof(SoftwareVault.Employee.Department)"
+                             CurrentSortedColumn="@CurrentSortedColumn"
+                             SortedColumnChanged="SortedColumnChanged"
+                             SortDirectionChanged="SortDirectionChanged" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.OS
+            </td>
+            <td>
+                @context.Model
+            </td>
+            <td>
+                @context.ClientAppVersion
+            </td>
+            <td>
+                @context.Status
+            </td>
+            <td>
+                @context.LicenseStatus
+            </td>
+            <td>
+                @context.Employee.FullName
+            </td>
+            <td>
+                @context.Employee.Department.Company.Name
+            </td>
+            <td>
+                @context.Employee.Department.Name
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="CurrentPageChanged"
+                DisplayRowsChanged="DisplayRowsChanged"
+                TotalRecords="TotalRecords"
+                CurrentPage="CurrentPage"
+                DisplayRows="DisplayRows"
+                DisplayRecords="SoftwareVaults.Count" />
 }

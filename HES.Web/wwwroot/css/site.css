@@ -517,9 +517,13 @@ a.navbar-brand {
     border: 1px solid #dee2e6 !important;
 }
 
-.filter-card-item:not(:last-child) {
-    margin-right: 15px;
+.filter-card-item {
+    min-width: 200px;
 }
+
+    .filter-card-item:not(:last-child) {
+        margin-right: 15px;
+    }
 
 .details-card {
     background: #fff;
