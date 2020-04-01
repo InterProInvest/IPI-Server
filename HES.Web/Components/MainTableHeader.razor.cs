@@ -8,6 +8,7 @@ namespace HES.Web.Components
     public partial class MainTableHeader : ComponentBase
     {
         [Parameter] public string Title { get; set; }
+        [Parameter] public double TitleWidth { get; set; }
         [Parameter] public string SortColumn { get; set; }
         [Parameter] public string CurrentSortedColumn { get; set; }
         [Parameter] public Func<string,Task> SortedColumnChanged { get; set; }

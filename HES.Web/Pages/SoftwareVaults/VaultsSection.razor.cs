@@ -18,11 +18,12 @@ namespace HES.Web.Pages.SoftwareVaults
 
         public SoftwareVaultFilter Filter { get; set; } = new SoftwareVaultFilter();
         public string SearchText { get; set; } = string.Empty;
-        public string CurrentSortedColumn { get; set; } = nameof(SoftwareVault.OS);
-        public ListSortDirection CurrentSortDirection { get; set; } = ListSortDirection.Ascending;
+        public string SortedColumn { get; set; } = nameof(SoftwareVault.OS);
+        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
+        public string CurrentGroupId { get; set; }
 
         #endregion
 
@@ -41,8 +42,9 @@ namespace HES.Web.Pages.SoftwareVaults
             if (currentTotalRows != TotalRecords)
                 CurrentPage = 1;
 
-            SoftwareVaults = await SoftwareVaultService.GetSoftwareVaultsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, CurrentSortedColumn, CurrentSortDirection, SearchText, Filter);
-            //CurrentGroupId = null;
+            SoftwareVaults = await SoftwareVaultService.GetSoftwareVaultsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
+            CurrentGroupId = null;
+
             StateHasChanged();
         }
 
@@ -52,35 +54,46 @@ namespace HES.Web.Pages.SoftwareVaults
             await LoadTableDataAsync();
         }
 
-        private async Task SearchTextChanged(string searchText)
+        private async Task SearchTextChangedAsync(string searchText)
         {
             SearchText = searchText;
             await LoadTableDataAsync();
         }
 
-        private async Task SortedColumnChanged(string columnName)
+        private async Task SortedColumnChangedAsync(string columnName)
         {
-            CurrentSortedColumn = columnName;
+            SortedColumn = columnName;
             await LoadTableDataAsync();
         }
 
-        private async Task SortDirectionChanged(ListSortDirection sortDirection)
+        private async Task SortDirectionChangedAsync(ListSortDirection sortDirection)
         {
-            CurrentSortDirection = sortDirection;
+            SortDirection = sortDirection;
             await LoadTableDataAsync();
         }
 
-        private async Task CurrentPageChanged(int currentPage)
+        private async Task CurrentPageChangedAsync(int currentPage)
         {
             CurrentPage = currentPage;
             await LoadTableDataAsync();
         }
 
-        private async Task DisplayRowsChanged(int displayRows)
+        private async Task DisplayRowsChangedAsync(int displayRows)
         {
             DisplayRows = displayRows;
             CurrentPage = 1;
             await LoadTableDataAsync();
+        }
+
+        private Task CurrentItemIdChangedAsync(string itemId)
+        {
+            CurrentGroupId = itemId;
+            return Task.CompletedTask;
+        }
+
+        private Task CurrentItemDblClickAsync()
+        {
+            return Task.CompletedTask;
         }
 
         #endregion

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HES.Web.Components
 {
@@ -8,22 +10,25 @@ namespace HES.Web.Components
         [Parameter] public RenderFragment TableHeader { get; set; }
         [Parameter] public RenderFragment<TItem> TableRow { get; set; }
         [Parameter] public IReadOnlyList<TItem> Items { get; set; }
+        [Parameter] public Func<string, Task> ItemIdChanged { get; set; }
+        [Parameter] public string ItemId { get; set; }
+        [Parameter] public Func<Task> ItemDblClick { get; set; }
 
-        public string CurrentItemId { get; set; }
 
-        private void OnRowSelected(TItem item)
+        private async Task OnRowSelected(TItem item)
         {
-            CurrentItemId = (string)item.GetType().GetProperty("Id").GetValue(item);
+            ItemId = (string)item.GetType().GetProperty("Id").GetValue(item);
+            await ItemIdChanged.Invoke(ItemId);
         }
 
         private string GetRowStyle(TItem item)
         {
-            return CurrentItemId == (string)item.GetType().GetProperty("Id").GetValue(item) ? "table-selected-row" : string.Empty;
+            return ItemId == (string)item.GetType().GetProperty("Id").GetValue(item) ? "table-selected-row" : string.Empty;
         }
 
-        private void OnRowDblClick()
+        private async Task OnRowDblClick()
         {
-
+            await ItemDblClick.Invoke();
         }
     }
 }

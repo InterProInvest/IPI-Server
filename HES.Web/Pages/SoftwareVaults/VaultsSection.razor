@@ -4,51 +4,58 @@
 }
 else
 {
-    <TableFilter SearchTextChanged="SearchTextChanged">
+    <TableFilter SearchTextChanged="SearchTextChangedAsync">
         <VaultFilter FilterChanged="FilterChangedAsync" />
     </TableFilter>
-    <MainTable Items="SoftwareVaults">
+    <MainTable Items="SoftwareVaults" ItemId="@CurrentGroupId" ItemIdChanged="CurrentItemIdChangedAsync" ItemDblClick="CurrentItemDblClickAsync">
         <TableHeader>
             <MainTableHeader Title="OS"
+                             TitleWidth="16"
                              SortColumn="@nameof(SoftwareVault.OS)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Model"
+                             TitleWidth="12"
                              SortColumn="@nameof(SoftwareVault.Model)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Version"
                              SortColumn="@nameof(SoftwareVault.ClientAppVersion)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Status"
+                             TitleWidth="12"
                              SortColumn="@nameof(SoftwareVault.Status)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="License Status"
+                             TitleWidth="12"
                              SortColumn="@nameof(SoftwareVault.LicenseStatus)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Employee"
+                             TitleWidth="12"
                              SortColumn="@nameof(SoftwareVault.Employee)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
+                             TitleWidth="12"
                              SortColumn="@nameof(SoftwareVault.Employee.Department.Company)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
-            <MainTableHeader Title="Company"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Department"
+                             TitleWidth="12"
                              SortColumn="@nameof(SoftwareVault.Employee.Department)"
-                             CurrentSortedColumn="@CurrentSortedColumn"
-                             SortedColumnChanged="SortedColumnChanged"
-                             SortDirectionChanged="SortDirectionChanged" />
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
         </TableHeader>
         <TableRow>
             <td>
@@ -77,8 +84,8 @@ else
             </td>
         </TableRow>
     </MainTable>
-    <Pagination CurrentPageChanged="CurrentPageChanged"
-                DisplayRowsChanged="DisplayRowsChanged"
+    <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                DisplayRowsChanged="DisplayRowsChangedAsync"
                 TotalRecords="TotalRecords"
                 CurrentPage="CurrentPage"
                 DisplayRows="DisplayRows"
