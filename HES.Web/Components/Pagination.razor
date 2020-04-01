@@ -1,4 +1,4 @@
-﻿<div class="d-flex justify-content-between disable-selection">
+﻿<div class="d-flex justify-content-between flex-wrap disable-selection">
     @if (DisplayRecordsSelector)
     {
         <div class="d-flex">
@@ -46,17 +46,15 @@
             </label>
         </div>
     }
-    <div class="cursor-pointer">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-center">
-                @foreach (var link in Links)
-                {
-                    <li @onclick="@(async() => await SelectedPageLinkAsync(link))"
-                        class="page-item @(link.Enabled ? null : "disabled") @(link.Active ? "active" : null)">
-                        <span class="page-link" href="#">@link.Text</span>
-                    </li>
-                }
-            </ul>
-        </nav>
-    </div>
+    <nav class="cursor-pointer">
+        <ul class="pagination justify-content-center">
+            @foreach (var link in Links)
+            {
+                <li @onclick="@(async() => await SelectedPageLinkAsync(link))"
+                    class="page-item @(link.Enabled ? null : "disabled") @(link.Active ? "active" : null)">
+                    <span class="page-link" href="#">@link.Text</span>
+                </li>
+            }
+        </ul>
+    </nav>
 </div>

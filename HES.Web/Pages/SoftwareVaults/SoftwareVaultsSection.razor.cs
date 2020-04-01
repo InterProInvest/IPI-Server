@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SoftwareVaults
 {
-    public partial class VaultsSection : ComponentBase
+    public partial class SoftwareVaultsSection :ComponentBase
     {
         [Inject] public ISoftwareVaultService SoftwareVaultService { get; set; }
 
