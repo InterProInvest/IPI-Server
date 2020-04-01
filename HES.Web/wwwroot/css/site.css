@@ -513,6 +513,7 @@ a.navbar-brand {
     border-radius: 0.25rem !important;
     width: 100%;
     padding: 20px;
+    padding-bottom: 5px;
     margin-bottom: 20px;
     border: 1px solid #dee2e6 !important;
 }

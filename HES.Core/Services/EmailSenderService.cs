@@ -188,7 +188,7 @@ namespace HES.Core.Services
         {
             var htmlMessage = GetTemplate("software-vault-invitation");
             htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
-                .Replace("{{validTo}}", validTo.Date.ToString())
+                .Replace("{{validTo}}", validTo.Date.ToShortDateString())
                 .Replace("{{serverAddress}}", activation.ServerAddress)
                 .Replace("{{activationId}}", activation.ActivationId)
                 .Replace("{{activationCode}}", activation.ActivationCode.ToString());

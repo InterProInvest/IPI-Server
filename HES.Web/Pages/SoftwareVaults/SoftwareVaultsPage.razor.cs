@@ -48,7 +48,7 @@ namespace HES.Web.Pages.SoftwareVaults
         {
             TabBody = (builder) =>
             {
-                builder.OpenComponent(0, typeof(InvitationsSection));
+                builder.OpenComponent(0, typeof(SoftwareVaultInvitationsSection));
                 builder.CloseComponent();
             };
 

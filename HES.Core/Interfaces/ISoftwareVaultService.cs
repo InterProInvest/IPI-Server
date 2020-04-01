@@ -14,7 +14,9 @@ namespace HES.Core.Interfaces
         IQueryable<SoftwareVault> SoftwareVaultQuery();
         Task<List<SoftwareVault>> GetSoftwareVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, SoftwareVaultFilter filter);
         Task<int> GetVaultsCountAsync(string searchText, SoftwareVaultFilter filter);
-        Task<List<SoftwareVaultInvitation>> GetSoftwareVaultInvitationsAsync();
+        IQueryable<SoftwareVaultInvitation> SoftwareVaultInvitationQuery();
+        Task<List<SoftwareVaultInvitation>> GetSoftwareVaultInvitationsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, SoftwareVaultInvitationFilter filter);
+        Task<int> GetInvitationsCountAsync(string searchText, SoftwareVaultInvitationFilter filter);
         Task CreateAndSendInvitationAsync(Employee employee, Server server, DateTime validTo);
     }
 }
