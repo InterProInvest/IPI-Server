@@ -1,7 +1,10 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -11,8 +14,12 @@ namespace HES.Web.Pages.SoftwareVaults
     public partial class SoftwareVaultInvitationsSection : ComponentBase
     {
         [Inject] public ISoftwareVaultService SoftwareVaultService { get; set; }
+        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        [Inject] public ILogger<SoftwareVaultInvitationsSection> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
 
         public List<SoftwareVaultInvitation> SoftwareVaultInvitations { get; set; }
+        public ServerSettings ServerSettings { get; set; }
 
         #region MainTable
 
@@ -23,13 +30,48 @@ namespace HES.Web.Pages.SoftwareVaults
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
-        public string CurrentInvitationId { get; set; }
+        public SoftwareVaultInvitation SelectedInvitation { get; set; }
 
         #endregion
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadTableDataAsync();
+            await LoadTableDataAsync();   
+        }
+
+        private async Task OpenDialogResendInvitationAsync()
+        {            
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ResendSoftwareVaultInvitation));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "SoftwareVaultInvitation", SelectedInvitation);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Resend invitation", body);
+        }
+
+        private async Task OpenDialogDeleteInvitationAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteSoftwareVaultInvitation));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "SoftwareVaultInvitation", SelectedInvitation);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete invitation", body);
+        }
+
+        private string ShowButtons()
+        {
+            if (SelectedInvitation == null || SelectedInvitation?.Status == InviteVaultStatus.Accepted)
+            {
+                return "d-none";
+            }
+            return string.Empty;
         }
 
         #region MainTable
@@ -43,7 +85,7 @@ namespace HES.Web.Pages.SoftwareVaults
                 CurrentPage = 1;
 
             SoftwareVaultInvitations = await SoftwareVaultService.GetSoftwareVaultInvitationsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
-            CurrentInvitationId = null;
+            SelectedInvitation = null;
 
             StateHasChanged();
         }
@@ -85,13 +127,14 @@ namespace HES.Web.Pages.SoftwareVaults
             await LoadTableDataAsync();
         }
 
-        private Task CurrentItemIdChangedAsync(string itemId)
+        private Task SelectedItemChangedAsync(SoftwareVaultInvitation item)
         {
-            CurrentInvitationId = itemId;
+            SelectedInvitation = item;
+            StateHasChanged();
             return Task.CompletedTask;
         }
 
-        private Task CurrentItemDblClickAsync()
+        private Task SelectedItemDblClickAsync()
         {
             return Task.CompletedTask;
         }

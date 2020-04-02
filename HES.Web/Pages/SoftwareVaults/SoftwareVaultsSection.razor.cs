@@ -23,7 +23,7 @@ namespace HES.Web.Pages.SoftwareVaults
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
-        public string CurrentGroupId { get; set; }
+        public SoftwareVault SelectedSoftwareVault { get; set; }
 
         #endregion
 
@@ -43,7 +43,7 @@ namespace HES.Web.Pages.SoftwareVaults
                 CurrentPage = 1;
 
             SoftwareVaults = await SoftwareVaultService.GetSoftwareVaultsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
-            CurrentGroupId = null;
+            SelectedSoftwareVault = null;
 
             StateHasChanged();
         }
@@ -85,13 +85,14 @@ namespace HES.Web.Pages.SoftwareVaults
             await LoadTableDataAsync();
         }
 
-        private Task CurrentItemIdChangedAsync(string itemId)
+        private Task SelectedItemChangedAsync(SoftwareVault item)
         {
-            CurrentGroupId = itemId;
+            SelectedSoftwareVault = item;
+            StateHasChanged();
             return Task.CompletedTask;
         }
 
-        private Task CurrentItemDblClickAsync()
+        private Task SelectedItemDblClickAsync()
         {
             return Task.CompletedTask;
         }

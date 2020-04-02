@@ -1,35 +1,30 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Groups
+namespace HES.Web.Pages.SoftwareVaults
 {
-    public partial class DeleteGroup : ComponentBase
+    public partial class DeleteSoftwareVaultInvitation : ComponentBase
     {
-        [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public ILogger<DeleteGroup> Logger { get; set; }
+        [Inject] public ISoftwareVaultService SoftwareVaultService { get; set; }
+        [Inject] public ILogger<DeleteSoftwareVaultInvitation> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
-        [Parameter] public string GroupId { get; set; }
-        public Group Group { get; set; }
+        [Parameter] public SoftwareVaultInvitation SoftwareVaultInvitation { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
-                Group = await GroupService.GetGroupByIdAsync(GroupId);
-
-                if (Group == null)
+                if (SoftwareVaultInvitation == null)
                 {
-                    throw new Exception("Group not found");
+                    throw new ArgumentNullException(nameof(SoftwareVaultInvitation));
                 }
-
             }
             catch (Exception ex)
             {
@@ -43,9 +38,9 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                await GroupService.DeleteGroupAsync(GroupId);
+                await SoftwareVaultService.DeleteInvitationAsync(SoftwareVaultInvitation.Id);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Group deleted.", ToastLevel.Success);
+                ToastService.ShowToast("Invitation deleted.", ToastLevel.Success);           
             }
             catch (Exception ex)
             {

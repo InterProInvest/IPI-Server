@@ -186,6 +186,9 @@ namespace HES.Core.Services
 
         public async Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo)
         {
+            if (employee.Email == null)
+                throw new ArgumentNullException(nameof(employee.Email));
+
             var htmlMessage = GetTemplate("software-vault-invitation");
             htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
                 .Replace("{{validTo}}", validTo.Date.ToShortDateString())

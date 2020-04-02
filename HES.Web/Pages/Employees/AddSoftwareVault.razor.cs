@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Employees
         [Inject] IToastService ToastService { get; set; }
         [Parameter] public Employee Employee { get; set; }
 
-        public Server ServerSettings { get; set; }
+        public ServerSettings ServerSettings { get; set; }
         public DateTime ValidTo { get; set; } = DateTime.Now;
 
         protected override async Task OnInitializedAsync()

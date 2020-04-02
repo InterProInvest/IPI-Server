@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
@@ -343,7 +344,7 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task CreateAndSendInvitationAsync(Employee employee, Server server, DateTime validTo)
+        public async Task CreateAndSendInvitationAsync(Employee employee, ServerSettings server, DateTime validTo)
         {
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
@@ -383,5 +384,58 @@ namespace HES.Core.Services
         {
             return new Random().Next(100000, 999999);
         }
+
+        public async Task ResendInvitationAsync(Employee employee, ServerSettings server, string invitationId)
+        {
+            if (employee == null)
+                throw new ArgumentNullException(nameof(employee));
+
+            if (server == null)
+                throw new ArgumentNullException(nameof(server));
+
+            if (invitationId == null)
+                throw new ArgumentNullException(nameof(invitationId));
+
+            var invitation = await _softwareVaultInvitationRepository.GetByIdAsync(invitationId);
+            if (invitation == null)
+                throw new NotFoundException("Invitation not found.");
+
+            var activationCode = GenerateActivationCode();
+
+            invitation.Status = InviteVaultStatus.Pending;
+            invitation.ValidTo = DateTime.Now.AddDays(2);
+            invitation.ActivationCode = activationCode;
+
+            var prop = new string[]
+            {
+                nameof(SoftwareVaultInvitation.Status),
+                nameof(SoftwareVaultInvitation.ValidTo),
+                nameof(SoftwareVaultInvitation.ActivationCode)
+            };
+
+            await _softwareVaultInvitationRepository.UpdateOnlyPropAsync(invitation, prop);
+
+            var activation = new SoftwareVaultActivation()
+            {
+                ServerAddress = server.Url,
+                ActivationId = invitation.Id,
+                ActivationCode = activationCode
+            };
+
+            await _emailSenderService.SendSoftwareVaultInvitationAsync(employee, activation, invitation.ValidTo);
+        }
+        
+        public async Task<SoftwareVaultInvitation> DeleteInvitationAsync(string invitationId)
+        {
+            if (invitationId == null)
+                throw new ArgumentNullException(nameof(invitationId));
+
+            var invitation = await _softwareVaultInvitationRepository.GetByIdAsync(invitationId);
+            if (invitation == null)
+                throw new NotFoundException("Invitation not found.");
+
+            return await _softwareVaultInvitationRepository.DeleteAsync(invitation);
+        }
+
     }
 }

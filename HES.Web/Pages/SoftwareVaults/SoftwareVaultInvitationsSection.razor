@@ -4,10 +4,20 @@
 }
 else
 {
+    <TableAction>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Resend invitation" @onclick="OpenDialogResendInvitationAsync">
+            <img class="icon-btn" src="/svg/action-email.svg" />
+            Resend
+        </button>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Delete invitation" @onclick="OpenDialogDeleteInvitationAsync">
+            <img class="icon-btn" src="/svg/action/delete.svg" />
+            Delete
+        </button>
+    </TableAction>
     <TableFilter SearchTextChanged="SearchTextChangedAsync">
         <InvitationFilter FilterChanged="FilterChangedAsync" />
     </TableFilter>
-    <MainTable Items="SoftwareVaultInvitations" ItemId="@CurrentInvitationId" ItemIdChanged="CurrentItemIdChangedAsync" ItemDblClick="CurrentItemDblClickAsync">
+    <MainTable Items="SoftwareVaultInvitations" SelectedItem="@SelectedInvitation" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
         <TableHeader>
             <MainTableHeader Title="ID"
                              TitleWidth="16"

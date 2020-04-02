@@ -7,7 +7,7 @@ else
     <TableFilter SearchTextChanged="SearchTextChangedAsync">
         <VaultFilter FilterChanged="FilterChangedAsync" />
     </TableFilter>
-    <MainTable Items="SoftwareVaults" ItemId="@CurrentGroupId" ItemIdChanged="CurrentItemIdChangedAsync" ItemDblClick="CurrentItemDblClickAsync">
+    <MainTable Items="SoftwareVaults" SelectedItem="@SelectedSoftwareVault" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
         <TableHeader>
             <MainTableHeader Title="OS"
                              TitleWidth="16"

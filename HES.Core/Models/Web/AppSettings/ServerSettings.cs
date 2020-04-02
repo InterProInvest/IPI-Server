@@ -2,7 +2,7 @@
 
 namespace HES.Core.Models.Web.AppSettings
 {
-    public class Server
+    public class ServerSettings
     {
         [Required]
         public string Name { get; set; }

@@ -48,17 +48,17 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task<Server> GetServerSettingsAsync()
+        public async Task<ServerSettings> GetServerSettingsAsync()
         {
             var server = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Server);
             if (server == null)
             {
-                return new Server();
+                return new ServerSettings();
             }
-            return JsonConvert.DeserializeObject<Server>(server.Value);
+            return JsonConvert.DeserializeObject<ServerSettings>(server.Value);
         }
 
-        public async Task SetServerSettingsAsync(Server server)
+        public async Task SetServerSettingsAsync(ServerSettings server)
         {
             var json = JsonConvert.SerializeObject(server);
 
