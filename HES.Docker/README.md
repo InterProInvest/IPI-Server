@@ -112,9 +112,13 @@ You need to modify values embraced in "<>". These are grouped into DB Settings, 
 
 ## 6.1 DB Settings
 **<mysql_server>** - put here "hes-db". This name must be the same as the MySQL container name in the `/opt/HES/docker-compose.yml` which is "hes-db" by default.
+
 **<mysql_port>** - put here "3306". This is default value.
+
 **<db_name>** - name of the DB (e.g. "db").
+
 **<db_user>** - username to access the DB (e.g. "user").
+
 **<db_user_password>** - user password to access the DB.
 
 ## 6.2 SMTP Server Settings
@@ -125,14 +129,17 @@ SMTP server credentials required for HES to be able to send email notifications 
 **<smtp_server_password>** - your SMTP server password.
 
 ## 6.3 Data Protection Settings
-**data_protection_password** - Your password for database encryption. Leave this field blank. Later on, when you have installed the HES, goto Settings -> Data Protection and read carefully the instructions. If you will decide to enable the Data Protection, you can store the password in this field.
+**<data_protection_password>** - Your password for database encryption. Leave this field blank. Later on, when you have installed the HES, goto Settings -> Data Protection and read carefully the instructions. If you will decide to enable the Data Protection, you can store the password in this field.
 
 # 6. Configure the Docker 
 Open the `/opt/HES/docker-compose.yml` file for editing. Replace all instances of <Name_Of_Domain> with your name. Also in this file you need to modify several parameters:
 
 **MYSQL_DATABASE** - put here the same name as <db_name> from the 6.1 (e.g. "db").
+
 **MYSQL_USER** - put here the same name as <db_user> from the 6.1 (e.g. "user").
+
 **MYSQL_PASSWORD** - put here the same password as <db_user_password> from the 6.1.
+
 **MYSQL_ROOT_PASSWORD** - put here the password for 'root' account.
 	  
 # 7. Configure the Nginx 
