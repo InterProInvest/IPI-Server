@@ -21,9 +21,11 @@ HES: Linux or Windows with .NET Core (.NET Core SDK version 3.1) installed, MySQ
 
 ## Get Started
 
-To deploy the server on Linux, follow the `Getting Started` instructions in the [Linux deployment](LINUX.md).
+To deploy the server on Linux, follow instructions in the [Linux deployment](LINUX.md).
 
-To deploy the server on Windows, follow the `Getting Started` instructions in the [Windows deployment](WINDOWS.md).
+To deploy the server on Linux from a Docker containar, follow instructions in the [Linux Docker deployment](HES.Docker/README.md).
+
+To deploy the server on Windows, follow instructions in the [Windows deployment](WINDOWS.md).
 
 After you have deployed the server open the HES web interface and log in using the default login 'admin@hideez.com' and default password 'admin'.
 
@@ -33,9 +35,7 @@ Almost everything you can do with the HES web interface you can do via the HES R
 
 ## Next steps
 
-- change the admin's password
-- invite more admins
-- import the Hideez Devices from the file provided to you when you have bought the devices
+- invite more admins and delete default login 'admin@hideez.com'
 - setup the HES following the [user documentation](https://support.hideez.com/hideez-enterprise-server)
 
 ## Related projects
