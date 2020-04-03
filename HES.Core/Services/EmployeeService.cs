@@ -65,6 +65,8 @@ namespace HES.Core.Services
                 .Query()
                 .Include(e => e.Department.Company)
                 .Include(e => e.Position)
+                .Include(e => e.SoftwareVaults)
+                .Include(e => e.SoftwareVaultInvitations)
                 .Include(e => e.Devices)
                 .ThenInclude(e => e.DeviceAccessProfile)
                 .FirstOrDefaultAsync(e => e.Id == id);

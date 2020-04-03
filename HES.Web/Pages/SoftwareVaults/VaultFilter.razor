@@ -1,0 +1,59 @@
+﻿@if (!Initialized)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="Filter" OnValidSubmit="FilterdAsync">
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">OS</label>
+                <InputText id="filterOS" @bind-Value="Filter.OS" class="form-control text-navyblue" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Model</label>
+                <InputText id="filterModel" @bind-Value="Filter.Model" class="form-control text-navyblue" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Version</label>
+                <InputText id="filterClientAppVersion" @bind-Value="Filter.ClientAppVersion" class="form-control text-navyblue" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Status</label>
+                <select id="filterStatus" @bind="Filter.Status" class="form-control">
+                    <option selected></option>
+                    @foreach (var item in StatusList)
+                    {
+                        <option value="@item.Text">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">LicenseStatus</label>
+                <select id="filterLicenseStatus" @bind="Filter.LicenseStatus" class="form-control">
+                    <option selected></option>
+                    @foreach (var item in LicenseStatusList)
+                    {
+                        <option value="@item.Text">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Employee</label>
+                <InputText id="filterEmployee" @bind-Value="Filter.Employee" class="form-control text-navyblue" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Company</label>
+                <InputText id="filterCompany" @bind-Value="Filter.Company" class="form-control text-navyblue" />              
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Department</label>
+                <InputText id="filterDepartment" @bind-Value="Filter.Department" class="form-control text-navyblue" />                
+            </div>
+            <div class="col align-self-end text-right form-group">
+                <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                <input id="submitFilter" type="submit" value="Filter" class="btn btn-primary" />
+            </div>
+        </div>
+    </EditForm>
+}

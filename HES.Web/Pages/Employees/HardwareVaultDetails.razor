@@ -1,0 +1,84 @@
+﻿<div class="list-group mb-3">
+    <div class="list-group-item">
+        <h6 class="mb-1">Serial Number</h6>
+        <p class="mb-1">@Device.Id</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">MAC</h6>
+        <p class="mb-1">@Device.MAC</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Model</h6>
+        <p class="mb-1">@Device.Model</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">RFID</h6>
+        <p class="mb-1">@Device.RFID</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Battery</h6>
+        <p class="mb-1">@Device.Battery</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Employee</h6>
+        <p class="mb-1">@Device.Employee.FullName</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">License End Date</h6>
+        <p class="mb-1">
+            @if (Device.LastSynced != null)
+            {
+                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)Device.LastSynced, TimeZoneInfo.Local)
+            }
+            else
+            {
+                <span>Not sync</span>
+            }
+        </p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Imported At</h6>
+        <p class="mb-1">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)Device.ImportedAt, TimeZoneInfo.Local)</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Device Access Profile</h6>
+        <p class="mb-1">@Device.DeviceAccessProfile.Name</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">State</h6>
+        <p class="mb-1">@Device.State</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">License End Date</h6>
+        <p class="mb-1">
+            @if (Device.LicenseEndDate != null)
+            {
+                @Device.LicenseEndDate
+            }
+            else
+            {
+                <span>No license</span>
+            }
+        </p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">License Status</h6>
+        <p class="mb-1">@Device.LicenseStatus</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Need Sync</h6>
+        <p class="mb-1">
+            @if (Device.NeedSync)
+            {
+                <span>Yes</span>
+            }
+            else
+            {
+                <span>No</span>
+            }
+        </p>
+    </div>
+</div>
+<div class="text-right">
+    <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
+</div>

@@ -6,31 +6,34 @@ using System.Timers;
 
 namespace HES.Web.Components
 {
-    public partial class SearchBox : ComponentBase
+    public partial class TableFilter : ComponentBase
     {
-        [Parameter] public int Delay { get; set; } = 500;
-        [Parameter] public Func<string, Task> Search { get; set; }
-        [Parameter] public string Placeholder { get; set; } = "Search";
+        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public Func<string, Task> SearchTextChanged { get; set; }
 
-        public string SearchText { get; set; } = string.Empty;
+        public string SearchText { get; set; }
 
         private Timer _timer;
 
         protected override void OnInitialized()
         {
-            _timer = new Timer(Delay);
+            SearchBoxTimer();
+        }
+
+        private void SearchBoxTimer()
+        {
+            _timer = new Timer(500);
             _timer.Elapsed += async (sender, args) =>
             {
                 await InvokeAsync(async () =>
                 {
-                    await Search.Invoke(SearchText.ToLower().Trim());
-                    StateHasChanged();
+                    await SearchTextChanged.Invoke(SearchText);
                 });
             };
             _timer.AutoReset = false;
         }
 
-        public void OnKeyUp(KeyboardEventArgs e)
+        private void SearchBoxKeyUp(KeyboardEventArgs e)
         {
             _timer.Stop();
             _timer.Start();

@@ -1,0 +1,103 @@
+﻿@if (SoftwareVaultInvitations == null)
+{
+    <LoadingTab />
+}
+else
+{
+    <TableAction>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Resend invitation" @onclick="OpenDialogResendInvitationAsync">
+            <img class="icon-btn" src="/svg/action-email.svg" />
+            Resend
+        </button>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Delete invitation" @onclick="OpenDialogDeleteInvitationAsync">
+            <img class="icon-btn" src="/svg/action/delete.svg" />
+            Delete
+        </button>
+    </TableAction>
+    <TableFilter SearchTextChanged="SearchTextChangedAsync">
+        <InvitationFilter FilterChanged="FilterChangedAsync" />
+    </TableFilter>
+    <MainTable Items="SoftwareVaultInvitations" SelectedItem="@SelectedInvitation" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
+        <TableHeader>
+            <MainTableHeader Title="ID"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SoftwareVaultInvitation.Id)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Created At"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVaultInvitation.CreatedAt)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Valid To"
+                             SortColumn="@nameof(SoftwareVaultInvitation.ValidTo)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Status"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVaultInvitation.Status)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Email"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVaultInvitation.Employee.Email)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Employee"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVaultInvitation.Employee)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Company"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVaultInvitation.Employee.Department.Company)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Department"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVaultInvitation.Employee.Department)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.Id
+            </td>
+            <td>
+                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.CreatedAt, TimeZoneInfo.Local).ToShortDateString()
+            </td>
+            <td>
+                @context.ValidTo.ToShortDateString()
+            </td>
+            <td>
+                @context.Status
+            </td>
+            <td>
+                @context.Employee.Email
+            </td>
+            <td>
+                @context.Employee.FullName
+            </td>
+            <td>
+                @context.Employee.Department.Company.Name
+            </td>
+            <td>
+                @context.Employee.Department.Name
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                DisplayRowsChanged="DisplayRowsChangedAsync"
+                TotalRecords="TotalRecords"
+                CurrentPage="CurrentPage"
+                DisplayRows="DisplayRows"
+                DisplayRecords="SoftwareVaultInvitations.Count" />
+}

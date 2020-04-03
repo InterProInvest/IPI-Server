@@ -97,9 +97,8 @@ else
             </tbody>
         </table>
     </div>
-    <Pagination DisplayRecordsSelector="true"
-                DisplayTotalRecordsInfo="true"
-                SelectedPageAsync="RefreshTable"
+    <Pagination CurrentPageChanged="CurrentPageChanged"
+                DisplayRowsChanged="DisplayRowsChanged"            
                 TotalRecords="TotalRecords"
                 CurrentPage="CurrentPage"
                 DisplayRows="DisplayRows"

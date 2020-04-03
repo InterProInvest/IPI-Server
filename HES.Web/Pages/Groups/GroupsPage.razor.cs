@@ -65,7 +65,11 @@ namespace HES.Web.Pages.Groups
         {
             if (firstRender)
             {
-                await CreateBreadcrumbsAsync();
+                var items = new List<Breadcrumb>()
+                {
+                    new Breadcrumb () { Active = true, Content = "Groups" }
+                };
+                await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
             }
         }
 
@@ -84,7 +88,7 @@ namespace HES.Web.Pages.Groups
             _timer.AutoReset = false;
         }
 
-        public void OnKeyUp(KeyboardEventArgs e)
+        private void OnKeyUp(KeyboardEventArgs e)
         {
             _timer.Stop();
             _timer.Start();
@@ -109,7 +113,7 @@ namespace HES.Web.Pages.Groups
 
         #region SortTable
 
-        public async Task SortTable(string columnName)
+        private async Task SortTable(string columnName)
         {
             if (columnName != SortColumn)
             {
@@ -123,7 +127,7 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        public string SetSortIcon(string columnName)
+        private string SetSortIcon(string columnName)
         {
             if (SortColumn != columnName)
             {
@@ -144,16 +148,28 @@ namespace HES.Web.Pages.Groups
 
         #region Pagination
 
-        public async Task RefreshTable(int currentPage, int displayRows)
+        //private async Task RefreshTable(int currentPage, int displayRows)
+        //{
+        //    DisplayRows = displayRows;
+        //    CurrentPage = currentPage;
+        //    await LoadGroupsAsync();
+        //}
+
+        private async Task CurrentPageChanged(int currentPage)
+        {
+            CurrentPage = currentPage;
+            await LoadGroupsAsync();
+        }
+        private async Task DisplayRowsChanged(int displayRows)
         {
             DisplayRows = displayRows;
-            CurrentPage = currentPage;
+            CurrentPage = 1; // TODO calc current page if display rows changed
             await LoadGroupsAsync();
         }
 
         #endregion
 
-        public async Task LoadGroupsAsync()
+        private async Task LoadGroupsAsync()
         {
             var currentTotalRows = TotalRecords;
             TotalRecords = await GroupService.GetCountAsync(SearchText, GroupFilter);
@@ -166,7 +182,7 @@ namespace HES.Web.Pages.Groups
             StateHasChanged();
         }
 
-        public void OnRowSelected(string groupId)
+        private void OnRowSelected(string groupId)
         {
             CurrentGroupId = groupId;
         }
@@ -176,16 +192,7 @@ namespace HES.Web.Pages.Groups
             NavigationManager.NavigateTo($"/Groups/Details?id={CurrentGroupId}", true);
         }
 
-        public async Task CreateBreadcrumbsAsync()
-        {
-            var items = new List<Breadcrumb>()
-            {
-                new Breadcrumb () { Active = true, Content = "Groups" }
-            };
-            await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
-        }
-
-        public async Task OpenModalAddGroup()
+        private async Task OpenModalAddGroup()
         {
             RenderFragment body = (builder) =>
             {
@@ -197,7 +204,7 @@ namespace HES.Web.Pages.Groups
             await ModalDialogService.ShowAsync("Add group", body);
         }
 
-        public async Task OpenModalGreateGroup()
+        private async Task OpenModalGreateGroup()
         {
             RenderFragment body = (builder) =>
             {
@@ -209,7 +216,7 @@ namespace HES.Web.Pages.Groups
             await ModalDialogService.ShowAsync("Create group", body);
         }
 
-        public async Task OpenModalEditGroup()
+        private async Task OpenModalEditGroup()
         {
             RenderFragment body = (builder) =>
             {
@@ -222,7 +229,7 @@ namespace HES.Web.Pages.Groups
             await ModalDialogService.ShowAsync("Edit group", body);
         }
 
-        public async Task OpenModalDeleteGroup()
+        private async Task OpenModalDeleteGroup()
         {
             RenderFragment body = (builder) =>
             {

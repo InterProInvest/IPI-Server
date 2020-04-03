@@ -614,6 +614,90 @@ namespace HES.Infrastructure.Migrations
                     b.ToTable("SharedAccounts");
                 });
 
+            modelBuilder.Entity("HES.Core.Entities.SoftwareVault", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ClientAppVersion")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<bool>("HasNewLicense")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("LicenseEndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("LicenseStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<bool>("NeedSync")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("OS")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("SoftwareVaults");
+                });
+
+            modelBuilder.Entity("HES.Core.Entities.SoftwareVaultInvitation", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("ActivationCode")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("SoftwareVaultId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("SoftwareVaultId");
+
+                    b.ToTable("SoftwareVaultInvitations");
+                });
+
             modelBuilder.Entity("HES.Core.Entities.Template", b =>
                 {
                     b.Property<string>("Id")
@@ -1104,6 +1188,28 @@ namespace HES.Infrastructure.Migrations
                     b.HasOne("HES.Core.Entities.Workstation", "Workstation")
                         .WithMany("ProximityDevices")
                         .HasForeignKey("WorkstationId");
+                });
+
+            modelBuilder.Entity("HES.Core.Entities.SoftwareVault", b =>
+                {
+                    b.HasOne("HES.Core.Entities.Employee", "Employee")
+                        .WithMany("SoftwareVaults")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HES.Core.Entities.SoftwareVaultInvitation", b =>
+                {
+                    b.HasOne("HES.Core.Entities.Employee", "Employee")
+                        .WithMany("SoftwareVaultInvitations")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HES.Core.Entities.SoftwareVault", "SoftwareVault")
+                        .WithMany()
+                        .HasForeignKey("SoftwareVaultId");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.Workstation", b =>

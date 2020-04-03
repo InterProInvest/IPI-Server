@@ -440,7 +440,7 @@ namespace HES.Web.Pages.Employees
             return RedirectToPage("./Details", new { id });
         }
 
-        public async Task<IActionResult> OnPostCreatePersonalWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, string[] selectedDevicesW)
+        public async Task<IActionResult> OnPostCreatePersonalWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
         {
             var id = employeeId;
 
@@ -452,12 +452,8 @@ namespace HES.Web.Pages.Employees
             }
             try
             {
-                foreach (var deviceId in selectedDevicesW)
-                {
-                    await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
-                }
-
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevicesW);
+                await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(employeeId));
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)

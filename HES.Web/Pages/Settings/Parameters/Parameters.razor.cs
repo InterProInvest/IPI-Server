@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] IJSRuntime JSRuntime { get; set; }
 
         private Licensing licensing = new Licensing();
-        private Server server = new Server();
+        private ServerSettings server = new ServerSettings();
         private Domain domain = new Domain();
         private bool licensingIsBusy;
         private bool serverIsBusy;

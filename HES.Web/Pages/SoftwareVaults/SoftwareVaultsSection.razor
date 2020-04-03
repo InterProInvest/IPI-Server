@@ -1,0 +1,93 @@
+﻿@if (SoftwareVaults == null)
+{
+    <LoadingTab />
+}
+else
+{
+    <TableFilter SearchTextChanged="SearchTextChangedAsync">
+        <VaultFilter FilterChanged="FilterChangedAsync" />
+    </TableFilter>
+    <MainTable Items="SoftwareVaults" SelectedItem="@SelectedSoftwareVault" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
+        <TableHeader>
+            <MainTableHeader Title="OS"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SoftwareVault.OS)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Model"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVault.Model)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Version"
+                             SortColumn="@nameof(SoftwareVault.ClientAppVersion)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Status"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVault.Status)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="License Status"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVault.LicenseStatus)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Employee"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVault.Employee)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Company"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVault.Employee.Department.Company)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Department"
+                             TitleWidth="12"
+                             SortColumn="@nameof(SoftwareVault.Employee.Department)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.OS
+            </td>
+            <td>
+                @context.Model
+            </td>
+            <td>
+                @context.ClientAppVersion
+            </td>
+            <td>
+                @context.Status
+            </td>
+            <td>
+                @context.LicenseStatus
+            </td>
+            <td>
+                @context.Employee.FullName
+            </td>
+            <td>
+                @context.Employee.Department.Company.Name
+            </td>
+            <td>
+                @context.Employee.Department.Name
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                DisplayRowsChanged="DisplayRowsChangedAsync"
+                TotalRecords="TotalRecords"
+                CurrentPage="CurrentPage"
+                DisplayRows="DisplayRows"
+                DisplayRecords="SoftwareVaults.Count" />
+}

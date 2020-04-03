@@ -148,10 +148,10 @@ namespace HES.Core.Services
 
             await _deviceService.UpdateNeedSyncAsync(device, false);
 
-            if (device != null)
-            {
-                await _hubContext.Clients.All.SendAsync("UpdateTable", device.EmployeeId);
-            }
+            //if (device != null)
+            //{
+            //    await _hubContext.Clients.All.SendAsync("UpdateTable", device.EmployeeId);
+            //}
         }
 
         async Task<ushort> ExecuteRemoteTask(RemoteDevice remoteDevice, DeviceTask task)
