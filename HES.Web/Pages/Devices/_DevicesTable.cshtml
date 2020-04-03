@@ -44,12 +44,6 @@
                 @Html.DisplayNameFor(model => model.Devices[0].MAC)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Devices[0].Model)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Devices[0].RFID)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Devices[0].Battery)
             </th>
             <th>
@@ -79,6 +73,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.Devices[0].Employee.EmpDepartment)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Devices[0].Model)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Devices[0].RFID)
+            </th>
             <th class="table-col-menu" data-priority="2"></th>
         </tr>
     </thead>
@@ -97,12 +97,6 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.MAC)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Model)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.RFID)
                 </td>
                 <td data-sort="@item.Battery">
                     @if (item.Battery >= 30)
@@ -154,6 +148,12 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Employee.EmpDepartment)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Model)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RFID)
                 </td>
                 <td>
                     <div class="dropdown no-arrow">

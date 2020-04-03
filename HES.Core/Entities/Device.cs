@@ -53,7 +53,7 @@ namespace HES.Core.Entities
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
 
-        [Display(Name = "Access Profile")]
+        [Display(Name = "Profile")]
         [ForeignKey("AcceessProfileId")]
         public DeviceAccessProfile DeviceAccessProfile { get; set; }
 
