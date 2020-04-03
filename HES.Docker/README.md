@@ -123,9 +123,13 @@ You need to modify values embraced in "<>". These are grouped into DB Settings, 
 
 ## 6.2 SMTP Server Settings
 SMTP server credentials required for HES to be able to send email notifications to the admins. This is essential functionality of the server and you need to provide valid values:
+
 **<smtp_server_host>** - SMTP Server host name or IP address (e.g. "smtp.gmail.com")
+
 **<smpt_server_port>** - SMTP Server port (e.g. "465").
+
 **<smtp_server_name>** - your SMTP server account (e.g. "user@gmail.com").
+
 **<smtp_server_password>** - your SMTP server password.
 
 ## 6.3 Data Protection Settings
