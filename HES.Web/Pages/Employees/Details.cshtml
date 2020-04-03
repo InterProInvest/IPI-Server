@@ -15,9 +15,9 @@
         <h1 class="text-navyblue m-0">@Model.Employee.FullName</h1>
     </div>
     <div class="col"></div>
-    <div class="col-auto pl-1 pr-1">
+    @*<div class="col-auto pl-1 pr-1">
         <component type="typeof(DetailsButtonSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
-    </div>
+    </div>*@
     <div class="col-auto pl-1 pr-1">
         <button type="button" class="btn btn-primary open-modal-dialog" data-id="@Model.Employee.Id" data-action="AddDevice" data-title="Add device">
             Add device
@@ -35,93 +35,29 @@
     </div>
 </div>
 
-@* Invitations *@
-@if (Model.Employee.SoftwareVaultInvitations.Count > 0)
-{
-    <component type="typeof(DetailsSoftwareVaultsInvitationSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
-}
-
-@* Vaults *@
-@if (Model.Employee.SoftwareVaults.Count > 0)
-{
-    <component type="typeof(DetailsSoftwareVaultsSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
-}
+@*<component type="typeof(VaultsSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />*@
 
 @* Devices *@
 @if (Model.Employee.Devices.Count > 0)
 {
-    <h4 class="text-navyblue">Devices</h4>
-    <div class="table-responsive mb-3">
-        <table id="softwareVaultInvitations" class="table table-hover border rounded w-100">
-            <thead>
-                <tr>
-                    <th>
-                        ID
-                    </th>
-                    <th>
-                        MAC
-                    </th>
-                    <th>
-                        Model
-                    </th>
-                    <th>
-                        RFID
-                    </th>
-                    <th>
-                        Battery
-                    </th>
-                    <th>
-                        Firmware
-                    </th>
-                    <th>
-                        LastSynced
-                    <th>
-                        NeedSync
-                    </th>
-                    <th class="table-action-column"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var device in Model.Employee.Devices)
-                {
-                    <tr>
-                        <td>
-                            @device.Id
-                        </td>
-                        <td>
-                            @device.MAC
-                        </td>
-                        <td>
-                            @device.Model
-                        </td>
-                        <td>
-                            @device.RFID
-                        </td>
-                        <td>
-                            @device.Battery <span>%</span>
-                        </td>
-                        <td>
-                            @device.Firmware
-                        </td>
-                        <td>
-                            @if (device.LastSynced != null)
-                            {
-                                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)device.LastSynced, TimeZoneInfo.Local)
-                            }
-                        </td>
-                        <td>
-                            @device.NeedSync
-                        </td>
-                        <td>
-                            <button class="btn p-0 open-modal-dialog" data-id="@device.Id" data-action="DeleteDevice" data-title="Remove device" title="Remove device from employee">
-                                <img src="~/svg/action/delete.svg" />
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <h4 class="text-navyblue">Device</h4>
+    <ul class="list-group w-100 mb-3">
+        @foreach (var hardwareVault in Model.Employee.Devices)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img class="mr-1" src="/svg/icon-hardware-vault.svg" />
+                    <span class="font-weight-bold">@hardwareVault.Id</span> - @(hardwareVault.LicenseEndDate != null ? $"License till {hardwareVault.LicenseEndDate.Value.ToShortDateString()}" : "License status None") - @hardwareVault.State @(hardwareVault.IsOnline ? "- <span class='badge badge-success'>Online</span>": null)
+                </div>
+                <div>
+                    <button type="button" class="btn btn-light border my-1 mr-2 open-modal-dialog" data-id="@hardwareVault.Id" data-action="DeleteDevice" data-title="Remove device" title="Remove device from employee">
+                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        Delete
+                    </button>
+                </div>
+            </li>
+        }
+    </ul>
 }
 
 @* Devices tables *@

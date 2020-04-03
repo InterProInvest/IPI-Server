@@ -200,11 +200,11 @@ namespace HES.Core.Services
                 }
                 if (filter.CreatedAtStartDate != null)
                 {
-                    query = query.Where(x => x.CreatedAt >= filter.CreatedAtStartDate.Value.Date);
+                    query = query.Where(x => x.CreatedAt >= filter.CreatedAtStartDate.Value.Date.ToUniversalTime());
                 }
                 if (filter.CreatedAtEndDate != null)
                 {
-                    query = query.Where(x => x.CreatedAt <= filter.CreatedAtEndDate.Value.Date);
+                    query = query.Where(x => x.CreatedAt <= filter.CreatedAtEndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
                 }
                 if (filter.ValidToStartDate != null)
                 {
@@ -297,7 +297,7 @@ namespace HES.Core.Services
                 }
                 if (filter.CreatedAtEndDate != null)
                 {
-                    query = query.Where(x => x.CreatedAt <= filter.CreatedAtEndDate.Value.Date);
+                    query = query.Where(x => x.CreatedAt <= filter.CreatedAtEndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
                 }
                 if (filter.ValidToStartDate != null)
                 {
@@ -361,7 +361,7 @@ namespace HES.Core.Services
             {
                 EmployeeId = employee.Id,
                 Status = InviteVaultStatus.Pending,
-                CreatedAt = DateTime.Now.Date,
+                CreatedAt = DateTime.UtcNow,
                 ValidTo = validTo.Date,
                 AcceptedAt = null,
                 SoftwareVaultId = null,
