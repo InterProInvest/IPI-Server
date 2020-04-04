@@ -8,6 +8,7 @@ services:
   # Create HES images
   hes:
     container_name: hes-<Name_Of_Domain>
+    restart: always
     command: ./HES.Web
     build: .
     environment: 
@@ -25,6 +26,7 @@ services:
   hes-db:
     image: mysql
     container_name: hes-db
+    restart: always
     command: --default-authentication-plugin=mysql_native_password
     environment:
       # these variables specify the name of the database and passwords 
@@ -44,6 +46,7 @@ services:
   hes-nginx:
     image: nginx
     container_name: hes-nginx
+    restart: always
     ports:
       - '80:80'
       - '443:443'
