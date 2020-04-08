@@ -24,6 +24,7 @@ namespace HES.Core.Hubs
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
         private readonly IEmployeeService _employeeService;
+        private readonly IAsyncProxyRequestService _proxyRequestService;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
@@ -33,6 +34,7 @@ namespace HES.Core.Hubs
                       IDeviceTaskService deviceTaskService,
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
+                      IAsyncProxyRequestService proxyRequestService,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
@@ -42,6 +44,7 @@ namespace HES.Core.Hubs
             _deviceTaskService = deviceTaskService;
             _licenseService = licenseService;
             _employeeService = employeeService;
+            _proxyRequestService = proxyRequestService;
             _logger = logger;
         }
 
@@ -382,6 +385,19 @@ namespace HES.Core.Hubs
             }
         }
 
+        // Incomming request
+        public Task<HesResponse> OnUnlockWorkstationResponse(string requestId, HideezErrorCode code, string message)
+        {
+            try
+            {
+                _proxyRequestService.SetRequestResponse(requestId, new HesResponse(code, message));
+                return Task.FromResult(HesResponse.Ok);
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(new HesResponse(ex));
+            }
+        }
         #endregion
     }
 }

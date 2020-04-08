@@ -98,6 +98,7 @@ namespace HES.Web
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<ILdapService, LdapService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
+            services.AddSingleton<IAsyncProxyRequestService, AsyncProxyRequestService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
             services.AddHostedService<LicenseHostedService>();
@@ -270,6 +271,7 @@ namespace HES.Web
                 endpoints.MapHub<DeviceHub>("/deviceHub");
                 endpoints.MapHub<AppHub>("/appHub");
                 endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
+                endpoints.MapHub<SoftwareVaultHub>("/softwareVaultHub");
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();

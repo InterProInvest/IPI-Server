@@ -2,6 +2,8 @@
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Device;
+using Hideez.SDK.Communication.HES.Client;
+using Hideez.SDK.Communication.HES.Client.Requests;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
@@ -35,6 +37,7 @@ namespace HES.Core.Services
         readonly IDeviceTaskService _deviceTaskService;
         readonly IDataProtectionService _dataProtectionService;
         readonly IWorkstationAuditService _workstationAuditService;
+        readonly IAsyncProxyRequestService _proxyRequestService;
         readonly ILogger<RemoteWorkstationConnectionsService> _logger;
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
@@ -46,6 +49,7 @@ namespace HES.Core.Services
                       IDeviceTaskService deviceTaskService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
+                      IAsyncProxyRequestService proxyRequestService,
                       ILogger<RemoteWorkstationConnectionsService> logger)
         {
             _services = services;
@@ -57,6 +61,7 @@ namespace HES.Core.Services
             _deviceTaskService = deviceTaskService;
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
+            _proxyRequestService = proxyRequestService;
             _logger = logger;
         }
 
@@ -352,6 +357,38 @@ namespace HES.Core.Services
             if (workstation != null)
             {
                 await workstation.UpdateRFIDIndicatorState(isEnabled);
+            }
+        }
+
+        public async Task<HesResponse> RequestWorkstationUnlockAsync(string workstationId, string unlockToken, string login, string password)
+        {
+            var workstation = FindWorkstationConnection(workstationId);
+            if (workstation != null)
+            {
+                var request = new UnlockWorkstationRequest
+                {
+                    RequestId = Guid.NewGuid().ToString(), 
+                    UnlockToken = unlockToken, 
+                    Username = login, 
+                    Password = password
+                };
+
+                try
+                {
+                    var task = _proxyRequestService.CreateRequest(request.RequestId);
+
+                    await workstation.UnlockWorkstationRequest(request);
+
+                    return (HesResponse)await task.TimeoutAfter(30_000);
+                }
+                finally
+                {
+                    _proxyRequestService.RemoveRequest(request.RequestId);
+                }
+            }
+            else
+            {
+                return await Task.FromException<HesResponse>(new HideezException(HideezErrorCode.SvTargetNotConnected));
             }
         }
 
