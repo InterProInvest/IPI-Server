@@ -24,7 +24,6 @@ namespace HES.Web.Pages.Employees
         private readonly IDeviceService _deviceService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly ITemplateService _templateService;
-        private readonly ISamlIdentityProviderService _samlIdentityProviderService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSenderService _emailSender;
@@ -41,8 +40,6 @@ namespace HES.Web.Pages.Employees
         public DeviceAccount DeviceAccount { get; set; }
         public SharedAccount SharedAccount { get; set; }
         public AccountPassword AccountPassword { get; set; }
-        public bool SamlIdentityProviderEnabled { get; set; }
-        public bool UserSamlIdpEnabled { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -61,7 +58,6 @@ namespace HES.Web.Pages.Employees
                             IDeviceService deviceService,
                             ISharedAccountService sharedAccountService,
                             ITemplateService templateService,
-                            ISamlIdentityProviderService samlIdentityProviderService,
                             IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                             UserManager<ApplicationUser> userManager,
                             IEmailSenderService emailSender,
@@ -71,7 +67,6 @@ namespace HES.Web.Pages.Employees
             _deviceService = deviceService;
             _sharedAccountService = sharedAccountService;
             _templateService = templateService;
-            _samlIdentityProviderService = samlIdentityProviderService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _userManager = userManager;
             _emailSender = emailSender;
@@ -97,23 +92,7 @@ namespace HES.Web.Pages.Employees
             DeviceAccounts = await _employeeService.GetDeviceAccountsByEmployeeIdAsync(Employee.Id);
 
             ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
-
-            #region Idp
-            SamlIdentityProviderEnabled = await _samlIdentityProviderService.GetStatusAsync();
-            if (SamlIdentityProviderEnabled)
-            {
-                var user = await _userManager.FindByEmailAsync(Employee.Email);
-                if (user != null)
-                {
-                    UserSamlIdpEnabled = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
-                }
-                else
-                {
-                    UserSamlIdpEnabled = false;
-                }
-            }
-            #endregion
-
+  
             return Page();
         }
 
@@ -126,114 +105,114 @@ namespace HES.Web.Pages.Employees
 
         #region Employee
 
-        public async Task<IActionResult> OnPostEnableSamlIdentityProviderAsync(Employee employee)
-        {
-            try
-            {
-                // User
-                var user = new ApplicationUser
-                {
-                    UserName = employee.Email,
-                    Email = employee.Email,
-                    FirstName = employee.FirstName,
-                    LastName = employee.LastName,
-                    PhoneNumber = employee.PhoneNumber,
-                    DeviceId = employee.CurrentDevice
-                };
-                var password = Guid.NewGuid().ToString();
-                var result = await _userManager.CreateAsync(user, password);
-                if (!result.Succeeded)
-                {
-                    var erorrs = string.Join("; ", result.Errors.Select(s => s.Description).ToArray());
-                    throw new Exception(erorrs);
-                }
+        //public async Task<IActionResult> OnPostEnableSamlIdentityProviderAsync(Employee employee)
+        //{
+        //    try
+        //    {
+        //        // User
+        //        var user = new ApplicationUser
+        //        {
+        //            UserName = employee.Email,
+        //            Email = employee.Email,
+        //            FirstName = employee.FirstName,
+        //            LastName = employee.LastName,
+        //            PhoneNumber = employee.PhoneNumber,
+        //            DeviceId = employee.CurrentDevice
+        //        };
+        //        var password = Guid.NewGuid().ToString();
+        //        var result = await _userManager.CreateAsync(user, password);
+        //        if (!result.Succeeded)
+        //        {
+        //            var erorrs = string.Join("; ", result.Errors.Select(s => s.Description).ToArray());
+        //            throw new Exception(erorrs);
+        //        }
 
-                // Role
-                await _userManager.AddToRoleAsync(user, ApplicationRoles.UserRole);
+        //        // Role
+        //        await _userManager.AddToRoleAsync(user, ApplicationRoles.UserRole);
 
-                // Create link
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var email = employee.Email;
-                var callbackUrl = Url.Page(
-                   "/Account/External/ActivateAccount",
-                    pageHandler: null,
-                    values: new { area = "Identity", code, email },
-                    protocol: Request.Scheme);
+        //        // Create link
+        //        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        //        var email = employee.Email;
+        //        var callbackUrl = Url.Page(
+        //           "/Account/External/ActivateAccount",
+        //            pageHandler: null,
+        //            values: new { area = "Identity", code, email },
+        //            protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(email, "Hideez Enterpise Server - Activation of SAML IdP account",
-                    $"Dear {employee.FullName}, please click the link below to activate your SAML IdP account: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+        //        await _emailSender.SendEmailAsync(email, "Hideez Enterpise Server - Activation of SAML IdP account",
+        //            $"Dear {employee.FullName}, please click the link below to activate your SAML IdP account: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                SuccessMessage = "SAML IdP account enabled.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //        SuccessMessage = "SAML IdP account enabled.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employee.Id;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employee.Id;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
-        public async Task<IActionResult> OnPostDisableSamlIdentityProviderAsync(Employee employee)
-        {
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(employee.Email);
-                if (user == null)
-                {
-                    throw new Exception("Email address does not exist.");
-                }
+        //public async Task<IActionResult> OnPostDisableSamlIdentityProviderAsync(Employee employee)
+        //{
+        //    try
+        //    {
+        //        var user = await _userManager.FindByEmailAsync(employee.Email);
+        //        if (user == null)
+        //        {
+        //            throw new Exception("Email address does not exist.");
+        //        }
 
-                await _userManager.DeleteAsync(user);
-                await _employeeService.DeleteSamlIdpAccountAsync(employee.Id);
+        //        await _userManager.DeleteAsync(user);
+        //        await _employeeService.DeleteSamlIdpAccountAsync(employee.Id);
 
-                SuccessMessage = "SAML IdP account disabled.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //        SuccessMessage = "SAML IdP account disabled.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employee.Id;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employee.Id;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
-        public async Task<IActionResult> OnPostResetSamlIdentityProviderAsync(Employee employee)
-        {
-            try
-            {
-                var user = await _userManager.FindByEmailAsync(employee.Email);
-                if (user == null)
-                {
-                    throw new Exception("Email address does not exist.");
-                }
+        //public async Task<IActionResult> OnPostResetSamlIdentityProviderAsync(Employee employee)
+        //{
+        //    try
+        //    {
+        //        var user = await _userManager.FindByEmailAsync(employee.Email);
+        //        if (user == null)
+        //        {
+        //            throw new Exception("Email address does not exist.");
+        //        }
 
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var email = employee.Email;
-                var callbackUrl = Url.Page(
-                    "/Account/External/ResetAccountPassword",
-                    pageHandler: null,
-                    values: new { area = "Identity", code, email },
-                    protocol: Request.Scheme);
+        //        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        //        var email = employee.Email;
+        //        var callbackUrl = Url.Page(
+        //            "/Account/External/ResetAccountPassword",
+        //            pageHandler: null,
+        //            values: new { area = "Identity", code, email },
+        //            protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    email,
-                    "Hideez Enterpise Server - Reset Password of SAML IdP account",
-                    $"Dear {employee.FullName}, please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+        //        await _emailSender.SendEmailAsync(
+        //            email,
+        //            "Hideez Enterpise Server - Reset Password of SAML IdP account",
+        //            $"Dear {employee.FullName}, please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                SuccessMessage = "SAML IdP account password reseted.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //        SuccessMessage = "SAML IdP account password reseted.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employee.Id;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employee.Id;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
         private async Task<bool> EmployeeExists(string id)
         {
@@ -373,16 +352,6 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                if (SamlIdentityProviderEnabled)
-                {
-                    var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
-                    if (user != null)
-                    {
-                        await _userManager.DeleteAsync(user);
-                        await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
-                    }
-                }
-
                 await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(device.Id);
                 SuccessMessage = $"Device {device.Id} deleted.";

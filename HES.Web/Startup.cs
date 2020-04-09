@@ -85,7 +85,6 @@ namespace HES.Web
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<IOrgStructureService, OrgStructureService>();
             services.AddScoped<ILogsViewerService, LogsViewerService>();
-            services.AddScoped<ISamlIdentityProviderService, SamlIdentityProviderService>();
             services.AddTransient<IAesCryptographyService, AesCryptographyService>();
             services.AddScoped<IRemoteWorkstationConnectionsService, RemoteWorkstationConnectionsService>();
             services.AddScoped<IRemoteDeviceConnectionsService, RemoteDeviceConnectionsService>();
