@@ -22,11 +22,11 @@ namespace HES.Core.Interfaces
         Task UpdateLastSeenAsync(string deviceId);
         Task AddDeviceAsync(string employeeId, string[] selectedDevices);
         Task RemoveDeviceAsync(string employeeId, string deviceId);
-        Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
-        Task UpdatePasswordSamlIdpAccountAsync(string email, string password);
-        Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
-        Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
-        Task DeleteSamlIdpAccountAsync(string employeeId);
+        //Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
+        //Task UpdatePasswordSamlIdpAccountAsync(string email, string password);
+        //Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
+        //Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
+        //Task DeleteSamlIdpAccountAsync(string employeeId);
         Task<List<DeviceAccount>> GetDeviceAccountsByEmployeeIdAsync(string employeeId);
         Task<DeviceAccount> GetDeviceAccountByIdAsync(string deviceAccountId);
         Task SetAsWorkstationAccountAsync(string deviceId, string deviceAccountId);

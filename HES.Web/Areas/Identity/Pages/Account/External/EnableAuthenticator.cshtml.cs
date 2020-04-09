@@ -68,8 +68,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.External
 
             await LoadSharedKeyAndQrCodeUriAsync(user);
 
-            await _employeeService.UpdateOtpSamlIdpAccountAsync(user.Email, SharedKey);
-            _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(user.DeviceId);
+            //await _employeeService.UpdateOtpSamlIdpAccountAsync(user.Email, SharedKey);
+            //_remoteWorkstationConnectionsService.StartUpdateRemoteDevice(user.DeviceId);
 
             return Page();
         }
