@@ -10,7 +10,7 @@ The second part describes the installation already for a specific site, there ma
   * Can be installed on a bare metal or virtual server
   * 8GB drive
   * 2GB RAM
-  * Option 1: Clean installation of CentOS Linux x86_64 (tested on version 7.6), select "minimal install" option during installation
+  * Option 1: Clean installation of CentOS Linux x86_64 (tested on version 7.6, Centos 8 is not yet supported), select "minimal install" option during installation
   * Option 2: Clean installation of Ubuntu Server LTS 18.04
   
 # 1. Preparation (Run once)
@@ -34,8 +34,9 @@ The second part describes the installation already for a specific site, there ma
 ## 1.2 Disable SELinux (CentOS only)
 
 ```shell
-  $ sudo sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
-  $ sudo setenforce 0
+  $ sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+  $ sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+  $ sudo reboot
 ```
 
 ## 1.3 Install git
@@ -52,28 +53,34 @@ The second part describes the installation already for a specific site, there ma
 ## 1.4 Download HES repository from GitHub
 
 ```shell
-  $ sudo rpm -Uvh https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
-  $ sudo yum install dotnet-sdk-2.2
+  $ sudo git clone https://github.com/HideezGroup/HES /opt/src/HES
 ```
 
 ## 1.5 Add Microsoft Package Repository and install .NET Core
 
+*CentOS*
 ```shell
-  $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-  $ sudo yum install mysql-server
+  $ sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+  $ sudo yum install dotnet-sdk-3.1 -y
+```
+*Ubuntu*
+```shell
+  $ wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+  $ sudo dpkg -i packages-microsoft-prod.deb
+  $ sudo apt update
+  $ sudo apt install dotnet-sdk-3.1 -y
 ```
 
-  ## Getting Started (fresh install)
-
-### 1. Postinstalling and Securing MySQL Server
+If the installation was successful, the output of the *dotnet* command will look something like this:
 
 ```shell
   $ dotnet --version
 3.1.200
 ```
 
-  It is recommended to say yes to the following questions:
+## 1.6 Install MySQL version 8:
 
+*CentOS*
 ```shell
   $ sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
   $ sudo yum install mysql-server -y
@@ -110,39 +117,45 @@ mysql  Ver 8.0.17 for Linux on x86_64 (Source Distribution)
 
 MySQL expects that your new password should consist of at least 8 characters, contain uppercase and lowercase letters, numbers and special characters (do not forget the password you set, it will come in handy later). After a successful password change, the following questions are recommended to answer "Y":
 
+[Note] Find default root password using   sudo grep "A temporary password" /var/log/mysqld.log
+
+
 ```shell
   $ sudo mysql_secure_installation
 ```
 
 ```shell
-  Please set a new password for user root:
+Enter password for user root:
+
+  The existing password for the user account root has expired. Please set a new password.
+
+  New password:
   Re-enter new password:
 
-  Do you wish to continue with the password provided?(Press y|Y for Yes, any other key for No) : Y
+  Remove anonymous users? (Press y|Y for Yes, any other key for No) : y
 
-  Remove anonymous users? (Press y|Y for Yes, any other key for No) : Y
+  Disallow root login remotely? (Press y|Y for Yes, any other key for No) : y
 
-  Disallow root login remotely? (Press y|Y for Yes, any other key for No) : Y
+  Remove test database and access to it? (Press y|Y for Yes, any other key for No) : y
 
-  Remove test database and access to it? (Press y|Y for Yes, any other key for No) : Y
-
-  Reload privilege tables now? (Press y|Y for Yes, any other key for No) : Y
+  Reload privilege tables now? (Press y|Y for Yes, any other key for No) : y
 ```
 
 
 To verify that everything is correct, you can run
 ```shell
-  $ sudo systemctl restart mysqld.service
-  $ sudo systemctl enable mysqld.service
+  $ mysql -h localhost -u root -p
 ```
+
 After entering password, you will see MySQL console with a prompt:
+
 ```shell
   Enter password: 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 13
 Server version: 8.0.19 MySQL Community Server - GPL
 
-### 2. Creating MySQL User and Database for the Hideez Enterprise Server
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -162,14 +175,29 @@ To exit from mySql console, press Ctrl+D.
   $ sudo yum install epel-release -y
   $ sudo yum install nginx -y
   $ sudo systemctl enable nginx
-  $ systemctl restart nginx
 ```
 *Ubuntu*
 ```shell
   $ sudo apt install nginx -y
   $ sudo systemctl enable nginx
-  $ systemctl restart nginx
 ```
+
+add to **http** section in /etc/nginx/nginx.conf
+
+```conf
+...
+map $http_upgrade $connection_upgrade {
+                default Upgrade;
+                ''      close;
+    }
+...
+```
+
+and restart nginx
+```shell
+  $ sudo systemctl restart nginx
+```
+
 
 Check that nginx service is installed and started:
 ```shell
@@ -222,21 +250,16 @@ You should remember database name, username and password, they will come in hand
 
 ## 2.2 Installing Hideez Enterprise Server from source
 
-Instead of <Name_Of_Domain>, specify the name of your site
+here is an example for the case when our site will be in folder "/opt/HES/hideez.example.com". You usually have to choose another folder that works for you
 
 ```shell
-  $ sudo yum install git && cd /opt
-  $ sudo git clone https://github.com/HideezGroup/HES src && cd src/HES.Web/
-```
-
-here is an example for the case when our site will be called hideez.example.com
-
-```shell
-  $ sudo mkdir /opt/HES
-  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
+  $ cd /opt/src/HES/HES.Web/
+  $ sudo mkdir -p /opt/HES/hideez.example.com
+  $ sudo dotnet publish -c release -v d -o "/opt/HES/hideez.example.com" --framework netcoreapp3.1 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES/HES.Web/Crypto_linux.dll /opt/HES/hideez.example.com/Crypto.dll
 ```
 **[Note]** Internet connection required to download NuGet packages
+
 
 ## 2.3 Hideez Enterprise Server Configuration
 
@@ -288,45 +311,54 @@ The following is an example of how to open a configuration file for editing, for
 * **your_email_password** - Your email name (example `password`)
 * **protection_password** - Your password for database encryption (example `password`)
 
+
+
+Important note. By default, .net Core uses ports 5000 and 5001. Therefore, if only one domain 
+is running on the server, port numbers can be skipped. But if it is supposed to run a few sites
+on one computer, then it is necessary to specify different ports for each site in json file. For example, for a site to listen to ports 6000 and 6001, after "AllowedHosts": "*" add the following (via comma) :
+
+```json
+,
+ "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://localhost:6000"
+      },
+      "Https": {
+        "Url": "https://localhost:6001"
+      }
+    }
+  }
+
+```
 After saving the settings file, you can check that HES server is up and running:
 ```shell
   $ cd /opt/HES/<Name_Of_Domain>
   $ sudo ./HES.Web 
 ```
-The output should look something like this:
 
-```shell
-Hosting environment: Production
-Content root path: /opt/HES/hideez.example.com
-Now listening on: http://localhost:5000
-Now listening on: https://localhost:5001
-Application started. Press Ctrl+C to shut down.
-```
-this means that HES server is successfully configured and started.
+
+If you do not see any errors, this means that HES server is successfully configured and started.
+Press Ctrl+C for exit
 
 ## 2.4 Daemonizing of Enterprise Server
 
-Important note. By default, .net Core uses ports 5000 and 5001. Therefore, if only one domain 
-is running on the server, port numbers can be skipped. But if it is supposed to run a few sites
-on one computer, then it is necessary to specify different ports for each site.
-
-Create the file `/lib/systemd/system/HES-<Name_Of_Domain>.service`
-
-
-Below is an example for hideez.example.com, ports 5000 è 5001:
+Create the file `/lib/systemd/system/HES-<Name_Of_Domain>.service`  with the following content
 
 ```shell
-  $ sudo cat > /lib/systemd/system/HES-hideez.example.com.service << EOF
+  $ sudo vi /lib/systemd/system/HES-<Name_Of_Domain>.service 
+```
+```conf
 [Unit]
-  Description=hideez.example.com Hideez Enterprise Service
+  Description=<Name_Of_Domain> Hideez Enterprise Service
 
 [Service]
 
   User=root
   Group=root
 
-  WorkingDirectory=/opt/HES/hideez.example.com
-  ExecStart=/opt/HES/hideez.example.com/HES.Web --server.urls "http://localhost:5000;https://localhost:5001"
+  WorkingDirectory=/opt/HES/<Name_Of_Domain>
+  ExecStart=/opt/HES/<Name_Of_Domain>/HES.Web 
   Restart=on-failure
   ExecReload=/bin/kill -HUP $MAINPID
   KillMode=process
@@ -335,43 +367,33 @@ Below is an example for hideez.example.com, ports 5000 è 5001:
 
 [Install]
   WantedBy=multi-user.target
-EOF
 ```
-
-if there will be only one HES service per server, you can omit parameter
---server.urls "http://localhost:5000;https://localhost:5001"
 
 **enabling autostart (using hideez.example.com as an example)**
 
 ```shell
-  $ sudo systemctl enable HES-hideez.example.com.service
-  $ sudo systemctl restart HES-hideez.example.com.service
+  $ sudo systemctl enable HES-<Name_Of_Domain>.service
+  $ sudo systemctl restart HES-<Name_Of_Domain>.service
 ```
 
 You can verify that HES server is running with the command
 
 ```shell
-sudo systemctl status HES-hideez.example.com
+sudo systemctl status HES-<Name_Of_Domain>
 
 ```
-(of course, instead of "HES-hideez.example.com", there should be a service name created earlier)
 
 The output of the command should be something like this:
 
 ```shell
-* HES-hideez.example.com.service - hideez.example.com Hideez Enterprise Service
+● HES-hideez.example.com.service - hideez.example.com Hideez Enterprise Service
    Loaded: loaded (/usr/lib/systemd/system/HES-hideez.example.com.service; enabled; vendor preset: disabled)
-   Active: active (running) since Sat 2020-01-25 10:31:13 UTC; 54min ago
- Main PID: 12976 (HES.Web)
+   Active: active (running) since Wed 2020-03-25 09:05:04 UTC; 34s ago
+ Main PID: 2964 (HES.Web)
    CGroup: /system.slice/HES-hideez.example.com.service
-            +-12976 /opt/HES/hideez.example.com/HES.Web
+           └─2964 /opt/HES/hideez.example.com/HES.Web
 
-Jan 25 10:31:13 HESServerTest systemd[1]: Started hideez.example.com Hideez Enterprise Service.
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Hosting environment: Production
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Content root path: /opt/HES/hideez.example.com
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Now listening on: http://localhost:5000
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Now listening on: https://localhost:5001
-Jan 25 10:31:22 HESServerTest HES.Web[12976]: Application started. Press Ctrl+C to shut down.
+Mar 25 09:05:04 hesservertest systemd[1]: Started hideez.example.com Hideez Enterprise Service.
 ```
 
 ## 2.5 Reverse proxy configuration
@@ -380,48 +402,37 @@ To access your server from the local network as well as from the Internet, you h
  Creating a Self-Signed SSL Certificate for Nginx
  Note For a "real" site, you should take care of acquiring a certificate from a certificate authority.
  For self-signed certificate, browser will alert you that site has security issues.
- 
- Below is an example for hideez.example.com
- (when generating a certificate, answer a few simple questions)
-
+ Replace <Name_Of_Domain> with you domain name
+ (when generating a certificate, answer a few simple questions)
 ```shell
  $ sudo mkdir /etc/nginx/certs
- $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/hideez.example.com.key -out /etc/nginx/certs/hideez.example.com.crt
+ $ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/<Name_Of_Domain>.key -out /etc/nginx/certs/<Name_Of_Domain>.crt
 ```
 
-  Basic Configuration for the Nginx Reverse Proxy
+** Virtual site configuration on Nginx reverse proxy **
+
+You can configure virtual sites in the **http** section of /etc/nginx/nginx.conf or by creating separate configuration files. In this example, we will add new sections to /etc/nginx/nginx.conf
+
 
 ```conf
-    server {
-        listen       80 default_server;
-        listen       [::]:80 default_server;
-        server_name  hideez.example.com;
 
+ # redirect all traffic to https
+ server {
+          server_name <Name_Of_Domain>;
+          listen 80;
+          listen [::]:80;
+          if ($host = <Name_Of_Domain>) {
+                return 301 https://$host$request_uri;
+          }
+          return 404;
+    }
 
-            # Enable proxy websockets for the Hideez Client to work
-            proxy_http_version 1.1;
-            proxy_buffering off;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $http_connection;
-            proxy_pass http://localhost:5000;
-        }
-  ...
-```
-
-```conf
-    server {
-        listen       443 ssl http2 default_server;
-        listen       [::]:443 ssl http2 default_server;
-        server_name  hideez.example.com;
-
-
-
-    server {
-          server_name hideez.example.com;
+  server {
+          server_name <Name_Of_Domain>;
           listen [::]:443 ssl ;
-          listen 443 ssl; 
-          ssl_certificate "certs/hideez.example.com.crt";
-          ssl_certificate_key "certs/hideez.example.com.key";
+          listen 443 ssl;
+          ssl_certificate "certs/<Name_Of_Domain>.crt";
+          ssl_certificate_key "certs/<Name_Of_Domain>.key";
 
           location / {
                  proxy_pass https://localhost:5001;
@@ -434,15 +445,15 @@ To access your server from the local network as well as from the Internet, you h
                  proxy_set_header X-Forwarded-Proto $scheme;
           }
 
-            # Enable proxy websockets for the hideez Client to work
-            proxy_http_version 1.1;
-            proxy_buffering off;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $http_connection;
-            proxy_pass https://localhost:5001;
-        }
-  ...
+    }
+
+
 ```
+
+● Replace <Name_Of_Domain> with you domain name
+● Port numbers should match the settings specified in /opt/HES/<Name_Of_Domain>/appsettings.json (defauls is 5000 for http  and 5001 for https)
+● note we added a map directive with the "connection_upgrade" variable declaration during the initial nginx configuration
+
 
 After saving the file, it is recommended to check nginx settings:
 ```shell
@@ -476,13 +487,6 @@ Otherwise, you should carefully review the settings and correct the errors.
 
 To access the server from the network, ports 22, 80, and 443 should be opened:
 
-*CentOS*
-```shell
-$ sudo firewall-cmd --zone=public --permanent --add-port=22/tcp
-$ sudo firewall-cmd --zone=public --permanent --add-port=80/tcp
-$ sudo firewall-cmd --zone=public --permanent --add-port=443/tcp
-$ sudo firewall-cmd --reload
-```
 *Ubuntu*
 ```shell
 $ sudo ufw allow 22
@@ -502,43 +506,48 @@ Setup is complete. The server should be accessible in a browser at the address `
   $ sudo git pull
 ```
 
-### 2. Back up Hideez Enterprise Server
+### 2. Back up MySQL Database (optional)
 
 ```shell
-  $ sudo systemctl stop hideez.service
-  $ sudo mv /opt/HES /opt/HES.old
+  $ sudo mkdir /opt/backups
+  $ cd /opt/backups
+  $ sudo mysqldump -u <your_user> -p<your_secret> <your_db> | gzip -c > <your_db>.sql.gz
 ```
 
-### 3. Build a new version of Hideez Enterprise Server from sources
+### 3. Back up Hideez Enterprise Server
 
 ```shell
-  $ sudo mkdir /opt/HES
-  $ sudo dotnet publish -c release -v d -o "/opt/HES" --framework netcoreapp2.2 --runtime linux-x64 HES.Web.csproj
-  $ sudo cp /opt/src/HES.Web/Crypto_linux.dll /opt/HES/Crypto.dll
+  $ sudo systemctl stop HES-<Name_Of_Domain>
+  $ sudo mv /opt/HES/<Name_Of_Domain> /opt/HES/<Name_Of_Domain>.old
 ```
 
-### 4. Back up MySQL Database (optional)
+### 4. Build a new version of Hideez Enterprise Server from sources
 
 ```shell
-  $ sudo mkdir /opt/backups && cd /opt/backups
-  $ sudo mysqldump -u <your_user> -p <your_secret> <your_db> | gzip -c > <your_db>.sql.gz
+  $ sudo mkdir /opt/HES/<Name_Of_Domain>
+  $ cd /opt/src/HES/HES.Web/
+  $ sudo dotnet publish -c release -v d -o "/opt/HES/<Name_Of_Domain>" --framework netcoreapp3.1 --runtime linux-x64 HES.Web.csproj
+  $ sudo cp /opt/src/HES/HES.Web/Crypto_linux.dll /opt/HES/<Name_Of_Domain>/Crypto.dll
 ```
 
-### 5. Copy your configuration file
+### 5. Restore your configuration file
 
 ```shell
-  $ sudo cp /opt/HES.old/appsettings.json /opt/HES/appsettings.json
+  $ sudo cp /opt/HES/<Name_Of_Domain>.old/appsettings.json /opt/HES/<Name_Of_Domain>/appsettings.json
 ```
 
 ### 6. Restart Hideez Enterprise Server and check its status
 
 ```shell
-  $ sudo systemctl restart hideez.service
-  $ sudo systemctl status hideez.service
-  * hideez.service - Hideez Web service
-     Loaded: loaded (/usr/lib/systemd/system/hideez.service; enabled; vendor preset: disabled)
-     Active: active (running) since Tue 2019-11-05 15:34:39 EET; 2 weeks 2 days ago
-   Main PID: 10816 (HES.Web)
-     CGroup: /system.slice/hideez.service
-             +-10816 /opt/HES/HES.Web
-```
+  $ sudo systemctl restart HES-<Name_Of_Domain>
+  $ sudo systemctl status HES-<Name_Of_Domain>
+  
+  ● HES-hideez.example.com.service - hideez.example.com Hideez Enterprise Service
+   Loaded: loaded (/usr/lib/systemd/system/HES-hideez.example.com.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2020-03-25 10:48:12 UTC; 16s ago
+ Main PID: 4657 (HES.Web)
+   CGroup: /system.slice/HES-thideez.example.com.service
+           └─4657 /opt/HES/hideez.example.com/HES.Web
+
+Mar 25 10:48:12 hesservertest systemd[1]: Started hideez.example.com Hideez Enterprise Service.
+ 

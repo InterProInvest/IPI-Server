@@ -38,8 +38,6 @@ namespace HES.Web.Pages.Employees
         public Account DeviceAccount { get; set; }
         public SharedAccount SharedAccount { get; set; }
         public AccountPassword AccountPassword { get; set; }
-        public bool SamlIdentityProviderEnabled { get; set; }
-        public bool UserSamlIdpEnabled { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
