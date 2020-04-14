@@ -2,12 +2,13 @@
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
+using LdapForNet;
 using System;
 using System.Collections.Generic;
-using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using static LdapForNet.Native.Native;
 
 namespace HES.Core.Services
 {
@@ -22,57 +23,113 @@ namespace HES.Core.Services
             _groupService = groupService;
         }
 
-        public List<ActiveDirectoryUser> GetAdUsers(string server, string userName, string password)
+        public async Task<List<ActiveDirectoryUser>> GetUsersAsync(ActiveDirectoryCredential credentials)
         {
             var users = new List<ActiveDirectoryUser>();
 
-            using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
+            using (var connection = new LdapConnection())
             {
-                UserPrincipal user = new UserPrincipal(context);
-                PrincipalSearcher search = new PrincipalSearcher(user);
+                connection.Connect(credentials.Host);
+                await connection.BindAsync(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
 
-                foreach (var found in search.FindAll())
+                var dn = GetDnFromHost(credentials.Host);
+
+                var filter = "(&(objectCategory=user)(givenName=*))";
+                var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+                foreach (var entity in response.Entries)
                 {
-                    UserPrincipal userPrincipal = found as UserPrincipal;
-
-                    if (userPrincipal != null && userPrincipal.GivenName != null)
+                    var activeDirectoryUser = new ActiveDirectoryUser()
                     {
-                        var activeDirectoryUser = new ActiveDirectoryUser()
+                        Employee = new Employee()
                         {
-                            Employee = new Employee()
+                            Id = GetAttributeGUID(entity),
+                            FirstName = TryGetAttribute(entity, "givenName"),
+                            LastName = TryGetAttribute(entity, "sn"),
+                            Email = TryGetAttribute(entity, "mail"),
+                            PhoneNumber = TryGetAttribute(entity, "telephoneNumber")
+                        }
+                    };
+
+                    List<Group> groups = new List<Group>();
+                    var groupNames = TryGetAttributeArray(entity, "memberOf");
+                    if (groupNames != null)
+                    {
+                        foreach (var groupName in groupNames)
+                        {
+                            var name = GetNameFromDn(groupName);
+                            var filterGroup = $"(&(objectCategory=group)(name={name}))";
+                            var groupResponse = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterGroup, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+                            groups.Add(new Group()
                             {
-                                Id = userPrincipal.Guid.ToString(),
-                                FirstName = userPrincipal.GivenName,
-                                LastName = userPrincipal.Surname,
-                                Email = userPrincipal.EmailAddress
-                            }
-                        };
-
-                        try
-                        {
-                            activeDirectoryUser.Groups = userPrincipal.GetGroups(context)
-                                .Select(s => new Group()
-                                {
-                                    Id = s.Guid.ToString(),
-                                    Name = s.Name,
-                                    Description = s.Description
-                                })
-                                .ToList();
+                                Id = GetAttributeGUID(groupResponse.Entries.First()),
+                                Name = TryGetAttribute(groupResponse.Entries.First(), "name"),
+                                Description = TryGetAttribute(groupResponse.Entries.First(), "description"),
+                                Email = TryGetAttribute(groupResponse.Entries.First(), "mail")
+                            });
                         }
-                        catch (PrincipalOperationException)
-                        {
-                            // If dns is not configured to connect to a domain
-                            // information about the domain could not be retrieved.
-                        }
-
-                        users.Add(activeDirectoryUser);
                     }
+                    activeDirectoryUser.Groups = groups.Count > 0 ? groups : null;
+
+                    users.Add(activeDirectoryUser);
                 }
             }
+
             return users.OrderBy(x => x.Employee.FullName).ToList();
         }
 
-        public async Task AddAdUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
+        //public List<ActiveDirectoryUser> GetAdUsers(string server, string userName, string password)
+        //{
+        //    var users = new List<ActiveDirectoryUser>();
+
+        //    using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
+        //    {
+        //        UserPrincipal user = new UserPrincipal(context);
+        //        PrincipalSearcher search = new PrincipalSearcher(user);
+
+        //        foreach (var found in search.FindAll())
+        //        {
+        //            UserPrincipal userPrincipal = found as UserPrincipal;
+
+        //            if (userPrincipal != null && userPrincipal.GivenName != null)
+        //            {
+        //                var activeDirectoryUser = new ActiveDirectoryUser()
+        //                {
+        //                    Employee = new Employee()
+        //                    {
+        //                        Id = userPrincipal.Guid.ToString(),
+        //                        FirstName = userPrincipal.GivenName,
+        //                        LastName = userPrincipal.Surname,
+        //                        Email = userPrincipal.EmailAddress
+        //                    }
+        //                };
+
+        //                try
+        //                {
+        //                    activeDirectoryUser.Groups = userPrincipal.GetGroups(context)
+        //                        .Select(s => new Group()
+        //                        {
+        //                            Id = s.Guid.ToString(),
+        //                            Name = s.Name,
+        //                            Description = s.Description
+        //                        })
+        //                        .ToList();
+        //                }
+        //                catch (PrincipalOperationException)
+        //                {
+        //                    // If dns is not configured to connect to a domain
+        //                    // information about the domain could not be retrieved.
+        //                }
+
+        //                users.Add(activeDirectoryUser);
+        //            }
+        //        }
+        //    }
+        //    return users.OrderBy(x => x.Employee.FullName).ToList();
+        //}
+
+        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -99,66 +156,117 @@ namespace HES.Core.Services
             }
         }
 
-        public List<ActiveDirectoryGroup> GetAdGroups(string server, string userName, string password)
+        public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials)
         {
             var groups = new List<ActiveDirectoryGroup>();
 
-            using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
+            using (var connection = new LdapConnection())
             {
-                GroupPrincipal group = new GroupPrincipal(context);
-                PrincipalSearcher search = new PrincipalSearcher(group);
+                connection.Connect(credentials.Host);
+                await connection.BindAsync(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
 
-                foreach (var found in search.FindAll())
+                var dn = GetDnFromHost(credentials.Host);
+
+                var filter = "(objectCategory=group)";
+                var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+                foreach (var entity in response.Entries)
                 {
-                    GroupPrincipal groupPrincipal = found as GroupPrincipal;
-
-                    if (groupPrincipal != null)
+                    var activeDirectoryGroup = new ActiveDirectoryGroup()
                     {
-                        var activeDirectoryGroup = new ActiveDirectoryGroup()
+                        Group = new Group()
                         {
-                            Group = new Group()
-                            {
-                                Id = groupPrincipal.Guid.ToString(),
-                                Name = groupPrincipal.Name,
-                                Description = groupPrincipal.Description
-                            }
-                        };
-
-                        List<Employee> employees = new List<Employee>();
-                        try
-                        {
-                            foreach (var member in groupPrincipal.GetMembers())
-                            {
-                                UserPrincipal user = UserPrincipal.FindByIdentity(context, member.Name);
-
-                                if (user != null && user.GivenName != null)
-                                {
-                                    employees.Add(new Employee()
-                                    {
-                                        Id = user.Guid.ToString(),
-                                        FirstName = user.GivenName,
-                                        LastName = user.Surname,
-                                        Email = user.EmailAddress
-                                    });
-                                }
-                            }
+                            Id = GetAttributeGUID(entity),
+                            Name = TryGetAttribute(entity, "name"),
+                            Description = TryGetAttribute(entity, "description"),
+                            Email = TryGetAttribute(entity, "mail")
                         }
-                        catch (PrincipalOperationException)
+                    };
+
+                    List<Employee> employees = new List<Employee>();
+                    var filterMembers = $"(&(objectCategory=user)(memberOf={entity.Dn})(givenName=*))";
+                    var members = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterMembers, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+                    foreach (var member in members.Entries)
+                    {
+                        employees.Add(new Employee()
                         {
-                            // If dns is not configured to connect to a domain
-                            // information about the domain could not be retrieved.
-                        }
-
-                        activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
-
-                        groups.Add(activeDirectoryGroup);
+                            Id = GetAttributeGUID(member),
+                            FirstName = TryGetAttribute(member, "givenName"),
+                            LastName = TryGetAttribute(member, "sn"),
+                            Email = TryGetAttribute(member, "mail"),
+                            PhoneNumber = TryGetAttribute(member, "telephoneNumber")
+                        });
                     }
+
+                    activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
+                    groups.Add(activeDirectoryGroup);
                 }
             }
+
             return groups.OrderBy(x => x.Group.Name).ToList();
         }
 
-        public async Task AddAdGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)
+        //public List<ActiveDirectoryGroup> GetAdGroups(string server, string userName, string password)
+        //{
+        //    var groups = new List<ActiveDirectoryGroup>();
+
+        //    using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
+        //    {
+        //        GroupPrincipal group = new GroupPrincipal(context);
+        //        PrincipalSearcher search = new PrincipalSearcher(group);
+
+        //        foreach (var found in search.FindAll())
+        //        {
+        //            GroupPrincipal groupPrincipal = found as GroupPrincipal;
+
+        //            if (groupPrincipal != null)
+        //            {
+        //                var activeDirectoryGroup = new ActiveDirectoryGroup()
+        //                {
+        //                    Group = new Group()
+        //                    {
+        //                        Id = groupPrincipal.Guid.ToString(),
+        //                        Name = groupPrincipal.Name,
+        //                        Description = groupPrincipal.Description
+        //                    }
+        //                };
+
+        //                List<Employee> employees = new List<Employee>();
+        //                try
+        //                {
+        //                    foreach (var member in groupPrincipal.GetMembers())
+        //                    {
+        //                        UserPrincipal user = UserPrincipal.FindByIdentity(context, member.Name);
+
+        //                        if (user != null && user.GivenName != null)
+        //                        {
+        //                            employees.Add(new Employee()
+        //                            {
+        //                                Id = user.Guid.ToString(),
+        //                                FirstName = user.GivenName,
+        //                                LastName = user.Surname,
+        //                                Email = user.EmailAddress
+        //                            });
+        //                        }
+        //                    }
+        //                }
+        //                catch (PrincipalOperationException)
+        //                {
+        //                    // If dns is not configured to connect to a domain
+        //                    // information about the domain could not be retrieved.
+        //                }
+
+        //                activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
+
+        //                groups.Add(activeDirectoryGroup);
+        //            }
+        //        }
+        //    }
+        //    return groups.OrderBy(x => x.Group.Name).ToList();
+        //}
+
+        public async Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -197,5 +305,48 @@ namespace HES.Core.Services
                 transactionScope.Complete();
             }
         }
+
+        #region Utils
+
+        private string GetAttributeGUID(DirectoryEntry entry)
+        {
+            return new Guid(entry.Attributes["objectGUID"].GetValues<byte[]>().First()).ToString();
+        }
+
+        private string TryGetAttribute(DirectoryEntry entry, string attr)
+        {
+            DirectoryAttribute directoryAttribute;
+            return entry.Attributes.TryGetValue(attr, out directoryAttribute) == true ? directoryAttribute.GetValues<string>().First() : null;
+        }
+
+        private string[] TryGetAttributeArray(DirectoryEntry entry, string attr)
+        {
+            DirectoryAttribute directoryAttribute;
+            return entry.Attributes.TryGetValue(attr, out directoryAttribute) == true ? directoryAttribute.GetValues<string>().ToArray() : null;
+        }
+
+        private string GetDnFromHost(string hostname)
+        {
+            char separator = '.';
+            var parts = hostname.Split(separator);
+            var dnParts = parts.Select(_ => $"dc={_}");
+            return string.Join(",", dnParts);
+        }
+
+        private string GetFirstDnFromHost(string hostname)
+        {
+            char separator = '.';
+            var parts = hostname.Split(separator);
+            return parts[0];
+        }
+
+        private string GetNameFromDn(string dn)
+        {
+            char separator = ',';
+            var parts = dn.Split(separator);
+            return parts[0].Replace("CN=", string.Empty);
+        }
+
+        #endregion
     }
 }

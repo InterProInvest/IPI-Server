@@ -2,9 +2,9 @@
 
 namespace HES.Core.Models.Web.AppSettings
 {
-    public class Domain
+    public class DomainSettings
     {
         [Required]
-        public string IpAddress { get; set; }
+        public string Host { get; set; }
     }
 }

@@ -16,17 +16,17 @@ namespace HES.Core.Services
             _appSettingsRepository = appSettingsRepository;
         }
 
-        public async Task<Licensing> GetLicensingSettingsAsync()
+        public async Task<LicensingSettings> GetLicensingSettingsAsync()
         {
             var licensing = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Licensing);
             if (licensing == null)
             {
-                return new Licensing();
+                return new LicensingSettings();
             }
-            return JsonConvert.DeserializeObject<Licensing>(licensing.Value);
+            return JsonConvert.DeserializeObject<LicensingSettings>(licensing.Value);
         }
 
-        public async Task SetLicensingSettingsAsync(Licensing licensing)
+        public async Task SetLicensingSettingsAsync(LicensingSettings licensing)
         {
             var json = JsonConvert.SerializeObject(licensing);
 
@@ -80,17 +80,17 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task<Domain> GetDomainSettingsAsync()
+        public async Task<DomainSettings> GetDomainSettingsAsync()
         {
             var domain = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
             if (domain == null)
             {
-                return new Domain();
+                return new DomainSettings();
             }
-            return JsonConvert.DeserializeObject<Domain>(domain.Value);
+            return JsonConvert.DeserializeObject<DomainSettings>(domain.Value);
         }
 
-        public async Task SetDomainSettingsAsync(Domain domain)
+        public async Task SetDomainSettingsAsync(DomainSettings domain)
         {
             var json = JsonConvert.SerializeObject(domain);
 
