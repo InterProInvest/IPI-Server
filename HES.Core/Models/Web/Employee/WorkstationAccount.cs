@@ -32,7 +32,8 @@ namespace HES.Core.Models
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        [NotMapped]
+  
+        public bool UpdateAdPassword { get; set; }
         public bool Skip { get; set; }
     }
 

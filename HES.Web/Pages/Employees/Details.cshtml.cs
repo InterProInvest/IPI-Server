@@ -14,6 +14,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using HES.Core.Utilities;
 using HES.Core.Enums;
+using HES.Core.Models.ActiveDirectory;
 
 namespace HES.Web.Pages.Employees
 {
@@ -23,6 +24,8 @@ namespace HES.Web.Pages.Employees
         private readonly IDeviceService _deviceService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly ITemplateService _templateService;
+        private readonly IAppSettingsService _appSettingsService;
+        private readonly ILdapService _ldapService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSenderService _emailSender;
@@ -32,6 +35,7 @@ namespace HES.Web.Pages.Employees
         public IList<Account> Accounts { get; set; }
         public IList<SharedAccount> SharedAccounts { get; set; }
         public WorkstationAccount WorkstationAccount { get; set; }
+        public ActiveDirectoryCredential ActiveDirectoryCredential { get; set; }
 
         public Device Device { get; set; }
         public Employee Employee { get; set; }
@@ -51,11 +55,15 @@ namespace HES.Web.Pages.Employees
         public SelectList WorkstationAccountTypeList { get; set; }
         [ViewData]
         public SelectList SharedAccountIdList { get; set; }
+        [ViewData]
+        public string Host { get; set; }
 
         public DetailsModel(IEmployeeService employeeService,
                             IDeviceService deviceService,
                             ISharedAccountService sharedAccountService,
                             ITemplateService templateService,
+                            IAppSettingsService appSettingsService,
+                            ILdapService ldapService,
                             IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                             UserManager<ApplicationUser> userManager,
                             IEmailSenderService emailSender,
@@ -65,6 +73,8 @@ namespace HES.Web.Pages.Employees
             _deviceService = deviceService;
             _sharedAccountService = sharedAccountService;
             _templateService = templateService;
+            _appSettingsService = appSettingsService;
+            _ldapService = ldapService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _userManager = userManager;
             _emailSender = emailSender;
@@ -397,9 +407,8 @@ namespace HES.Web.Pages.Employees
             EmployeeId = id;
             Templates = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
             WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-
-            //Devices = await _deviceService.DeviceQuery().Where(d => d.EmployeeId == id).ToListAsync();
-
+            var domain = await _appSettingsService.GetDomainSettingsAsync();
+            Host = domain.Host == null ? "host" : domain.Host;
             return Partial("_CreatePersonalAccount", this);
         }
 
@@ -438,7 +447,7 @@ namespace HES.Web.Pages.Employees
             return RedirectToPage("./Details", new { id });
         }
 
-        public async Task<IActionResult> OnPostCreatePersonalWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
+        public async Task<IActionResult> OnPostCreatePersonalWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId, ActiveDirectoryCredential activeDirectoryCredential)
         {
             var id = employeeId;
 
@@ -452,6 +461,10 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(employeeId));
+                if (workstationAccount.UpdateAdPassword)
+                {
+                    await _ldapService.SetUserPasswordAsync(employeeId, workstationAccount.Password, activeDirectoryCredential);
+                }
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)

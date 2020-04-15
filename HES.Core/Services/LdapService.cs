@@ -156,6 +156,33 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(new Uri($"ldaps://{credentials.Host}:636"));
+                connection.Bind(LdapAuthType.Simple, new LdapCredential() { UserName = @$"addc\{credentials.UserName}", Password = credentials.Password });
+
+                var objectGUID = GetObjectGuid(employeeId);
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+                await connection.ModifyAsync(new LdapModifyEntry
+                {
+                    Dn = user.Entries.First().Dn,
+                    Attributes = new List<LdapModifyAttribute>
+                        {
+                            new LdapModifyAttribute
+                            {
+                                LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                Type = "userPassword",
+                                Values = new List<string> { password }
+                            }
+                        }
+                });
+            }
+
+        }
+
         public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials)
         {
             var groups = new List<ActiveDirectoryGroup>();
@@ -345,6 +372,13 @@ namespace HES.Core.Services
             char separator = ',';
             var parts = dn.Split(separator);
             return parts[0].Replace("CN=", string.Empty);
+        }
+
+        private string GetObjectGuid(string guid)
+        {
+            var ba = new Guid(guid).ToByteArray();
+            var hex = BitConverter.ToString(ba).Insert(0, @"\").Replace("-", @"\");
+            return hex;
         }
 
         #endregion
