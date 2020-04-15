@@ -74,7 +74,7 @@
         </form>
     </div>
     <div class="tab-pane fade" id="pills-workstation" role="tabpanel" aria-labelledby="pills-workstation-tab">
-        <form id="wsAccount" method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);" asp-page-handler="CreatePersonalWorkstationAccount">
+        <form id="accForm" method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);" asp-page-handler="CreatePersonalWorkstationAccount">
             <input type="hidden" value="@ViewBag.EmployeeId" name="employeeId" />
             <div class="form-group">
                 <label asp-for="WorkstationAccount.Name" class="text-gray"></label>
@@ -146,7 +146,7 @@
 
     function wsAccSubmit() {
         if ($('#updateAdPassword').prop('checked')) {
-            var valid = $('#wsAccount').valid();
+            var valid = $('#accForm').valid();
             if (valid) {
                 $('#secondModalDialog').modal('show');
             }
@@ -154,6 +154,6 @@
         }
         $('#adUserName').val('user');
         $('#adPassword').val('password');
-        $('#wsAccount').submit();
+        $('#accForm').submit();
     }
 </script>

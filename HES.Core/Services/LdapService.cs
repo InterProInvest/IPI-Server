@@ -79,56 +79,6 @@ namespace HES.Core.Services
             return users.OrderBy(x => x.Employee.FullName).ToList();
         }
 
-        //public List<ActiveDirectoryUser> GetAdUsers(string server, string userName, string password)
-        //{
-        //    var users = new List<ActiveDirectoryUser>();
-
-        //    using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
-        //    {
-        //        UserPrincipal user = new UserPrincipal(context);
-        //        PrincipalSearcher search = new PrincipalSearcher(user);
-
-        //        foreach (var found in search.FindAll())
-        //        {
-        //            UserPrincipal userPrincipal = found as UserPrincipal;
-
-        //            if (userPrincipal != null && userPrincipal.GivenName != null)
-        //            {
-        //                var activeDirectoryUser = new ActiveDirectoryUser()
-        //                {
-        //                    Employee = new Employee()
-        //                    {
-        //                        Id = userPrincipal.Guid.ToString(),
-        //                        FirstName = userPrincipal.GivenName,
-        //                        LastName = userPrincipal.Surname,
-        //                        Email = userPrincipal.EmailAddress
-        //                    }
-        //                };
-
-        //                try
-        //                {
-        //                    activeDirectoryUser.Groups = userPrincipal.GetGroups(context)
-        //                        .Select(s => new Group()
-        //                        {
-        //                            Id = s.Guid.ToString(),
-        //                            Name = s.Name,
-        //                            Description = s.Description
-        //                        })
-        //                        .ToList();
-        //                }
-        //                catch (PrincipalOperationException)
-        //                {
-        //                    // If dns is not configured to connect to a domain
-        //                    // information about the domain could not be retrieved.
-        //                }
-
-        //                users.Add(activeDirectoryUser);
-        //            }
-        //        }
-        //    }
-        //    return users.OrderBy(x => x.Employee.FullName).ToList();
-        //}
-
         public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -233,65 +183,6 @@ namespace HES.Core.Services
 
             return groups.OrderBy(x => x.Group.Name).ToList();
         }
-
-        //public List<ActiveDirectoryGroup> GetAdGroups(string server, string userName, string password)
-        //{
-        //    var groups = new List<ActiveDirectoryGroup>();
-
-        //    using (var context = new PrincipalContext(ContextType.Domain, server, userName, password))
-        //    {
-        //        GroupPrincipal group = new GroupPrincipal(context);
-        //        PrincipalSearcher search = new PrincipalSearcher(group);
-
-        //        foreach (var found in search.FindAll())
-        //        {
-        //            GroupPrincipal groupPrincipal = found as GroupPrincipal;
-
-        //            if (groupPrincipal != null)
-        //            {
-        //                var activeDirectoryGroup = new ActiveDirectoryGroup()
-        //                {
-        //                    Group = new Group()
-        //                    {
-        //                        Id = groupPrincipal.Guid.ToString(),
-        //                        Name = groupPrincipal.Name,
-        //                        Description = groupPrincipal.Description
-        //                    }
-        //                };
-
-        //                List<Employee> employees = new List<Employee>();
-        //                try
-        //                {
-        //                    foreach (var member in groupPrincipal.GetMembers())
-        //                    {
-        //                        UserPrincipal user = UserPrincipal.FindByIdentity(context, member.Name);
-
-        //                        if (user != null && user.GivenName != null)
-        //                        {
-        //                            employees.Add(new Employee()
-        //                            {
-        //                                Id = user.Guid.ToString(),
-        //                                FirstName = user.GivenName,
-        //                                LastName = user.Surname,
-        //                                Email = user.EmailAddress
-        //                            });
-        //                        }
-        //                    }
-        //                }
-        //                catch (PrincipalOperationException)
-        //                {
-        //                    // If dns is not configured to connect to a domain
-        //                    // information about the domain could not be retrieved.
-        //                }
-
-        //                activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
-
-        //                groups.Add(activeDirectoryGroup);
-        //            }
-        //        }
-        //    }
-        //    return groups.OrderBy(x => x.Group.Name).ToList();
-        //}
 
         public async Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)
         {

@@ -57,6 +57,8 @@ namespace HES.Web.Pages.Employees
         public SelectList SharedAccountIdList { get; set; }
         [ViewData]
         public string Host { get; set; }
+        [ViewData]
+        public bool IsDomain { get; set; }
 
         public DetailsModel(IEmployeeService employeeService,
                             IDeviceService deviceService,
@@ -459,12 +461,12 @@ namespace HES.Web.Pages.Employees
             }
             try
             {
-                await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(employeeId));
                 if (workstationAccount.UpdateAdPassword)
                 {
                     await _ldapService.SetUserPasswordAsync(employeeId, workstationAccount.Password, activeDirectoryCredential);
                 }
+                await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(employeeId));
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -538,10 +540,19 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
+            var domain = await _appSettingsService.GetDomainSettingsAsync();
+            Host = domain.Host == null ? "host" : domain.Host;
+
+            if (Host != "host")
+            {
+                var part = Host.Split(".")[0];
+                IsDomain = DeviceAccount.Login.Contains(part);
+            }
+
             return Partial("_EditPersonalAccountPwd", this);
         }
 
-        public async Task<IActionResult> OnPostEditPersonalAccountPwdAsync(Account deviceAccount, AccountPassword accountPassword)
+        public async Task<IActionResult> OnPostEditPersonalAccountPwdAsync(Account deviceAccount, AccountPassword accountPassword, ActiveDirectoryCredential activeDirectoryCredential, bool updateAdPwd = false)
         {
             var id = deviceAccount.EmployeeId;
 
@@ -554,6 +565,10 @@ namespace HES.Web.Pages.Employees
 
             try
             {
+                if (updateAdPwd)
+                {
+                    await _ldapService.SetUserPasswordAsync(deviceAccount.EmployeeId, accountPassword.Password, activeDirectoryCredential);
+                }
                 await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
