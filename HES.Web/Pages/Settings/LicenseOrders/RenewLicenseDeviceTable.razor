@@ -1,4 +1,4 @@
-﻿<input type="text" @bind-value="SearchText" @bind-value:event="oninput" class="form-control is-search m-2" placeholder="Search">
+﻿<input type="text" @bind-value="SearchText" @bind-value:event="oninput" class="form-control is-search m-2" placeholder="Search" />
 <table id="licensedDevices" class="display table table-hover inside-scrollbar w-100">
     <thead>
         <tr>
@@ -16,7 +16,7 @@
     <tbody>
         @foreach (var device in LicensedDevices.Where(x => x.Id.Contains(SearchText, StringComparison.OrdinalIgnoreCase)))
         {
-            <tr>
+            <tr @key="device.Id">
                 <td class="table-col-menu">
                     <div class="custom-control custom-checkbox">
                         <input type="checkbox" class="custom-control-input" name="licensedDevicesIds" id="licensedDevices_@device.Id" value="@device.Id">
