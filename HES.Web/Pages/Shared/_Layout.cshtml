@@ -58,15 +58,23 @@
                 </ul>
             </nav>
             <!-- Main -->
-            <div class="custom-content p-4">    
-                <component type="typeof(ModalDialog)" render-mode="Server"/>
+            <div class="custom-content p-4">
+                <component type="typeof(ModalDialog)" render-mode="ServerPrerendered" />
                 <component type="typeof(Toast)" render-mode="ServerPrerendered" />
                 <partial name="_SpinnerPartial" />
                 @RenderBody()
             </div>
         </div>
     </div>
-    <script src="_framework/blazor.server.js"></script>
+    @*<script src="_framework/blazor.server.js"></script>*@
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            configureSignalR: function (builder) {
+                builder.configureLogging("trace");
+            }
+        });
+    </script>
     <!-- JQuery -->
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
@@ -75,8 +83,6 @@
     <script src="~/lib/datatebles/dataTables.bootstrap4.min.js"></script>
     <script src="~/lib/datatebles/dataTables.responsive.js"></script>
     <script src="~/lib/datatebles/dataTables.ip-adress.js"></script>
-    <!-- Bootstrap custom file input JS -->
-    <script src="~/lib/bs-custom-file-input/bs-custom-file-input.js"></script>
     <!-- DatePicker JS -->
     <script src="~/lib/air-datepicker/datepicker.min.js"></script>
     <!-- Main JS -->
