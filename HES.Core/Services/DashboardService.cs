@@ -36,7 +36,7 @@ namespace HES.Core.Services
 
         public string GetServerVersion()
         {
-            return AppVersionConstants.Version;
+            return ServerConstants.Version;
         }
 
         public async Task<int> GetDeviceTasksCount()

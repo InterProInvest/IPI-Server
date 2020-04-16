@@ -44,9 +44,9 @@
     <EditForm Model="@domain" OnValidSubmit="@UpdateDomainSettingsAsync">
         <DataAnnotationsValidator />
         <div class="form-group">
-            <label class="control-label text-gray">IP Address</label>
-            <InputText id="serverName" @bind-Value="domain.IpAddress" class="form-control text-navyblue" />
-            <ValidationMessage For="@(() => domain.IpAddress)" class="text-danger" />
+            <label class="control-label text-gray">Domain</label>
+            <InputText id="serverName" @bind-Value="domain.Host" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => domain.Host)" class="text-danger" />
         </div>
         <div class="form-group mt-4 mb-0">
             <button type="submit" class="btn btn-primary">

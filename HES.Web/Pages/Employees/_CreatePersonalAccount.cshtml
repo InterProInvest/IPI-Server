@@ -74,7 +74,7 @@
         </form>
     </div>
     <div class="tab-pane fade" id="pills-workstation" role="tabpanel" aria-labelledby="pills-workstation-tab">
-        <form method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);">
+        <form id="accForm" method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);" asp-page-handler="CreatePersonalWorkstationAccount">
             <input type="hidden" value="@ViewBag.EmployeeId" name="employeeId" />
             <div class="form-group">
                 <label asp-for="WorkstationAccount.Name" class="text-gray"></label>
@@ -105,9 +105,18 @@
                 <input asp-for="WorkstationAccount.ConfirmPassword" class="form-control text-navyblue" autocomplete="new-password" />
                 <span asp-validation-for="WorkstationAccount.ConfirmPassword" class="text-danger"></span>
             </div>
-            <div class="form-group m-0 text-right">
+            <div id="updateAdPasswordWrapper" class="form-group d-none">
+                <div class="custom-control custom-checkbox">
+                    <input id="updateAdPassword" type="checkbox" class="custom-control-input" asp-for="WorkstationAccount.UpdateAdPassword" />
+                    <label class="custom-control-label" for="updateAdPassword">Update the password in the AD</label>
+                </div>
+            </div>
+            <input type="hidden" asp-for="ActiveDirectoryCredential.Host" value="@ViewBag.Host" />
+            <input id="adUserName" type="hidden" asp-for="ActiveDirectoryCredential.UserName" />
+            <input id="adPassword" type="hidden" asp-for="ActiveDirectoryCredential.Password" />
+            <div class="text-right">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <input type="submit" value="Create" class="btn btn-primary" asp-page-handler="CreatePersonalWorkstationAccount" />
+                <input type="button" value="Create" class="btn btn-primary" onclick="wsAccSubmit()" />
             </div>
         </form>
     </div>
@@ -123,12 +132,28 @@
 
     $(document).on('change', '#workstation_account_type', function () {
         if ($(this).find('option:selected').text() === 'Domain') {
-            $('#domain').val("");
             $('#domain_group').removeClass("d-none");
+            $('#domain').val("");
+            $('#updateAdPasswordWrapper').removeClass("d-none");
         }
         else {
             $('#domain_group').addClass("d-none");
             $('#domain').val("domain");
+            $('#updateAdPasswordWrapper').addClass("d-none");
+            $("#updateAdPassword").prop("checked", false);
         }
     });
+
+    function wsAccSubmit() {
+        if ($('#updateAdPassword').prop('checked')) {
+            var valid = $('#accForm').valid();
+            if (valid) {
+                $('#secondModalDialog').modal('show');
+            }
+            return false;
+        }
+        $('#adUserName').val('user');
+        $('#adPassword').val('password');
+        $('#accForm').submit();
+    }
 </script>

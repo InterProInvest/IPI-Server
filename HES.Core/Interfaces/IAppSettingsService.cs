@@ -5,11 +5,11 @@ namespace HES.Core.Interfaces
 {
     public interface IAppSettingsService
     {
-        Task<Licensing> GetLicensingSettingsAsync();
-        Task SetLicensingSettingsAsync(Licensing licensing);
+        Task<LicensingSettings> GetLicensingSettingsAsync();
+        Task SetLicensingSettingsAsync(LicensingSettings licensing);
         Task<ServerSettings> GetServerSettingsAsync();
         Task SetServerSettingsAsync(ServerSettings server);
-        Task<Domain> GetDomainSettingsAsync();
-        Task SetDomainSettingsAsync(Domain domain);
+        Task<DomainSettings> GetDomainSettingsAsync();
+        Task SetDomainSettingsAsync(DomainSettings domain);
     }
 }

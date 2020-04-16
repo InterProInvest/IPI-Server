@@ -2,10 +2,11 @@
 
 namespace HES.Core.Models.ActiveDirectory
 {
-    public class ActiveDirectoryLogin
+    public class ActiveDirectoryCredential
     {
         [Required]
-        public string Server { get; set; }
+        [Display(Name = "Domain")]
+        public string Host { get; set; }
         [Required]
         [Display(Name = "User Name")]
         public string UserName { get; set; }

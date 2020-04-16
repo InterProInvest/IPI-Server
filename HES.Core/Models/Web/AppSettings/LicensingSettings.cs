@@ -2,7 +2,7 @@
 
 namespace HES.Core.Models.Web.AppSettings
 {
-    public class Licensing
+    public class LicensingSettings
     {
         [Required]
         public string ApiKey { get; set; }
