@@ -12,7 +12,7 @@ else
                 <div class="form-control-feedback">
                     <img class="img-size" src="~/svg/action/search.svg" />
                 </div>
-                <input id="devices_searchbox" type="text" class="form-control" placeholder="Search">
+                <input id="devices_searchbox" type="text" class="form-control" placeholder="Search" oninput="inputText()">
             </div>
         </div>
     </div>
@@ -23,10 +23,10 @@ else
             <thead>
                 <tr>
                     <th class="table-col-menu">
-                        <div class="custom-control custom-checkbox">
+                        @*<div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="checkbox_all">
                             <label class="custom-control-label" for="checkbox_all"></label>
-                        </div>
+                        </div>*@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => Model.Devices.FirstOrDefault().Id)
@@ -38,8 +38,8 @@ else
                 {
                     <tr>
                         <td class="table-col-menu">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" name="selectedDevices" id="@device.Id" value="@device.Id">
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" name="selectedDevices" id="@device.Id" value="@device.Id">
                                 <label class="custom-control-label" for="@device.Id"></label>
                             </div>
                         </td>
@@ -94,7 +94,7 @@ else
     // On submit
     $("#add_device").on("submit", function () {
         var devices = [];
-        device_table.$('input[type="checkbox"]').each(function () {
+        device_table.$('input[type="radio"]:checked').each(function () {
             devices.push($(this).val());
         });
         // Check if not selected
@@ -106,9 +106,15 @@ else
         device_table.search('').columns().search('').draw();
     })
 
-    $("input[type='checkbox']").change(function () {
+    $("input[type='radio']").change(function () {
         if (this.checked) {
             $('.dataTables_scroll').css("border", "1px solid #ccc")
         }
     });
+
+    function inputText() {
+        device_table.$('input[type="radio"]:checked').each(function () {
+            $(this).prop('checked', false);
+        });
+    }
 </script>
