@@ -9,7 +9,7 @@
 }
 else
 {
-    <h5 class="text-gray mb-4 ">You want to delete employee @Model.Employee.FullName? Also all events and sessions will be deleted.</h5>
+    <h5 class="text-gray mb-4 text-break">You want to delete employee @Model.Employee.FullName? Also all events and sessions will be deleted.</h5>
 
     <form method="post" class="text-right">
         <input type="hidden" asp-for="Employee.Id" name="id" />
