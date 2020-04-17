@@ -930,6 +930,10 @@ namespace HES.Core.Services
             if (employee.Devices.Count == 0)
                 throw new Exception("Employee has no device");
 
+            var isPrimary = employee.PrimaryAccountId == accountId;
+            if (isPrimary)
+                employee.PrimaryAccountId = null;
+
             account.Deleted = true;
             account.UpdatedAt = DateTime.UtcNow;
             string[] properties = { nameof(Account.Deleted), nameof(Account.UpdatedAt) };
@@ -949,7 +953,10 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await _accountService.UpdateOnlyPropAsync(account, properties);
+                if (isPrimary)
+                    await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { nameof(Employee.PrimaryAccountId) });
+
+                await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.Deleted), nameof(Account.UpdatedAt) });
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
                 await _deviceService.UpdateNeedSyncAsync(employee.Devices, true);
                 transactionScope.Complete();

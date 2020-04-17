@@ -39,9 +39,6 @@ namespace HES.Core.Entities
         [ForeignKey("PositionId")]
         public Position Position { get; set; }
 
-        [ForeignKey("PrimaryAccountId")]
-        public Account Account { get; set; }
-
         [NotMapped]
         [Display(Name = "Name")]
         public string FullName => $"{FirstName} {LastName}";
