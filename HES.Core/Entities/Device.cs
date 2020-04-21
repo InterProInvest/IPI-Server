@@ -26,7 +26,13 @@ namespace HES.Core.Entities
         [Required]
         public string Firmware { get; set; }
 
-        public DeviceState State { get; set; }
+        public DeviceState Status { get; set; } // Todo set to VaultStatus
+
+        [Display(Name = "Status Reason")]
+        public VaultStatusReason StatusReason { get; set; }
+
+        [Display(Name = "Status Description")]
+        public string StatusDescription { get; set; }
 
         [Display(Name = "Last Synced")]
         public DateTime? LastSynced { get; set; }
@@ -34,7 +40,7 @@ namespace HES.Core.Entities
         public bool NeedSync { get; set; }
 
         public string EmployeeId { get; set; }
-        
+
         [Required]
         public string AcceessProfileId { get; set; }
 
@@ -44,12 +50,13 @@ namespace HES.Core.Entities
 
         public bool HasNewLicense { get; set; }
 
+
         [Display(Name = "License Status")]
         public LicenseStatus LicenseStatus { get; set; }
 
         [Display(Name = "License End Date")]
         public DateTime? LicenseEndDate { get; set; }
-        
+
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
 
@@ -59,5 +66,5 @@ namespace HES.Core.Entities
 
         [NotMapped]
         public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);
-    }    
+    }
 }

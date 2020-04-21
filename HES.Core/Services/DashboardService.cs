@@ -160,7 +160,7 @@ namespace HES.Core.Services
 
             var deviceLock = await _deviceService
                 .DeviceQuery()
-                .Where(d => d.State == DeviceState.Locked)
+                .Where(d => d.Status == DeviceState.Locked)
                 .CountAsync();
 
             if (deviceLock > 0)
@@ -176,7 +176,7 @@ namespace HES.Core.Services
 
             var deviceError = await _deviceService
                .DeviceQuery()
-               .Where(d => d.State == DeviceState.Error)
+               .Where(d => d.Status == DeviceState.Error)
                .CountAsync();
 
             if (deviceError > 0)

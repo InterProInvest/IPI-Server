@@ -2,6 +2,8 @@
 {
 	public enum VaultStatus
 	{
+		Ready,
+		Reserved,
 		Active,
 		Deactivated,
 		Compromised,

@@ -78,14 +78,14 @@ namespace HES.Core.Services
                     //await _accountService.UpdateOnlyPropAsync(account, properties.ToArray());
                     break;
                 case TaskOperation.Wipe:
-                    device.State = Enums.DeviceState.OK;
+                    device.Status = Enums.DeviceState.OK;
                     device.MasterPassword = null;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.State), nameof(Device.MasterPassword) });
+                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status), nameof(Device.MasterPassword) });
                     await _licenseService.DiscardLicenseAppliedAsync(device.Id);
                     break;
                 case TaskOperation.UnlockPin:
-                    device.State = Enums.DeviceState.OK;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.State) });
+                    device.Status = Enums.DeviceState.OK;
+                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status) });
                     break;
                 case TaskOperation.Link:
                     device.MasterPassword = deviceTask.Password;

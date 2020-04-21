@@ -50,6 +50,7 @@ namespace HES.Infrastructure
         public DbSet<GroupMembership> GroupMemberships { get; set; }
         public DbSet<SoftwareVault> SoftwareVaults { get; set; }
         public DbSet<SoftwareVaultInvitation> SoftwareVaultInvitations { get; set; }
+        public DbSet<HardwareVaultActivation> HardwareVaultActivations { get; set; }
 
 
         public DbQuery<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
