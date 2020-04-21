@@ -289,7 +289,7 @@ namespace HES.Web.Pages.Employees
 
             Devices = await _deviceService
                 .DeviceQuery()
-                .Where(d => d.EmployeeId == null && d.State == DeviceState.OK)
+                .Where(d => d.EmployeeId == null && d.Status == DeviceState.OK)
                 .ToListAsync();
 
             return Partial("_AddDevice", this);

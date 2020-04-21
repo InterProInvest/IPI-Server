@@ -248,7 +248,7 @@ namespace HES.Core.Services
 
         private async Task CheckStateAsync(RemoteDevice remoteDevice, Device device)
         {
-            switch (device.State)
+            switch (device.Status)
             {
                 case Enums.DeviceState.OK:
                 case Enums.DeviceState.Locked:

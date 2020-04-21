@@ -90,7 +90,7 @@ namespace HES.Web.Pages.Devices
                 .DeviceQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
-                .Where(d => d.State == DeviceState.Locked)
+                .Where(d => d.Status == DeviceState.Locked)
                 .ToListAsync();
 
             ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
@@ -108,7 +108,7 @@ namespace HES.Web.Pages.Devices
                 .DeviceQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
-                .Where(d => d.State == DeviceState.Error)
+                .Where(d => d.Status == DeviceState.Error)
                 .ToListAsync();
 
             ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");

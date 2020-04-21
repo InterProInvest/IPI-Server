@@ -53,7 +53,7 @@
                 @Html.DisplayNameFor(model => model.Devices[0].DeviceAccessProfile)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Devices[0].State)
+                @Html.DisplayNameFor(model => model.Devices[0].Status)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Devices[0].LastSynced)
@@ -122,7 +122,7 @@
                     @Html.DisplayFor(modelItem => item.DeviceAccessProfile.Name)
                 </td>
                 <td>
-                    <span class="@(item.IsOnline == true ? "state-connected" : "")">@Html.DisplayFor(modelItem => item.State)</span>
+                    <span class="@(item.IsOnline == true ? "state-connected" : "")">@Html.DisplayFor(modelItem => item.Status)</span>
                 </td>
                 <td>
                     @if (item.LastSynced != null)
@@ -165,7 +165,7 @@
                                 <img src="~/svg/action/edit.svg" />
                                 Edit RFID
                             </a>
-                            @if (item.State == Core.Enums.DeviceState.Locked)
+                            @if (item.Status == Core.Enums.DeviceState.Locked)
                             {
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UnlockPin" data-title="Unlock PIN">

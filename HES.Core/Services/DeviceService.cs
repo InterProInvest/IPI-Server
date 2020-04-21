@@ -217,8 +217,8 @@ namespace HES.Core.Services
             device.Battery = battery;
             device.Firmware = firmware;
             //todo - add SetState(Device device, DeviceState newState)
-            if (device.State == DeviceState.OK && locked)
-                device.State = DeviceState.Locked;
+            if (device.Status == DeviceState.OK && locked)
+                device.Status = DeviceState.Locked;
             device.LastSynced = DateTime.UtcNow;
 
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "Battery", "Firmware", "State", "LastSynced" });
@@ -253,7 +253,7 @@ namespace HES.Core.Services
             }
 
             // Update device state
-            device.State = DeviceState.PendingUnlock;
+            device.Status = DeviceState.PendingUnlock;
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "State" });
 
             // Create task
@@ -293,7 +293,7 @@ namespace HES.Core.Services
 
             device.LastSynced = DateTime.UtcNow;
             device.AcceessProfileId = "default";
-            device.State = DeviceState.OK;
+            device.Status = DeviceState.OK;
 
             var properties = new List<string>()
             {
@@ -309,12 +309,12 @@ namespace HES.Core.Services
         {
             var device = await GetDeviceByIdAsync(deviceId);
 
-            if (device.State == deviceState)
+            if (device.Status == deviceState)
             {
                 return;
             }
 
-            device.State = deviceState;
+            device.Status = deviceState;
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "State" });
         }
 
@@ -417,7 +417,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(profileId));
             }
 
-            var state = await _deviceRepository.Query().Where(x => devicesId.Contains(x.Id) && x.State != DeviceState.OK).AsNoTracking().AnyAsync();
+            var state = await _deviceRepository.Query().Where(x => devicesId.Contains(x.Id) && x.Status != DeviceState.OK).AsNoTracking().AnyAsync();
             if (state)
             {
                 throw new Exception("You have chosen a device with a status that does not allow changing the profile.");

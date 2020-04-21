@@ -261,7 +261,7 @@ namespace HES.Core.Services
                     if (device.MasterPassword != null)
                         throw new Exception($"Device {deviceId} already linked to employee");
 
-                    if (device.State != DeviceState.OK)
+                    if (device.Status != DeviceState.OK)
                         throw new Exception($"Device {deviceId} in a status that does not allow linking");
 
                     device.EmployeeId = employeeId;
@@ -302,11 +302,11 @@ namespace HES.Core.Services
 
                 if (device.MasterPassword != null)
                 {
-                    device.State = DeviceState.WaitingForWipe;
+                    device.Status = DeviceState.WaitingForWipe;
                     await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
                 }
 
-                await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.EmployeeId), nameof(Device.AcceessProfileId), nameof(Device.State) });
+                await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.EmployeeId), nameof(Device.AcceessProfileId), nameof(Device.Status) });
 
                 var employee = await _employeeRepository.GetByIdAsync(employeeId);
                 if (employee.Devices.Count() == 0)
