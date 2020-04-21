@@ -14,7 +14,7 @@ namespace HES.Web.Components
         [Parameter] public TItem SelectedItem { get; set; }
         [Parameter] public Func<Task> SelecedItemDblClick { get; set; }
 
-        private async Task OnRowSelected(TItem item)
+        private async Task OnRowSelectedAsync(TItem item)
         {
             SelectedItem = item;
             await SelecedItemChanged.Invoke(SelectedItem);
@@ -30,9 +30,9 @@ namespace HES.Web.Components
             return SelectedItem.Equals(item) ? "table-selected-row" : string.Empty;
         }
 
-        private async Task OnRowDblClick()
+        private async Task OnRowDblClickAsync()
         {
-            await SelecedItemDblClick.Invoke();
+            await SelecedItemDblClick?.Invoke();
         }
     }
 }

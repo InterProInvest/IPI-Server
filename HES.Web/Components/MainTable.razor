@@ -9,7 +9,7 @@
         <tbody>
             @foreach (var item in Items)
             {
-                <tr @onclick="(() => OnRowSelected(item))" @ondblclick="OnRowDblClick" class="table-row @GetRowStyle(item)">@TableRow(item)</tr>
+                <tr @onclick="(() => OnRowSelectedAsync(item))" @ondblclick="OnRowDblClickAsync" class="table-row @GetRowStyle(item)">@TableRow(item)</tr>
             }
         </tbody>
     </table>
