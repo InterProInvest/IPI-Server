@@ -4,10 +4,12 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API.Device;
+using HES.Core.Models.Web;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -69,6 +71,17 @@ namespace HES.Core.Services
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .ToListAsync();
+        }
+
+        public async Task<List<Device>> GetHardwareVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter)
+        {
+            return null;
+        }
+
+        public async Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter)
+        {
+
+            return 0;
         }
 
         public async Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter)
@@ -164,7 +177,7 @@ namespace HES.Core.Services
                         RFID = newDeviceDto.RFID,
                         Battery = 100,
                         Firmware = newDeviceDto.Firmware,
-                        AcceessProfileId = ServerConstants.DefaulAccessProfileId,                        
+                        AcceessProfileId = ServerConstants.DefaulAccessProfileId,
                         ImportedAt = DateTime.UtcNow
                     });
                 }
