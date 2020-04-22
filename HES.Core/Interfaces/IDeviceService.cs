@@ -1,8 +1,10 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Models;
+using HES.Core.Models.Web.HardwareVault;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -15,6 +17,8 @@ namespace HES.Core.Interfaces
         Task<Device> GetDeviceByIdAsync(string id);
         Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
         Task<List<Device>> GetDevicesAsync();
+        Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
+        Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter);
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
         Task<Device> AddDeviceAsync(Device device);
         Task ImportDevicesAsync();

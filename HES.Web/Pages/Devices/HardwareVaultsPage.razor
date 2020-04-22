@@ -1,0 +1,111 @@
+﻿@if (HardwareVaults != null)
+{
+    <LoadingTab />
+}
+else
+{
+    <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
+        <TableHeader>
+            <MainTableHeader Title="@nameof(Device.Id)"
+                             TitleWidth="16"
+                             SortColumn="@nameof(Device.Id)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.MAC)"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.MAC)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.Battery)"
+                             SortColumn="@nameof(Device.Battery)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.Firmware)"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.Firmware)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Profile"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.DeviceAccessProfile.Name)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.Status)"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.Status)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Last Synced"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.LastSynced)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="License Status"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.LicenseStatus)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="License End Date"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.LicenseEndDate)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.Employee)"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.Employee.FullName)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Company"
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.Employee.EmpCompany)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.Id
+            </td>
+            <td>
+                @context.MAC
+            </td>
+            <td>
+                @context.Battery
+            </td>
+            <td>
+                @context.Firmware
+            </td>
+            <td>
+                @context.DeviceAccessProfile.Name
+            </td>
+            <td>
+                @context.Status
+            </td>
+            <td>
+                @context.LastSynced
+            </td>
+            <td>
+                @context.LicenseStatus
+            </td>
+            <td>
+                @context.LicenseEndDate
+            </td>
+            <td>
+                @context.Employee.FullName
+            </td>
+            <td>
+                @context.Employee.EmpCompany
+            </td>
+        </TableRow>
+    </MainTable>
+}
