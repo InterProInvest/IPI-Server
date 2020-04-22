@@ -4,6 +4,7 @@ using HES.Core.Models.Web.HardwareVault;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Devices
@@ -62,6 +63,19 @@ namespace HES.Web.Pages.Devices
         private async Task SortDirectionChangedAsync(ListSortDirection sortDirection)
         {
             SortDirection = sortDirection;
+            await LoadTableDataAsync();
+        }
+
+        private async Task CurrentPageChangedAsync(int currentPage)
+        {
+            CurrentPage = currentPage;
+            await LoadTableDataAsync();
+        }
+
+        private async Task DisplayRowsChangedAsync(int displayRows)
+        {
+            DisplayRows = displayRows;
+            CurrentPage = 1;
             await LoadTableDataAsync();
         }
     }
