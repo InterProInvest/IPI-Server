@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Device;
@@ -149,7 +150,7 @@ namespace HES.Core.Services
                 throw new HideezException(HideezErrorCode.HesFailedEstablishRemoteDeviceConnection);
 
             var device = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == deviceId);
 
@@ -197,7 +198,7 @@ namespace HES.Core.Services
             {
                 if (device.MasterPassword != null)
                 {
-                    await _deviceService.SetDeviceStateAsync(device.Id, Enums.DeviceState.Error);
+                    await _deviceService.SetVaultStatusAsync(device.Id, VaultStatus.Error);
                     throw new Exception("The device was wiped in a non-current server");
                 }
                 else
@@ -226,14 +227,14 @@ namespace HES.Core.Services
             }
         }
 
-        private async Task CheckPassphraseAsync(RemoteDevice remoteDevice, string deviceId)
+        private async Task CheckPassphraseAsync(RemoteDevice remoteDevice, string vaultId)
         {
-            var device = await _deviceService
-              .DeviceQuery()
+            var vault = await _deviceService
+              .VaultQuery()
               .AsNoTracking()
-              .FirstOrDefaultAsync(d => d.Id == deviceId);
+              .FirstOrDefaultAsync(d => d.Id == vaultId);
 
-            var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(device.MasterPassword));
+            var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
 
             try
             {
@@ -241,35 +242,35 @@ namespace HES.Core.Services
             }
             catch (HideezException ex) when (ex.ErrorCode == HideezErrorCode.ERR_KEY_WRONG)
             {
-                await _deviceService.SetDeviceStateAsync(device.Id, Enums.DeviceState.Error);
+                await _deviceService.SetVaultStatusAsync(vault.Id, VaultStatus.Error);
                 throw;
             }
         }
 
         private async Task CheckStateAsync(RemoteDevice remoteDevice, Device device)
         {
-            switch (device.Status)
-            {
-                case Enums.DeviceState.OK:
-                case Enums.DeviceState.Locked:
-                    break;
-                case Enums.DeviceState.PendingUnlock:
-                    await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.UnlockPin);
-                    break;
-                case Enums.DeviceState.Compromized:
-                    // TODO
-                    break;
-                case Enums.DeviceState.Error:
-                    throw new Exception("Something went wrong. (DeviceState Error)");
-                case Enums.DeviceState.WaitingForWipe:
-                    await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.Wipe);
-                    break;
-                case Enums.DeviceState.Disabled:
-                    // TODO
-                    break;
-                default:
-                    throw new Exception("Something went wrong. Unhandled state.");
-            }
+            //switch (device.Status)
+            //{
+            //    case Enums.DeviceState.OK:
+            //    case Enums.DeviceState.Locked:
+            //        break;
+            //    case Enums.DeviceState.PendingUnlock:
+            //        await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.UnlockPin);
+            //        break;
+            //    case Enums.DeviceState.Compromized:
+            //        // TODO
+            //        break;
+            //    case Enums.DeviceState.Error:
+            //        throw new Exception("Something went wrong. (DeviceState Error)");
+            //    case Enums.DeviceState.WaitingForWipe:
+            //        await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.Wipe);
+            //        break;
+            //    case Enums.DeviceState.Disabled:
+            //        // TODO
+            //        break;
+            //    default:
+            //        throw new Exception("Something went wrong. Unhandled state.");
+            //}
         }
 
         private async Task CheckTaskAsync(RemoteDevice remoteDevice, string deviceId, bool primaryAccountOnly)

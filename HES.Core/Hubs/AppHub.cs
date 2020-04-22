@@ -194,7 +194,7 @@ namespace HES.Core.Hubs
                     throw new ArgumentNullException(nameof(dto));
 
                 var exist = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .AsNoTracking()
                     .Where(d => d.Id == dto.DeviceSerialNo)
                     .AnyAsync();
@@ -238,7 +238,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.RFID == rfid);
@@ -259,7 +259,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.MAC == mac);
@@ -280,7 +280,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == deviceId);

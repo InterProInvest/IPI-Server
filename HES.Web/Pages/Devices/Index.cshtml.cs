@@ -69,7 +69,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetLowBatteryAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.Battery <= 30)
@@ -87,10 +87,10 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetDeviceLockedAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
-                .Where(d => d.Status == DeviceState.Locked)
+                .Where(d => d.Status == VaultStatus.Deactivated && d.StatusReason == VaultStatusReason.LockedByInvalidPin)
                 .ToListAsync();
 
             ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
@@ -105,10 +105,10 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetDeviceErrorAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
-                .Where(d => d.Status == DeviceState.Error)
+                .Where(d => d.Status == VaultStatus.Error)
                 .ToListAsync();
 
             ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
@@ -123,7 +123,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetInReserveAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.EmployeeId == null)
@@ -141,7 +141,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetLicenseWarningAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.LicenseStatus == LicenseStatus.Warning)
@@ -159,7 +159,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetLicenseCriticalAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.LicenseStatus == LicenseStatus.Critical)
@@ -177,7 +177,7 @@ namespace HES.Web.Pages.Devices
         public async Task OnGetLicenseExpiredAsync()
         {
             Devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .Include(d => d.Employee.Department.Company)
                 .Where(d => d.LicenseStatus == LicenseStatus.Expired)

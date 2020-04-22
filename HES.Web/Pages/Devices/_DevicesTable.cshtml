@@ -165,7 +165,7 @@
                                 <img src="~/svg/action/edit.svg" />
                                 Edit RFID
                             </a>
-                            @if (item.Status == Core.Enums.DeviceState.Locked)
+                            @if (item.Status == Core.Enums.VaultStatus.Deactivated && item.StatusReason == Core.Enums.VaultStatusReason.LockedByInvalidPin)
                             {
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="UnlockPin" data-title="Unlock PIN">

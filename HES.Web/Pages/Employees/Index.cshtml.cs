@@ -103,13 +103,13 @@ namespace HES.Web.Pages.Employees
         {
             CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             PositionIdList = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            DeviceIdList = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null && d.Status == Core.Enums.DeviceState.OK).ToListAsync(), "Id", "Id");
+            DeviceIdList = new SelectList(await _deviceService.VaultQuery().Where(d => d.EmployeeId == null && d.Status == Core.Enums.VaultStatus.Ready).ToListAsync(), "Id", "Id");
             WorkstationIdList = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
             WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             WorkstationAccountsList = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
 
             Devices = await _deviceService
-               .DeviceQuery()
+               .VaultQuery()
                .Where(d => d.EmployeeId == null)
                .ToListAsync();
 
@@ -275,7 +275,7 @@ namespace HES.Web.Pages.Employees
             }
 
             HasForeignKey = _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(x => x.EmployeeId == id)
                 .Any();
 

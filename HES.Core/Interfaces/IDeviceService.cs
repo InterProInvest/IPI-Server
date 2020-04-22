@@ -11,7 +11,7 @@ namespace HES.Core.Interfaces
 {
     public interface IDeviceService
     {
-        IQueryable<Device> DeviceQuery();
+        IQueryable<Device> VaultQuery();
         Task<Device> GetDeviceByIdAsync(string id);
         Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
         Task<List<Device>> GetDevicesAsync();
@@ -26,8 +26,8 @@ namespace HES.Core.Interfaces
         Task UnlockPinAsync(string deviceId);
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
         Task RemoveEmployeeAsync(string deviceId);
-        Task RestoreDefaultsAsync(string deviceId);
-        Task SetDeviceStateAsync(string deviceId, DeviceState deviceState);
+        //Task RestoreDefaultsAsync(string deviceId);
+        Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
         IQueryable<DeviceAccessProfile> AccessProfileQuery();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
         Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);
