@@ -4,6 +4,98 @@
 }
 else
 {
+    <TableAction>
+        <button class="btn btn-primary" @onclick="SynchronizeDevicesAsync">
+            <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span>Synchronize devices</span>
+        </button>
+
+        @if (SelectedHardwareVault != null)
+        {
+            <button type="button" class="btn btn-light border mx-2" title="Edit RFID">
+                <img class="icon-btn" src="/svg/action/edit.svg" />
+                Edit RFID
+            </button>
+
+            @if (SelectedHardwareVault.Status == VaultStatus.Deactivated && SelectedHardwareVault.StatusReason == VaultStatusReason.LockedByInvalidPin)
+            {
+                <button type="button" class="btn btn-light border mr-2" title="Unlock PIN">
+                    <img class="icon-btn" src="/svg/action/unlock.svg" />
+                    Unlock PIN
+                </button>
+            }
+        }
+    </TableAction>
+
+    <TableFilter SearchTextChanged="SearchTextChangedAsync">
+        <EditForm Model="Filter" OnValidSubmit="LoadTableDataAsync">
+            <div class="row">
+                <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                    <label class="mb-0 text-gray">Start Date</label>
+                    <input type="date" id="filterCreatedAtStartDate" @bind="Filter.StartDate" class="form-control" />
+                </div>
+
+                <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                    <label class="mb-0 text-gray">End Date</label>
+                    <input type="date" id="filterCreatedAtStartDate" @bind="Filter.EndDate" class="form-control" />
+                </div>
+
+                <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                    <label class="mb-0 text-gray">Battery</label>
+                    <InputNumber id="filterBattery" @bind-Value="Filter.Battery" class="form-control" />
+                </div>
+
+                @*<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                    <label class="mb-0 text-gray">ID</label>
+                    <InputText id="filterID" @bind-Value="Filter.Id" class="form-control text-navyblue" />
+                </div>*@
+
+                @*<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Created At End Date</label>
+            <input type="date" id="filterCreatedAtEndDate" @bind="Filter.CreatedAtEndDate" class="form-control" />
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Valid To Start Date</label>
+            <input type="date" id="filterValidToStartDate" @bind="Filter.ValidToStartDate" class="form-control" />
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Valid To End Date</label>
+            <input type="date" id="filterValidToEndDate" @bind="Filter.ValidToEndDate" class="form-control" />
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Status</label>
+            <select id="filterStatus" @bind="Filter.Status" class="form-control">
+                <option selected></option>
+                @foreach (var item in StatusList)
+                {
+                    <option value="@item.Text">@item.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Email</label>
+            <InputText id="filterEmail" @bind-Value="Filter.Email" class="form-control text-navyblue" />
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Employee</label>
+            <InputText id="filterEmployee" @bind-Value="Filter.Employee" class="form-control text-navyblue" />
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Company</label>
+            <InputText id="filterCompany" @bind-Value="Filter.Company" class="form-control text-navyblue" />
+        </div>
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+            <label class="mb-0 text-gray">Department</label>
+            <InputText id="filterDepartment" @bind-Value="Filter.Department" class="form-control text-navyblue" />
+        </div>*@
+                <div class="col align-self-end text-right form-group">
+                    <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                    <input id="submitFilter" type="submit" value="Filter" class="btn btn-primary" />
+                </div>
+            </div>
+        </EditForm>
+    </TableFilter>
+
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
             <th style="width:1px;">
@@ -72,11 +164,11 @@ else
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
-        TitleWidth="12"
-        SortColumn="@nameof(Device.Employee.EmpCompany)"
-        CurrentSortedColumn="@SortedColumn"
-        SortedColumnChanged="SortedColumnChangedAsync"
-        SortDirectionChanged="SortDirectionChangedAsync" />
+                             TitleWidth="12"
+                             SortColumn="@nameof(Device.Employee.EmpCompany)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
         </TableHeader>
         <TableRow>
             <td>
@@ -94,57 +186,51 @@ else
             </td>
             <td>
                 @if (context.Battery >= 30)
-                {
+                    {
                     <img src="/svg/device/battery_full.svg" alt="@context.Battery" />
                     <span>@context.Battery%</span>
-                }
-                else if (context.Battery >= 15 && context.Battery <= 30)
-                {
+                    }
+                    else if (context.Battery >= 15 && context.Battery <= 30)
+                    {
                     <img src="/svg/device/battery_30.svg" alt="@context.Battery" />
                     <span>@context.Battery%</span>
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     <img src="/svg/device/battery_15.svg" alt="@context.Battery" />
                     <span>@context.Battery%</span>
-                }
+                    }
             </td>
             <td>
                 @context.Firmware
             </td>
             <td>
-                @context.DeviceAccessProfile.Name
+                @context.DeviceAccessProfile?.Name
             </td>
             <td>
                 <span class="@(context.IsOnline == true ? "state-connected" : "")">@context.Status</span>
             </td>
             <td>
                 @if (context.LastSynced != null)
-                {
+                    {
                     <span class="d-none">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.LastSynced, TimeZoneInfo.Local).Ticks</span>
                     @TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.LastSynced, TimeZoneInfo.Local)
-                }
+                    }
             </td>
             <td>
                 @context.LicenseStatus
             </td>
             <td>
                 @if (context.LicenseEndDate != null)
-                {
+                    {
                     @context.LicenseEndDate.Value.ToShortDateString()
-                }
+                    }
             </td>
             <td>
-                @if (context.Employee != null)
-                {
-                    @context.Employee.FullName
-                }
+                @context.Employee?.FullName
             </td>
             <td>
-                @if (context.Employee != null)
-                {
-                    @context.Employee.EmpCompany
-                }
+                @context.Employee?.EmpCompany
             </td>
         </TableRow>
     </MainTable>
