@@ -2,7 +2,7 @@
 {
     public enum HardwareVaultActivationStatus
     {
-        Waiting,
+        Pending,
         Activated,
         Failed
     }
