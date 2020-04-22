@@ -28,72 +28,7 @@ else
     </TableAction>
 
     <TableFilter SearchTextChanged="SearchTextChangedAsync">
-        <EditForm Model="Filter" OnValidSubmit="LoadTableDataAsync">
-            <div class="row">
-                <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-                    <label class="mb-0 text-gray">Start Date</label>
-                    <input type="date" id="filterCreatedAtStartDate" @bind="Filter.StartDate" class="form-control" />
-                </div>
-
-                <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-                    <label class="mb-0 text-gray">End Date</label>
-                    <input type="date" id="filterCreatedAtStartDate" @bind="Filter.EndDate" class="form-control" />
-                </div>
-
-                <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-                    <label class="mb-0 text-gray">Battery</label>
-                    <InputNumber id="filterBattery" @bind-Value="Filter.Battery" class="form-control" />
-                </div>
-
-                @*<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-                    <label class="mb-0 text-gray">ID</label>
-                    <InputText id="filterID" @bind-Value="Filter.Id" class="form-control text-navyblue" />
-                </div>*@
-
-                @*<div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Created At End Date</label>
-            <input type="date" id="filterCreatedAtEndDate" @bind="Filter.CreatedAtEndDate" class="form-control" />
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Valid To Start Date</label>
-            <input type="date" id="filterValidToStartDate" @bind="Filter.ValidToStartDate" class="form-control" />
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Valid To End Date</label>
-            <input type="date" id="filterValidToEndDate" @bind="Filter.ValidToEndDate" class="form-control" />
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Status</label>
-            <select id="filterStatus" @bind="Filter.Status" class="form-control">
-                <option selected></option>
-                @foreach (var item in StatusList)
-                {
-                    <option value="@item.Text">@item.Text</option>
-                }
-            </select>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Email</label>
-            <InputText id="filterEmail" @bind-Value="Filter.Email" class="form-control text-navyblue" />
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Employee</label>
-            <InputText id="filterEmployee" @bind-Value="Filter.Employee" class="form-control text-navyblue" />
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Company</label>
-            <InputText id="filterCompany" @bind-Value="Filter.Company" class="form-control text-navyblue" />
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-            <label class="mb-0 text-gray">Department</label>
-            <InputText id="filterDepartment" @bind-Value="Filter.Department" class="form-control text-navyblue" />
-        </div>*@
-                <div class="col align-self-end text-right form-group">
-                    <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
-                    <input id="submitFilter" type="submit" value="Filter" class="btn btn-primary" />
-                </div>
-            </div>
-        </EditForm>
+        <HardVaultFilter FilterChanged="FilteredAsync" />
     </TableFilter>
 
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">

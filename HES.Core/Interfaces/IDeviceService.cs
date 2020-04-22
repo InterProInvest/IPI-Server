@@ -19,6 +19,7 @@ namespace HES.Core.Interfaces
         Task<List<Device>> GetDevicesAsync();
         Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
         Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter);
+        Task<Dictionary<string, string>> GetVaultsFirmwares();
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
         Task<Device> AddDeviceAsync(Device device);
         Task ImportDevicesAsync();

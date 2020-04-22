@@ -128,12 +128,65 @@ namespace HES.Core.Services
 
         public async Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter)
         {
-            return await GetDevicesAsync();
+            var query =  _hardwareVaultRepository
+                .Query()
+                .Include(d => d.DeviceAccessProfile)
+                .Include(d => d.Employee.Department.Company)
+                .AsQueryable();
+
+            // Filter
+            if (filter != null)
+            {
+                if (filter.Battery != null)
+                {
+                    query = query.Where(w => w.Battery == filter.Battery);
+                }
+                if (filter.Firmware != null)
+                {
+                    query = query.Where(w => w.Firmware.Contains(filter.Firmware));
+                }
+                if (filter.LicenseStatus != null)
+                {
+                    query = query.Where(w => w.LicenseStatus == filter.LicenseStatus);
+                }
+                if (filter.EmployeeId != null)
+                {
+                    if (filter.EmployeeId == "N/A")
+                    {
+                        query = query.Where(w => w.EmployeeId == null);
+                    }
+                    else
+                    {
+                        query = query.Where(w => w.EmployeeId == filter.EmployeeId);
+                    }
+                }
+                if (filter.CompanyId != null)
+                {
+                    query = query.Where(w => w.Employee.Department.Company.Id == filter.CompanyId);
+                }
+                if (filter.DepartmentId != null)
+                {
+                    query = query.Where(w => w.Employee.DepartmentId == filter.DepartmentId);
+                }
+                if (filter.StartDate != null && filter.EndDate != null)
+                {
+                    query = query.Where(w => w.LastSynced.HasValue
+                                            && w.LastSynced.Value >= filter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
+                                            && w.LastSynced.Value <= filter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                }
+            }
+
+            return await query.Skip(skip).Take(take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter)
         {
             return await _hardwareVaultRepository.Query().CountAsync();
+        }
+
+        public async Task<Dictionary<string, string>> GetVaultsFirmwares()
+        {
+            return await _hardwareVaultRepository.Query().Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionaryAsync(t => t, t => t);
         }
 
         public async Task<Device> AddDeviceAsync(Device device)

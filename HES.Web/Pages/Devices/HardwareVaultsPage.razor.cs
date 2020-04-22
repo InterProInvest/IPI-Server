@@ -27,19 +27,10 @@ namespace HES.Web.Pages.Devices
         IToastService ToastService { get; set; }
 
         [Inject]
-        IDeviceService DeviceService { get; set; }
-
-        [Inject]
         ILogger<HardwareVaultsPage> Logger { get; set; }
 
         [Inject]
-        public IEmployeeService EmployeeService { get; set; }
-
-        [Inject]
         public IDeviceService HardwareVaultService { get; set; }
-
-        [Inject]
-        public IOrgStructureService OrgStructureService { get; set; }
 
         #endregion
 
@@ -58,21 +49,6 @@ namespace HES.Web.Pages.Devices
         {
             await LoadTableDataAsync();
         }
-
-
-        public SelectList FilterFirmwares { get; set; }
-        public SelectList FilterLicenseStatuses { get; set; }
-        public SelectList FilterEmployees { get; set; }
-        public SelectList FilterCompanies { get; set; }
-
-        public async Task InitializeFilterAsync()
-        {
-            FilterFirmwares = new SelectList(HardwareVaults.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
-            FilterLicenseStatuses = new SelectList(Enum.GetValues(typeof(LicenseStatus)).Cast<LicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            FilterEmployees = new SelectList(await EmployeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            FilterCompanies = new SelectList(await OrgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-        }
-
 
         private async Task LoadTableDataAsync()
         {
@@ -129,9 +105,9 @@ namespace HES.Web.Pages.Devices
             await LoadTableDataAsync();
         }
 
-        private async Task ClearAsync()
+        private async Task FilteredAsync(HardwareVaultFilter filter)
         {
-            Filter = new HardwareVaultFilter();
+            Filter = filter;
             await LoadTableDataAsync();
         }
 
@@ -143,7 +119,7 @@ namespace HES.Web.Pages.Devices
 
             try
             {
-                await DeviceService.ImportDevicesAsync();
+                await HardwareVaultService.ImportDevicesAsync();
                 await LoadTableDataAsync();
             }
             catch (Exception ex)
