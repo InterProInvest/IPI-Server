@@ -32,7 +32,10 @@ namespace HES.Web.Components
 
         private async Task OnRowDblClickAsync()
         {
-            await SelecedItemDblClick?.Invoke();
+            if(SelecedItemDblClick == null)
+                return;
+
+            await SelecedItemDblClick.Invoke();
         }
     }
 }

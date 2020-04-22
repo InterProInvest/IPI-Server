@@ -1,4 +1,4 @@
-﻿@if (HardwareVaults != null)
+﻿@if (HardwareVaults == null)
 {
     <LoadingTab />
 }
@@ -6,6 +6,12 @@ else
 {
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
+            <th style="width:1px;">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="checkbox_all">
+                    <label class="custom-control-label" for="checkbox_all"></label>
+                </div>
+            </th>
             <MainTableHeader Title="@nameof(Device.Id)"
                              TitleWidth="16"
                              SortColumn="@nameof(Device.Id)"
@@ -35,9 +41,9 @@ else
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.State)"
+            <MainTableHeader Title="@nameof(Device.Status)"
                              TitleWidth="12"
-                             SortColumn="@nameof(Device.State)"
+                             SortColumn="@nameof(Device.Status)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
@@ -66,13 +72,20 @@ else
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
-                             TitleWidth="12"
-                             SortColumn="@nameof(Device.Employee.EmpCompany)"
-                             CurrentSortedColumn="@SortedColumn"
-                             SortedColumnChanged="SortedColumnChangedAsync"
-                             SortDirectionChanged="SortDirectionChangedAsync" />
+        TitleWidth="12"
+        SortColumn="@nameof(Device.Employee.EmpCompany)"
+        CurrentSortedColumn="@SortedColumn"
+        SortedColumnChanged="SortedColumnChangedAsync"
+        SortDirectionChanged="SortDirectionChangedAsync" />
         </TableHeader>
         <TableRow>
+            <td>
+                <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                    <input type="checkbox" class="custom-control-input" id="@context.Id" />
+                    @*<input type="checkbox" class="custom-control-input" id="@context.Id" @bind="group.Checked" />*@
+                    <label class="custom-control-label" for="@context.Id"></label>
+                </div>
+            </td>
             <td>
                 @context.Id
             </td>
@@ -80,7 +93,21 @@ else
                 @context.MAC
             </td>
             <td>
-                @context.Battery
+                @if (context.Battery >= 30)
+                {
+                    <img src="/svg/device/battery_full.svg" alt="@context.Battery" />
+                    <span>@context.Battery%</span>
+                }
+                else if (context.Battery >= 15 && context.Battery <= 30)
+                {
+                    <img src="/svg/device/battery_30.svg" alt="@context.Battery" />
+                    <span>@context.Battery%</span>
+                }
+                else
+                {
+                    <img src="/svg/device/battery_15.svg" alt="@context.Battery" />
+                    <span>@context.Battery%</span>
+                }
             </td>
             <td>
                 @context.Firmware
@@ -89,23 +116,42 @@ else
                 @context.DeviceAccessProfile.Name
             </td>
             <td>
-                @context.State
+                <span class="@(context.IsOnline == true ? "state-connected" : "")">@context.Status</span>
             </td>
             <td>
-                @context.LastSynced
+                @if (context.LastSynced != null)
+                {
+                    <span class="d-none">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.LastSynced, TimeZoneInfo.Local).Ticks</span>
+                    @TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.LastSynced, TimeZoneInfo.Local)
+                }
             </td>
             <td>
                 @context.LicenseStatus
             </td>
             <td>
-                @context.LicenseEndDate
+                @if (context.LicenseEndDate != null)
+                {
+                    @context.LicenseEndDate.Value.ToShortDateString()
+                }
             </td>
             <td>
-                @context.Employee.FullName
+                @if (context.Employee != null)
+                {
+                    @context.Employee.FullName
+                }
             </td>
             <td>
-                @context.Employee.EmpCompany
+                @if (context.Employee != null)
+                {
+                    @context.Employee.EmpCompany
+                }
             </td>
         </TableRow>
     </MainTable>
+    <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                DisplayRowsChanged="DisplayRowsChangedAsync"
+                TotalRecords="TotalRecords"
+                CurrentPage="CurrentPage"
+                DisplayRows="DisplayRows"
+                DisplayRecords="HardwareVaults.Count" />
 }
