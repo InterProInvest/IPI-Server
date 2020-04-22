@@ -1,6 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web;
+using HES.Core.Models.Web.HardwareVault;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,7 +38,7 @@ namespace HES.Web.Pages.Devices
             if (currentTotalRows != TotalRecords)
                 CurrentPage = 1;
 
-            HardwareVaults = await HardwareVaultService.GetHardwareVaultsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
+            HardwareVaults = await HardwareVaultService.GetVaultsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
             SelectedHardwareVault = null;
 
             StateHasChanged();

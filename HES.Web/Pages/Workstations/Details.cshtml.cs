@@ -88,7 +88,7 @@ namespace HES.Web.Pages.Workstations
                 WarningMessage = true;
             }
 
-            var deviceQuery = _deviceService.DeviceQuery();
+            var deviceQuery = _deviceService.VaultQuery();
 
             foreach (var proximityDevice in ProximityDevices)
             {

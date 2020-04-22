@@ -26,7 +26,7 @@ namespace HES.Core.Entities
         [Required]
         public string Firmware { get; set; }
 
-        public DeviceState Status { get; set; } // Todo set to VaultStatus
+        public VaultStatus Status { get; set; } // Todo set to VaultStatus
 
         [Display(Name = "Status Reason")]
         public VaultStatusReason StatusReason { get; set; }
@@ -41,10 +41,10 @@ namespace HES.Core.Entities
 
         public string EmployeeId { get; set; }
 
+        public string MasterPassword { get; set; }
+
         [Required]
         public string AcceessProfileId { get; set; }
-
-        public string MasterPassword { get; set; }
 
         public DateTime ImportedAt { get; set; }
 

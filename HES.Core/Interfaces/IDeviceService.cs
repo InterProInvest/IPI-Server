@@ -1,7 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Models;
-using HES.Core.Models.Web;
+using HES.Core.Models.Web.HardwareVault;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,11 +13,11 @@ namespace HES.Core.Interfaces
 {
     public interface IDeviceService
     {
-        IQueryable<Device> DeviceQuery();
+        IQueryable<Device> VaultQuery();
         Task<Device> GetDeviceByIdAsync(string id);
         Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
         Task<List<Device>> GetDevicesAsync();
-        Task<List<Device>> GetHardwareVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
+        Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
         Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter);
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
         Task<Device> AddDeviceAsync(Device device);
@@ -30,8 +30,8 @@ namespace HES.Core.Interfaces
         Task UnlockPinAsync(string deviceId);
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
         Task RemoveEmployeeAsync(string deviceId);
-        Task RestoreDefaultsAsync(string deviceId);
-        Task SetDeviceStateAsync(string deviceId, DeviceState deviceState);
+        //Task RestoreDefaultsAsync(string deviceId);
+        Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
         IQueryable<DeviceAccessProfile> AccessProfileQuery();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
         Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);

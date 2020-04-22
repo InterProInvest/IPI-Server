@@ -43,13 +43,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public async Task OnGetAsync()
         {
             NonLicensedDevices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(d => d.LicenseStatus == LicenseStatus.None || d.LicenseStatus == LicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
 
             LicensedDevices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(d => d.LicenseStatus != LicenseStatus.None)
                 .Where(d => d.LicenseStatus != LicenseStatus.Expired)
                 .AsNoTracking()
@@ -110,7 +110,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             try
             {
-                var devices = await _deviceService.DeviceQuery().Where(x => licensedDevicesIds.Contains(x.Id)).ToListAsync();
+                var devices = await _deviceService.VaultQuery().Where(x => licensedDevicesIds.Contains(x.Id)).ToListAsync();
                 var maxEndDateOfDevices = devices.Select(s => s.LicenseEndDate).Max();
                 if (renewLicenseOrderDto.EndDate <= maxEndDateOfDevices)
                 {

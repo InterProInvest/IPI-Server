@@ -130,12 +130,12 @@ namespace HES.Core.Services
 
         public async Task<int> GetDevicesCountAsync()
         {
-            return await _deviceService.DeviceQuery().CountAsync();
+            return await _deviceService.VaultQuery().CountAsync();
         }
 
         public async Task<int> GetFreeDevicesCountAsync()
         {
-            return await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).CountAsync();
+            return await _deviceService.VaultQuery().Where(d => d.EmployeeId == null).CountAsync();
         }
 
         public async Task<List<DashboardNotify>> GetDevicesNotifyAsync()
@@ -143,7 +143,7 @@ namespace HES.Core.Services
             var list = new List<DashboardNotify>();
 
             var lowBattery = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(d => d.Battery <= 30)
                 .CountAsync();
 
@@ -159,15 +159,15 @@ namespace HES.Core.Services
             }
 
             var deviceLock = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.Status == DeviceState.Locked)
+                .VaultQuery()
+                .Where(d => d.Status == VaultStatus.Deactivated)
                 .CountAsync();
 
             if (deviceLock > 0)
             {
                 list.Add(new DashboardNotify()
                 {
-                    Message = "Device lock",
+                    Message = "Vault deactivated",
                     Count = deviceLock,
                     Page = "/Devices/Index",
                     Handler = "DeviceLocked"
@@ -175,8 +175,8 @@ namespace HES.Core.Services
             }
 
             var deviceError = await _deviceService
-               .DeviceQuery()
-               .Where(d => d.Status == DeviceState.Error)
+               .VaultQuery()
+               .Where(d => d.Status == VaultStatus.Error)
                .CountAsync();
 
             if (deviceError > 0)
@@ -191,7 +191,7 @@ namespace HES.Core.Services
             }
 
             var licenseWarning = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(d => d.LicenseStatus == LicenseStatus.Warning)
                 .AsTracking()
                 .CountAsync();
@@ -208,7 +208,7 @@ namespace HES.Core.Services
             }
 
             var licenseCritical = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(d => d.LicenseStatus == LicenseStatus.Critical)
                 .AsTracking()
                 .CountAsync();
@@ -225,7 +225,7 @@ namespace HES.Core.Services
             }
 
             var licenseExpired = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(d => d.LicenseStatus == LicenseStatus.Expired)
                 .AsTracking()
                 .CountAsync();

@@ -185,7 +185,7 @@ namespace HES.Core.Services
                 throw new Exception("Employee not found");
 
             var devices = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(x => x.EmployeeId == id)
                 .AnyAsync();
 
@@ -256,13 +256,10 @@ namespace HES.Core.Services
                     var device = await _deviceService.GetDeviceByIdAsync(deviceId);
 
                     if (device == null)
-                        throw new Exception($"Device {device} not found");
+                        throw new Exception($"Vault {device} not found");
 
-                    if (device.MasterPassword != null)
-                        throw new Exception($"Device {deviceId} already linked to employee");
-
-                    if (device.Status != DeviceState.OK)
-                        throw new Exception($"Device {deviceId} in a status that does not allow linking");
+                    if (device.Status != VaultStatus.Ready)
+                        throw new Exception($"Vault {deviceId} in a status that does not allow to reserve.");
 
                     device.EmployeeId = employeeId;
                     var masterPassword = GenerateMasterPassword();
@@ -302,7 +299,7 @@ namespace HES.Core.Services
 
                 if (device.MasterPassword != null)
                 {
-                    device.Status = DeviceState.WaitingForWipe;
+                    device.Status = VaultStatus.Deactivated; // TODO set status
                     await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
                 }
 

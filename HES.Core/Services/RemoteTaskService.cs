@@ -78,14 +78,14 @@ namespace HES.Core.Services
                     //await _accountService.UpdateOnlyPropAsync(account, properties.ToArray());
                     break;
                 case TaskOperation.Wipe:
-                    device.Status = Enums.DeviceState.OK;
+                    device.Status = Enums.VaultStatus.Ready;
                     device.MasterPassword = null;
                     await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status), nameof(Device.MasterPassword) });
                     await _licenseService.DiscardLicenseAppliedAsync(device.Id);
                     break;
                 case TaskOperation.UnlockPin:
-                    device.Status = Enums.DeviceState.OK;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status) });
+                    //device.Status = Enums.DeviceState.OK; //TODO
+                    //await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status) });
                     break;
                 case TaskOperation.Link:
                     device.MasterPassword = deviceTask.Password;
@@ -190,7 +190,7 @@ namespace HES.Core.Services
         async Task<ushort> AddDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(x => x.Employee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
@@ -213,7 +213,7 @@ namespace HES.Core.Services
         async Task<ushort> UpdateDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(x => x.Employee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
@@ -246,7 +246,7 @@ namespace HES.Core.Services
         async Task<ushort> DeleteDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(x => x.Employee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
@@ -288,7 +288,7 @@ namespace HES.Core.Services
         async Task<ushort> ProfileDevice(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == task.DeviceId);
