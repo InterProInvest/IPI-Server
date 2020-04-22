@@ -22,6 +22,7 @@ namespace HES.Core.Services
     public class DeviceService : IDeviceService
     {
         private readonly IAsyncRepository<Device> _hardwareVaultRepository;
+        private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
         private readonly IAsyncRepository<DeviceAccessProfile> _deviceAccessProfileRepository;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IAppSettingsService _appSettingsService;
@@ -40,7 +41,7 @@ namespace HES.Core.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        #region Device
+        #region Vault
 
         public IQueryable<Device> VaultQuery()
         {
@@ -323,6 +324,29 @@ namespace HES.Core.Services
 
             vault.Status = vaultStatus;
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.Status) });
+        }
+
+        #endregion
+
+        #region Vault Activation
+
+        public async Task GenerateVaultActivationAsync(string vaultId)
+        {
+            var vaultActivation = new HardwareVaultActivation()
+            {
+                DeviceId = vaultId,
+                AcivationCode = new Random().Next(100000, 999999).ToString(),
+                WrongAttemptsCount = 0,
+                LastWrongAttempt = null,
+                CreatedAt = DateTime.UtcNow,
+                Status = HardwareVaultActivationStatus.Pending
+            };
+            await _hardwareVaultActivationRepository.AddAsync(vaultActivation);
+        }
+
+        public async Task<HardwareVaultActivation> GetVaultActivationAsync(string vaultId)
+        {
+            return await _hardwareVaultActivationRepository.Query().FirstOrDefaultAsync(x => x.DeviceId == vaultId);
         }
 
         #endregion

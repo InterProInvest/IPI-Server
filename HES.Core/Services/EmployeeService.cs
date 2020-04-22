@@ -230,15 +230,15 @@ namespace HES.Core.Services
 
         #endregion
 
-        #region Device
+        #region HardwareVault
 
-        public async Task AddDeviceAsync(string employeeId, string[] devices)
+        public async Task AddDeviceAsync(string employeeId, string[] vaults)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
 
-            if (devices == null)
-                throw new ArgumentNullException(nameof(devices));
+            if (vaults == null)
+                throw new ArgumentNullException(nameof(vaults));
 
             _dataProtectionService.Validate();
 
@@ -247,25 +247,28 @@ namespace HES.Core.Services
                 throw new Exception("Employee not found");
 
             if (employee.Devices?.Count() > 0)
-                throw new Exception("More than one device cannot be added to an employee");
+                throw new Exception("More than one vault cannot be added to an employee");
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                foreach (var deviceId in devices)
+                foreach (var vaultId in vaults)
                 {
-                    var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+                    var vault = await _deviceService.GetDeviceByIdAsync(vaultId);
 
-                    if (device == null)
-                        throw new Exception($"Vault {device} not found");
+                    if (vault == null)
+                        throw new Exception($"Vault {vault} not found");
 
-                    if (device.Status != VaultStatus.Ready)
-                        throw new Exception($"Vault {deviceId} in a status that does not allow to reserve.");
+                    if (vault.Status != VaultStatus.Ready)
+                        throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
 
-                    device.EmployeeId = employeeId;
+                    vault.EmployeeId = employeeId;
+                    vault.Status = VaultStatus.Reserved;
+
                     var masterPassword = GenerateMasterPassword();
 
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.EmployeeId) });
-                    await _deviceTaskService.AddLinkAsync(device.Id, _dataProtectionService.Encrypt(masterPassword));
+                    await _deviceService.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.EmployeeId), nameof(Device.Status) });
+                    await _deviceService.GenerateVaultActivationAsync(vaultId);
+                    await _deviceTaskService.AddLinkAsync(vault.Id, _dataProtectionService.Encrypt(masterPassword));
                 }
 
                 transactionScope.Complete();

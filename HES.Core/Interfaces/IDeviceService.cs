@@ -32,6 +32,8 @@ namespace HES.Core.Interfaces
         Task RemoveEmployeeAsync(string deviceId);
         //Task RestoreDefaultsAsync(string deviceId);
         Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
+        Task GenerateVaultActivationAsync(string vaultId);
+        Task<HardwareVaultActivation> GetVaultActivationAsync(string vaultId);
         IQueryable<DeviceAccessProfile> AccessProfileQuery();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
         Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);
