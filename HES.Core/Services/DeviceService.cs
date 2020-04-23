@@ -169,12 +169,91 @@ namespace HES.Core.Services
                 }
             }
 
-            return await query.Skip(skip).Take(take).AsNoTracking().ToListAsync();
+            // Sort Direction
+            switch (sortColumn)
+            {
+                case nameof(Device.Id):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
+                    break;
+                case nameof(Device.MAC):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.MAC) : query.OrderByDescending(x => x.MAC);
+                    break;
+                case nameof(Device.Battery):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Battery) : query.OrderByDescending(x => x.Battery);
+                    break;
+                case nameof(Device.Firmware):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Firmware) : query.OrderByDescending(x => x.Firmware);
+                    break;
+                case nameof(Device.DeviceAccessProfile.Name):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.DeviceAccessProfile.Name) : query.OrderByDescending(x => x.DeviceAccessProfile.Name);
+                    break;
+                case nameof(Device.Status):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Status) : query.OrderByDescending(x => x.Status);
+                    break;
+                case nameof(Device.LastSynced):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LastSynced) : query.OrderByDescending(x => x.LastSynced);
+                    break;
+                case nameof(Device.LicenseStatus):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LicenseStatus) : query.OrderByDescending(x => x.LicenseStatus);
+                    break;
+                case nameof(Device.LicenseEndDate):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LicenseEndDate) : query.OrderByDescending(x => x.LicenseEndDate);
+                    break;
+                case nameof(Device.Employee.FullName):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
+                    break;
+                case nameof(Device.Employee.EmpCompany):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Company) : query.OrderByDescending(x => x.Employee.Department.Company);
+                    break;
+            }
+
+            return await query.Skip(skip).Take(take).ToListAsync();
         }
 
         public async Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter)
         {
-            return await _hardwareVaultRepository.Query().CountAsync();
+            var query = _hardwareVaultRepository
+                .Query()
+                .Include(d => d.DeviceAccessProfile)
+                .Include(d => d.Employee.Department.Company)
+                .AsQueryable();
+
+            // Filter
+            if (filter != null)
+            {
+                if (filter.Battery != null)
+                {
+                    query = query.Where(w => w.Battery == filter.Battery);
+                }
+                if (filter.Firmware != null)
+                {
+                    query = query.Where(w => w.Firmware.Contains(filter.Firmware));
+                }
+                if (filter.LicenseStatus != null)
+                {
+                    query = query.Where(w => w.LicenseStatus == filter.LicenseStatus);
+                }
+                if (filter.EmployeeId != null)
+                {
+                    query = query.Where(w => w.EmployeeId == filter.EmployeeId);
+                }
+                if (filter.CompanyId != null)
+                {
+                    query = query.Where(w => w.Employee.Department.Company.Id == filter.CompanyId);
+                }
+                if (filter.DepartmentId != null)
+                {
+                    query = query.Where(w => w.Employee.DepartmentId == filter.DepartmentId);
+                }
+                if (filter.StartDate != null && filter.EndDate != null)
+                {
+                    query = query.Where(w => w.LastSynced.HasValue
+                                            && w.LastSynced.Value >= filter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
+                                            && w.LastSynced.Value <= filter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                }
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<Dictionary<string, string>> GetVaultsFirmwares()

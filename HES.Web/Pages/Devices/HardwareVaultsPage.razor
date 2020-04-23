@@ -7,7 +7,7 @@ else
     <TableAction>
         <button class="btn btn-primary" @onclick="SynchronizeDevicesAsync">
             <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span>Synchronize devices</span>
+            <span>Import devices</span>
         </button>
 
         @if (SelectedHardwareVault != null)
@@ -33,12 +33,6 @@ else
 
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
-            <th style="width:1px;">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="checkbox_all">
-                    <label class="custom-control-label" for="checkbox_all"></label>
-                </div>
-            </th>
             <MainTableHeader Title="@nameof(Device.Id)"
                              TitleWidth="16"
                              SortColumn="@nameof(Device.Id)"
@@ -106,13 +100,6 @@ else
                              SortDirectionChanged="SortDirectionChangedAsync" />
         </TableHeader>
         <TableRow>
-            <td>
-                <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                    <input type="checkbox" class="custom-control-input" id="@context.Id" />
-                    @*<input type="checkbox" class="custom-control-input" id="@context.Id" @bind="group.Checked" />*@
-                    <label class="custom-control-label" for="@context.Id"></label>
-                </div>
-            </td>
             <td>
                 @context.Id
             </td>
