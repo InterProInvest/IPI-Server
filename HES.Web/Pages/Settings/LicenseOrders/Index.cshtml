@@ -100,7 +100,7 @@
                             <img src="~/svg/action/more.svg" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                            @if (item.OrderStatus == HES.Core.Enums.OrderStatus.New)
+                            @if (item.OrderStatus == HES.Core.Enums.LicenseOrderStatus.New)
                             {
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="SendOrder" data-title="Send order">
                                     <img src="~/svg/action/send.svg" />
