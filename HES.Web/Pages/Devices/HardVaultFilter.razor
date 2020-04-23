@@ -49,29 +49,32 @@ else
                     <option selected></option>
                     @foreach (var item in Employees)
                     {
-                        <option value="@item.Text">@item.Text</option>
+                        <option value="@item.Value">@item.Text</option>
                     }
                 </select>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Company</label>
-                <select id="filterStatus" @bind="Filter.CompanyId" class="form-control">
+                <select id="filterStatus" @onchange="CompanyOnChangeAsync" class="form-control">
                     <option selected></option>
                     @foreach (var item in Companies)
                     {
-                        <option value="@item.Text">@item.Text</option>
+                        <option value="@item.Value">@item.Text</option>
                     }
                 </select>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Department</label>
-                <select id="filterStatus" @bind="Filter.DepartmentId" class="form-control" disabled="@string.IsNullOrWhiteSpace(Filter.CompanyId)">
-                    <option selected="@string.IsNullOrWhiteSpace(Filter.CompanyId)"></option>
-                    @foreach (var item in Companies)
+                <select id="filterStatus" @bind="Filter.DepartmentId" class="form-control" disabled="@(Departaments == null)">
+                    <option selected></option>
+                    @if (Departaments != null)
                     {
-                        <option value="@item.Text">@item.Text</option>
+                        @foreach (var item in Departaments)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
                     }
                 </select>
             </div>

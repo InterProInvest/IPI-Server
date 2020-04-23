@@ -151,14 +151,7 @@ namespace HES.Core.Services
                 }
                 if (filter.EmployeeId != null)
                 {
-                    if (filter.EmployeeId == "N/A")
-                    {
-                        query = query.Where(w => w.EmployeeId == null);
-                    }
-                    else
-                    {
-                        query = query.Where(w => w.EmployeeId == filter.EmployeeId);
-                    }
+                    query = query.Where(w => w.EmployeeId == filter.EmployeeId);
                 }
                 if (filter.CompanyId != null)
                 {

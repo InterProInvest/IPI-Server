@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HES.Core.Models.Web.HardwareVault;
+using HES.Core.Entities;
 
 namespace HES.Web.Pages.Devices
 {
@@ -31,6 +31,7 @@ namespace HES.Web.Pages.Devices
         public SelectList LicenseStatuses { get; set; }
         public SelectList Employees { get; set; }
         public SelectList Companies { get; set; }
+        public SelectList Departaments { get; set; }
 
         public bool Initialized { get; set; }
 
@@ -40,8 +41,8 @@ namespace HES.Web.Pages.Devices
 
             Firmwares = new SelectList(await HardwareVaultService.GetVaultsFirmwares(), "Key", "Value");
             LicenseStatuses = new SelectList(Enum.GetValues(typeof(LicenseStatus)).Cast<LicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            Employees = new SelectList(await EmployeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            Companies = new SelectList(await OrgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            Employees = new SelectList(await EmployeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), nameof(Employee.Id), nameof(Employee.FullName));
+            Companies = new SelectList(await OrgStructureService.CompanyQuery().ToListAsync(), nameof(Company.Id), nameof(Company.Name));
 
             Initialized = true;
         }
@@ -55,6 +56,20 @@ namespace HES.Web.Pages.Devices
         {
             Filter = new HardwareVaultFilter();
             await FilterChanged.Invoke(Filter);
+        }
+
+        private async Task CompanyOnChangeAsync(ChangeEventArgs args)
+        {
+            Filter.CompanyId = (string)args.Value;
+
+            if (string.IsNullOrWhiteSpace(Filter.CompanyId))
+            {
+                Departaments = null;
+                return;
+            }
+
+            Departaments = new SelectList(await OrgStructureService.GetDepartmentsByCompanyIdAsync(Filter.CompanyId), nameof(Department.Id), nameof(Department.Name));
+            StateHasChanged();
         }
     }
 }
