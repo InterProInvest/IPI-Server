@@ -1,6 +1,6 @@
 ﻿@if (HardwareVaults == null)
 {
-    <LoadingTab />
+    <LoadingSpinner />
 }
 else
 {
@@ -12,7 +12,7 @@ else
 
         @if (SelectedHardwareVault != null)
         {
-            <button type="button" class="btn btn-light border mx-2" title="Edit RFID">
+            <button type="button" @onclick="EditVaultRFIDAsync" class="btn btn-light border mx-2" title="Edit RFID">
                 <img class="icon-btn" src="/svg/action/edit.svg" />
                 Edit RFID
             </button>
@@ -34,13 +34,11 @@ else
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
             <MainTableHeader Title="@nameof(Device.Id)"
-                             TitleWidth="16"
                              SortColumn="@nameof(Device.Id)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="@nameof(Device.MAC)"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.MAC)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
@@ -51,57 +49,71 @@ else
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="@nameof(Device.Firmware)"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.Firmware)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Profile"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.DeviceAccessProfile.Name)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="@nameof(Device.Status)"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.Status)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Last Synced"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.LastSynced)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="License Status"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.LicenseStatus)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="License End Date"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.LicenseEndDate)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="@nameof(Device.Employee)"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.Employee.FullName)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
-                             TitleWidth="12"
                              SortColumn="@nameof(Device.Employee.EmpCompany)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.Model)"
+                             SortColumn="@nameof(Device.Model)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Department"
+                             SortColumn="@nameof(Device.Employee.Department.Name)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(Device.RFID)"
+                             SortColumn="@nameof(Device.RFID)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
         </TableHeader>
         <TableRow>
             <td>
-                @context.Id
+                @if (context.IsOnline)
+                    {
+                    <span title="Conected device" class="state-connected">@context.Id</span>
+                    }
+                    else
+                    {
+                    @context.Id
+                    }
             </td>
             <td>
                 @context.MAC
@@ -130,13 +142,12 @@ else
                 @context.DeviceAccessProfile?.Name
             </td>
             <td>
-                <span class="@(context.IsOnline == true ? "state-connected" : "")">@context.Status</span>
+                @context.Status
             </td>
             <td>
                 @if (context.LastSynced != null)
                     {
-                    <span class="d-none">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.LastSynced, TimeZoneInfo.Local).Ticks</span>
-                    @TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.LastSynced, TimeZoneInfo.Local)
+                    @context.LastSynced.Value.ToLocalTime()
                     }
             </td>
             <td>
@@ -153,6 +164,15 @@ else
             </td>
             <td>
                 @context.Employee?.EmpCompany
+            </td>
+            <td>
+                @context.Model
+            </td>
+            <td>
+                @context.Employee?.Department?.Name
+            </td>
+            <td>
+                @context.RFID
             </td>
         </TableRow>
     </MainTable>

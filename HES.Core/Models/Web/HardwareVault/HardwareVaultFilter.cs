@@ -1,8 +1,6 @@
-﻿using HES.Core.Enums;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using HES.Core.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace HES.Core.Models.Web.HardwareVault
 {
@@ -17,11 +15,10 @@ namespace HES.Core.Models.Web.HardwareVault
         public string Firmware { get; set; }
         public VaultLicenseStatus? LicenseStatus { get; set; }
         [Display(Name = "Employee")]
-        public string EmployeeId { get; set; }
+        public string EmployeeName { get; set; }
         [Display(Name = "Company")]
-        public string CompanyId { get; set; }
+        public string CompanyName { get; set; }
         [Display(Name = "Department")]
-        public string DepartmentId { get; set; }
-        public int Records { get; set; }
+        public string DepartmentName { get; set; }
     }
 }

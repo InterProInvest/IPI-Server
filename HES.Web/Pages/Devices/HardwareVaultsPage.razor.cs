@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Breadcrumb;
 using HES.Core.Models.Web.HardwareVault;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -32,6 +33,9 @@ namespace HES.Web.Pages.Devices
         [Inject]
         public IDeviceService HardwareVaultService { get; set; }
 
+        [Inject] 
+        public IModalDialogService ModalDialogService { get; set; }
+
         #endregion
 
         public List<Device> HardwareVaults { get; set; }
@@ -44,6 +48,18 @@ namespace HES.Web.Pages.Devices
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var items = new List<Breadcrumb>()
+                {
+                    new Breadcrumb () { Active = true, Content = "HardwareVault" }
+                };
+                await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
+            }
+        }
 
         protected override async Task OnInitializedAsync()
         {
@@ -111,6 +127,8 @@ namespace HES.Web.Pages.Devices
             await LoadTableDataAsync();
         }
 
+        
+
         #region TableActions
 
         public async Task SynchronizeDevicesAsync()
@@ -131,6 +149,19 @@ namespace HES.Web.Pages.Devices
             {
                 await JSRuntime.InvokeVoidAsync("showSpinner", "syncBtnSpinner");
             }
+        }
+
+        private async Task EditVaultRFIDAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditVaultRFID));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete group", body);
         }
 
         #endregion
