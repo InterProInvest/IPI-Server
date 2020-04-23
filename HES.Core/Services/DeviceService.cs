@@ -169,6 +169,22 @@ namespace HES.Core.Services
                 }
             }
 
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.Trim();
+
+                query = query.Where(x => x.Id.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.MAC.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Battery.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Firmware.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.DeviceAccessProfile.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.LastSynced.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.LicenseEndDate.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
             // Sort Direction
             switch (sortColumn)
             {
@@ -251,6 +267,22 @@ namespace HES.Core.Services
                                             && w.LastSynced.Value >= filter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
                                             && w.LastSynced.Value <= filter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
                 }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.Trim();
+
+                query = query.Where(x => x.Id.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.MAC.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Battery.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Firmware.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.DeviceAccessProfile.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.LastSynced.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.LicenseEndDate.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();
