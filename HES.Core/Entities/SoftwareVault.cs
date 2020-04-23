@@ -22,7 +22,7 @@ namespace HES.Core.Entities
         public string EmployeeId { get; set; }
         public bool HasNewLicense { get; set; }
         public DateTime? LicenseEndDate { get; set; }
-        public LicenseStatus LicenseStatus { get; set; }
+        public VaultLicenseStatus LicenseStatus { get; set; }
         public bool NeedSync { get; set; }
 
         [ForeignKey("EmployeeId")]

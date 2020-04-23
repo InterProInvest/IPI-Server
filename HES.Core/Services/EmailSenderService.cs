@@ -79,7 +79,7 @@ namespace HES.Core.Services
             await SendAsync(email, subject, html);
         }
 
-        public async Task SendLicenseChangedAsync(DateTime createdAt, OrderStatus status)
+        public async Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status)
         {
             var server = await _appSettingsService.GetServerSettingsAsync();
             string subject = server.Name == null ? "HES notification" : $"({server.Name}) Notification";
@@ -111,25 +111,25 @@ namespace HES.Core.Services
         {
             var message = new StringBuilder();
 
-            var valid = devices.Where(d => d.LicenseStatus == LicenseStatus.Valid).OrderBy(d => d.Id).ToList();
+            var valid = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Valid).OrderBy(d => d.Id).ToList();
             foreach (var item in valid)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
             }
 
-            var warning = devices.Where(d => d.LicenseStatus == LicenseStatus.Warning).OrderBy(d => d.Id).ToList();
+            var warning = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Warning).OrderBy(d => d.Id).ToList();
             foreach (var item in warning)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus} (90 days remainin)<br/>");
             }
 
-            var critical = devices.Where(d => d.LicenseStatus == LicenseStatus.Critical).OrderBy(d => d.Id).ToList();
+            var critical = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Critical).OrderBy(d => d.Id).ToList();
             foreach (var item in critical)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus} (30 days remainin)<br/>");
             }
 
-            var expired = devices.Where(d => d.LicenseStatus == LicenseStatus.Expired).OrderBy(d => d.Id).ToList();
+            var expired = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Expired).OrderBy(d => d.Id).ToList();
             foreach (var item in expired)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");

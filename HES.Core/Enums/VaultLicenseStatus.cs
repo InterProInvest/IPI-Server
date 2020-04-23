@@ -1,6 +1,6 @@
 ﻿namespace HES.Core.Enums
 {
-    public enum LicenseStatus
+    public enum VaultLicenseStatus
     {
         None,
         Valid,

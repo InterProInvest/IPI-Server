@@ -22,7 +22,7 @@ namespace HES.Web.Pages.SoftwareVaults
 
         protected override void OnInitialized()
         {
-            StatusList = new SelectList(Enum.GetValues(typeof(InviteVaultStatus)).Cast<InviteVaultStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            StatusList = new SelectList(Enum.GetValues(typeof(SoftwareVaultInvitationStatus)).Cast<SoftwareVaultInvitationStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             Initialized = true;
         }
 

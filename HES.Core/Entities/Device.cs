@@ -52,7 +52,7 @@ namespace HES.Core.Entities
 
 
         [Display(Name = "License Status")]
-        public LicenseStatus LicenseStatus { get; set; }
+        public VaultLicenseStatus LicenseStatus { get; set; }
 
         [Display(Name = "License End Date")]
         public DateTime? LicenseEndDate { get; set; }

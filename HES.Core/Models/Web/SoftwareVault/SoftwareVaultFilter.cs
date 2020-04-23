@@ -8,7 +8,7 @@ namespace HES.Core.Models.Web.SoftwareVault
         public string Model { get; set; }
         public string ClientAppVersion { get; set; }
         public VaultStatus? Status { get; set; }
-        public LicenseStatus? LicenseStatus { get; set; }
+        public VaultLicenseStatus? LicenseStatus { get; set; }
         public string Employee { get; set; }
         public string Company { get; set; }
         public string Department { get; set; }

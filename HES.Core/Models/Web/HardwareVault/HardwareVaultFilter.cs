@@ -15,7 +15,7 @@ namespace HES.Core.Models.Web.HardwareVault
         [Range(0, 100)]
         public int? Battery { get; set; }
         public string Firmware { get; set; }
-        public LicenseStatus? LicenseStatus { get; set; }
+        public VaultLicenseStatus? LicenseStatus { get; set; }
         [Display(Name = "Employee")]
         public string EmployeeId { get; set; }
         [Display(Name = "Company")]

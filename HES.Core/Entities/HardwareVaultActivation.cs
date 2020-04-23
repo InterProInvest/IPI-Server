@@ -11,11 +11,9 @@ namespace HES.Core.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
-        public string DeviceId { get; set; }
+        public string VaultId { get; set; }
         [Required]
         public string AcivationCode { get; set; }
-        public int WrongAttemptsCount { get; set; }
-        public DateTime? LastWrongAttempt { get; set; }
         public DateTime CreatedAt { get; set; }
         public HardwareVaultActivationStatus Status { get; set; }
     }

@@ -67,7 +67,7 @@ namespace HES.Web.Pages.SoftwareVaults
 
         private string ShowButtons()
         {
-            if (SelectedInvitation == null || SelectedInvitation?.Status == InviteVaultStatus.Accepted)
+            if (SelectedInvitation == null || SelectedInvitation?.Status == SoftwareVaultInvitationStatus.Accepted)
             {
                 return "d-none";
             }

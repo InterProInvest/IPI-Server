@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
@@ -18,7 +19,7 @@ namespace HES.Core.Services
 {
     public class RemoteTaskService : IRemoteTaskService
     {
-        private readonly IDeviceService _deviceService;
+        private readonly IDeviceService _hardwareVaultService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IAccountService _accountService;
         private readonly IDataProtectionService _dataProtectionService;
@@ -26,7 +27,7 @@ namespace HES.Core.Services
         private readonly ILogger<RemoteTaskService> _logger;
         private readonly IHubContext<EmployeeDetailsHub> _hubContext;
 
-        public RemoteTaskService(IDeviceService deviceService,
+        public RemoteTaskService(IDeviceService hardwareVaultService,
                                  IDeviceTaskService deviceTaskService,
                                  IAccountService deviceAccountService,
                                  IDataProtectionService dataProtectionService,
@@ -34,7 +35,7 @@ namespace HES.Core.Services
                                  ILogger<RemoteTaskService> logger,
                                  IHubContext<EmployeeDetailsHub> hubContext)
         {
-            _deviceService = deviceService;
+            _hardwareVaultService = hardwareVaultService;
             _deviceTaskService = deviceTaskService;
             _accountService = deviceAccountService;
             _dataProtectionService = dataProtectionService;
@@ -50,7 +51,7 @@ namespace HES.Core.Services
             if (deviceTask == null)
                 throw new Exception($"Device Task {taskId} not found");
 
-            var device = await _deviceService.GetDeviceByIdAsync(deviceTask.DeviceId);
+            var device = await _hardwareVaultService.GetDeviceByIdAsync(deviceTask.DeviceId);
 
             var account = deviceTask.Account;
 
@@ -80,7 +81,7 @@ namespace HES.Core.Services
                 case TaskOperation.Wipe:
                     device.Status = Enums.VaultStatus.Ready;
                     device.MasterPassword = null;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status), nameof(Device.MasterPassword) });
+                    await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status), nameof(Device.MasterPassword) });
                     await _licenseService.DiscardLicenseAppliedAsync(device.Id);
                     break;
                 case TaskOperation.UnlockPin:
@@ -89,7 +90,7 @@ namespace HES.Core.Services
                     break;
                 case TaskOperation.Link:
                     device.MasterPassword = deviceTask.Password;
-                    await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.MasterPassword) });
+                    await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.MasterPassword) });
                     break;
                 case TaskOperation.Profile:
                     break;
@@ -102,27 +103,34 @@ namespace HES.Core.Services
             await _deviceTaskService.DeleteTaskAsync(deviceTask);
         }
 
-        public async Task ExecuteRemoteTasks(string deviceId, RemoteDevice remoteDevice, TaskOperation operation)
+        public async Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, TaskOperation operation)
         {
             _dataProtectionService.Validate();
 
-            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+            var vault = await _hardwareVaultService.GetDeviceByIdAsync(vaultId);
 
+            // Execute CRUD tasks only if status Active 
+            if (vault.Status != VaultStatus.Active && (operation == TaskOperation.Create || operation == TaskOperation.Update || operation == TaskOperation.Delete))
+                return;
+
+            // Crete Tasks query 
             var query = _deviceTaskService
                 .TaskQuery()
                 .Include(t => t.Account)
-                .Where(t => t.DeviceId == deviceId);
+                .Where(t => t.DeviceId == vaultId);
 
-            // Filtering by operation
             switch (operation)
             {
+                // For all task operations
                 case TaskOperation.None:
                     break;
+                // For setting primary account
                 case TaskOperation.Primary:
-                    query = query.Where(t => t.AccountId == device.Employee.PrimaryAccountId || t.Operation == TaskOperation.Primary);
+                    query = query.Where(x => x.AccountId == vault.Employee.PrimaryAccountId || x.Operation == TaskOperation.Primary);
                     break;
+                // For current task operation
                 default:
-                    query = query.Where(t => t.Operation == operation);
+                    query = query.Where(x => x.Operation == operation);
                     break;
             }
 
@@ -140,18 +148,13 @@ namespace HES.Core.Services
                     await TaskCompleted(task.Id, idFromDevice);
 
                     if (task.Operation == TaskOperation.Wipe)
-                        throw new HideezException(HideezErrorCode.DeviceHasBeenWiped); // further processing is not possible
+                        throw new HideezException(HideezErrorCode.DeviceHasBeenWiped); // Further processing is not possible
                 }
 
                 tasks = await query.ToListAsync();
             }
 
-            await _deviceService.UpdateNeedSyncAsync(device, false);
-
-            //if (device != null)
-            //{
-            //    await _hubContext.Clients.All.SendAsync("UpdateTable", device.EmployeeId);
-            //}
+            await _hardwareVaultService.UpdateNeedSyncAsync(vault, false);
         }
 
         async Task<ushort> ExecuteRemoteTask(RemoteDevice remoteDevice, DeviceTask task)
@@ -189,7 +192,7 @@ namespace HES.Core.Services
 
         async Task<ushort> AddDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
-            var device = await _deviceService
+            var device = await _hardwareVaultService
                 .VaultQuery()
                 .Include(x => x.Employee)
                 .AsNoTracking()
@@ -212,7 +215,7 @@ namespace HES.Core.Services
 
         async Task<ushort> UpdateDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
-            var device = await _deviceService
+            var device = await _hardwareVaultService
                 .VaultQuery()
                 .Include(x => x.Employee)
                 .AsNoTracking()
@@ -245,7 +248,7 @@ namespace HES.Core.Services
 
         async Task<ushort> DeleteDeviceAccount(RemoteDevice remoteDevice, DeviceTask task)
         {
-            var device = await _deviceService
+            var device = await _hardwareVaultService
                 .VaultQuery()
                 .Include(x => x.Employee)
                 .AsNoTracking()
@@ -287,7 +290,7 @@ namespace HES.Core.Services
 
         async Task<ushort> ProfileDevice(RemoteDevice remoteDevice, DeviceTask task)
         {
-            var device = await _deviceService
+            var device = await _hardwareVaultService
                 .VaultQuery()
                 .Include(d => d.DeviceAccessProfile)
                 .AsNoTracking()

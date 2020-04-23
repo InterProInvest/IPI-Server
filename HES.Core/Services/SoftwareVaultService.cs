@@ -360,7 +360,7 @@ namespace HES.Core.Services
             var invitation = new SoftwareVaultInvitation()
             {
                 EmployeeId = employee.Id,
-                Status = InviteVaultStatus.Pending,
+                Status = SoftwareVaultInvitationStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 ValidTo = validTo.Date,
                 AcceptedAt = null,
@@ -402,7 +402,7 @@ namespace HES.Core.Services
 
             var activationCode = GenerateActivationCode();
 
-            invitation.Status = InviteVaultStatus.Pending;
+            invitation.Status = SoftwareVaultInvitationStatus.Pending;
             invitation.ValidTo = DateTime.Now.AddDays(2);
             invitation.ActivationCode = activationCode;
 
