@@ -44,14 +44,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         {
             NonLicensedDevices = await _deviceService
                 .VaultQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.None || d.LicenseStatus == LicenseStatus.Expired)
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.None || d.LicenseStatus == VaultLicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
 
             LicensedDevices = await _deviceService
                 .VaultQuery()
-                .Where(d => d.LicenseStatus != LicenseStatus.None)
-                .Where(d => d.LicenseStatus != LicenseStatus.Expired)
+                .Where(d => d.LicenseStatus != VaultLicenseStatus.None)
+                .Where(d => d.LicenseStatus != VaultLicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
         }

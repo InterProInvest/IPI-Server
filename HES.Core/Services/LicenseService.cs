@@ -165,7 +165,7 @@ namespace HES.Core.Services
             var response = await HttpClientPostOrderAsync(licenseOrderDto);
             if (response.IsSuccessStatusCode)
             {
-                order.OrderStatus = OrderStatus.Sent;
+                order.OrderStatus = LicenseOrderStatus.Sent;
                 await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
                 return;
             }
@@ -183,7 +183,7 @@ namespace HES.Core.Services
                 var status = await GetLicenseOrderStatusAsync(order.Id);
 
                 // Http transport error
-                if (status == OrderStatus.Undefined)
+                if (status == LicenseOrderStatus.Undefined)
                 {
                     continue;
                 }
@@ -194,7 +194,7 @@ namespace HES.Core.Services
                     continue;
                 }
 
-                if (status == OrderStatus.Completed)
+                if (status == LicenseOrderStatus.Completed)
                 {
                     await UpdateNewDeviceLicensesAsync(order.Id);
                 }
@@ -214,14 +214,14 @@ namespace HES.Core.Services
         {
             return await _licenseOrderRepository
                 .Query()
-                .Where(o => o.OrderStatus == OrderStatus.Sent ||
-                            o.OrderStatus == OrderStatus.Processing ||
-                            o.OrderStatus == OrderStatus.WaitingForPayment)
+                .Where(o => o.OrderStatus == LicenseOrderStatus.Sent ||
+                            o.OrderStatus == LicenseOrderStatus.Processing ||
+                            o.OrderStatus == LicenseOrderStatus.WaitingForPayment)
                 .ToListAsync();
         }
 
         // API GET
-        private async Task<OrderStatus> GetLicenseOrderStatusAsync(string orderId)
+        private async Task<LicenseOrderStatus> GetLicenseOrderStatusAsync(string orderId)
         {
             try
             {
@@ -230,14 +230,14 @@ namespace HES.Core.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<OrderStatus>(data);
+                    return JsonConvert.DeserializeObject<LicenseOrderStatus>(data);
                 }
                 _logger.LogCritical($"{response.StatusCode.ToString()} {response.Content.ReadAsStringAsync()}");
-                return OrderStatus.Error;
+                return LicenseOrderStatus.Error;
             }
             catch (Exception)
             {
-                return OrderStatus.Undefined;
+                return LicenseOrderStatus.Undefined;
             }
         }
 
@@ -295,33 +295,33 @@ namespace HES.Core.Services
             {
                 if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays > 90)
                 {
-                    if (device.LicenseStatus != LicenseStatus.Valid)
+                    if (device.LicenseStatus != VaultLicenseStatus.Valid)
                     {
-                        device.LicenseStatus = LicenseStatus.Valid;
+                        device.LicenseStatus = VaultLicenseStatus.Valid;
                         devicesChangedStatus.Add(device);
                     }
                 }
                 else if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays > 30)
                 {
-                    if (device.LicenseStatus != LicenseStatus.Warning)
+                    if (device.LicenseStatus != VaultLicenseStatus.Warning)
                     {
-                        device.LicenseStatus = LicenseStatus.Warning;
+                        device.LicenseStatus = VaultLicenseStatus.Warning;
                         devicesChangedStatus.Add(device);
                     }
                 }
                 else if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays > 0)
                 {
-                    if (device.LicenseStatus != LicenseStatus.Critical)
+                    if (device.LicenseStatus != VaultLicenseStatus.Critical)
                     {
-                        device.LicenseStatus = LicenseStatus.Critical;
+                        device.LicenseStatus = VaultLicenseStatus.Critical;
                         devicesChangedStatus.Add(device);
                     }
                 }
                 else if (device.LicenseEndDate.Value.Date.Subtract(DateTime.UtcNow.Date).TotalDays < 0)
                 {
-                    if (device.LicenseStatus != LicenseStatus.Expired)
+                    if (device.LicenseStatus != VaultLicenseStatus.Expired)
                     {
-                        device.LicenseStatus = LicenseStatus.Expired;
+                        device.LicenseStatus = VaultLicenseStatus.Expired;
                         devicesChangedStatus.Add(device);
                     }
                 }

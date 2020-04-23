@@ -8,6 +8,7 @@
         Lost,
         Stolen,
         Broken,
+        Suspended,
         Other
     }
 }

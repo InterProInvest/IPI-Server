@@ -1,6 +1,6 @@
 ﻿namespace HES.Core.Enums
 {
-    public enum InviteVaultStatus
+    public enum SoftwareVaultInvitationStatus
     {
         Expired,
         Accepted,

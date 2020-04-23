@@ -7,7 +7,6 @@
 		Active,
 		Deactivated,
 		Compromised,
-		Suspended,
 		Error
 	}
 }

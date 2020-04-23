@@ -26,6 +26,6 @@ namespace HES.Core.Entities
         [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Display(Name = "Order Status")]
-        public OrderStatus OrderStatus { get; set; } = OrderStatus.New;
+        public LicenseOrderStatus OrderStatus { get; set; } = LicenseOrderStatus.New;
     }
 }

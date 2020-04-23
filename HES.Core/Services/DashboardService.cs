@@ -192,7 +192,7 @@ namespace HES.Core.Services
 
             var licenseWarning = await _deviceService
                 .VaultQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.Warning)
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.Warning)
                 .AsTracking()
                 .CountAsync();
 
@@ -209,7 +209,7 @@ namespace HES.Core.Services
 
             var licenseCritical = await _deviceService
                 .VaultQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.Critical)
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.Critical)
                 .AsTracking()
                 .CountAsync();
 
@@ -226,7 +226,7 @@ namespace HES.Core.Services
 
             var licenseExpired = await _deviceService
                 .VaultQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.Expired)
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.Expired)
                 .AsTracking()
                 .CountAsync();
 

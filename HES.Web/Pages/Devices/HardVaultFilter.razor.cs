@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Devices
             Filter = new HardwareVaultFilter();
 
             Firmwares = new SelectList(await HardwareVaultService.GetVaultsFirmwares(), "Key", "Value");
-            LicenseStatuses = new SelectList(Enum.GetValues(typeof(LicenseStatus)).Cast<LicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            LicenseStatuses = new SelectList(Enum.GetValues(typeof(VaultLicenseStatus)).Cast<VaultLicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             Employees = new SelectList(await EmployeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), nameof(Employee.Id), nameof(Employee.FullName));
             Companies = new SelectList(await OrgStructureService.CompanyQuery().ToListAsync(), nameof(Company.Id), nameof(Company.Name));
 

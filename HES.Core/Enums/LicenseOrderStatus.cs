@@ -1,6 +1,6 @@
 ﻿namespace HES.Core.Enums
 {
-    public enum OrderStatus
+    public enum LicenseOrderStatus
     {
         New,
         Sent,
