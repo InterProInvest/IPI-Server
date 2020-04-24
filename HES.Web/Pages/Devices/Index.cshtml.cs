@@ -305,7 +305,7 @@ namespace HES.Web.Pages.Devices
 
             try
             {
-                await _deviceService.UnlockPinAsync(deviceId);
+                //await _deviceService.UnlockPinAsync(deviceId);
                 await _workstationAuditService.AddPendingUnlockEventAsync(deviceId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 SuccessMessage = $"Pending unlock sent to server for processing.";

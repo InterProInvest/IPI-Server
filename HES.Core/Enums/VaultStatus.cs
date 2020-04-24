@@ -6,6 +6,7 @@
 		Reserved,
 		Active,
 		Deactivated,
+		Suspended,
 		Compromised,
 		Error
 	}

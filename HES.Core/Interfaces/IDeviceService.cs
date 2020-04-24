@@ -29,13 +29,15 @@ namespace HES.Core.Interfaces
         Task UpdateDeviceInfoAsync(string deviceId, int battery, string firmware, bool locked);
         Task UpdateNeedSyncAsync(Device device, bool needSync);
         Task UpdateNeedSyncAsync(IList<Device> devices, bool needSync);
-        Task UnlockPinAsync(string deviceId);
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
         Task RemoveEmployeeAsync(string deviceId);
-        //Task RestoreDefaultsAsync(string deviceId);
         Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
-        Task GenerateVaultActivationAsync(string vaultId);
-        Task<HardwareVaultActivation> GetVaultActivationAsync(string vaultId);
+        Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);
+        Task<string> GetVaultActivationCodeAsync(string vaultId);
+        Task ActivateVaultAsync(string vaultId);
+        Task SuspendVaultAsync(string vaultId);
+        Task ResetVaultStatusAsync(string vaultId);
+
         IQueryable<DeviceAccessProfile> AccessProfileQuery();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
         Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);

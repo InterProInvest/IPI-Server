@@ -171,12 +171,12 @@ namespace HES.Core.Services
             if (remoteDevice.AccessLevel.IsLocked)
             {
                 await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.Wipe);
-                await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.UnlockPin);
+                await _remoteTaskService.ExecuteRemoteTasks(device.Id, remoteDevice, TaskOperation.Suspend);
                 await remoteDevice.RefreshDeviceInfo();
 
                 if (remoteDevice.AccessLevel.IsLocked)
                 {
-                    throw new Exception($"Device {device.Id} is locked");
+                    throw new Exception($"Vault {device.Id} is locked");
                 }
             }
         }

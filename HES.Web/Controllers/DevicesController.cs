@@ -126,7 +126,8 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _deviceService.UnlockPinAsync(id);
+                // TODOSTATUS
+                //await _deviceService.UnlockPinAsync(id);
                 await _workstationAuditService.AddPendingUnlockEventAsync(id);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(id);
             }
