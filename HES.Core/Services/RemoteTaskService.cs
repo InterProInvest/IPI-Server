@@ -84,7 +84,7 @@ namespace HES.Core.Services
                     await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status), nameof(Device.MasterPassword) });
                     await _licenseService.DiscardLicenseAppliedAsync(device.Id);
                     break;
-                case TaskOperation.UnlockPin:
+                case TaskOperation.Suspend:
                     //device.Status = Enums.DeviceState.OK; //TODO
                     //await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status) });
                     break;
@@ -183,8 +183,8 @@ namespace HES.Core.Services
                 case TaskOperation.Profile:
                     idFromDevice = await ProfileDevice(remoteDevice, task);
                     break;
-                case TaskOperation.UnlockPin:
-                    idFromDevice = await UnlockPin(remoteDevice, task);
+                case TaskOperation.Suspend:
+                    idFromDevice = await SuspendVault(remoteDevice, task);
                     break;
             }
             return idFromDevice;
@@ -281,7 +281,9 @@ namespace HES.Core.Services
                 _logger.LogError($"Trying to link already linked device [{remoteDevice.Id}]");
                 return 0;
             }
-
+            //TODOSTATUS
+            var code = await _hardwareVaultService.GetVaultActivationCodeAsync(task.DeviceId);
+            //await remoteDevice.Link(key, vaultActivation.AcivationCode);
             var key = ConvertUtils.HexStringToBytes(task.Password);
             await remoteDevice.Link(key);
             await ProfileDevice(remoteDevice, task);
@@ -322,10 +324,14 @@ namespace HES.Core.Services
             return 0;
         }
 
-        async Task<ushort> UnlockPin(RemoteDevice remoteDevice, DeviceTask task)
+        async Task<ushort> SuspendVault(RemoteDevice remoteDevice, DeviceTask task)
         {
-            var key = ConvertUtils.HexStringToBytes(task.Password);
-            await remoteDevice.Unlock(key);
+            //TODOSTATUS
+            var code = _dataProtectionService.Decrypt(await _hardwareVaultService.GetVaultActivationCodeAsync(task.DeviceId));
+            var vault = await _hardwareVaultService.GetDeviceByIdAsync(task.DeviceId);
+
+            var key = ConvertUtils.HexStringToBytes(vault.MasterPassword);
+            //await remoteDevice.Unlock(key);
             return 0;
         }
     }

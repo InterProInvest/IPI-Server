@@ -14,7 +14,7 @@ namespace HES.Core.Interfaces
         Task AddPrimaryAsync(string deviceId, string accountId);
         Task AddLinkAsync(string deviceId, string masterPassword);
         Task AddProfileAsync(Device device);
-        Task AddUnlockPinAsync(Device device);
+        Task AddSuspendAsync(string vaultId);
         Task AddWipeAsync(string deviceId, string masterPassword);
         Task UpdateOnlyPropAsync(DeviceTask deviceTask, string[] properties);
         Task DeleteTaskAsync(DeviceTask deviceTask);

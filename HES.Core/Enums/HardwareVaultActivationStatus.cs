@@ -4,6 +4,6 @@
     {
         Pending,
         Activated,
-        Failed
+        Canceled
     }
 }

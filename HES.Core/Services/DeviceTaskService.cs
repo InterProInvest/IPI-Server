@@ -77,13 +77,13 @@ namespace HES.Core.Services
             await _deviceTaskRepository.AddAsync(task);
         }
 
-        public async Task AddUnlockPinAsync(Device device)
+        public async Task AddSuspendAsync(string vaultId)
         {
+            //TODOSTATUS
             var task = new DeviceTask
             {
-                DeviceId = device.Id,
-                Password = device.MasterPassword,
-                Operation = TaskOperation.UnlockPin,
+                DeviceId = vaultId,   
+                Operation = TaskOperation.Suspend,
                 CreatedAt = DateTime.UtcNow
             };
 

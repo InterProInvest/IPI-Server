@@ -8,7 +8,6 @@
         Lost,
         Stolen,
         Broken,
-        Suspended,
-        Other
+        Activation
     }
 }

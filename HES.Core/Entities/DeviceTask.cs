@@ -30,7 +30,6 @@ namespace HES.Core.Entities
         Link,
         Primary,
         Profile,
-        UnlockPin,
-        Lock
+        Suspend
     }
 }
