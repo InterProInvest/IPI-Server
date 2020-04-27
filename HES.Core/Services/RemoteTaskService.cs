@@ -51,7 +51,7 @@ namespace HES.Core.Services
             if (deviceTask == null)
                 throw new Exception($"Device Task {taskId} not found");
 
-            var device = await _hardwareVaultService.GetDeviceByIdAsync(deviceTask.DeviceId);
+            var device = await _hardwareVaultService.GetVaultByIdAsync(deviceTask.DeviceId);
 
             var account = deviceTask.Account;
 
@@ -107,7 +107,7 @@ namespace HES.Core.Services
         {
             _dataProtectionService.Validate();
 
-            var vault = await _hardwareVaultService.GetDeviceByIdAsync(vaultId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
             // Execute CRUD tasks only if status Active 
             if (vault.Status != VaultStatus.Active && (operation == TaskOperation.Create || operation == TaskOperation.Update || operation == TaskOperation.Delete))
@@ -328,7 +328,7 @@ namespace HES.Core.Services
         {
             //TODOSTATUS
             var code = await _hardwareVaultService.GetVaultActivationCodeAsync(task.DeviceId);
-            var vault = await _hardwareVaultService.GetDeviceByIdAsync(task.DeviceId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(task.DeviceId);
 
             var key = ConvertUtils.HexStringToBytes(vault.MasterPassword);
             //await remoteDevice.Unlock(key);

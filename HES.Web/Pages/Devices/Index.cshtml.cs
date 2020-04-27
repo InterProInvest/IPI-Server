@@ -53,15 +53,15 @@ namespace HES.Web.Pages.Devices
 
         public async Task OnGetAsync()
         {
-            Devices = await _deviceService.GetDevicesAsync();
+            //Devices = await _deviceService.GetVaultsAsync();
 
-            ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
-            ViewData["LicenseStatus"] = new SelectList(Enum.GetValues(typeof(VaultLicenseStatus)).Cast<VaultLicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            //ViewData["Firmware"] = new SelectList(Devices.Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
+            //ViewData["LicenseStatus"] = new SelectList(Enum.GetValues(typeof(VaultLicenseStatus)).Cast<VaultLicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            //ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            //ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
 
-            ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
-            ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
+            //ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
+            //ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
         #region From Dashboard
@@ -194,129 +194,129 @@ namespace HES.Web.Pages.Devices
 
         #endregion
 
-        public async Task<IActionResult> OnPostFilterDevicesAsync(DeviceFilter DeviceFilter)
-        {
-            Devices = await _deviceService.GetFilteredDevicesAsync(DeviceFilter);
-            return Partial("_DevicesTable", this);
-        }
+        //public async Task<IActionResult> OnPostFilterDevicesAsync(DeviceFilter DeviceFilter)
+        //{
+        //    Devices = await _deviceService.GetFilteredDevicesAsync(DeviceFilter);
+        //    return Partial("_DevicesTable", this);
+        //}
 
-        public async Task<IActionResult> OnGetEditDeviceRfidAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnGetEditDeviceRfidAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            Device = await _deviceService.GetDeviceByIdAsync(id);
+        //    Device = await _deviceService.GetVaultByIdAsync(id);
 
-            if (Device == null)
-            {
-                _logger.LogWarning($"{nameof(Device)} is null");
-                return NotFound();
-            }
+        //    if (Device == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(Device)} is null");
+        //        return NotFound();
+        //    }
 
-            DeviceProperty = new DeviceProperty()
-            {
-                Id = Device.Id,
-                RFID = Device.RFID
-            };
+        //    DeviceProperty = new DeviceProperty()
+        //    {
+        //        Id = Device.Id,
+        //        RFID = Device.RFID
+        //    };
 
-            return Partial("_EditDeviceRfid", this);
-        }
+        //    return Partial("_EditDeviceRfid", this);
+        //}
 
-        public async Task<IActionResult> OnPostEditDeviceRfidAsync(DeviceProperty deviceProperty)
-        {
-            if (!ModelState.IsValid)
-            {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
-                _logger.LogError(ErrorMessage);
-                return RedirectToPage("./Index");
-            }
+        //public async Task<IActionResult> OnPostEditDeviceRfidAsync(DeviceProperty deviceProperty)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+        //        _logger.LogError(ErrorMessage);
+        //        return RedirectToPage("./Index");
+        //    }
 
-            try
-            {
-                await _deviceService.EditRfidAsync(new Device() { Id = deviceProperty.Id, RFID = deviceProperty.RFID });
-                SuccessMessage = $"RFID updated.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        await _deviceService.EditRfidAsync(new Device() { Id = deviceProperty.Id, RFID = deviceProperty.RFID });
+        //        SuccessMessage = $"RFID updated.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            return RedirectToPage("./Index");
-        }
+        //    return RedirectToPage("./Index");
+        //}
 
-        public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
-        {
-            return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
-        }
+        //public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
+        //{
+        //    return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
+        //}
 
-        public async Task<IActionResult> OnGetSetProfileAsync()
-        {
-            DeviceAccessProfiles = await _deviceService.GetAccessProfilesAsync();
-            return Partial("_SetProfile", this);
-        }
+        //public async Task<IActionResult> OnGetSetProfileAsync()
+        //{
+        //    DeviceAccessProfiles = await _deviceService.GetAccessProfilesAsync();
+        //    return Partial("_SetProfile", this);
+        //}
 
-        public async Task<IActionResult> OnPostSetProfileAsync(string[] devices, string profileId)
-        {
-            try
-            {
-                await _deviceService.SetProfileAsync(devices, profileId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
-                SuccessMessage = $"New profile sent to server for processing.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //public async Task<IActionResult> OnPostSetProfileAsync(string[] devices, string profileId)
+        //{
+        //    try
+        //    {
+        //        await _deviceService.SetProfileAsync(devices, profileId);
+        //        _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
+        //        SuccessMessage = $"New profile sent to server for processing.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            return RedirectToPage("./Index");
-        }
+        //    return RedirectToPage("./Index");
+        //}
 
-        public async Task<IActionResult> OnGetUnlockPinAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnGetUnlockPinAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            Device = await _deviceService.GetDeviceByIdAsync(id);
+        //    Device = await _deviceService.GetVaultByIdAsync(id);
 
-            if (Device == null)
-            {
-                _logger.LogWarning($"{nameof(Device)} is null");
-                return NotFound();
-            }
+        //    if (Device == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(Device)} is null");
+        //        return NotFound();
+        //    }
 
-            return Partial("_UnlockPin", this);
-        }
+        //    return Partial("_UnlockPin", this);
+        //}
 
-        public async Task<IActionResult> OnPostUnlockPinAsync(string deviceId)
-        {
-            if (deviceId == null)
-            {
-                _logger.LogWarning($"{nameof(deviceId)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnPostUnlockPinAsync(string deviceId)
+        //{
+        //    if (deviceId == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(deviceId)} is null");
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                //await _deviceService.UnlockPinAsync(deviceId);
-                await _workstationAuditService.AddPendingUnlockEventAsync(deviceId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
-                SuccessMessage = $"Pending unlock sent to server for processing.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        //await _deviceService.UnlockPinAsync(deviceId);
+        //        await _workstationAuditService.AddPendingUnlockEventAsync(deviceId);
+        //        _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
+        //        SuccessMessage = $"Pending unlock sent to server for processing.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            return RedirectToPage("./Index");
-        }
+        //    return RedirectToPage("./Index");
+        //}
     }
 }

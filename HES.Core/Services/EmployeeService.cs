@@ -218,7 +218,7 @@ namespace HES.Core.Services
 
         public async Task UpdateLastSeenAsync(string deviceId)
         {
-            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+            var device = await _deviceService.GetVaultByIdAsync(deviceId);
             var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
 
             if (employee != null)
@@ -253,7 +253,7 @@ namespace HES.Core.Services
             {
                 foreach (var vaultId in vaults)
                 {
-                    var vault = await _deviceService.GetDeviceByIdAsync(vaultId);
+                    var vault = await _deviceService.GetVaultByIdAsync(vaultId);
 
                     if (vault == null)
                         throw new Exception($"Vault {vault} not found");
@@ -285,7 +285,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var vault = await _deviceService.GetDeviceByIdAsync(vaultId);
+            var vault = await _deviceService.GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 

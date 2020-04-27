@@ -14,17 +14,15 @@ namespace HES.Core.Interfaces
     public interface IDeviceService
     {
         IQueryable<Device> VaultQuery();
-        Task<Device> GetDeviceByIdAsync(string id);
-        Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
-        Task<List<Device>> GetDevicesAsync();
-        Task UnchangedVaultAsync(Device vault);
+        Task<Device> GetVaultByIdAsync(string id);
+        Task<List<Device>> GetVaultsByEmployeeIdAsync(string id);
         Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
         Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter);
-        Task<Dictionary<string, string>> GetVaultsFirmwares();
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
         Task<Device> AddDeviceAsync(Device device);
         Task ImportDevicesAsync();
         Task EditRfidAsync(Device device);
+        Task UnchangedVaultAsync(Device vault);
         Task UpdateOnlyPropAsync(Device device, string[] properties);
         Task UpdateDeviceInfoAsync(string deviceId, int battery, string firmware, bool locked);
         Task UpdateNeedSyncAsync(Device device, bool needSync);
@@ -38,7 +36,7 @@ namespace HES.Core.Interfaces
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);
-        Task ResetVaultStatusAsync(string vaultId);
+        Task VaultCompromisedAsync(string vaultId);
 
         IQueryable<DeviceAccessProfile> AccessProfileQuery();
         Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();

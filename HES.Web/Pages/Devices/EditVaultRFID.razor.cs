@@ -41,7 +41,7 @@ namespace HES.Web.Pages.Devices
         {
             try
             {
-                HardwareVault = await HardwareVaultService.GetDeviceByIdAsync(HardwareVaultId);
+                HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
 
                 if (HardwareVault == null)
                 {

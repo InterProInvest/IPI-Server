@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
@@ -40,7 +41,8 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevices()
         {
-            return await _deviceService.GetDevicesAsync();
+            var count = await _deviceService.GetVaultsCountAsync(string.Empty, null);
+            return await _deviceService.GetVaultsAsync(0, count, nameof(Device.Id), ListSortDirection.Ascending, string.Empty, null);         
         }
 
         [HttpPost]
@@ -54,7 +56,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByEmployeeId(string id)
         {
-            return await _deviceService.GetDevicesByEmployeeIdAsync(id);
+            return await _deviceService.GetVaultsByEmployeeIdAsync(id);
         }
 
         [HttpGet("{id}")]
@@ -62,7 +64,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Device>> GetDeviceById(string id)
         {
-            var device = await _deviceService.GetDeviceByIdAsync(id);
+            var device = await _deviceService.GetVaultByIdAsync(id);
 
             if (device == null)
             {

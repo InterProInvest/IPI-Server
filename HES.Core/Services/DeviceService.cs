@@ -14,7 +14,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -26,6 +25,8 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
         private readonly IAsyncRepository<DeviceAccessProfile> _deviceAccessProfileRepository;
         private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IAccountService _accountService;
+        private readonly IWorkstationService _workstationService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -34,6 +35,8 @@ namespace HES.Core.Services
                              IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
                              IAsyncRepository<DeviceAccessProfile> deviceAccessProfileRepository,
                              IDeviceTaskService deviceTaskService,
+                             IAccountService accountService,
+                             IWorkstationService workstationService,
                              IAppSettingsService appSettingsService,
                              IDataProtectionService dataProtectionService,
                              IHttpClientFactory httpClientFactory)
@@ -42,6 +45,8 @@ namespace HES.Core.Services
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
             _deviceAccessProfileRepository = deviceAccessProfileRepository;
             _deviceTaskService = deviceTaskService;
+            _accountService = accountService;
+            _workstationService = workstationService;
             _appSettingsService = appSettingsService;
             _dataProtectionService = dataProtectionService;
             _httpClientFactory = httpClientFactory;
@@ -54,7 +59,7 @@ namespace HES.Core.Services
             return _hardwareVaultRepository.Query();
         }
 
-        public async Task<Device> GetDeviceByIdAsync(string id)
+        public async Task<Device> GetVaultByIdAsync(string id)
         {
             return await _hardwareVaultRepository
                 .Query()
@@ -63,25 +68,11 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task<List<Device>> GetDevicesByEmployeeIdAsync(string id)
+        public async Task<List<Device>> GetVaultsByEmployeeIdAsync(string id)
         {
             return await _hardwareVaultRepository
                 .Query()
                 .Where(d => d.EmployeeId == id)
-                .ToListAsync();
-        }
-
-        public Task UnchangedVaultAsync(Device vault)
-        {
-            return _hardwareVaultRepository.Unchanged(vault);
-        }
-
-        public async Task<List<Device>> GetDevicesAsync()
-        {
-            return await _hardwareVaultRepository
-                .Query()
-                .Include(d => d.DeviceAccessProfile)
-                .Include(d => d.Employee.Department.Company)
                 .ToListAsync();
         }
 
@@ -317,11 +308,6 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task<Dictionary<string, string>> GetVaultsFirmwares()
-        {
-            return await _hardwareVaultRepository.Query().Select(s => s.Firmware).Distinct().OrderBy(f => f).ToDictionaryAsync(t => t, t => t);
-        }
-
         public async Task<Device> AddDeviceAsync(Device device)
         {
             if (device == null)
@@ -347,22 +333,23 @@ namespace HES.Core.Services
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
-                var newDevicesDto = JsonConvert.DeserializeObject<List<DeviceImportDto>>(data);
+                var devicesDto = JsonConvert.DeserializeObject<List<DeviceImportDto>>(data);
 
-                var currentDevices = await GetDevicesAsync();
+                var devicesCount = await GetVaultsCountAsync(string.Empty, null);
+                var devices = await GetVaultsAsync(0, devicesCount, nameof(Device.Id), ListSortDirection.Ascending, string.Empty, null);
                 var devicesToImport = new List<Device>();
-                newDevicesDto.RemoveAll(x => currentDevices.Select(s => s.Id).Contains(x.DeviceId));
+                devicesDto.RemoveAll(x => devices.Select(s => s.Id).Contains(x.DeviceId));
 
-                foreach (var newDeviceDto in newDevicesDto)
+                foreach (var deviceDto in devicesDto)
                 {
                     devicesToImport.Add(new Device()
                     {
-                        Id = newDeviceDto.DeviceId,
-                        MAC = newDeviceDto.MAC,
-                        Model = newDeviceDto.Model,
-                        RFID = newDeviceDto.RFID,
+                        Id = deviceDto.DeviceId,
+                        MAC = deviceDto.MAC,
+                        Model = deviceDto.Model,
+                        RFID = deviceDto.RFID,
                         Battery = 100,
-                        Firmware = newDeviceDto.Firmware,
+                        Firmware = deviceDto.Firmware,
                         Status = VaultStatus.Ready,
                         StatusReason = VaultStatusReason.None,
                         StatusDescription = null,
@@ -390,6 +377,11 @@ namespace HES.Core.Services
             }
 
             await _hardwareVaultRepository.UpdateOnlyPropAsync(device, new string[] { "RFID" });
+        }
+
+        public Task UnchangedVaultAsync(Device vault)
+        {
+            return _hardwareVaultRepository.Unchanged(vault);
         }
 
         public async Task UpdateOnlyPropAsync(Device device, string[] properties)
@@ -434,28 +426,6 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateOnlyPropAsync(devices, new string[] { nameof(Device.NeedSync) });
         }
 
-        //public async Task UnlockPinAsync(string deviceId)
-        //{
-        //    if (deviceId == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(deviceId));
-        //    }
-
-        //    var device = await _hardwareVaultRepository.GetByIdAsync(deviceId);
-        //    if (device == null)
-        //    {
-        //        throw new Exception($"Device not found, ID: {deviceId}");
-        //    }
-
-        //    throw new NotImplementedException(); //TODO
-        //    // Update device state
-        //    //device.Status = DeviceState.PendingUnlock;
-        //    await _hardwareVaultRepository.UpdateOnlyPropAsync(device, new string[] { "State" });
-
-        //    // Create task
-        //    await _deviceTaskService.AddSuspendAsync(device);
-        //}
-
         public async Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate)
         {
             return await _hardwareVaultRepository.ExistAsync(predicate);
@@ -483,27 +453,9 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateOnlyPropAsync(device, properties.ToArray());
         }
 
-        //public async Task RestoreDefaultsAsync(string deviceId)
-        //{
-        //    var device = await _deviceRepository.GetByIdAsync(deviceId);
-
-        //    device.LastSynced = DateTime.UtcNow;
-        //    device.AcceessProfileId = "default";
-        //    device.Status = DeviceState.OK;
-
-        //    var properties = new List<string>()
-        //    {
-        //        "LastSynced",
-        //        "AcceessProfileId",
-        //        "State"
-        //    };
-
-        //    await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
-        //}
-
         public async Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus)
         {
-            var vault = await GetDeviceByIdAsync(vaultId);
+            var vault = await GetVaultByIdAsync(vaultId);
 
             if (vault.Status == vaultStatus)
                 return;
@@ -511,7 +463,6 @@ namespace HES.Core.Services
             vault.Status = vaultStatus;
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.Status) });
         }
-
 
 
         public async Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId)
@@ -537,13 +488,15 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var vaultActivation = await _hardwareVaultActivationRepository.Query().FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
-            if (vaultActivation == null)
-                throw new Exception($"Vault activation not found for [{vaultId}]");
+            var vaultActivation = await _hardwareVaultActivationRepository
+                .Query()
+                .FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
 
-            vaultActivation.Status = status;
-
-            await _hardwareVaultActivationRepository.UpdateOnlyPropAsync(vaultActivation, new string[] { nameof(HardwareVaultActivation.Status) });
+            if (vaultActivation != null)
+            {
+                vaultActivation.Status = status;
+                await _hardwareVaultActivationRepository.UpdateOnlyPropAsync(vaultActivation, new string[] { nameof(HardwareVaultActivation.Status) });
+            }
         }
 
         public async Task<string> GetVaultActivationCodeAsync(string vaultId)
@@ -562,7 +515,7 @@ namespace HES.Core.Services
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
 
-            var vault = await GetDeviceByIdAsync(vaultId);
+            var vault = await GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
@@ -588,7 +541,7 @@ namespace HES.Core.Services
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
 
-            var vault = await GetDeviceByIdAsync(vaultId);
+            var vault = await GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
@@ -609,9 +562,31 @@ namespace HES.Core.Services
             }
         }
 
-        public Task ResetVaultStatusAsync(string vaultId)
+        public async Task VaultCompromisedAsync(string vaultId)
         {
-            throw new NotImplementedException();
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
+            var vault = await GetVaultByIdAsync(vaultId);
+            if (vault == null)
+                throw new Exception($"Vault {vaultId} not found");
+
+            if (vault.Status != VaultStatus.Compromised)
+                throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
+
+            vault.EmployeeId = null;
+            vault.Status = VaultStatus.Compromised;
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await UpdateOnlyPropAsync(vault, new string[] { nameof(Device.EmployeeId), nameof(Device.Status) });
+                await ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
+                await _deviceTaskService.RemoveAllTasksAsync(vaultId);
+                await _accountService.RemoveAllAccountsAsync(vaultId);
+                await _workstationService.RemoveAllProximityAsync(vaultId);
+
+                transactionScope.Complete();
+            }
         }
 
         #endregion

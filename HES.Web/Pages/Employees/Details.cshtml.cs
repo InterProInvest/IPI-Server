@@ -342,7 +342,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            Device = await _deviceService.GetDeviceByIdAsync(id);
+            Device = await _deviceService.GetVaultByIdAsync(id);
 
             if (Device == null)
             {
@@ -637,7 +637,7 @@ namespace HES.Web.Pages.Employees
             SharedAccountIdList = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
 
             SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
-            Devices = await _deviceService.GetDevicesByEmployeeIdAsync(id);
+            Devices = await _deviceService.GetVaultsByEmployeeIdAsync(id);
 
             if (Devices == null)
             {
