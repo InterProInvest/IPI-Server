@@ -14,37 +14,35 @@ namespace HES.Core.Interfaces
     public interface IDeviceService
     {
         IQueryable<Device> VaultQuery();
-        Task<Device> GetDeviceByIdAsync(string id);
-        Task<List<Device>> GetDevicesByEmployeeIdAsync(string id);
-        Task<List<Device>> GetDevicesAsync();
-        Task UnchangedVaultAsync(Device vault);
+        Task<Device> GetVaultByIdAsync(string id);
+        Task<List<Device>> GetVaultsByEmployeeIdAsync(string id);
         Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
         Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter);
-        Task<Dictionary<string, string>> GetVaultsFirmwares();
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
         Task<Device> AddDeviceAsync(Device device);
         Task ImportDevicesAsync();
         Task EditRfidAsync(Device device);
+        Task UnchangedVaultAsync(Device vault);
         Task UpdateOnlyPropAsync(Device device, string[] properties);
         Task UpdateDeviceInfoAsync(string deviceId, int battery, string firmware, bool locked);
         Task UpdateNeedSyncAsync(Device device, bool needSync);
         Task UpdateNeedSyncAsync(IList<Device> devices, bool needSync);
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
-        Task RemoveEmployeeAsync(string deviceId);
-        Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
         Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);
+        Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
-        Task SuspendVaultAsync(string vaultId);
-        Task ResetVaultStatusAsync(string vaultId);
+        Task SuspendVaultAsync(string vaultId, string description);
+        Task VaultCompromisedAsync(string vaultId);
+        Task ErrorVaultAsync(string vaultId);
 
-        IQueryable<DeviceAccessProfile> AccessProfileQuery();
-        Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
-        Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);
+        IQueryable<DeviceAccessProfile> ProfileQuery();
+        Task<List<DeviceAccessProfile>> GetProfilesAsync();
+        Task<DeviceAccessProfile> GetProfileByIdAsync(string profileId);
+        Task<List<string>> GetVaultIdsByProfileTaskAsync(string profileId);
         Task<DeviceAccessProfile> CreateProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task DeleteProfileAsync(string id);
-        Task SetProfileAsync(string[] devicesId, string profileId);
-        Task<string[]> UpdateProfileAsync(string profileId);
+        Task ChangeVaultProfileAsync(string vaultId, string profileId);      
     }
 }

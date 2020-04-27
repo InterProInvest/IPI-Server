@@ -5,9 +5,9 @@
         None,
         InvalidActivationCode,
         LockedByInvalidPin,
+        Withdrawal,
         Lost,
         Stolen,
-        Broken,
-        Activation
+        Broken
     }
 }

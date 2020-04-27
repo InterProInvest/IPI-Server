@@ -42,7 +42,7 @@ namespace HES.Web.Pages.Devices
             {
                 try
                 {
-                    await HardwareVaultService.SuspendVaultAsync(HardwareVaultId);
+                    await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
                     await Refresh.InvokeAsync(this);
                     ToastService.ShowToast("Vault suspended", ToastLevel.Success);
                     await CloseAsync();

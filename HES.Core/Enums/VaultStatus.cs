@@ -5,8 +5,9 @@
 		Ready,
 		Reserved,
 		Active,
-		Deactivated,
+		Locked,
 		Suspended,
+		Deactivated,
 		Compromised,
 		Error
 	}

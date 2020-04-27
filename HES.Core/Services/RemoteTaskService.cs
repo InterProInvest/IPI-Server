@@ -51,7 +51,7 @@ namespace HES.Core.Services
             if (deviceTask == null)
                 throw new Exception($"Device Task {taskId} not found");
 
-            var device = await _hardwareVaultService.GetDeviceByIdAsync(deviceTask.DeviceId);
+            var device = await _hardwareVaultService.GetVaultByIdAsync(deviceTask.DeviceId);
 
             var account = deviceTask.Account;
 
@@ -107,7 +107,7 @@ namespace HES.Core.Services
         {
             _dataProtectionService.Validate();
 
-            var vault = await _hardwareVaultService.GetDeviceByIdAsync(vaultId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
             // Execute CRUD tasks only if status Active 
             if (vault.Status != VaultStatus.Active && (operation == TaskOperation.Create || operation == TaskOperation.Update || operation == TaskOperation.Delete))
@@ -175,16 +175,16 @@ namespace HES.Core.Services
                     idFromDevice = await WipeDevice(remoteDevice, task);
                     break;
                 case TaskOperation.Link:
-                    idFromDevice = await LinkDevice(remoteDevice, task);
+                    idFromDevice = await LinkVaultAsync(remoteDevice, task);
                     break;
                 case TaskOperation.Primary:
                     idFromDevice = await SetDeviceAccountAsPrimary(remoteDevice, task);
                     break;
                 case TaskOperation.Profile:
-                    idFromDevice = await ProfileDevice(remoteDevice, task);
+                    idFromDevice = await ProfileVaultAsync(remoteDevice, task);
                     break;
                 case TaskOperation.Suspend:
-                    idFromDevice = await SuspendVault(remoteDevice, task);
+                    idFromDevice = await SuspendVaultAsync(remoteDevice, task);
                     break;
             }
             return idFromDevice;
@@ -274,7 +274,7 @@ namespace HES.Core.Services
             return 0;
         }
 
-        async Task<ushort> LinkDevice(RemoteDevice remoteDevice, DeviceTask task)
+        async Task<ushort> LinkVaultAsync(RemoteDevice remoteDevice, DeviceTask task)
         {
             if (!remoteDevice.AccessLevel.IsLinkRequired)
             {
@@ -283,14 +283,14 @@ namespace HES.Core.Services
             }
             //TODOSTATUS
             var code = await _hardwareVaultService.GetVaultActivationCodeAsync(task.DeviceId);
-            //await remoteDevice.Link(key, vaultActivation.AcivationCode);
             var key = ConvertUtils.HexStringToBytes(task.Password);
+            //await remoteDevice.Link(key, code);
             await remoteDevice.Link(key);
-            await ProfileDevice(remoteDevice, task);
+            await ProfileVaultAsync(remoteDevice, task);
             return 0;
         }
 
-        async Task<ushort> ProfileDevice(RemoteDevice remoteDevice, DeviceTask task)
+        async Task<ushort> ProfileVaultAsync(RemoteDevice remoteDevice, DeviceTask task)
         {
             var device = await _hardwareVaultService
                 .VaultQuery()
@@ -324,11 +324,11 @@ namespace HES.Core.Services
             return 0;
         }
 
-        async Task<ushort> SuspendVault(RemoteDevice remoteDevice, DeviceTask task)
+        async Task<ushort> SuspendVaultAsync(RemoteDevice remoteDevice, DeviceTask task)
         {
             //TODOSTATUS
-            var code = _dataProtectionService.Decrypt(await _hardwareVaultService.GetVaultActivationCodeAsync(task.DeviceId));
-            var vault = await _hardwareVaultService.GetDeviceByIdAsync(task.DeviceId);
+            var code = await _hardwareVaultService.GetVaultActivationCodeAsync(task.DeviceId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(task.DeviceId);
 
             var key = ConvertUtils.HexStringToBytes(vault.MasterPassword);
             //await remoteDevice.Unlock(key);

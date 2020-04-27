@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
@@ -40,7 +41,8 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevices()
         {
-            return await _deviceService.GetDevicesAsync();
+            var count = await _deviceService.GetVaultsCountAsync(string.Empty, null);
+            return await _deviceService.GetVaultsAsync(0, count, nameof(Device.Id), ListSortDirection.Ascending, string.Empty, null);         
         }
 
         [HttpPost]
@@ -54,7 +56,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByEmployeeId(string id)
         {
-            return await _deviceService.GetDevicesByEmployeeIdAsync(id);
+            return await _deviceService.GetVaultsByEmployeeIdAsync(id);
         }
 
         [HttpGet("{id}")]
@@ -62,7 +64,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Device>> GetDeviceById(string id)
         {
-            var device = await _deviceService.GetDeviceByIdAsync(id);
+            var device = await _deviceService.GetVaultByIdAsync(id);
 
             if (device == null)
             {
@@ -107,9 +109,8 @@ namespace HES.Web.Controllers
         {
             try
             {
-                var devices = new string[] { setAccessProfileDto.DeviceId };
-                await _deviceService.SetProfileAsync(devices, setAccessProfileDto.ProfileId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
+                await _deviceService.ChangeVaultProfileAsync(setAccessProfileDto.DeviceId, setAccessProfileDto.ProfileId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(setAccessProfileDto.DeviceId);
             }
             catch (Exception ex)
             {
@@ -148,7 +149,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DeviceAccessProfile>>> GetAccessProfiles()
         {
-            return await _deviceService.GetAccessProfilesAsync();
+            return await _deviceService.GetProfilesAsync();
         }
 
         [HttpGet("{id}")]
@@ -156,7 +157,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<DeviceAccessProfile>> GetAccessProfileById(string id)
         {
-            var accessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
+            var accessProfile = await _deviceService.GetProfileByIdAsync(id);
 
             if (accessProfile == null)
             {
@@ -227,9 +228,8 @@ namespace HES.Web.Controllers
                     PinLength = deviceAccessProfileDto.PinLength,
                     PinTryCount = deviceAccessProfileDto.PinTryCount
                 };
-                await _deviceService.EditProfileAsync(deviceAccessProfile);
-                var devicesIds = await _deviceService.UpdateProfileAsync(deviceAccessProfile.Id);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devicesIds);
+                await _deviceService.EditProfileAsync(deviceAccessProfile);          
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _deviceService.GetVaultIdsByProfileTaskAsync(deviceAccessProfile.Id));
             }
             catch (Exception ex)
             {
@@ -245,7 +245,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<DeviceAccessProfile>> DeleteAccessProfile(string id)
         {
-            var deviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
+            var deviceAccessProfile = await _deviceService.GetProfileByIdAsync(id);
             if (deviceAccessProfile == null)
             {
                 return NotFound();

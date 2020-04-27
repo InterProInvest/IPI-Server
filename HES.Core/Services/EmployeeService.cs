@@ -218,7 +218,7 @@ namespace HES.Core.Services
 
         public async Task UpdateLastSeenAsync(string deviceId)
         {
-            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
+            var device = await _deviceService.GetVaultByIdAsync(deviceId);
             var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
 
             if (employee != null)
@@ -253,7 +253,7 @@ namespace HES.Core.Services
             {
                 foreach (var vaultId in vaults)
                 {
-                    var vault = await _deviceService.GetDeviceByIdAsync(vaultId);
+                    var vault = await _deviceService.GetVaultByIdAsync(vaultId);
 
                     if (vault == null)
                         throw new Exception($"Vault {vault} not found");
@@ -275,44 +275,42 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveDeviceAsync(string employeeId, string deviceId)
+        public async Task RemoveDeviceAsync(string employeeId, string vaultId)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
 
-            if (deviceId == null)
-                throw new ArgumentNullException(nameof(deviceId));
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
 
             _dataProtectionService.Validate();
 
-            var device = await _deviceService.GetDeviceByIdAsync(deviceId);
-            if (device == null)
-                throw new Exception($"Device {deviceId} not found");
+            var vault = await _deviceService.GetVaultByIdAsync(vaultId);
+            if (vault == null)
+                throw new Exception($"Vault {vaultId} not found");
 
-            if (device.EmployeeId != employeeId)
-                throw new Exception($"Device {deviceId} not linked to this employee");
+            if (vault.EmployeeId != employeeId)
+                throw new Exception($"Vault {vaultId} not linked to this employee");
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await _deviceTaskService.RemoveAllTasksAsync(deviceId);
-                await _workstationService.RemoveAllProximityAsync(deviceId);
+                await _deviceTaskService.RemoveAllTasksAsync(vaultId);
+                await _workstationService.RemoveAllProximityAsync(vaultId);
 
-                device.EmployeeId = null;
-                device.AcceessProfileId = "default";
+                vault.EmployeeId = null;
 
-                if (device.MasterPassword != null)
+                if (vault.MasterPassword == null)
                 {
-                    device.Status = VaultStatus.Deactivated; // TODO set status
-                    await _deviceTaskService.AddWipeAsync(device.Id, device.MasterPassword);
+                    vault.Status = VaultStatus.Ready;
+                    await _deviceService.ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
                 }
-
-                await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.EmployeeId), nameof(Device.AcceessProfileId), nameof(Device.Status) });
-
-                var employee = await _employeeRepository.GetByIdAsync(employeeId);
-                if (employee.Devices.Count() == 0)
+                else
                 {
+                    vault.Status = VaultStatus.Deactivated;
                     await _accountService.RemoveAllAccountsAsync(employeeId);
                 }
+
+                await _deviceService.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.EmployeeId), nameof(Device.Status) });
 
                 transactionScope.Complete();
             }
@@ -974,17 +972,17 @@ namespace HES.Core.Services
 
         #endregion
 
-        public async Task HandlingMasterPasswordErrorAsync(string deviceId)
-        {
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await _deviceTaskService.RemoveAllTasksAsync(deviceId);
-                await _accountService.RemoveAllAccountsAsync(deviceId);
-                await _workstationService.RemoveAllProximityAsync(deviceId);
-                await _deviceService.RemoveEmployeeAsync(deviceId);
-                await _licenseService.DiscardLicenseAppliedAsync(deviceId);
-                transactionScope.Complete();
-            }
-        }
+        //public async Task HandlingMasterPasswordErrorAsync(string deviceId)
+        //{
+        //    using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        //    {
+        //        await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+        //        await _accountService.RemoveAllAccountsAsync(deviceId);
+        //        await _workstationService.RemoveAllProximityAsync(deviceId);
+        //        await _deviceService.RemoveEmployeeAsync(deviceId);
+        //        await _licenseService.DiscardLicenseAppliedAsync(deviceId);
+        //        transactionScope.Complete();
+        //    }
+        //}
     }
 }

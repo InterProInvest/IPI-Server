@@ -198,7 +198,7 @@ namespace HES.Core.Services
             {
                 if (device.MasterPassword != null)
                 {
-                    await _deviceService.SetVaultStatusAsync(device.Id, VaultStatus.Error);
+                    await _deviceService.ErrorVaultAsync(device.Id);
                     throw new Exception("The device was wiped in a non-current server");
                 }
                 else
@@ -242,7 +242,7 @@ namespace HES.Core.Services
             }
             catch (HideezException ex) when (ex.ErrorCode == HideezErrorCode.ERR_KEY_WRONG)
             {
-                await _deviceService.SetVaultStatusAsync(vault.Id, VaultStatus.Error);
+                await _deviceService.ErrorVaultAsync(vault.Id);
                 throw;
             }
         }
