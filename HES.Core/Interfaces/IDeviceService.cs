@@ -32,10 +32,12 @@ namespace HES.Core.Interfaces
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
         Task RemoveEmployeeAsync(string deviceId);
         Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
+
         Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);
+        Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
-        Task SuspendVaultAsync(string vaultId);
+        Task SuspendVaultAsync(string vaultId, string description);
         Task ResetVaultStatusAsync(string vaultId);
 
         IQueryable<DeviceAccessProfile> AccessProfileQuery();

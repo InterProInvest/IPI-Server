@@ -503,6 +503,8 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.Status) });
         }
 
+
+
         public async Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId)
         {
             if (vaultId == null)
@@ -517,6 +519,22 @@ namespace HES.Core.Services
             };
 
             return await _hardwareVaultActivationRepository.AddAsync(vaultActivation);
+        }
+
+        public async Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status)
+        {
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
+            _dataProtectionService.Validate();
+
+            var vaultActivation = await _hardwareVaultActivationRepository.Query().FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
+            if (vaultActivation == null)
+                throw new Exception($"Vault activation not found for [{vaultId}]");
+
+            vaultActivation.Status = status;
+
+            await _hardwareVaultActivationRepository.UpdateOnlyPropAsync(vaultActivation, new string[] { nameof(HardwareVaultActivation.Status) });
         }
 
         public async Task<string> GetVaultActivationCodeAsync(string vaultId)
@@ -539,9 +557,12 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
+            if (vault.Status != VaultStatus.Locked)
+                throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
+
             vault.Status = VaultStatus.Suspended;
-            vault.StatusReason = VaultStatusReason.Activation;
-            vault.StatusDescription = null;
+            vault.StatusReason = VaultStatusReason.None;
+            vault.StatusDescription = "Pending hardware vault activation";
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -551,6 +572,37 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
+        }
+
+        public async Task SuspendVaultAsync(string vaultId, string description)
+        {
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
+            var vault = await GetDeviceByIdAsync(vaultId);
+            if (vault == null)
+                throw new Exception($"Vault {vaultId} not found");
+
+            if (vault.Status != VaultStatus.Active || vault.Status != VaultStatus.Locked)
+                throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
+
+            vault.Status = VaultStatus.Suspended;
+            vault.StatusReason = VaultStatusReason.None;
+            vault.StatusDescription = description;
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await GenerateVaultActivationAsync(vaultId);
+                await UpdateOnlyPropAsync(vault, new string[] { nameof(Device.Status), nameof(Device.StatusReason), nameof(Device.StatusDescription) });
+                await _deviceTaskService.AddSuspendAsync(vaultId);
+
+                transactionScope.Complete();
+            }
+        }
+
+        public Task ResetVaultStatusAsync(string vaultId)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -710,16 +762,6 @@ namespace HES.Core.Services
             }
 
             return devicesIds;
-        }
-
-        public Task SuspendVaultAsync(string vaultId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ResetVaultStatusAsync(string vaultId)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

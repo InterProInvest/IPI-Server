@@ -79,7 +79,6 @@ namespace HES.Core.Services
 
         public async Task AddSuspendAsync(string vaultId)
         {
-            //TODOSTATUS
             var task = new DeviceTask
             {
                 DeviceId = vaultId,   

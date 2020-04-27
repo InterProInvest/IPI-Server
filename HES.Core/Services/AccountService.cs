@@ -75,17 +75,20 @@ namespace HES.Core.Services
 
         public async Task RemoveAllAccountsAsync(string employeeId)
         {
-            var allAccounts = await _accountRepository
+            var accounts = await _accountRepository
                  .Query()
                  .Where(d => d.EmployeeId == employeeId && d.Deleted == false)
                  .ToListAsync();
 
-            foreach (var account in allAccounts)
+            if (accounts != null)
             {
-                account.Deleted = true;
-            }
+                foreach (var account in accounts)
+                {
+                    account.Deleted = true;
+                }
 
-            await _accountRepository.UpdateOnlyPropAsync(allAccounts, new string[] { nameof(Account.Deleted) });
+                await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
+            }
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Account, bool>> predicate)
