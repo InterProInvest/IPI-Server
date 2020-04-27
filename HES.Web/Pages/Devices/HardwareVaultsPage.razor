@@ -17,6 +17,14 @@ else
                 Edit RFID
             </button>
 
+            @if (SelectedHardwareVault.Status == VaultStatus.Locked)
+            {
+                <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
+                    <img class="icon-btn" src="/svg/action/unlock.svg" />
+                    Activate vault
+                </button>
+            }
+
             @if (SelectedHardwareVault.Status == VaultStatus.Active)
             {
                 <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
@@ -25,22 +33,19 @@ else
                 </button>
             }
 
-            @if (SelectedHardwareVault.Status == VaultStatus.Suspended)
+
+
+            @if (SelectedHardwareVault.Status == VaultStatus.Active || SelectedHardwareVault.Status == VaultStatus.Locked || SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
             {
-                <button type="button" class="btn btn-light border mx-2" title="Compromised">
+                <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
                     <img class="icon-btn" src="/svg/action/password.svg" />
-                    Compromised
+                    Vault Is Compromised
                 </button>
 
-                <button type="button" class="btn btn-light border mx-2" title="Deactivated">
-                    <img class="icon-btn" src="/svg/action/delete.svg" />
-                    Deactivated
-                </button>
-
-                <button type="button" class="btn btn-light border mx-2" title="Show activation code">
+                @*<button type="button" class="btn btn-light border mx-2" title="Show activation code">
                     <img class="icon-btn" src="/svg/action/details.svg" />
                     Show activation code
-                </button>
+                </button>*@
             }
         }
     </TableAction>
@@ -132,8 +137,6 @@ else
                     {
                     @context.Id
                     }
-                /**/
-                /**/
             </td>
             <td>
                 @context.MAC
@@ -154,8 +157,6 @@ else
                     <img src="/svg/device/battery_15.svg" alt="@context.Battery" />
                     <span>@context.Battery%</span>
                     }
-                /**/
-                /**/
             </td>
             <td>
                 @context.Firmware
@@ -171,8 +172,6 @@ else
                     {
                     @context.LastSynced.Value.ToLocalTime()
                     }
-                /**/
-                /**/
             </td>
             <td>
                 @context.LicenseStatus
@@ -182,8 +181,6 @@ else
                     {
                     @context.LicenseEndDate.Value.ToShortDateString()
                     }
-                /**/
-                /**/
             </td>
             <td>
                 @context.Employee?.FullName

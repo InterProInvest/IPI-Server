@@ -1,23 +1,58 @@
-﻿@if (HardwareVaultId == null)
+﻿@if (StatusesReasons == null || HardwareVaultId == null)
 {
     <LoadingSpinner />
 }
 else
 {
-        @if (VaultStatus == VaultStatus.Suspended)
-        {
-            <div class="alert alert-success" role="alert">
-                Вы уверены что хотите заморозить @HardwareVaultId устройство?
-            </div>
+    @if (VaultStatus == VaultStatus.Suspended)
+    {
+        <div class="alert alert-success" role="alert">
+            Вы уверены что хотите заморозить @HardwareVaultId устройство?
+        </div>
 
-            <div>
-                <textarea @bind="StatusDescription" class="form-control" placeholder="StatusDescription" rows="2" />
-            </div>
+        <div>
+            <textarea @bind="StatusDescription" class="form-control" placeholder="StatusDescription" rows="2" />
+        </div>
 
-            <div class="d-flex justify-content-end mt-2">
-                <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancle</button>
-                <input type="submit" class="btn btn-primary" @onclick="ChangeStatusAsync" value="Submit" />
-            </div>
-        }
+        <div class="d-flex justify-content-end mt-2">
+            <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancle</button>
+            <input type="submit" class="btn btn-primary" @onclick="ChangeStatusAsync" value="Ok" />
+        </div>
+    }
+    else if (VaultStatus == VaultStatus.Active)
+    {
+        <div class="alert alert-success" role="alert">
+            Вы уверены что хотите активировать @HardwareVaultId устройство?
+        </div>
+
+        <div class="d-flex justify-content-end mt-2">
+            <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancle</button>
+            <input type="submit" class="btn btn-primary" @onclick="ChangeStatusAsync" value="Ok" />
+        </div>
+    }
+    else if (VaultStatus == VaultStatus.Compromised)
+    {
+        <div class="alert alert-success" role="alert">
+            Вы уверены что хотите перевести @HardwareVaultId устройство в статус Compromised?
+        </div>
+
+        <div>
+            <label class="mb-0 text-gray">Status reason</label>
+            <select id="filterStatus" @bind="StatusReason" class="form-control">
+                @foreach (var item in StatusesReasons)
+                {
+                    <option value="@item.Text">@item.Text</option>
+                }
+            </select>
+        </div>
+
+        <div class="mt-2">
+            <textarea @bind="StatusDescription" class="form-control" placeholder="StatusDescription" rows="2" />
+        </div>
+
+        <div class="d-flex justify-content-end mt-2">
+            <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancle</button>
+            <input type="submit" class="btn btn-primary" @onclick="ChangeStatusAsync" value="Ok" />
+        </div>
+    }
 }
-

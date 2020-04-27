@@ -178,6 +178,34 @@ namespace HES.Web.Pages.Devices
             await ModalDialogService.ShowAsync("Suspend Vault", body);
         }
 
+        private async Task ActivateVaultAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ChangeVaultStatus));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.AddAttribute(3, "VaultStatus", VaultStatus.Active);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Activate Vault", body);
+        }
+
+        private async Task CompromisedVaultAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ChangeVaultStatus));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.AddAttribute(3, "VaultStatus", VaultStatus.Compromised);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Compromised Vault", body);
+        }
+
         #endregion
     }
 }

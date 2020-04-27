@@ -511,8 +511,8 @@ namespace HES.Core.Services
             var vault = await GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
-
-            if (vault.Status != VaultStatus.Active || vault.Status != VaultStatus.Locked)
+            
+            if (vault.Status != VaultStatus.Active && vault.Status != VaultStatus.Locked)
                 throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
 
             vault.Status = VaultStatus.Suspended;

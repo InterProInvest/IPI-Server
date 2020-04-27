@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -35,24 +36,41 @@ namespace HES.Web.Pages.Devices
         public EventCallback Refresh { get; set; }
 
         public string StatusDescription { get; set; }
+        public VaultStatusReason StatusReason { get; set; }
+        public SelectList StatusesReasons { get; set; }
+
+        protected override void OnParametersSet()
+        {
+            StatusesReasons = new SelectList(Enum.GetValues(typeof(VaultStatusReason)).Cast<VaultStatusReason>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+        }
 
         private async Task ChangeStatusAsync()
         {
-            if (VaultStatus == VaultStatus.Suspended)
+            try
             {
-                try
+
+                if (VaultStatus == VaultStatus.Suspended)
                 {
                     await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
-                    await Refresh.InvokeAsync(this);
-                    ToastService.ShowToast("Vault suspended", ToastLevel.Success);
-                    await CloseAsync();
                 }
-                catch (Exception ex)
+                else if(VaultStatus == VaultStatus.Active)
                 {
-                    Logger.LogError(ex.Message);
-                    ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                    await CloseAsync();
+                    await HardwareVaultService.ActivateVaultAsync(HardwareVaultId);
                 }
+                else if(VaultStatus == VaultStatus.Compromised)
+                {
+                    await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId);
+                }
+
+                await Refresh.InvokeAsync(this);
+                ToastService.ShowToast("Vault suspended", ToastLevel.Success);
+                await CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await CloseAsync();
             }
         }
 
