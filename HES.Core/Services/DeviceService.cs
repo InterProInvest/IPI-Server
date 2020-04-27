@@ -1,6 +1,7 @@
 ﻿using HES.Core.Constants;
 using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API.Device;
@@ -23,7 +24,7 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<Device> _hardwareVaultRepository;
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
-        private readonly IAsyncRepository<DeviceAccessProfile> _deviceAccessProfileRepository;
+        private readonly IAsyncRepository<DeviceAccessProfile> _hardwareVaultProfileRepository;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IAccountService _accountService;
         private readonly IWorkstationService _workstationService;
@@ -43,7 +44,7 @@ namespace HES.Core.Services
         {
             _hardwareVaultRepository = hardwareVaultRepository;
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
-            _deviceAccessProfileRepository = deviceAccessProfileRepository;
+            _hardwareVaultProfileRepository = deviceAccessProfileRepository;
             _deviceTaskService = deviceTaskService;
             _accountService = accountService;
             _workstationService = workstationService;
@@ -59,20 +60,20 @@ namespace HES.Core.Services
             return _hardwareVaultRepository.Query();
         }
 
-        public async Task<Device> GetVaultByIdAsync(string id)
+        public async Task<Device> GetVaultByIdAsync(string profileId)
         {
             return await _hardwareVaultRepository
                 .Query()
                 .Include(d => d.Employee)
                 .Include(d => d.DeviceAccessProfile)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == profileId);
         }
 
-        public async Task<List<Device>> GetVaultsByEmployeeIdAsync(string id)
+        public async Task<List<Device>> GetVaultsByEmployeeIdAsync(string profileId)
         {
             return await _hardwareVaultRepository
                 .Query()
-                .Where(d => d.EmployeeId == id)
+                .Where(d => d.EmployeeId == profileId)
                 .ToListAsync();
         }
 
@@ -431,40 +432,6 @@ namespace HES.Core.Services
             return await _hardwareVaultRepository.ExistAsync(predicate);
         }
 
-        public async Task RemoveEmployeeAsync(string deviceId)
-        {
-            var device = await _hardwareVaultRepository.GetByIdAsync(deviceId);
-
-            device.EmployeeId = null;
-            device.MasterPassword = null;
-            device.AcceessProfileId = "default";
-            device.LastSynced = DateTime.UtcNow;
-            device.NeedSync = false;
-
-            var properties = new List<string>()
-            {
-                nameof(Device.EmployeeId),
-                nameof(Device.MasterPassword),
-                nameof(Device.AcceessProfileId),
-                nameof(Device.LastSynced),
-                nameof(Device.NeedSync)
-            };
-
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(device, properties.ToArray());
-        }
-
-        public async Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus)
-        {
-            var vault = await GetVaultByIdAsync(vaultId);
-
-            if (vault.Status == vaultStatus)
-                return;
-
-            vault.Status = vaultStatus;
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.Status) });
-        }
-
-
         public async Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId)
         {
             if (vaultId == null)
@@ -571,9 +538,6 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
-            if (vault.Status != VaultStatus.Compromised)
-                throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
-
             vault.EmployeeId = null;
             vault.Status = VaultStatus.Compromised;
 
@@ -589,26 +553,49 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task ErrorVaultAsync(string vaultId)
+        {
+            var vault = await GetVaultByIdAsync(vaultId);
+
+            if (vault == null)
+                throw new Exception($"Vault {vaultId} not found");
+
+            if (vault.Status != VaultStatus.Active || vault.Status != VaultStatus.Locked || vault.Status != VaultStatus.Suspended)
+                throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
+
+            vault.Status = VaultStatus.Error;
+            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.Status) });
+        }
+
         #endregion
 
         #region Profile
 
-        public IQueryable<DeviceAccessProfile> AccessProfileQuery()
+        public IQueryable<DeviceAccessProfile> ProfileQuery()
         {
-            return _deviceAccessProfileRepository.Query();
+            return _hardwareVaultProfileRepository.Query();
         }
 
-        public async Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id)
+        public async Task<DeviceAccessProfile> GetProfileByIdAsync(string profileId)
         {
-            return await _deviceAccessProfileRepository
+            return await _hardwareVaultProfileRepository
                 .Query()
                 .Include(d => d.Devices)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == profileId);
         }
 
-        public async Task<List<DeviceAccessProfile>> GetAccessProfilesAsync()
+        public async Task<List<string>> GetVaultIdsByProfileTaskAsync(string profileId)
         {
-            return await _deviceAccessProfileRepository
+            return await _deviceTaskService
+                .TaskQuery()
+                .Where(x => x.Operation == TaskOperation.Profile)
+                .Select(x => x.DeviceId)
+                .ToListAsync();
+        }
+
+        public async Task<List<DeviceAccessProfile>> GetProfilesAsync()
+        {
+            return await _hardwareVaultProfileRepository
                 .Query()
                 .Include(d => d.Devices)
                 .ToListAsync();
@@ -621,7 +608,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(deviceAccessProfile));
             }
 
-            var profile = await _deviceAccessProfileRepository
+            var profile = await _hardwareVaultProfileRepository
                 .Query()
                 .Where(d => d.Name == deviceAccessProfile.Name)
                 .AnyAsync();
@@ -632,28 +619,40 @@ namespace HES.Core.Services
             }
 
             deviceAccessProfile.CreatedAt = DateTime.UtcNow;
-            return await _deviceAccessProfileRepository.AddAsync(deviceAccessProfile);
+            return await _hardwareVaultProfileRepository.AddAsync(deviceAccessProfile);
         }
 
         public async Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile)
         {
             if (deviceAccessProfile == null)
-            {
                 throw new ArgumentNullException(nameof(deviceAccessProfile));
-            }
 
-            var profile = await _deviceAccessProfileRepository
+            var profile = await _hardwareVaultProfileRepository
                .Query()
                .Where(d => d.Name == deviceAccessProfile.Name && d.Id != deviceAccessProfile.Id)
                .AnyAsync();
 
             if (profile)
-            {
-                throw new Exception($"Name {deviceAccessProfile.Name} is already taken.");
-            }
+                throw new AlreadyExistException($"Name {deviceAccessProfile.Name} is already taken.");
 
             deviceAccessProfile.UpdatedAt = DateTime.UtcNow;
-            await _deviceAccessProfileRepository.UpdateAsync(deviceAccessProfile);
+
+            var vaults = await _hardwareVaultRepository
+                .Query()
+                .Where(x => x.AcceessProfileId == deviceAccessProfile.Id && (x.Status == VaultStatus.Active || x.Status == VaultStatus.Locked || x.Status == VaultStatus.Suspended))
+                .ToListAsync();
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _hardwareVaultProfileRepository.UpdateAsync(deviceAccessProfile);
+
+                foreach (var vault in vaults)
+                {
+                    await _deviceTaskService.AddProfileAsync(vault);
+                }
+
+                transactionScope.Complete();
+            }
         }
 
         public async Task DeleteProfileAsync(string id)
@@ -668,84 +667,43 @@ namespace HES.Core.Services
                 throw new Exception("Cannot delete a default profile");
             }
 
-            var deviceAccessProfile = await _deviceAccessProfileRepository.GetByIdAsync(id);
+            var deviceAccessProfile = await _hardwareVaultProfileRepository.GetByIdAsync(id);
             if (deviceAccessProfile == null)
             {
                 throw new Exception("Device access profile not found");
             }
 
-            await _deviceAccessProfileRepository.DeleteAsync(deviceAccessProfile);
+            await _hardwareVaultProfileRepository.DeleteAsync(deviceAccessProfile);
         }
 
-        public async Task SetProfileAsync(string[] devicesId, string profileId)
+        public async Task ChangeVaultProfileAsync(string vaultId, string profileId)
         {
-            if (devicesId == null)
-            {
-                throw new ArgumentNullException(nameof(devicesId));
-            }
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
             if (profileId == null)
-            {
                 throw new ArgumentNullException(nameof(profileId));
-            }
 
-            var state = await _hardwareVaultRepository.Query().Where(x => devicesId.Contains(x.Id) && x.Status != VaultStatus.Active).AsNoTracking().AnyAsync();
-            if (state)
-            {
-                throw new Exception("You have chosen a device with a status that does not allow changing the profile.");
-            }
+            var vault = await GetVaultByIdAsync(vaultId);
+            if (vault == null)
+                throw new Exception($"Vault {vaultId} not found");
 
-            var profile = await _deviceAccessProfileRepository.GetByIdAsync(profileId);
+            if (vault.Status != VaultStatus.Active)
+                throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
+
+            var profile = await _hardwareVaultProfileRepository.GetByIdAsync(profileId);
             if (profile == null)
-            {
-                throw new Exception("Profile not found");
-            }
+                throw new Exception("Vault profile not found");
+
+            vault.AcceessProfileId = profileId;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                foreach (var deviceId in devicesId)
-                {
-                    var device = await _hardwareVaultRepository.GetByIdAsync(deviceId);
-                    if (device != null)
-                    {
-                        device.AcceessProfileId = profileId;
-                        await _hardwareVaultRepository.UpdateOnlyPropAsync(device, new string[] { "AcceessProfileId" });
+                await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(Device.AcceessProfileId) });
+                await _deviceTaskService.AddProfileAsync(vault);
 
-                        if (device.MasterPassword != null && device.EmployeeId != null)
-                        {
-                            // Delete all previous tasks for update profile
-                            await _deviceTaskService.RemoveAllProfileTasksAsync(device.Id);
-                            // Add task for update profile
-                            await _deviceTaskService.AddProfileAsync(device);
-                        }
-                    }
-                }
                 transactionScope.Complete();
             }
-        }
-
-        public async Task<string[]> UpdateProfileAsync(string profileId)
-        {
-            // Get devices by profile id
-            var tasks = await _deviceTaskService
-               .TaskQuery()
-               .Where(d => d.Operation == TaskOperation.Wipe || d.Operation == TaskOperation.Link)
-               .Select(s => s.DeviceId)
-               .AsNoTracking()
-               .ToListAsync();
-
-            var devicesIds = await _hardwareVaultRepository
-               .Query()
-               .Where(d => d.AcceessProfileId == profileId && d.EmployeeId != null && !tasks.Contains(d.Id))
-               .Select(s => s.Id)
-               .AsNoTracking()
-               .ToArrayAsync();
-
-            if (devicesIds.Length > 0)
-            {
-                await SetProfileAsync(devicesIds, profileId);
-            }
-
-            return devicesIds;
         }
 
         #endregion

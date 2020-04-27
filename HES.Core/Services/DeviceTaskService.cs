@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -64,24 +65,38 @@ namespace HES.Core.Services
             await _deviceTaskRepository.AddAsync(task);
         }
 
-        public async Task AddProfileAsync(Device device)
+        public async Task AddProfileAsync(Device vault)
         {
-            var task = new DeviceTask
+            var previousProfileTask = await _deviceTaskRepository
+                .Query()
+                .FirstOrDefaultAsync(x => x.DeviceId == vault.Id && x.Operation == TaskOperation.Profile);
+
+            var newProfileTask = new DeviceTask
             {
-                DeviceId = device.Id,
-                Password = device.MasterPassword,
+                DeviceId = vault.Id,
+                Password = vault.MasterPassword,
                 Operation = TaskOperation.Profile,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _deviceTaskRepository.AddAsync(task);
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                if (previousProfileTask != null)
+                {
+                    await _deviceTaskRepository.DeleteAsync(previousProfileTask);
+                }
+
+                await _deviceTaskRepository.AddAsync(newProfileTask);
+
+                transactionScope.Complete();
+            }
         }
 
         public async Task AddSuspendAsync(string vaultId)
         {
             var task = new DeviceTask
             {
-                DeviceId = vaultId,   
+                DeviceId = vaultId,
                 Operation = TaskOperation.Suspend,
                 CreatedAt = DateTime.UtcNow
             };
@@ -121,14 +136,14 @@ namespace HES.Core.Services
             await _deviceTaskRepository.DeleteRangeAsync(allTasks);
         }
 
-        public async Task RemoveAllProfileTasksAsync(string deviceId)
+        public async Task RemoveAllProfileTasksAsync(string vaultId)
         {
-            var allTasks = await _deviceTaskRepository
+            var tasks = await _deviceTaskRepository
                 .Query()
-                .Where(t => t.DeviceId == deviceId && t.Operation == TaskOperation.Profile)
+                .Where(t => t.DeviceId == vaultId && t.Operation == TaskOperation.Profile)
                 .ToListAsync();
 
-            await _deviceTaskRepository.DeleteRangeAsync(allTasks);
+            await _deviceTaskRepository.DeleteRangeAsync(tasks);
         }
     }
 }

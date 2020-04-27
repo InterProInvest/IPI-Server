@@ -38,7 +38,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
 
         public async Task OnGetAsync()
         {
-            DeviceAccessProfiles = await _deviceService.GetAccessProfilesAsync();
+            DeviceAccessProfiles = await _deviceService.GetProfilesAsync();
         }
 
         public IActionResult OnGetCreateProfile()
@@ -77,7 +77,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
                 return NotFound();
             }
 
-            DeviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
+            DeviceAccessProfile = await _deviceService.GetProfileByIdAsync(id);
 
             if (DeviceAccessProfile == null)
             {
@@ -99,9 +99,8 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
 
             try
             {
-                await _deviceService.EditProfileAsync(DeviceAccessProfile);
-                var devicesId = await _deviceService.UpdateProfileAsync(DeviceAccessProfile.Id);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devicesId);
+                await _deviceService.EditProfileAsync(DeviceAccessProfile);               
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _deviceService.GetVaultIdsByProfileTaskAsync(DeviceAccessProfile.Id));
                 SuccessMessage = $"Device access profile updated.";
             }
             catch (Exception ex)
@@ -121,7 +120,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
                 return NotFound();
             }
 
-            DeviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
+            DeviceAccessProfile = await _deviceService.GetProfileByIdAsync(id);
 
             if (DeviceAccessProfile == null)
             {
@@ -164,7 +163,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
                 return NotFound();
             }
 
-            DeviceAccessProfile = await _deviceService.GetAccessProfileByIdAsync(id);
+            DeviceAccessProfile = await _deviceService.GetProfileByIdAsync(id);
 
             if (DeviceAccessProfile == null)
             {

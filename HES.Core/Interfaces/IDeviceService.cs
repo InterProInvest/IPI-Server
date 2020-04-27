@@ -28,23 +28,21 @@ namespace HES.Core.Interfaces
         Task UpdateNeedSyncAsync(Device device, bool needSync);
         Task UpdateNeedSyncAsync(IList<Device> devices, bool needSync);
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
-        Task RemoveEmployeeAsync(string deviceId);
-        Task SetVaultStatusAsync(string vaultId, VaultStatus vaultStatus);
-
         Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);
         Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);
         Task VaultCompromisedAsync(string vaultId);
+        Task ErrorVaultAsync(string vaultId);
 
-        IQueryable<DeviceAccessProfile> AccessProfileQuery();
-        Task<List<DeviceAccessProfile>> GetAccessProfilesAsync();
-        Task<DeviceAccessProfile> GetAccessProfileByIdAsync(string id);
+        IQueryable<DeviceAccessProfile> ProfileQuery();
+        Task<List<DeviceAccessProfile>> GetProfilesAsync();
+        Task<DeviceAccessProfile> GetProfileByIdAsync(string profileId);
+        Task<List<string>> GetVaultIdsByProfileTaskAsync(string profileId);
         Task<DeviceAccessProfile> CreateProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task DeleteProfileAsync(string id);
-        Task SetProfileAsync(string[] devicesId, string profileId);
-        Task<string[]> UpdateProfileAsync(string profileId);
+        Task ChangeVaultProfileAsync(string vaultId, string profileId);      
     }
 }

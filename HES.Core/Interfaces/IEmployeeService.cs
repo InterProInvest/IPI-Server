@@ -38,6 +38,6 @@ namespace HES.Core.Interfaces
         Task EditPersonalAccountOtpAsync(Account account, AccountPassword accountPassword);
         Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId);
         Task<Account> DeleteAccountAsync(string accountId);
-        Task HandlingMasterPasswordErrorAsync(string deviceId);
+        //Task HandlingMasterPasswordErrorAsync(string deviceId);
     }
 }

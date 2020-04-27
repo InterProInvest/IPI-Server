@@ -972,17 +972,17 @@ namespace HES.Core.Services
 
         #endregion
 
-        public async Task HandlingMasterPasswordErrorAsync(string deviceId)
-        {
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await _deviceTaskService.RemoveAllTasksAsync(deviceId);
-                await _accountService.RemoveAllAccountsAsync(deviceId);
-                await _workstationService.RemoveAllProximityAsync(deviceId);
-                await _deviceService.RemoveEmployeeAsync(deviceId);
-                await _licenseService.DiscardLicenseAppliedAsync(deviceId);
-                transactionScope.Complete();
-            }
-        }
+        //public async Task HandlingMasterPasswordErrorAsync(string deviceId)
+        //{
+        //    using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+        //    {
+        //        await _deviceTaskService.RemoveAllTasksAsync(deviceId);
+        //        await _accountService.RemoveAllAccountsAsync(deviceId);
+        //        await _workstationService.RemoveAllProximityAsync(deviceId);
+        //        await _deviceService.RemoveEmployeeAsync(deviceId);
+        //        await _licenseService.DiscardLicenseAppliedAsync(deviceId);
+        //        transactionScope.Complete();
+        //    }
+        //}
     }
 }
