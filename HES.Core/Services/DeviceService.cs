@@ -721,9 +721,12 @@ namespace HES.Core.Services
             return devicesIds;
         }
 
-        public Task SuspendVaultAsync(string vaultId)
+        public async Task SuspendVaultAsync(string vaultId)
         {
-            throw new NotImplementedException();
+            var device = await _hardwareVaultRepository.GetByIdAsync(vaultId);
+            device.Status = VaultStatus.Suspended;
+            await _hardwareVaultRepository.UpdateOnlyPropAsync(device, new[] { "Status" });
+            //throw new NotImplementedException();
         }
 
         public Task ResetVaultStatusAsync(string vaultId)
