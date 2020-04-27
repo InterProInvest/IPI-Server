@@ -161,20 +161,21 @@ namespace HES.Web.Pages.Devices
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Delete group", body);
+            await ModalDialogService.ShowAsync("Edit RFID", body);
         }
 
         private async Task SuspendVaultAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenElement(0,"");
+                builder.OpenComponent(0, typeof(ChangeVaultStatus));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.AddAttribute(3, "VaultStatus", VaultStatus.Suspended);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Delete group", body);
+            await ModalDialogService.ShowAsync("Suspend Vault", body);
         }
 
         #endregion

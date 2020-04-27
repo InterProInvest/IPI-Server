@@ -19,9 +19,9 @@ else
 
         @if (SelectedHardwareVault.Status == VaultStatus.Active)
         {
-            <button type="button" @onclick="async (e) => await HardwareVaultService.SuspendVaultAsync(SelectedHardwareVault.Id)" class="btn btn-light border mx-2" title="Suspend device">
+            <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
                 <img class="icon-btn" src="/svg/action/otp.svg" />
-                Suspend device
+                Suspend vault
             </button>
         }
 
