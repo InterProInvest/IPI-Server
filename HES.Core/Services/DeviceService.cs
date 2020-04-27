@@ -236,6 +236,15 @@ namespace HES.Core.Services
                 case nameof(Device.Employee.EmpCompany):
                     query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Company) : query.OrderByDescending(x => x.Employee.Department.Company);
                     break;
+                case nameof(Device.Model):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Model) : query.OrderByDescending(x => x.Model);
+                    break;
+                case nameof(Device.Employee.Department):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Name) : query.OrderByDescending(x => x.Employee.Department.Name);
+                    break;
+                case nameof(Device.RFID):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.RFID) : query.OrderByDescending(x => x.RFID);
+                    break;
             }
 
             return await query.Skip(skip).Take(take).ToListAsync();

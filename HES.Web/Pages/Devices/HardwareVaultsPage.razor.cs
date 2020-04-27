@@ -164,6 +164,19 @@ namespace HES.Web.Pages.Devices
             await ModalDialogService.ShowAsync("Delete group", body);
         }
 
+        private async Task SuspendVaultAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenElement(0,"");
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete group", body);
+        }
+
         #endregion
     }
 }

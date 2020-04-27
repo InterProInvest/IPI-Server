@@ -4,28 +4,46 @@
 }
 else
 {
-    <TableAction>
-        <button class="btn btn-primary" @onclick="SynchronizeDevicesAsync">
-            <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span>Import devices</span>
+<TableAction>
+    <button class="btn btn-primary" @onclick="SynchronizeDevicesAsync">
+        <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        <span>Import devices</span>
+    </button>
+
+    @if (SelectedHardwareVault != null)
+    {
+        <button type="button" @onclick="EditVaultRFIDAsync" class="btn btn-light border mx-2" title="Edit RFID">
+            <img class="icon-btn" src="/svg/action/edit.svg" />
+            Edit RFID
         </button>
 
-        @if (SelectedHardwareVault != null)
+        @if (SelectedHardwareVault.Status == VaultStatus.Active)
         {
-            <button type="button" @onclick="EditVaultRFIDAsync" class="btn btn-light border mx-2" title="Edit RFID">
-                <img class="icon-btn" src="/svg/action/edit.svg" />
-                Edit RFID
+            <button type="button" @onclick="async (e) => await HardwareVaultService.SuspendVaultAsync(SelectedHardwareVault.Id)" class="btn btn-light border mx-2" title="Suspend device">
+                <img class="icon-btn" src="/svg/action/otp.svg" />
+                Suspend device
+            </button>
+        }
+
+        @if (SelectedHardwareVault.Status == VaultStatus.Suspended)
+        {
+            <button type="button" class="btn btn-light border mx-2" title="Compromised">
+                <img class="icon-btn" src="/svg/action/password.svg" />
+                Compromised
             </button>
 
-            @if (SelectedHardwareVault.Status == VaultStatus.Deactivated && SelectedHardwareVault.StatusReason == VaultStatusReason.LockedByInvalidPin)
-            {
-                <button type="button" class="btn btn-light border mr-2" title="Unlock PIN">
-                    <img class="icon-btn" src="/svg/action/unlock.svg" />
-                    Unlock PIN
-                </button>
-            }
+            <button type="button" class="btn btn-light border mx-2" title="Deactivated">
+                <img class="icon-btn" src="/svg/action/delete.svg" />
+                Deactivated
+            </button>
+
+            <button type="button" class="btn btn-light border mx-2" title="Show activation code">
+                <img class="icon-btn" src="/svg/action/details.svg" />
+                Show activation code
+            </button>
         }
-    </TableAction>
+    }
+</TableAction>
 
     <TableFilter SearchTextChanged="SearchTextChangedAsync">
         <HardVaultFilter FilterChanged="FilteredAsync" />
@@ -94,7 +112,7 @@ else
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Department"
-                             SortColumn="@nameof(Device.Employee.Department.Name)"
+                             SortColumn="@nameof(Device.Employee.Department)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
