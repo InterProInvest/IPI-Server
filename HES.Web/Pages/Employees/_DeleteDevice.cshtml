@@ -1,11 +1,21 @@
 ﻿@model HES.Web.Pages.Employees.DetailsModel
 
 <h5 class="text-gray mb-4 ">You want to remove device @Model.Device.Id? When removing the device, all accounts associated with the device will be deleted.</h5>
-
-<form method="post" class="text-right">
+<h6 class="text-gray">Select the reason:</h6>
+<form method="post">
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="reasonWithdrawal" asp-for="@Model.Reason" value="@HES.Core.Enums.VaultStatusReason.Withdrawal" checked>
+        <label class="custom-control-label" for="reasonWithdrawal">Withdrawal</label>
+    </div>
+    <div class="custom-control custom-radio">
+        <input type="radio" class="custom-control-input" id="reasonBroken" asp-for="@Model.Reason" value="@HES.Core.Enums.VaultStatusReason.Broken" />
+        <label class="custom-control-label" for="reasonBroken">Broken</label>
+    </div>
     <input type="hidden" asp-for="Device.Id" />
     <input type="hidden" asp-for="Device.Employee.Id" />
     <input type="hidden" asp-for="Device.Employee.Email" />
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-    <input type="submit" value="Delete" class="btn btn-danger" asp-page-handler="DeleteDevice" />
+    <div class="text-right">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <input type="submit" value="Delete" class="btn btn-danger" asp-page-handler="DeleteDevice" />
+    </div>
 </form>
