@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -55,9 +54,6 @@ namespace HES.Core.Services
 
             var account = deviceTask.Account;
 
-            //var properties = new List<string>() { "Status", "LastSyncedAt" };
-
-            // Set value depending on the operation
             switch (deviceTask.Operation)
             {
                 case TaskOperation.Create:
@@ -65,18 +61,10 @@ namespace HES.Core.Services
                     await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.IdFromDevice) });
                     break;
                 case TaskOperation.Update:
-                    break;
-                case TaskOperation.Delete:
-                    //if (account.Employee.PrimaryAccountId == account.Id)
-                    //{
-                    //    account.Employee.PrimaryAccountId = null;
-                    //    await _employeeService.UpdateOnlyPropAsync(account.Employee, new string[] { nameof(Employee.PrimaryAccountId) });
-                    //}        
-                    break;
+                case TaskOperation.Delete:    
                 case TaskOperation.Primary:
-                    //account.Status = AccountStatus.Done;
-                    //account.LastSyncedAt = DateTime.UtcNow;
-                    //await _accountService.UpdateOnlyPropAsync(account, properties.ToArray());
+                case TaskOperation.Profile:
+                case TaskOperation.Suspend:
                     break;
                 case TaskOperation.Wipe:
                     device.Status = Enums.VaultStatus.Ready;
@@ -84,18 +72,12 @@ namespace HES.Core.Services
                     await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status), nameof(Device.MasterPassword) });
                     await _licenseService.DiscardLicenseAppliedAsync(device.Id);
                     break;
-                case TaskOperation.Suspend:
-                    //device.Status = Enums.DeviceState.OK; //TODO
-                    //await _deviceService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.Status) });
-                    break;
                 case TaskOperation.Link:
                     device.MasterPassword = deviceTask.Password;
                     await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(Device.MasterPassword) });
                     break;
-                case TaskOperation.Profile:
-                    break;
                 default:
-                    _logger.LogCritical($"[{device.Id}] unhandled case {deviceTask.Operation.ToString()}");
+                    _logger.LogCritical($"Unhandled task operation ({deviceTask.Operation})");
                     break;
             }
 

@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Models;
 using HES.Core.Models.Web.HardwareVault;
+using Hideez.SDK.Communication.HES.DTO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,12 +20,13 @@ namespace HES.Core.Interfaces
         Task<List<Device>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter);
         Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter);
         Task<List<Device>> GetFilteredDevicesAsync(DeviceFilter deviceFilter);
-        Task<Device> AddDeviceAsync(Device device);
+        Task<Device> AddVaultIfNotExistAsync(Device device);
         Task ImportDevicesAsync();
         Task EditRfidAsync(Device device);
         Task UnchangedVaultAsync(Device vault);
         Task UpdateOnlyPropAsync(Device device, string[] properties);
-        Task UpdateDeviceInfoAsync(string deviceId, int battery, string firmware, bool locked);
+        Task UpdateAfterWipe(string vaultId);
+        Task UpdateDeviceInfoAsync(BleDeviceDto dto);
         Task UpdateNeedSyncAsync(Device device, bool needSync);
         Task UpdateNeedSyncAsync(IList<Device> devices, bool needSync);
         Task<bool> ExistAsync(Expression<Func<Device, bool>> predicate);
@@ -34,7 +36,6 @@ namespace HES.Core.Interfaces
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);
         Task VaultCompromisedAsync(string vaultId);
-        Task ErrorVaultAsync(string vaultId);
 
         IQueryable<DeviceAccessProfile> ProfileQuery();
         Task<List<DeviceAccessProfile>> GetProfilesAsync();
@@ -43,6 +44,6 @@ namespace HES.Core.Interfaces
         Task<DeviceAccessProfile> CreateProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task EditProfileAsync(DeviceAccessProfile deviceAccessProfile);
         Task DeleteProfileAsync(string id);
-        Task ChangeVaultProfileAsync(string vaultId, string profileId);      
+        Task ChangeVaultProfileAsync(string vaultId, string profileId);
     }
 }

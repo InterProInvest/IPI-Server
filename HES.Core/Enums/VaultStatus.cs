@@ -8,7 +8,6 @@
 		Locked,
 		Suspended,
 		Deactivated,
-		Compromised,
-		Error
+		Compromised
 	}
 }
