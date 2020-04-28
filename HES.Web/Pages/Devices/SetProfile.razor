@@ -1,5 +1,35 @@
-﻿<h3>SetProfile</h3>
+﻿@if (VaultProfiles == null)
+{
+    <LoadingText />
+}
+else
+{
+    <div class="alert alert-success" role="alert">
+        Сменить статус доступа для устройства @HardwareVaultId?
+    </div>
 
-@code {
+    <div>
+        <label class="mb-0 text-gray">Hardware vault profile</label>
+        <select id="filterStatus" @bind="SelectedVaultProfileId" class="form-control">
 
+            @foreach (var item in VaultProfiles)
+            {
+                @if (item == VaultProfiles.First())
+                {
+                    <option selected value="@item.Value">@item.Text</option>
+
+                }
+                else
+                {
+                    <option value="@item.Value">@item.Text</option>
+                }
+            }
+
+        </select>
+    </div>
+
+    <div class="d-flex justify-content-end mt-2">
+        <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancle</button>
+        <input type="submit" class="btn btn-primary" @onclick="SetVaultProfileAsync" value="Ok" />
+    </div>
 }

@@ -4,53 +4,58 @@
 }
 else
 {
-    <TableAction>
-        <button class="btn btn-primary" @onclick="SynchronizeDevicesAsync">
-            <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span>Import devices</span>
+<TableAction>
+    <button class="btn btn-primary" @onclick="SynchronizeDevicesAsync">
+        <span id="syncBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        <span>Import devices</span>
+    </button>
+
+    @if (SelectedHardwareVault != null)
+    {
+        <button type="button" @onclick="EditVaultRFIDAsync" class="btn btn-light border mx-2" title="Edit RFID">
+            <img class="icon-btn" src="/svg/action/edit.svg" />
+            Edit RFID
         </button>
 
-        @if (SelectedHardwareVault != null)
+        @if (SelectedHardwareVault.Status == VaultStatus.Locked)
         {
-            <button type="button" @onclick="EditVaultRFIDAsync" class="btn btn-light border mx-2" title="Edit RFID">
-                <img class="icon-btn" src="/svg/action/edit.svg" />
-                Edit RFID
+            <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
+                <img class="icon-btn" src="/svg/action/unlock.svg" />
+                Activate vault
+            </button>
+        }
+
+        @if (SelectedHardwareVault.Status == VaultStatus.Active)
+        {
+            <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
+                <img class="icon-btn" src="/svg/action/otp.svg" />
+                Suspend vault
             </button>
 
-            @if (SelectedHardwareVault.Status == VaultStatus.Locked)
-            {
-                <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
-                    <img class="icon-btn" src="/svg/action/unlock.svg" />
-                    Activate vault
-                </button>
-            }
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Active)
-            {
-                <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
-                    <img class="icon-btn" src="/svg/action/otp.svg" />
-                    Suspend vault
-                </button>
-            }
-
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Active || SelectedHardwareVault.Status == VaultStatus.Locked || SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
-            {
-                <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
-                    <img class="icon-btn" src="/svg/action/password.svg" />
-                    Vault Is Compromised
-                </button>
-            }
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
-            {
-                <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
-                    <img class="icon-btn" src="/svg/action/details.svg" />
-                    Show activation code
-                </button>
-            }
+            <button type="button" @onclick="SetVaultProfileAsync" class="btn btn-light border mx-2" title="Set vault profile">
+                <img class="icon-btn" src="/svg/action/done.svg" />
+                Set vault profile
+            </button>
         }
-    </TableAction>
+
+
+        @if (SelectedHardwareVault.Status == VaultStatus.Active || SelectedHardwareVault.Status == VaultStatus.Locked || SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
+        {
+            <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
+                <img class="icon-btn" src="/svg/action/password.svg" />
+                Vault Is Compromised
+            </button>
+        }
+
+        @if (SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
+        {
+            <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
+                <img class="icon-btn" src="/svg/action/details.svg" />
+                Show activation code
+            </button>
+        }
+    }
+</TableAction>
 
     <TableFilter SearchTextChanged="SearchTextChangedAsync">
         <HardVaultFilter FilterChanged="FilteredAsync" />

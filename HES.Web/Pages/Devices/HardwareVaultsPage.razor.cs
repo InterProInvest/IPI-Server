@@ -218,6 +218,19 @@ namespace HES.Web.Pages.Devices
             await ModalDialogService.ShowAsync("Activation code", body);
         }
 
+        private async Task SetVaultProfileAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(SetProfile));
+                builder.AddAttribute(1, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.AddAttribute(2, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Set vault profile", body);
+        }
+
         #endregion
     }
 }
