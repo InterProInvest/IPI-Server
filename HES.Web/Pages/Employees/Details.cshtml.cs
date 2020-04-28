@@ -1,6 +1,9 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models;
+using HES.Core.Models.ActiveDirectory;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,11 +13,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using HES.Core.Utilities;
-using HES.Core.Enums;
-using HES.Core.Models.ActiveDirectory;
 
 namespace HES.Web.Pages.Employees
 {
@@ -42,6 +41,7 @@ namespace HES.Web.Pages.Employees
         public Account DeviceAccount { get; set; }
         public SharedAccount SharedAccount { get; set; }
         public AccountPassword AccountPassword { get; set; }
+        public VaultStatusReason Reason { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -353,7 +353,7 @@ namespace HES.Web.Pages.Employees
             return Partial("_DeleteDevice", this);
         }
 
-        public async Task<IActionResult> OnPostDeleteDeviceAsync(Device device)
+        public async Task<IActionResult> OnPostDeleteDeviceAsync(Device device, VaultStatusReason reason)
         {
             if (device == null)
             {
@@ -363,17 +363,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                //if (SamlIdentityProviderEnabled)
-                //{
-                //    var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
-                //    if (user != null)
-                //    {
-                //        await _userManager.DeleteAsync(user);
-                //        await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
-                //    }
-                //}
-
-                await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id);
+                await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id, reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(device.Id);
                 SuccessMessage = $"Device {device.Id} deleted.";
             }

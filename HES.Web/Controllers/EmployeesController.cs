@@ -180,7 +180,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.RemoveDeviceAsync(deviceDto.EmployeeId, deviceDto.DeviceId);
+                await _employeeService.RemoveDeviceAsync(deviceDto.EmployeeId, deviceDto.DeviceId, deviceDto.Reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)

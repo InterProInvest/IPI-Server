@@ -275,7 +275,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveDeviceAsync(string employeeId, string vaultId)
+        public async Task RemoveDeviceAsync(string employeeId, string vaultId, VaultStatusReason reason)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
@@ -307,6 +307,7 @@ namespace HES.Core.Services
                 else
                 {
                     vault.Status = VaultStatus.Deactivated;
+                    vault.StatusReason = reason;
                     await _accountService.RemoveAllAccountsAsync(employeeId);
                 }
 

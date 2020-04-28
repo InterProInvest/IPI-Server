@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace HES.Core.Interfaces
         Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
         Task UpdateLastSeenAsync(string deviceId);
         Task AddDeviceAsync(string employeeId, string[] devices);
-        Task RemoveDeviceAsync(string employeeId, string deviceId);
+        Task RemoveDeviceAsync(string employeeId, string deviceId, VaultStatusReason reason);
         //Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
         //Task UpdatePasswordSamlIdpAccountAsync(string email, string password);
         //Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
