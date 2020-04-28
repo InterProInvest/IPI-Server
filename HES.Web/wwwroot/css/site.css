@@ -1748,3 +1748,11 @@ div.dataTables_scrollHead table.dataTable {
 .wizard-flex-not-supported.wizard-circle .wizard-item-wait .wizard-item-icon > .wizard-icon .wizard-icon-circle {
     background: #ccc;
 }
+
+.activation-code-switch {
+    margin-left: -35px;
+}
+
+    .activation-code-switch > img {
+        cursor: pointer;
+    }

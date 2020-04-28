@@ -206,6 +206,18 @@ namespace HES.Web.Pages.Devices
             await ModalDialogService.ShowAsync("Compromised Vault", body);
         }
 
+        private async Task ShowActivationCodeAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ShowActivationCode));
+                builder.AddAttribute(1, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Activation code", body);
+        }
+
         #endregion
     }
 }

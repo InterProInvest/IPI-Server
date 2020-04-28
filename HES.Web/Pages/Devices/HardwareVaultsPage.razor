@@ -34,18 +34,20 @@ else
             }
 
 
-
             @if (SelectedHardwareVault.Status == VaultStatus.Active || SelectedHardwareVault.Status == VaultStatus.Locked || SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
             {
                 <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
                     <img class="icon-btn" src="/svg/action/password.svg" />
                     Vault Is Compromised
                 </button>
+            }
 
-                @*<button type="button" class="btn btn-light border mx-2" title="Show activation code">
+            @if (SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
+            {
+                <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
                     <img class="icon-btn" src="/svg/action/details.svg" />
                     Show activation code
-                </button>*@
+                </button>
             }
         }
     </TableAction>

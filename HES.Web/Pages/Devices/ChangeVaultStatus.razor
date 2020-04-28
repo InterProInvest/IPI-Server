@@ -41,7 +41,14 @@ else
             <select id="filterStatus" @bind="StatusReason" class="form-control">
                 @foreach (var item in StatusesReasons)
                 {
-                    <option value="@item.Text">@item.Text</option>
+                    @if (item.Text == "Lost")
+                    {
+                        <option selected value="@item.Text">@item.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Text">@item.Text</option>
+                    }
                 }
             </select>
         </div>

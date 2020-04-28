@@ -1,0 +1,18 @@
+﻿@if (ActivationCodeString == null)
+{
+    <LoadingSpinner />
+}
+else
+{
+    <div class="d-flex justify-content-end mt-2">
+        <input type="@(InputType)" id="activationCodeInput" value="@ActivationCodeString" readonly class="form-control" style="user-select: none;">
+        <div class="d-flex align-items-center activation-code-switch">
+            <img class="icon-btn" @onmousedown="@(() => InputType = "Text")" @onmouseup="@(() => InputType = "Password")" src="/svg/action/details.svg" />
+        </div>
+        <button class="btn btn-primary ml-4" @onclick="CopyToClipboardAsync">Copy</button>
+    </div>
+    <div class="d-flex justify-content-end mt-2">
+        <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancle</button>
+        <button class="btn btn-success" @onclick="SendOnEmailAsync">Send on Email</button>
+    </div>
+}
