@@ -4,15 +4,11 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
 using HES.Core.Models.Web.HardwareVault;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Devices
@@ -80,7 +76,6 @@ namespace HES.Web.Pages.Devices
             StateHasChanged();
         }
 
-
         private async Task SelectedItemChangedAsync(Device hardwareVault)
         {
             await InvokeAsync(() => 
@@ -126,7 +121,6 @@ namespace HES.Web.Pages.Devices
             Filter = filter;
             await LoadTableDataAsync();
         }
-
         
 
         #region TableActions
@@ -211,7 +205,7 @@ namespace HES.Web.Pages.Devices
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ShowActivationCode));
-                builder.AddAttribute(1, "HardwareVaultId", SelectedHardwareVault.Id);
+                builder.AddAttribute(1, "HardwareVault", SelectedHardwareVault);
                 builder.CloseComponent();
             };
 

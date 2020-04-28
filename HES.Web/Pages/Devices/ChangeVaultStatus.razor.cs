@@ -1,13 +1,8 @@
-﻿using HES.Core.Entities;
-using HES.Core.Enums;
+﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
-using Hideez.SDK.Communication.Interfaces;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Devices
@@ -36,30 +31,23 @@ namespace HES.Web.Pages.Devices
         public EventCallback Refresh { get; set; }
 
         public string StatusDescription { get; set; }
-        public VaultStatusReason StatusReason { get; set; }
-        public SelectList StatusesReasons { get; set; }
-
-        protected override void OnParametersSet()
-        {
-            StatusesReasons = new SelectList(Enum.GetValues(typeof(VaultStatusReason)).Cast<VaultStatusReason>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-        }
+        public VaultStatusReason StatusReason { get; set; } = VaultStatusReason.Lost;
 
         private async Task ChangeStatusAsync()
         {
             try
             {
-
-                if (VaultStatus == VaultStatus.Suspended)
+                switch (VaultStatus)
                 {
-                    await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
-                }
-                else if(VaultStatus == VaultStatus.Active)
-                {
-                    await HardwareVaultService.ActivateVaultAsync(HardwareVaultId);
-                }
-                else if(VaultStatus == VaultStatus.Compromised)
-                {
-                    await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId);
+                    case VaultStatus.Active:
+                        await HardwareVaultService.ActivateVaultAsync(HardwareVaultId);
+                        break;
+                    case VaultStatus.Suspended:
+                        await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
+                        break;
+                    case VaultStatus.Compromised:
+                        await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId);
+                        break;
                 }
 
                 await Refresh.InvokeAsync(this);

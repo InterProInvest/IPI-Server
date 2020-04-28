@@ -2,19 +2,14 @@
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using HES.Core.Models.Web.HardwareVault;
-using HES.Core.Entities;
-using System.Collections.Generic;
-using HES.Core.Models.Web.Breadcrumb;
-using Microsoft.JSInterop;
 
 namespace HES.Web.Pages.Devices
 {
-    public partial class HardVaultFilter : ComponentBase
+    public partial class VaultFilter : ComponentBase
     {
         [Inject]
         public IEmployeeService EmployeeService { get; set; }
@@ -25,14 +20,11 @@ namespace HES.Web.Pages.Devices
         [Inject]
         public IOrgStructureService OrgStructureService { get; set; }
 
-
         [Parameter] 
         public Func<HardwareVaultFilter, Task> FilterChanged { get; set; }
 
         public HardwareVaultFilter Filter { get; set; }
         public SelectList LicenseStatuses { get; set; }
-
-        
 
         protected override async Task OnInitializedAsync()
         {
