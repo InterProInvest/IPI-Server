@@ -51,7 +51,7 @@ namespace HES.Web.Pages.Devices
             {
                 var items = new List<Breadcrumb>()
                 {
-                    new Breadcrumb () { Active = true, Content = "HardwareVault" }
+                    new Breadcrumb () { Active = true, Content = "Hardware Vaults" }
                 };
                 await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
             }

@@ -1,7 +1,7 @@
 ﻿@model HES.Web.Pages.Dashboard.IndexModel
 <div class="dashboard-card">
     <div class="dashboard-card__title">
-        Devices
+        Hardware Vaults
     </div>
     @if (Model.DevicesNotify.Count() > 0)
     {
@@ -28,7 +28,7 @@
             </div>
             <div class="dashboard-card-wrapper">
                 <div class="dashboard-card-info__text">@Model.FreeDevicesCount</div>
-                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index" asp-page-handler="InReserve">In reserve</a></div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index" asp-page-handler="InReserve">Ready</a></div>
             </div>
         </div>
     }
@@ -44,7 +44,7 @@
             </div>
             <div class="dashboard-card-wrapper">
                 <div class="dashboard-card-info__text">@Model.FreeDevicesCount</div>
-                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index" asp-page-handler="InReserve">In reserve</a></div>
+                <div class="dashboard-card-info__title"><a class="btn btn-outline-secondary" asp-page="/Devices/Index" asp-page-handler="InReserve">Ready</a></div>
             </div>
         </div>
     }
