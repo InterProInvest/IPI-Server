@@ -21,14 +21,9 @@ namespace HES.Core.Interfaces
         Task EditEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
         Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
-        Task UpdateLastSeenAsync(string deviceId);
-        Task AddDeviceAsync(string employeeId, string[] devices);
-        Task RemoveDeviceAsync(string employeeId, string deviceId, VaultStatusReason reason);
-        //Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId);
-        //Task UpdatePasswordSamlIdpAccountAsync(string email, string password);
-        //Task UpdateOtpSamlIdpAccountAsync(string email, string otp);
-        //Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl);
-        //Task DeleteSamlIdpAccountAsync(string employeeId);
+        Task UpdateLastSeenAsync(string vaultId);
+        Task AddHardwareVaultAsync(string employeeId, string[] vaultsIds);
+        Task RemoveHardwareVaultAsync(string employeeId, string vaultId, VaultStatusReason reason);
         Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);
         Task<Account> GetAccountByIdAsync(string accountId);
         Task<Account> CreatePersonalAccountAsync(Account account, AccountPassword accountPassword);
@@ -39,6 +34,5 @@ namespace HES.Core.Interfaces
         Task EditPersonalAccountOtpAsync(Account account, AccountPassword accountPassword);
         Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId);
         Task<Account> DeleteAccountAsync(string accountId);
-        //Task HandlingMasterPasswordErrorAsync(string deviceId);
     }
 }

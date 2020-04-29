@@ -20,7 +20,7 @@ namespace HES.Core.Services
     public class RemoteTaskService : IRemoteTaskService
     {
         private readonly IHardwareVaultService _hardwareVaultService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly IAccountService _accountService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly ILicenseService _licenseService;
@@ -28,7 +28,7 @@ namespace HES.Core.Services
         private readonly IHubContext<EmployeeDetailsHub> _hubContext;
 
         public RemoteTaskService(IHardwareVaultService hardwareVaultService,
-                                 IDeviceTaskService deviceTaskService,
+                                 IHardwareVaultTaskService deviceTaskService,
                                  IAccountService deviceAccountService,
                                  IDataProtectionService dataProtectionService,
                                  ILicenseService licenseService,

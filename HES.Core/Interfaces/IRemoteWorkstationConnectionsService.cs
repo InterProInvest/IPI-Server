@@ -7,9 +7,9 @@ namespace HES.Core.Interfaces
 {
     public interface IRemoteWorkstationConnectionsService
     {
-        void StartUpdateRemoteDevice(IList<string> devicesId);
-        void StartUpdateRemoteDevice(string deviceId);
-        Task UpdateRemoteDeviceAsync(string deviceId, string workstationId, bool primaryAccountOnly);
+        void StartUpdateRemoteDevice(IList<string> vaultIds);
+        void StartUpdateRemoteDevice(string vaultId);
+        Task UpdateRemoteDeviceAsync(string vaultId, string workstationId, bool primaryAccountOnly);
         Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfo workstationInfo);
         Task OnAppHubDisconnectedAsync(string workstationId);
     }

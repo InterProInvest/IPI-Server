@@ -15,21 +15,21 @@ namespace HES.Core.Services
     {
         private readonly IEmployeeService _employeeService;
         private readonly IWorkstationAuditService _workstationAuditService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IWorkstationService _workstationService;
-        private readonly IHardwareVaultService _deviceService;
+        private readonly IHardwareVaultService _hardwareVaultService;
 
         public DashboardService(IEmployeeService employeeService,
                                 IWorkstationAuditService workstationAuditService,
-                                IDeviceTaskService deviceTaskService,
+                                IHardwareVaultTaskService hardwareVaultTaskService,
                                 IWorkstationService workstationService,
-                                IHardwareVaultService deviceService)
+                                IHardwareVaultService hardwareVaultService)
         {
             _employeeService = employeeService;
             _workstationAuditService = workstationAuditService;
-            _deviceTaskService = deviceTaskService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
             _workstationService = workstationService;
-            _deviceService = deviceService;
+            _hardwareVaultService = hardwareVaultService;
         }
 
         #region Server
@@ -41,18 +41,18 @@ namespace HES.Core.Services
 
         public async Task<int> GetDeviceTasksCount()
         {
-            return await _deviceTaskService.TaskQuery().CountAsync();
+            return await _hardwareVaultTaskService.TaskQuery().CountAsync();
         }
 
-        public async Task<List<HardwareVaultTask>> GetDeviceTasks()
+        public async Task<List<HardwareVaultTask>> GetVaultTasks()
         {
-            return await _deviceTaskService.TaskQuery().ToListAsync();
+            return await _hardwareVaultTaskService.TaskQuery().ToListAsync();
         }
 
         public async Task<List<DashboardNotify>> GetServerNotifyAsync()
         {
             var list = new List<DashboardNotify>();
-            var longPendingTasksCount = await _deviceTaskService.TaskQuery().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
+            var longPendingTasksCount = await _hardwareVaultTaskService.TaskQuery().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
 
             if (longPendingTasksCount > 0)
             {
@@ -126,23 +126,23 @@ namespace HES.Core.Services
 
         #endregion
 
-        #region Devices
+        #region Hardware Vaults
 
-        public async Task<int> GetDevicesCountAsync()
+        public async Task<int> GetHardwareVaultsCountAsync()
         {
-            return await _deviceService.VaultQuery().CountAsync();
+            return await _hardwareVaultService.VaultQuery().CountAsync();
         }
 
-        public async Task<int> GetFreeDevicesCountAsync()
+        public async Task<int> GetReadyHardwareVaultsCountAsync()
         {
-            return await _deviceService.VaultQuery().Where(d => d.EmployeeId == null).CountAsync();
+            return await _hardwareVaultService.VaultQuery().Where(d => d.EmployeeId == null).CountAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetDevicesNotifyAsync()
+        public async Task<List<DashboardNotify>> GetHardwareVaultsNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
-            var lowBattery = await _deviceService
+            var lowBattery = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.Battery <= 30)
                 .CountAsync();
@@ -158,23 +158,23 @@ namespace HES.Core.Services
                 });
             }
 
-            var deviceLock = await _deviceService
+            var vaultLock = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.Status == VaultStatus.Deactivated)
                 .CountAsync();
 
-            if (deviceLock > 0)
+            if (vaultLock > 0)
             {
                 list.Add(new DashboardNotify()
                 {
-                    Message = "Vault deactivated",
-                    Count = deviceLock,
+                    Message = "Vault locked",
+                    Count = vaultLock,
                     Page = "/Devices/Index",
                     Handler = "DeviceLocked"
                 });
             }
 
-            var licenseWarning = await _deviceService
+            var licenseWarning = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Warning)
                 .AsTracking()
@@ -191,7 +191,7 @@ namespace HES.Core.Services
                 });
             }
 
-            var licenseCritical = await _deviceService
+            var licenseCritical = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Critical)
                 .AsTracking()
@@ -208,7 +208,7 @@ namespace HES.Core.Services
                 });
             }
 
-            var licenseExpired = await _deviceService
+            var licenseExpired = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Expired)
                 .AsTracking()

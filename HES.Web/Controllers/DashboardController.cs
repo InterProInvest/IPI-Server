@@ -43,7 +43,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<HardwareVaultTask>>> GetDeviceTasks()
         {
-            return await _dashboardService.GetDeviceTasks();
+            return await _dashboardService.GetVaultTasks();
         }
 
         [HttpGet]
@@ -78,21 +78,21 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<int> GetDevicesCount()
         {
-            return await _dashboardService.GetDevicesCountAsync();
+            return await _dashboardService.GetHardwareVaultsCountAsync();
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<int> GetFreeDevicesCount()
         {
-            return await _dashboardService.GetFreeDevicesCountAsync();
+            return await _dashboardService.GetReadyHardwareVaultsCountAsync();
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DashboardNotify>>> GetDevicesNotify()
         {
-            return await _dashboardService.GetDevicesNotifyAsync();
+            return await _dashboardService.GetHardwareVaultsNotifyAsync();
         }
 
         [HttpGet]

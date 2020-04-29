@@ -16,12 +16,12 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
         private readonly IAccountService _accountService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly IDataProtectionService _dataProtectionService;
 
         public SharedAccountService(IAsyncRepository<SharedAccount> sharedAccountRepository,
                                     IAccountService deviceAccountService,
-                                    IDeviceTaskService deviceTaskService,
+                                    IHardwareVaultTaskService deviceTaskService,
                                     IDataProtectionService dataProtectionService)
         {
             _sharedAccountRepository = sharedAccountRepository;

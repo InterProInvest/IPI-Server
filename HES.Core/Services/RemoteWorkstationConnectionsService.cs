@@ -2,7 +2,6 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
@@ -13,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,8 +29,8 @@ namespace HES.Core.Services
         readonly IRemoteTaskService _remoteTaskService;
         readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         readonly IWorkstationService _workstationService;
-        readonly IHardwareVaultService _deviceService;
-        readonly IDeviceTaskService _deviceTaskService;
+        readonly IHardwareVaultService _hardwareVaultService;
+        readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         readonly IDataProtectionService _dataProtectionService;
         readonly IWorkstationAuditService _workstationAuditService;
         readonly ILogger<RemoteWorkstationConnectionsService> _logger;
@@ -41,8 +39,8 @@ namespace HES.Core.Services
                       IRemoteTaskService remoteTaskService,
                       IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IWorkstationService workstationService,
-                      IHardwareVaultService deviceService,
-                      IDeviceTaskService deviceTaskService,
+                      IHardwareVaultService hardwareVaultService,
+                      IHardwareVaultTaskService hardwareVaultTaskService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger)
@@ -51,8 +49,8 @@ namespace HES.Core.Services
             _remoteTaskService = remoteTaskService;
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _workstationService = workstationService;
-            _deviceService = deviceService;
-            _deviceTaskService = deviceTaskService;
+            _hardwareVaultService = hardwareVaultService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
             _logger = logger;
@@ -60,24 +58,24 @@ namespace HES.Core.Services
 
         #region Hardware Vault
 
-        public void StartUpdateRemoteDevice(IList<string> devicesId)
+        public void StartUpdateRemoteDevice(IList<string> vaultIds)
         {
-            foreach (var device in devicesId)
+            foreach (var vaultId in vaultIds)
             {
-                StartUpdateRemoteDevice(device);
+                StartUpdateRemoteDevice(vaultId);
             }
         }
 
-        public void StartUpdateRemoteDevice(string deviceId)
+        public void StartUpdateRemoteDevice(string vaultId)
         {
-            if (deviceId == null)
-                throw new ArgumentNullException(nameof(deviceId));
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
 
 #pragma warning disable IDE0067 // Dispose objects before losing scope
             var scope = _services.CreateScope();
 #pragma warning restore IDE0067 // Dispose objects before losing scope
 
-            if (!RemoteDeviceConnectionsService.IsDeviceConnectedToHost(deviceId))
+            if (!RemoteDeviceConnectionsService.IsDeviceConnectedToHost(vaultId))
             {
                 return;
             }
@@ -87,11 +85,11 @@ namespace HES.Core.Services
                 try
                 {
                     var remoteWorkstationConnectionsService = scope.ServiceProvider.GetRequiredService<IRemoteWorkstationConnectionsService>();
-                    await remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(deviceId, workstationId: null, primaryAccountOnly: false);
+                    await remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(vaultId, workstationId: null, primaryAccountOnly: false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[{deviceId}] {ex.Message}");
+                    _logger.LogError($"[{vaultId}] {ex.Message}");
                 }
                 finally
                 {
@@ -100,13 +98,13 @@ namespace HES.Core.Services
             });
         }
 
-        public async Task UpdateRemoteDeviceAsync(string deviceId, string workstationId, bool primaryAccountOnly)
+        public async Task UpdateRemoteDeviceAsync(string vaultId, string workstationId, bool primaryAccountOnly)
         {
-            if (deviceId == null)
-                throw new ArgumentNullException(nameof(deviceId));
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
 
             var isNew = false;
-            var tcs = _devicesInProgress.GetOrAdd(deviceId, (x) =>
+            var tcs = _devicesInProgress.GetOrAdd(vaultId, (x) =>
             {
                 isNew = true;
                 return new TaskCompletionSource<bool>();
@@ -120,7 +118,7 @@ namespace HES.Core.Services
 
             try
             {
-                await UpdateRemoteDevice(deviceId, workstationId, primaryAccountOnly);
+                await UpdateRemoteDevice(vaultId, workstationId, primaryAccountOnly);
                 tcs.SetResult(true);
             }
             catch (Exception ex)
@@ -130,7 +128,7 @@ namespace HES.Core.Services
             }
             finally
             {
-                _devicesInProgress.TryRemove(deviceId, out TaskCompletionSource<bool> _);
+                _devicesInProgress.TryRemove(vaultId, out TaskCompletionSource<bool> _);
             }
         }
 
@@ -146,7 +144,7 @@ namespace HES.Core.Services
             if (remoteDevice == null)
                 throw new HideezException(HideezErrorCode.HesFailedEstablishRemoteDeviceConnection);
 
-            var vault = await _deviceService.VaultQuery().AsNoTracking().FirstOrDefaultAsync(d => d.Id == vaultId);
+            var vault = await _hardwareVaultService.VaultQuery().AsNoTracking().FirstOrDefaultAsync(d => d.Id == vaultId);
 
             if (vault == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
@@ -171,7 +169,7 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Deactivated:
                     await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(vault.MasterPassword));
-                    await _deviceService.UpdateAfterWipe(vault.Id);
+                    await _hardwareVaultService.UpdateAfterWipe(vault.Id);
                     throw new HideezException(HideezErrorCode.DeviceHasBeenWiped);
                 case VaultStatus.Compromised:
                     throw new HideezException(HideezErrorCode.HesDeviceCompromised);
@@ -218,7 +216,7 @@ namespace HES.Core.Services
                 }
                 else
                 {
-                    var existLinkTask = await _deviceTaskService
+                    var existLinkTask = await _hardwareVaultTaskService
                         .TaskQuery()
                         .Where(d => d.HardwareVaultId == vault.Id && d.Operation == TaskOperation.Link)
                         .AsNoTracking()
@@ -244,7 +242,7 @@ namespace HES.Core.Services
 
         private async Task CheckPassphraseAsync(RemoteDevice remoteDevice, string vaultId)
         {
-            var vault = await _deviceService.VaultQuery().AsNoTracking().FirstOrDefaultAsync(d => d.Id == vaultId);
+            var vault = await _hardwareVaultService.VaultQuery().AsNoTracking().FirstOrDefaultAsync(d => d.Id == vaultId);
 
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found.");

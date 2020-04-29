@@ -137,7 +137,7 @@ namespace HES.Web.Pages.Employees
                 // Add device
                 if (!wizard.SkipDevice)
                 {
-                    await _employeeService.AddDeviceAsync(createdEmployee.Id, new string[] { wizard.DeviceId });
+                    await _employeeService.AddHardwareVaultAsync(createdEmployee.Id, new string[] { wizard.DeviceId });
 
                     // Proximity Unlock
                     if (!wizard.SkipProximityUnlock)

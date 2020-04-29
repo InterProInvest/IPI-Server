@@ -21,7 +21,7 @@ namespace HES.Core.Hubs
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IHardwareVaultService _deviceService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
         private readonly IEmployeeService _employeeService;
         private readonly ILogger<AppHub> _logger;
@@ -30,7 +30,7 @@ namespace HES.Core.Hubs
                       IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                       IWorkstationAuditService workstationAuditService,
                       IHardwareVaultService deviceService,
-                      IDeviceTaskService deviceTaskService,
+                      IHardwareVaultTaskService deviceTaskService,
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
                       ILogger<AppHub> logger)

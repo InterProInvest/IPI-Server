@@ -9,14 +9,14 @@ namespace HES.Core.Interfaces
     {
         string GetServerVersion();
         Task<int> GetDeviceTasksCount();
-        Task<List<HardwareVaultTask>> GetDeviceTasks();
+        Task<List<HardwareVaultTask>> GetVaultTasks();
         Task<List<DashboardNotify>> GetServerNotifyAsync();
         Task<int> GetEmployeesCountAsync();
         Task<int> GetEmployeesOpenedSessionsCountAsync();
         Task<List<DashboardNotify>> GetEmployeesNotifyAsync();
-        Task<int> GetDevicesCountAsync();
-        Task<int> GetFreeDevicesCountAsync();
-        Task<List<DashboardNotify>> GetDevicesNotifyAsync();
+        Task<int> GetHardwareVaultsCountAsync();
+        Task<int> GetReadyHardwareVaultsCountAsync();
+        Task<List<DashboardNotify>> GetHardwareVaultsNotifyAsync();
         Task<int> GetWorkstationsCountAsync();
         Task<int> GetWorkstationsOnlineCountAsync();
         Task<List<DashboardNotify>> GetWorkstationsNotifyAsync();

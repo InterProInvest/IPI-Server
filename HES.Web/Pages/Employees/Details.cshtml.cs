@@ -313,7 +313,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.AddDeviceAsync(employeeId, selectedDevices);
+                await _employeeService.AddHardwareVaultAsync(employeeId, selectedDevices);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
                 SuccessMessage = $"Device(s) added.";
             }
@@ -363,7 +363,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id, reason);
+                await _employeeService.RemoveHardwareVaultAsync(device.Employee.Id, device.Id, reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(device.Id);
                 SuccessMessage = $"Device {device.Id} deleted.";
             }

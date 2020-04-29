@@ -75,10 +75,10 @@ namespace HES.Web.Pages.Dashboard
 
         private async Task GetDevicesInfoAsync()
         {
-            RegisteredDevicesCount = await _dashboardService.GetDevicesCountAsync();
-            FreeDevicesCount = await _dashboardService.GetFreeDevicesCountAsync();
+            RegisteredDevicesCount = await _dashboardService.GetHardwareVaultsCountAsync();
+            FreeDevicesCount = await _dashboardService.GetReadyHardwareVaultsCountAsync();
 
-            DevicesNotify = await _dashboardService.GetDevicesNotifyAsync();
+            DevicesNotify = await _dashboardService.GetHardwareVaultsNotifyAsync();
         }
 
         private async Task GetWorkstationsInfoAsync()

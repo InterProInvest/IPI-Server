@@ -25,7 +25,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
         private readonly IAsyncRepository<HardwareVaultProfile> _hardwareVaultProfileRepository;
         private readonly IAsyncRepository<HardwareVaultLicense> _hardwareVaultLicenseRepository;
-        private readonly IDeviceTaskService _hardwareVaultTaskService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly IWorkstationService _workstationService;
         private readonly IAppSettingsService _appSettingsService;
@@ -36,7 +36,7 @@ namespace HES.Core.Services
                                      IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
                                      IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository,
                                      IAsyncRepository<HardwareVaultLicense> hardwareVaultLicenseRepository,
-                                     IDeviceTaskService hardwareVaultTaskService,
+                                     IHardwareVaultTaskService hardwareVaultTaskService,
                                      IAccountService accountService,
                                      IWorkstationService workstationService,
                                      IAppSettingsService appSettingsService,

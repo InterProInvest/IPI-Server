@@ -76,7 +76,7 @@ namespace HES.Web
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IHardwareVaultService, HardwareVaultService>();
-            services.AddScoped<IDeviceTaskService, DeviceTaskService>();
+            services.AddScoped<IHardwareVaultTaskService, HardwareVaultTaskService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IWorkstationService, WorkstationService>();
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();

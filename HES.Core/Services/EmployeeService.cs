@@ -1,52 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using HES.Core.Entities;
-using HES.Core.Models;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
+using HES.Core.Models;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
-using HES.Core.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 using System.Transactions;
-using HES.Core.Exceptions;
 
 namespace HES.Core.Services
 {
     public class EmployeeService : IEmployeeService
     {
         private readonly IAsyncRepository<Employee> _employeeRepository;
-        private readonly IHardwareVaultService _deviceService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultService _hardwareVaultService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly IWorkstationService _workstationService;
-        private readonly ILicenseService _licenseService;
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
 
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
-                               IHardwareVaultService deviceService,
-                               IDeviceTaskService deviceTaskService,
+                               IHardwareVaultService hardwareVaultService,
+                               IHardwareVaultTaskService hardwareVaultTaskService,
                                IAccountService deviceAccountService,
                                ISharedAccountService sharedAccountService,
-                               IWorkstationService workstationService,
-                               ILicenseService licenseService,
+                               IWorkstationService workstationService,                      
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                IDataProtectionService dataProtectionService)
         {
             _employeeRepository = employeeRepository;
-            _deviceService = deviceService;
-            _deviceTaskService = deviceTaskService;
+            _hardwareVaultService = hardwareVaultService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
             _accountService = deviceAccountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
-            _licenseService = licenseService;
             _workstationEventRepository = workstationEventRepository;
             _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
@@ -184,7 +181,7 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new Exception("Employee not found");
 
-            var devices = await _deviceService
+            var devices = await _hardwareVaultService
                 .VaultQuery()
                 .Where(x => x.EmployeeId == id)
                 .AnyAsync();
@@ -218,7 +215,7 @@ namespace HES.Core.Services
 
         public async Task UpdateLastSeenAsync(string deviceId)
         {
-            var device = await _deviceService.GetVaultByIdAsync(deviceId);
+            var device = await _hardwareVaultService.GetVaultByIdAsync(deviceId);
             var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
 
             if (employee != null)
@@ -230,9 +227,9 @@ namespace HES.Core.Services
 
         #endregion
 
-        #region HardwareVault
+        #region Hardware Vault
 
-        public async Task AddDeviceAsync(string employeeId, string[] vaults)
+        public async Task AddHardwareVaultAsync(string employeeId, string[] vaults)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
@@ -253,7 +250,7 @@ namespace HES.Core.Services
             {
                 foreach (var vaultId in vaults)
                 {
-                    var vault = await _deviceService.GetVaultByIdAsync(vaultId);
+                    var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
                     if (vault == null)
                         throw new Exception($"Vault {vault} not found");
@@ -266,16 +263,16 @@ namespace HES.Core.Services
 
                     var masterPassword = GenerateMasterPassword();
 
-                    await _deviceService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
-                    await _deviceService.GenerateVaultActivationAsync(vaultId);
-                    await _deviceTaskService.AddLinkAsync(vault.Id, _dataProtectionService.Encrypt(masterPassword));
+                    await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
+                    await _hardwareVaultService.GenerateVaultActivationAsync(vaultId);
+                    await _hardwareVaultTaskService.AddLinkAsync(vault.Id, _dataProtectionService.Encrypt(masterPassword));
                 }
 
                 transactionScope.Complete();
             }
         }
 
-        public async Task RemoveDeviceAsync(string employeeId, string vaultId, VaultStatusReason reason)
+        public async Task RemoveHardwareVaultAsync(string employeeId, string vaultId, VaultStatusReason reason)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
@@ -285,7 +282,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var vault = await _deviceService.GetVaultByIdAsync(vaultId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
@@ -294,7 +291,7 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await _deviceTaskService.RemoveAllTasksAsync(vaultId);
+                await _hardwareVaultTaskService.RemoveAllTasksAsync(vaultId);
                 await _workstationService.RemoveAllProximityAsync(vaultId);
 
                 vault.EmployeeId = null;
@@ -302,7 +299,7 @@ namespace HES.Core.Services
                 if (vault.MasterPassword == null)
                 {
                     vault.Status = VaultStatus.Ready;
-                    await _deviceService.ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
+                    await _hardwareVaultService.ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
                 }
                 else
                 {
@@ -311,7 +308,7 @@ namespace HES.Core.Services
                     await _accountService.RemoveAllAccountsAsync(employeeId);
                 }
 
-                await _deviceService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
+                await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
 
                 transactionScope.Complete();
             }
@@ -576,8 +573,7 @@ namespace HES.Core.Services
                 .Query()
                 .Include(x => x.Employee.HardwareVaults)
                 .Include(x => x.SharedAccount)
-                .Where(x => x.EmployeeId == employeeId && x.Deleted == false/* &&*/
-                            /*x.Name != SamlIdentityProvider.DeviceAccountName*/)
+                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
                 .ToListAsync();
         }
 
@@ -628,8 +624,8 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 createdAccount = await _accountService.AddAsync(account);
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
-                await _deviceService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
                 await SetAsWorkstationIfEmptyAsync(createdAccount.EmployeeId, createdAccount.Id);
 
                 transactionScope.Complete();
@@ -700,8 +696,8 @@ namespace HES.Core.Services
                 // Create tasks for devices
                 foreach (var device in employee.HardwareVaults)
                 {
-                    await _deviceTaskService.AddPrimaryAsync(device.Id, accountId);
-                    await _deviceService.UpdateNeedSyncAsync(device, true);
+                    await _hardwareVaultTaskService.AddPrimaryAsync(device.Id, accountId);
+                    await _hardwareVaultService.UpdateNeedSyncAsync(device, true);
                 }
 
                 transactionScope.Complete();
@@ -754,8 +750,8 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _accountService.UpdateOnlyPropAsync(account, properties);
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
-                await _deviceService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
                 transactionScope.Complete();
             }
         }
@@ -796,8 +792,8 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _accountService.UpdateOnlyPropAsync(account, properties);
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
-                await _deviceService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
                 transactionScope.Complete();
             }
         }
@@ -838,8 +834,8 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _accountService.UpdateOnlyPropAsync(account, properties);
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
-                await _deviceService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
                 transactionScope.Complete();
             }
         }
@@ -904,8 +900,8 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 createdAccount = await _accountService.AddAsync(account);
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
-                await _deviceService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
                 await SetAsWorkstationIfEmptyAsync(createdAccount.EmployeeId, createdAccount.Id);
 
                 transactionScope.Complete();
@@ -956,8 +952,8 @@ namespace HES.Core.Services
                     await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { nameof(Employee.PrimaryAccountId) });
 
                 await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.Deleted), nameof(Account.UpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
-                await _deviceService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
                 transactionScope.Complete();
             }
 
@@ -972,18 +968,5 @@ namespace HES.Core.Services
         }
 
         #endregion
-
-        //public async Task HandlingMasterPasswordErrorAsync(string deviceId)
-        //{
-        //    using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-        //    {
-        //        await _deviceTaskService.RemoveAllTasksAsync(deviceId);
-        //        await _accountService.RemoveAllAccountsAsync(deviceId);
-        //        await _workstationService.RemoveAllProximityAsync(deviceId);
-        //        await _deviceService.RemoveEmployeeAsync(deviceId);
-        //        await _licenseService.DiscardLicenseAppliedAsync(deviceId);
-        //        transactionScope.Complete();
-        //    }
-        //}
     }
 }

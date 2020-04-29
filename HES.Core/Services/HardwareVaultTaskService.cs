@@ -9,65 +9,65 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class DeviceTaskService : IDeviceTaskService
+    public class HardwareVaultTaskService : IHardwareVaultTaskService
     {
-        private readonly IAsyncRepository<HardwareVaultTask> _deviceTaskRepository;
+        private readonly IAsyncRepository<HardwareVaultTask> _hardwareVaultTaskRepository;
 
-        public DeviceTaskService(IAsyncRepository<HardwareVaultTask> deviceTaskRepository)
+        public HardwareVaultTaskService(IAsyncRepository<HardwareVaultTask> hardwareVaultTaskRepository)
         {
-            _deviceTaskRepository = deviceTaskRepository;
+            _hardwareVaultTaskRepository = hardwareVaultTaskRepository;
         }
 
         public IQueryable<HardwareVaultTask> TaskQuery()
         {
-            return _deviceTaskRepository.Query();
+            return _hardwareVaultTaskRepository.Query();
         }
 
-        public async Task<HardwareVaultTask> GetTaskByIdAsync(string id)
+        public async Task<HardwareVaultTask> GetTaskByIdAsync(string taskId)
         {
-            return await _deviceTaskRepository
+            return await _hardwareVaultTaskRepository
                .Query()
                .Include(d => d.Account.Employee.HardwareVaults)
-               .FirstOrDefaultAsync(d => d.Id == id);
+               .FirstOrDefaultAsync(d => d.Id == taskId);
         }
 
-        public async Task AddTaskAsync(HardwareVaultTask deviceTask)
+        public async Task AddTaskAsync(HardwareVaultTask vaultTask)
         {
-            await _deviceTaskRepository.AddAsync(deviceTask);
+            await _hardwareVaultTaskRepository.AddAsync(vaultTask);
         }
 
-        public async Task AddRangeTasksAsync(IList<HardwareVaultTask> deviceTasks)
+        public async Task AddRangeTasksAsync(IList<HardwareVaultTask> vaultTasks)
         {
-            await _deviceTaskRepository.AddRangeAsync(deviceTasks);
+            await _hardwareVaultTaskRepository.AddRangeAsync(vaultTasks);
         }
 
-        public async Task AddPrimaryAsync(string deviceId, string accountId)
+        public async Task AddPrimaryAsync(string vaultId, string accountId)
         {
             var task = new HardwareVaultTask()
             {
                 Operation = TaskOperation.Primary,
                 CreatedAt = DateTime.UtcNow,
-                HardwareVaultId = deviceId,
+                HardwareVaultId = vaultId,
                 AccountId = accountId
             };
-            await _deviceTaskRepository.AddAsync(task);
+            await _hardwareVaultTaskRepository.AddAsync(task);
         }
 
-        public async Task AddLinkAsync(string deviceId, string masterPassword)
+        public async Task AddLinkAsync(string vaultId, string masterPassword)
         {
             var task = new HardwareVaultTask()
             {
                 Password = masterPassword,
                 Operation = TaskOperation.Link,
                 CreatedAt = DateTime.UtcNow,
-                HardwareVaultId = deviceId
+                HardwareVaultId = vaultId
             };
-            await _deviceTaskRepository.AddAsync(task);
+            await _hardwareVaultTaskRepository.AddAsync(task);
         }
 
         public async Task AddProfileAsync(HardwareVault vault)
         {
-            var previousProfileTask = await _deviceTaskRepository
+            var previousProfileTask = await _hardwareVaultTaskRepository
                 .Query()
                 .FirstOrDefaultAsync(x => x.HardwareVaultId == vault.Id && x.Operation == TaskOperation.Profile);
 
@@ -83,10 +83,10 @@ namespace HES.Core.Services
             {
                 if (previousProfileTask != null)
                 {
-                    await _deviceTaskRepository.DeleteAsync(previousProfileTask);
+                    await _hardwareVaultTaskRepository.DeleteAsync(previousProfileTask);
                 }
 
-                await _deviceTaskRepository.AddAsync(newProfileTask);
+                await _hardwareVaultTaskRepository.AddAsync(newProfileTask);
 
                 transactionScope.Complete();
             }
@@ -101,49 +101,49 @@ namespace HES.Core.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _deviceTaskRepository.AddAsync(task);
+            await _hardwareVaultTaskRepository.AddAsync(task);
         }
 
-        public async Task AddWipeAsync(string deviceId, string masterPassword)
+        public async Task AddWipeAsync(string vaultId, string masterPassword)
         {
             var task = new HardwareVaultTask()
             {
                 Password = masterPassword,
                 CreatedAt = DateTime.UtcNow,
                 Operation = TaskOperation.Wipe,
-                HardwareVaultId = deviceId
+                HardwareVaultId = vaultId
             };
-            await _deviceTaskRepository.AddAsync(task);
+            await _hardwareVaultTaskRepository.AddAsync(task);
         }
 
-        public async Task UpdateOnlyPropAsync(HardwareVaultTask deviceTask, string[] properties)
+        public async Task UpdateOnlyPropAsync(HardwareVaultTask vaultTask, string[] properties)
         {
-            await _deviceTaskRepository.UpdateOnlyPropAsync(deviceTask, properties);
+            await _hardwareVaultTaskRepository.UpdateOnlyPropAsync(vaultTask, properties);
         }
 
-        public async Task DeleteTaskAsync(HardwareVaultTask deviceTask)
+        public async Task DeleteTaskAsync(HardwareVaultTask vaultTask)
         {
-            await _deviceTaskRepository.DeleteAsync(deviceTask);
+            await _hardwareVaultTaskRepository.DeleteAsync(vaultTask);
         }
 
-        public async Task RemoveAllTasksAsync(string deviceId)
+        public async Task RemoveAllTasksAsync(string vaultId)
         {
-            var allTasks = await _deviceTaskRepository
+            var allTasks = await _hardwareVaultTaskRepository
                 .Query()
-                .Where(t => t.HardwareVaultId == deviceId)
+                .Where(t => t.HardwareVaultId == vaultId)
                 .ToListAsync();
 
-            await _deviceTaskRepository.DeleteRangeAsync(allTasks);
+            await _hardwareVaultTaskRepository.DeleteRangeAsync(allTasks);
         }
 
         public async Task RemoveAllProfileTasksAsync(string vaultId)
         {
-            var tasks = await _deviceTaskRepository
+            var tasks = await _hardwareVaultTaskRepository
                 .Query()
                 .Where(t => t.HardwareVaultId == vaultId && t.Operation == TaskOperation.Profile)
                 .ToListAsync();
 
-            await _deviceTaskRepository.DeleteRangeAsync(tasks);
+            await _hardwareVaultTaskRepository.DeleteRangeAsync(tasks);
         }
     }
 }
