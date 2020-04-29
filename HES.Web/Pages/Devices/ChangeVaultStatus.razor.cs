@@ -10,7 +10,7 @@ namespace HES.Web.Pages.Devices
     public partial class ChangeVaultStatus : ComponentBase
     {
         [Inject]
-        public IDeviceService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
 
         [Inject] 
         public ILogger<ChangeVaultStatus> Logger { get; set; }

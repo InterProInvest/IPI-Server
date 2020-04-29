@@ -2,6 +2,7 @@
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API;
+using HES.Core.Models.Web.HardwareVault;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -19,12 +20,12 @@ namespace HES.Web.Controllers
     [ApiController]
     public class DevicesController : ControllerBase
     {
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<DevicesController> _logger;
 
-        public DevicesController(IDeviceService deviceService,
+        public DevicesController(IHardwareVaultService deviceService,
                                  IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                                  IWorkstationAuditService workstationAuditService,
                                  ILogger<DevicesController> logger)
@@ -39,22 +40,23 @@ namespace HES.Web.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Device>>> GetDevices()
+        public async Task<ActionResult<IEnumerable<HardwareVault>>> GetDevices()
         {
             var count = await _deviceService.GetVaultsCountAsync(string.Empty, null);
-            return await _deviceService.GetVaultsAsync(0, count, nameof(Device.Id), ListSortDirection.Ascending, string.Empty, null);         
+            return await _deviceService.GetVaultsAsync(0, count, nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, null);         
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Device>>> GetFilteredDevices(DeviceFilter deviceFilter)
-        {
-            return await _deviceService.GetFilteredDevicesAsync(deviceFilter);
+        public async Task<ActionResult<IEnumerable<HardwareVault>>> GetFilteredDevices(HardwareVaultFilter hardwareVaultFilter)
+        {   
+            var count = await _deviceService.GetVaultsCountAsync(string.Empty, hardwareVaultFilter);
+            return await _deviceService.GetVaultsAsync(0, count, nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, hardwareVaultFilter);
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Device>>> GetDevicesByEmployeeId(string id)
+        public async Task<ActionResult<IEnumerable<HardwareVault>>> GetDevicesByEmployeeId(string id)
         {
             return await _deviceService.GetVaultsByEmployeeIdAsync(id);
         }
@@ -62,7 +64,7 @@ namespace HES.Web.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Device>> GetDeviceById(string id)
+        public async Task<ActionResult<HardwareVault>> GetDeviceById(string id)
         {
             var device = await _deviceService.GetVaultByIdAsync(id);
 
@@ -86,7 +88,7 @@ namespace HES.Web.Controllers
 
             try
             {
-                var device = new Device()
+                var device = new HardwareVault()
                 {
                     Id = deviceDto.Id,
                     RFID = deviceDto.RFID
@@ -147,7 +149,7 @@ namespace HES.Web.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<DeviceAccessProfile>>> GetAccessProfiles()
+        public async Task<ActionResult<IEnumerable<HardwareVaultProfile>>> GetAccessProfiles()
         {
             return await _deviceService.GetProfilesAsync();
         }
@@ -155,7 +157,7 @@ namespace HES.Web.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DeviceAccessProfile>> GetAccessProfileById(string id)
+        public async Task<ActionResult<HardwareVaultProfile>> GetAccessProfileById(string id)
         {
             var accessProfile = await _deviceService.GetProfileByIdAsync(id);
 
@@ -169,12 +171,12 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<DeviceAccessProfile>> CreateAccessProfile(CreateDeviceAccessProfileDto deviceAccessProfileDto)
+        public async Task<ActionResult<HardwareVaultProfile>> CreateAccessProfile(CreateDeviceAccessProfileDto deviceAccessProfileDto)
         {
-            DeviceAccessProfile createdDeviceAccessProfile;
+            HardwareVaultProfile createdDeviceAccessProfile;
             try
             {
-                var deviceAccessProfile = new DeviceAccessProfile()
+                var deviceAccessProfile = new HardwareVaultProfile()
                 {
                     Name = deviceAccessProfileDto.Name,
                     ButtonBonding = deviceAccessProfileDto.ButtonBonding,
@@ -212,7 +214,7 @@ namespace HES.Web.Controllers
 
             try
             {
-                var deviceAccessProfile = new DeviceAccessProfile()
+                var deviceAccessProfile = new HardwareVaultProfile()
                 {
                     Id = deviceAccessProfileDto.Id,
                     Name = deviceAccessProfileDto.Name,
@@ -243,7 +245,7 @@ namespace HES.Web.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DeviceAccessProfile>> DeleteAccessProfile(string id)
+        public async Task<ActionResult<HardwareVaultProfile>> DeleteAccessProfile(string id)
         {
             var deviceAccessProfile = await _deviceService.GetProfileByIdAsync(id);
             if (deviceAccessProfile == null)

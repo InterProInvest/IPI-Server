@@ -107,7 +107,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendDeviceLicenseStatus(List<Device> devices)
+        public async Task SendDeviceLicenseStatus(List<HardwareVault> devices)
         {
             var message = new StringBuilder();
 

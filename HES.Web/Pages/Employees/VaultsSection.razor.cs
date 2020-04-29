@@ -60,7 +60,7 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Software vault details", body);
         }
 
-        private async Task OpenDialogHardwareVaultDetailsAsync(Device device)
+        private async Task OpenDialogHardwareVaultDetailsAsync(HardwareVault device)
         {
             RenderFragment body = (builder) =>
             {

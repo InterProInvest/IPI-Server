@@ -20,16 +20,16 @@ namespace HES.Core.Services
     public class LicenseService : ILicenseService
     {
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
-        private readonly IAsyncRepository<DeviceLicense> _deviceLicenseRepository;
-        private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly IAsyncRepository<HardwareVaultLicense> _deviceLicenseRepository;
+        private readonly IAsyncRepository<HardwareVault> _deviceRepository;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<LicenseService> _logger;
 
         public LicenseService(IAsyncRepository<LicenseOrder> licenseOrderRepository,
-                                   IAsyncRepository<DeviceLicense> deviceLicenseRepository,
-                                   IAsyncRepository<Device> deviceRepository,
+                                   IAsyncRepository<HardwareVaultLicense> deviceLicenseRepository,
+                                   IAsyncRepository<HardwareVault> deviceRepository,
                                    IAppSettingsService appSettingsService,
                                    IEmailSenderService emailSenderService,
                                    IHttpClientFactory httpClientFactory,
@@ -159,7 +159,7 @@ namespace HES.Core.Services
                 LicenseEndDate = order.EndDate,
                 ProlongExistingLicenses = order.ProlongExistingLicenses,
                 CustomerId = licensing.ApiKey,
-                Devices = deviceLicenses.Select(d => d.DeviceId).ToList()
+                Devices = deviceLicenses.Select(d => d.HardwareVaultId).ToList()
             };
 
             var response = await HttpClientPostOrderAsync(licenseOrderDto);
@@ -245,15 +245,15 @@ namespace HES.Core.Services
 
         #region License
 
-        public async Task<IList<DeviceLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
+        public async Task<IList<HardwareVaultLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId)
         {
             return await _deviceLicenseRepository
                 .Query()
-                .Where(d => d.AppliedAt == null && d.DeviceId == deviceId && d.Data != null)
+                .Where(d => d.AppliedAt == null && d.HardwareVaultId == deviceId && d.Data != null)
                 .ToListAsync();
         }
 
-        public async Task<IList<DeviceLicense>> GetDeviceLicensesByOrderIdAsync(string orderId)
+        public async Task<IList<HardwareVaultLicense>> GetDeviceLicensesByOrderIdAsync(string orderId)
         {
             return await _deviceLicenseRepository
                 .Query()
@@ -261,30 +261,30 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<List<DeviceLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds)
+        public async Task<List<HardwareVaultLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds)
         {
             if (devicesIds == null)
             {
                 throw new ArgumentNullException(nameof(devicesIds));
             }
 
-            var deviceLicenses = new List<DeviceLicense>();
+            var deviceLicenses = new List<HardwareVaultLicense>();
 
             foreach (var deviceId in devicesIds)
             {
-                deviceLicenses.Add(new DeviceLicense()
+                deviceLicenses.Add(new HardwareVaultLicense()
                 {
                     LicenseOrderId = orderId,
-                    DeviceId = deviceId
+                    HardwareVaultId = deviceId
                 });
             }
 
-            return await _deviceLicenseRepository.AddRangeAsync(deviceLicenses) as List<DeviceLicense>;
+            return await _deviceLicenseRepository.AddRangeAsync(deviceLicenses) as List<HardwareVaultLicense>;
         }
 
         public async Task UpdateDeviceLicenseStatusAsync()
         {
-            var devicesChangedStatus = new List<Device>();
+            var devicesChangedStatus = new List<HardwareVault>();
 
             var devices = await _deviceRepository
                 .Query()
@@ -342,7 +342,7 @@ namespace HES.Core.Services
         {
             var deviceLicense = await _deviceLicenseRepository
                 .Query()
-                .Where(d => d.DeviceId == deviceId && d.Id == licenseId)
+                .Where(d => d.HardwareVaultId == deviceId && d.Id == licenseId)
                 .FirstOrDefaultAsync();
 
             if (deviceLicense == null)
@@ -378,7 +378,7 @@ namespace HES.Core.Services
 
             var licenses = await _deviceLicenseRepository
                 .Query()
-                .Where(d => d.DeviceId == deviceId)
+                .Where(d => d.HardwareVaultId == deviceId)
                 .ToListAsync();
 
             foreach (var license in licenses)
@@ -413,7 +413,7 @@ namespace HES.Core.Services
 
                 foreach (var newLicense in newLicenses)
                 {
-                    var currentLicense = currentLicenses.FirstOrDefault(c => c.DeviceId == newLicense.DeviceId);
+                    var currentLicense = currentLicenses.FirstOrDefault(c => c.HardwareVaultId == newLicense.DeviceId);
                     currentLicense.ImportedAt = DateTime.UtcNow;
                     currentLicense.EndDate = newLicense.LicenseEndDate;
                     currentLicense.Data = Convert.FromBase64String(newLicense.Data);

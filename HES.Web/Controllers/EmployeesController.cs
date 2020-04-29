@@ -367,7 +367,7 @@ namespace HES.Web.Controllers
             try
             {
                 account = await _employeeService.DeleteAccountAsync(id);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(account.Employee.Devices.Select(s => s.Id).ToList());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(account.Employee.HardwareVaults.Select(s => s.Id).ToList());
             }
             catch (NotFoundException)
             {

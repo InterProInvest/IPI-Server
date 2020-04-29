@@ -280,8 +280,8 @@ namespace HES.Core.Services
         private async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
         {
             using var scope = Services.CreateScope();
-            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Device>>();
-            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DeviceTask>>();
+            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
+            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
             var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
 
             var devices = await scopedDeviceRepository.Query().ToListAsync();
@@ -337,8 +337,8 @@ namespace HES.Core.Services
         private async Task EncryptDatabase(DataProtectionKey key)
         {
             using var scope = Services.CreateScope();
-            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Device>>();
-            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DeviceTask>>();
+            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
+            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
             var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
 
             var devices = await scopedDeviceRepository.Query().ToListAsync();
@@ -379,8 +379,8 @@ namespace HES.Core.Services
         private async Task DecryptDatabase(DataProtectionKey key)
         {
             using var scope = Services.CreateScope();
-            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Device>>();
-            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<DeviceTask>>();
+            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
+            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
             var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
 
             var devices = await scopedDeviceRepository.Query().ToListAsync();

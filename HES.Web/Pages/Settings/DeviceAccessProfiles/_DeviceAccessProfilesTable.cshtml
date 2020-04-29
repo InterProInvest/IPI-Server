@@ -33,7 +33,7 @@
                 @Html.DisplayNameFor(model => model.DeviceAccessProfiles[0].UpdatedAt)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DeviceAccessProfiles[0].Devices)
+                @Html.DisplayNameFor(model => model.DeviceAccessProfiles[0].HardwareVaults)
             </th>
             <th class="table-col-menu" data-priority="2"></th>
         </tr>
@@ -57,7 +57,7 @@
                     }
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Devices.Count)
+                    @Html.DisplayFor(modelItem => item.HardwareVaults.Count)
                 </td>
                 <td>
                     <div class="dropdown no-arrow">

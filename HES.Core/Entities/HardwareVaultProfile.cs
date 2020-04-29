@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
-    public class DeviceAccessProfile
+    public class HardwareVaultProfile
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -16,7 +16,7 @@ namespace HES.Core.Entities
         public DateTime CreatedAt { get; set; }
         [Display(Name = "Updated")]
         public DateTime? UpdatedAt { get; set; }
-        public List<Device> Devices { get; set; }
+        public List<HardwareVault> HardwareVaults { get; set; }
         public bool ButtonBonding { get; set; }
         public bool ButtonConnection { get; set; }
         public bool ButtonNewChannel { get; set; }

@@ -63,73 +63,73 @@ else
 
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
-            <MainTableHeader Title="@nameof(Device.Id)"
-                             SortColumn="@nameof(Device.Id)"
+            <MainTableHeader Title="@nameof(HardwareVault.Id)"
+                             SortColumn="@nameof(HardwareVault.Id)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.MAC)"
-                             SortColumn="@nameof(Device.MAC)"
+            <MainTableHeader Title="@nameof(HardwareVault.MAC)"
+                             SortColumn="@nameof(HardwareVault.MAC)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.Battery)"
-                             SortColumn="@nameof(Device.Battery)"
+            <MainTableHeader Title="@nameof(HardwareVault.Battery)"
+                             SortColumn="@nameof(HardwareVault.Battery)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.Firmware)"
-                             SortColumn="@nameof(Device.Firmware)"
+            <MainTableHeader Title="@nameof(HardwareVault.Firmware)"
+                             SortColumn="@nameof(HardwareVault.Firmware)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Profile"
-                             SortColumn="@nameof(Device.DeviceAccessProfile.Name)"
+                             SortColumn="@nameof(HardwareVault.HardwareVaultProfile.Name)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.Status)"
-                             SortColumn="@nameof(Device.Status)"
+            <MainTableHeader Title="@nameof(HardwareVault.Status)"
+                             SortColumn="@nameof(HardwareVault.Status)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Last Synced"
-                             SortColumn="@nameof(Device.LastSynced)"
+                             SortColumn="@nameof(HardwareVault.LastSynced)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="License Status"
-                             SortColumn="@nameof(Device.LicenseStatus)"
+                             SortColumn="@nameof(HardwareVault.LicenseStatus)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="License End Date"
-                             SortColumn="@nameof(Device.LicenseEndDate)"
+                             SortColumn="@nameof(HardwareVault.LicenseEndDate)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.Employee)"
-                             SortColumn="@nameof(Device.Employee.FullName)"
+            <MainTableHeader Title="@nameof(HardwareVault.Employee)"
+                             SortColumn="@nameof(HardwareVault.Employee.FullName)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
-                             SortColumn="@nameof(Device.Employee.EmpCompany)"
+                             SortColumn="@nameof(HardwareVault.Employee.EmpCompany)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.Model)"
-                             SortColumn="@nameof(Device.Model)"
+            <MainTableHeader Title="@nameof(HardwareVault.Model)"
+                             SortColumn="@nameof(HardwareVault.Model)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Department"
-                             SortColumn="@nameof(Device.Employee.Department)"
+                             SortColumn="@nameof(HardwareVault.Employee.Department)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(Device.RFID)"
-                             SortColumn="@nameof(Device.RFID)"
+            <MainTableHeader Title="@nameof(HardwareVault.RFID)"
+                             SortColumn="@nameof(HardwareVault.RFID)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
@@ -169,7 +169,7 @@ else
                 @context.Firmware
             </td>
             <td>
-                @context.DeviceAccessProfile?.Name
+                @context.HardwareVaultProfile.Name
             </td>
             <td>
                 @context.Status

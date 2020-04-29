@@ -44,16 +44,16 @@
             <tr>
                 <th class="d-none"></th>
                 <th data-priority="1">
-                    @Html.DisplayNameFor(model => model.ProximityDevices[0].DeviceId)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].HardwareVaultId)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.ProximityDevices[0].Device.Employee)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].HardwareVault.Employee)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.ProximityDevices[0].Device.Employee.EmpCompany)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].HardwareVault.Employee.EmpCompany)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.ProximityDevices[0].Device.Employee.EmpDepartment)
+                    @Html.DisplayNameFor(model => model.ProximityDevices[0].HardwareVault.Employee.EmpDepartment)
                 </th>
                 <th class="table-col-menu" data-priority="2"></th>
             </tr>
@@ -64,16 +64,16 @@
                 <tr>
                     <td class="d-none"></td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.DeviceId)
+                        @Html.DisplayFor(modelItem => item.HardwareVaultId)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Device.Employee.FullName)
+                        @Html.DisplayFor(modelItem => item.HardwareVault.Employee.FullName)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Device.Employee.EmpCompany)
+                        @Html.DisplayFor(modelItem => item.HardwareVault.Employee.EmpCompany)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Device.Employee.EmpDepartment)
+                        @Html.DisplayFor(modelItem => item.HardwareVault.Employee.EmpDepartment)
                     </td>
                     <td>
                         <div class="dropdown no-arrow">

@@ -15,7 +15,7 @@ namespace HES.Web.Pages.Devices
         public IEmployeeService EmployeeService { get; set; }
 
         [Inject]
-        public IDeviceService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
 
         [Inject]
         public IOrgStructureService OrgStructureService { get; set; }

@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Employees
     public class IndexModel : PageModel
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IWorkstationService _workstationService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
@@ -27,7 +27,7 @@ namespace HES.Web.Pages.Employees
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Employee> Employees { get; set; }
-        public IList<Device> Devices { get; set; }
+        public IList<HardwareVault> Devices { get; set; }
         public IList<Workstation> Workstations { get; set; }
         public Employee Employee { get; set; }
         public EmployeeFilter EmployeeFilter { get; set; }
@@ -61,7 +61,7 @@ namespace HES.Web.Pages.Employees
 
 
         public IndexModel(IEmployeeService employeeService,
-                          IDeviceService deviceService,
+                          IHardwareVaultService deviceService,
                           IWorkstationService workstationService,
                           IOrgStructureService orgStructureService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
@@ -85,7 +85,7 @@ namespace HES.Web.Pages.Employees
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["DevicesCount"] = new SelectList(Employees.Select(s => s.Devices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
+            ViewData["DevicesCount"] = new SelectList(Employees.Select(s => s.HardwareVaults.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";

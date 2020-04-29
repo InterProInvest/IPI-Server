@@ -4,7 +4,7 @@
 }
 else
 {
-    @if (Employee.SoftwareVaultInvitations.Count > 0 || Employee.SoftwareVaults.Count > 0 || Employee.Devices.Count > 0)
+    @if (Employee.SoftwareVaultInvitations.Count > 0 || Employee.SoftwareVaults.Count > 0 || Employee.HardwareVaults.Count > 0)
     {
         <h4 class="text-navyblue">Vaults</h4>
     }
@@ -43,7 +43,7 @@ else
                 </div>
             </li>
         }
-        @foreach (var hardwareVault in Employee.Devices)
+        @foreach (var hardwareVault in Employee.HardwareVaults)
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">

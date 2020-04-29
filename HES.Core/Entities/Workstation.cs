@@ -22,8 +22,9 @@ namespace HES.Core.Entities
         public DateTime LastSeen { get; set; }
         public bool Approved { get; set; }
         public bool RFID { get; set; }
-        [Display(Name = "Devices")]
-        public List<ProximityDevice> ProximityDevices { get; set; }
+
+        [Display(Name = "Vaults")]
+        public List<WorkstationProximityVault> WorkstationProximityVaults { get; set; }
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }

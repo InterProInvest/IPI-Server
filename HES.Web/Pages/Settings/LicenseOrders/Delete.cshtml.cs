@@ -10,7 +10,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
     public class DeleteModel : PageModel
     {
         private readonly ILicenseService _licenseService;
-        public IList<DeviceLicense> DeviceLicenses { get; set; }
+        public IList<HardwareVaultLicense> DeviceLicenses { get; set; }
 
         [BindProperty]
         public LicenseOrder LicenseOrder { get; set; }

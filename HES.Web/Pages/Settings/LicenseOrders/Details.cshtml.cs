@@ -13,7 +13,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         private readonly ILicenseService _licenseService;
         private readonly ILogger<DetailsModel> _logger;
         public LicenseOrder LicenseOrder { get; set; }
-        public IList<DeviceLicense> DeviceLicenses { get; set; }
+        public IList<HardwareVaultLicense> DeviceLicenses { get; set; }
 
         public DetailsModel(ILicenseService licenseService,
                             ILogger<DetailsModel> logger)

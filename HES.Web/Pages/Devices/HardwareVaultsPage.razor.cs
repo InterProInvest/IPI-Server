@@ -27,20 +27,20 @@ namespace HES.Web.Pages.Devices
         ILogger<HardwareVaultsPage> Logger { get; set; }
 
         [Inject]
-        public IDeviceService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
 
         [Inject] 
         public IModalDialogService ModalDialogService { get; set; }
 
         #endregion
 
-        public List<Device> HardwareVaults { get; set; }
-        public Device SelectedHardwareVault { get; set; }
+        public List<HardwareVault> HardwareVaults { get; set; }
+        public HardwareVault SelectedHardwareVault { get; set; }
         
         public HardwareVaultFilter Filter { get; set; } = new HardwareVaultFilter();
         public string SearchText { get; set; } = string.Empty;
         public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
-        public string SortedColumn { get; set; } = nameof(Device.Id);
+        public string SortedColumn { get; set; } = nameof(HardwareVault.Id);
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
@@ -76,7 +76,7 @@ namespace HES.Web.Pages.Devices
             StateHasChanged();
         }
 
-        private async Task SelectedItemChangedAsync(Device hardwareVault)
+        private async Task SelectedItemChangedAsync(HardwareVault hardwareVault)
         {
             await InvokeAsync(() => 
             {
@@ -131,7 +131,7 @@ namespace HES.Web.Pages.Devices
 
             try
             {
-                await HardwareVaultService.ImportDevicesAsync();
+                await HardwareVaultService.ImportVaultsAsync();
                 await LoadTableDataAsync();
             }
             catch (Exception ex)

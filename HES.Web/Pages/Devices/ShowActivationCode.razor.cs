@@ -9,7 +9,7 @@ namespace HES.Web.Pages.Devices
     public partial class ShowActivationCode : ComponentBase
     {
         [Inject]
-        public IDeviceService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
 
 
         [Inject]
@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Devices
         public IJSRuntime JsRuntime { get; set; }
 
         [Parameter]
-        public Device HardwareVault { get; set; }
+        public HardwareVault HardwareVault { get; set; }
 
         public string ActivationCodeString { get; set; }
         public string InputType { get; private set; }

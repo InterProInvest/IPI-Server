@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
-    public class DeviceLicense
+    public class HardwareVaultLicense
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
-        public string DeviceId { get; set; }
+        public string HardwareVaultId { get; set; }
         [Required]
         public string LicenseOrderId { get; set; }
         public DateTime? ImportedAt { get; set; }

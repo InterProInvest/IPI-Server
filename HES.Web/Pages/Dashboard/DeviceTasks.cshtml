@@ -23,7 +23,7 @@
     <thead>
         <tr>
             <th data-priority="1">
-                @Html.DisplayNameFor(model => model.DeviceTasks[0].DeviceId)
+                @Html.DisplayNameFor(model => model.DeviceTasks[0].HardwareVaultId)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.DeviceTasks[0].Operation)
@@ -50,7 +50,7 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DeviceId)
+                    @Html.DisplayFor(modelItem => item.HardwareVaultId)
                 </td>
                 <td>
                     @switch (item.Operation)

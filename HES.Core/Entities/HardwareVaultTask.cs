@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
-    public class DeviceTask
+    public class HardwareVaultTask
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -13,7 +13,7 @@ namespace HES.Core.Entities
         public string OtpSecret { get; set; }
         public TaskOperation Operation { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string DeviceId { get; set; }
+        public string HardwareVaultId { get; set; }
         public string AccountId { get; set; }
 
         [ForeignKey("AccountId")]

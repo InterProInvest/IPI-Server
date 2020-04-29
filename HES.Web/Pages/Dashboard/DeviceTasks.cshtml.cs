@@ -15,7 +15,7 @@ namespace HES.Web.Pages.Dashboard
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly ILogger<DeviceTasksModel> _logger;
 
-        public IList<DeviceTask> DeviceTasks { get; set; }
+        public IList<HardwareVaultTask> DeviceTasks { get; set; }
 
 
         public DeviceTasksModel(IDeviceTaskService deviceTaskService, ILogger<DeviceTasksModel> logger)

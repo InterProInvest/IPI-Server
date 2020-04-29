@@ -75,7 +75,7 @@ namespace HES.Web
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IDeviceService, DeviceService>();
+            services.AddScoped<IHardwareVaultService, HardwareVaultService>();
             services.AddScoped<IDeviceTaskService, DeviceTaskService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IWorkstationService, WorkstationService>();

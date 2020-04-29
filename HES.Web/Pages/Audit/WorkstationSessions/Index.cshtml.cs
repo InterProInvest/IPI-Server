@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
     {
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IAccountService _deviceAccountService;
         private readonly IEmployeeService _employeeService;
         private readonly IOrgStructureService _orgStructureService;
@@ -28,7 +28,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
 
         public IndexModel(IWorkstationAuditService workstationAuditService,
                             IWorkstationService workstationService,
-                            IDeviceService deviceService,
+                            IHardwareVaultService deviceService,
                             IAccountService deviceAccountService,
                             IEmployeeService employeeService,
                             IOrgStructureService orgStructureService)
@@ -64,10 +64,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
             WorkstationSessions = await _workstationAuditService
                 .SessionQuery()
                 .Include(w => w.Workstation)
-                .Include(w => w.Device)
+                .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
+                .Include(w => w.Account)
                 .Where(w => w.StartDate >= DateTime.UtcNow.AddDays(-1) && w.UnlockedBy == Hideez.SDK.Communication.SessionSwitchSubject.NonHideez)
                 .OrderByDescending(w => w.StartDate)
                 .Take(500)
@@ -89,10 +89,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
             WorkstationSessions = await _workstationAuditService
                 .SessionQuery()
                 .Include(w => w.Workstation)
-                .Include(w => w.Device)
+                .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
+                .Include(w => w.Account)
                 .Where(w => w.StartDate <= DateTime.UtcNow.AddHours(-12) && w.EndDate == null)
                 .OrderByDescending(w => w.StartDate)
                 .Take(500)
@@ -114,10 +114,10 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
             WorkstationSessions = await _workstationAuditService
                 .SessionQuery()
                 .Include(w => w.Workstation)
-                .Include(w => w.Device)
+                .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
+                .Include(w => w.Account)
                 .Where(w => w.EndDate == null)
                 .OrderByDescending(w => w.StartDate)
                 .Take(500)

@@ -45,7 +45,7 @@ namespace HES.Web.Pages.Workstations
             Workstations = await _workstationService.GetWorkstationsAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-            ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
+            ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.WorkstationProximityVaults.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
@@ -55,13 +55,13 @@ namespace HES.Web.Pages.Workstations
         {
             Workstations = await _workstationService
                 .WorkstationQuery()
-                .Include(w => w.ProximityDevices)
+                .Include(w => w.WorkstationProximityVaults)
                 .Include(c => c.Department.Company)
                 .Where(w => w.Approved == false)
                 .ToListAsync();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-            ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
+            ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.WorkstationProximityVaults.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
@@ -74,7 +74,7 @@ namespace HES.Web.Pages.Workstations
             Workstations = allWorkstations.Where(w => w.IsOnline == true).ToList();
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
-            ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.ProximityDevices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
+            ViewData["ProximityDevicesCount"] = new SelectList(Workstations.Select(s => s.WorkstationProximityVaults.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";

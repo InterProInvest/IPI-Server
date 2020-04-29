@@ -41,7 +41,7 @@ namespace HES.Web.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<DeviceTask>>> GetDeviceTasks()
+        public async Task<ActionResult<IEnumerable<HardwareVaultTask>>> GetDeviceTasks()
         {
             return await _dashboardService.GetDeviceTasks();
         }

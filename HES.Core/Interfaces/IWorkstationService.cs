@@ -23,14 +23,14 @@ namespace HES.Core.Interfaces
         Task UnapproveWorkstationAsync(string id);
         Task<bool> GetRfidStateAsync(string workstationId);
         Task UpdateRfidStateAsync(string workstationId);
-        IQueryable<ProximityDevice> ProximityDeviceQuery();
-        Task<List<ProximityDevice>> GetProximityDevicesAsync(string workstationId);
-        Task<ProximityDevice> GetProximityDeviceByIdAsync(string id);
-        Task<IList<ProximityDevice>> AddProximityDevicesAsync(string workstationId, string[] devicesIds);
+        IQueryable<WorkstationProximityVault> ProximityDeviceQuery();
+        Task<List<WorkstationProximityVault>> GetProximityDevicesAsync(string workstationId);
+        Task<WorkstationProximityVault> GetProximityDeviceByIdAsync(string id);
+        Task<IList<WorkstationProximityVault>> AddProximityDevicesAsync(string workstationId, string[] devicesIds);
         Task AddMultipleProximityDevicesAsync(string[] workstationsIds, string[] devicesIds);
-        Task EditProximityDeviceAsync(ProximityDevice proximityDevice);
+        Task EditProximityDeviceAsync(WorkstationProximityVault proximityDevice);
         Task DeleteProximityDeviceAsync(string proximityDeviceId);
-        Task DeleteRangeProximityDevicesAsync(List<ProximityDevice> proximityDevices);
+        Task DeleteRangeProximityDevicesAsync(List<WorkstationProximityVault> proximityDevices);
         Task RemoveAllProximityAsync(string deviceId);
         Task UpdateProximitySettingsAsync(string workstationId);
     }

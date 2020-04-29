@@ -17,7 +17,7 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
-        private readonly IAsyncRepository<Device> _deviceRepository;
+        private readonly IAsyncRepository<HardwareVault> _deviceRepository;
         private readonly IAsyncRepository<Employee> _employeeRepository;
         private readonly IAsyncRepository<Account> _deviceAccountRepository;
         private readonly IAsyncRepository<SummaryByDayAndEmployee> _summaryByDayAndEmployeeRepository;
@@ -28,7 +28,7 @@ namespace HES.Core.Services
 
         public WorkstationAuditService(IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                        IAsyncRepository<WorkstationSession> workstationSessionRepository,
-                                       IAsyncRepository<Device> deviceRepository,
+                                       IAsyncRepository<HardwareVault> deviceRepository,
                                        IAsyncRepository<Employee> employeeRepository,
                                        IAsyncRepository<Account> deviceAccountRepository,
                                        IAsyncRepository<SummaryByDayAndEmployee> summaryByDayAndEmployeeRepository,
@@ -61,10 +61,10 @@ namespace HES.Core.Services
             return await _workstationEventRepository
                 .Query()
                 .Include(w => w.Workstation)
-                .Include(w => w.Device)
+                .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
+                .Include(w => w.Account)
                 .OrderByDescending(w => w.Date)
                 .Take(500)
                 .ToListAsync();
@@ -75,10 +75,10 @@ namespace HES.Core.Services
             var filter = _workstationEventRepository
                  .Query()
                  .Include(w => w.Workstation)
-                 .Include(w => w.Device)
+                 .Include(w => w.HardwareVault)
                  .Include(w => w.Employee)
                  .Include(w => w.Department.Company)
-                 .Include(w => w.DeviceAccount)
+                 .Include(w => w.Account)
                  .AsQueryable();
 
             if (workstationEventFilter.StartDate != null && workstationEventFilter.EndDate != null)
@@ -108,7 +108,7 @@ namespace HES.Core.Services
             }
             if (workstationEventFilter.DeviceId != null)
             {
-                filter = filter.Where(w => w.Device.Id == workstationEventFilter.DeviceId);
+                filter = filter.Where(w => w.HardwareVault.Id == workstationEventFilter.DeviceId);
             }
             if (workstationEventFilter.EmployeeId != null)
             {
@@ -124,11 +124,11 @@ namespace HES.Core.Services
             }
             if (workstationEventFilter.DeviceAccountId != null)
             {
-                filter = filter.Where(w => w.DeviceAccountId == workstationEventFilter.DeviceAccountId);
+                filter = filter.Where(w => w.AccountId == workstationEventFilter.DeviceAccountId);
             }
             if (workstationEventFilter.DeviceAccountTypeId != null)
             {
-                filter = filter.Where(w => w.DeviceAccount.Type == (AccountType)workstationEventFilter.DeviceAccountTypeId);
+                filter = filter.Where(w => w.Account.Type == (AccountType)workstationEventFilter.DeviceAccountTypeId);
             }
 
             return await filter
@@ -181,10 +181,10 @@ namespace HES.Core.Services
                 Note = workstationEventDto.Note,
                 WorkstationId = workstationEventDto.WorkstationId,
                 UserSession = workstationEventDto.UserSession,
-                DeviceId = workstationEventDto.DeviceId,
+                HardwareVaultId = workstationEventDto.DeviceId,
                 EmployeeId = employeeId,
                 DepartmentId = departmentId,
-                DeviceAccountId = deviceAccountId,
+                AccountId = deviceAccountId,
             };
 
             await _workstationEventRepository.AddAsync(workstationEvent);
@@ -197,7 +197,7 @@ namespace HES.Core.Services
                 Date = DateTime.UtcNow,
                 EventId = WorkstationEventType.DevicePendingUnlock,
                 SeverityId = WorkstationEventSeverity.Info,
-                DeviceId = deviceId
+                HardwareVaultId = deviceId
             };
 
             await _workstationEventRepository.AddAsync(workstationEvent);
@@ -217,10 +217,10 @@ namespace HES.Core.Services
             return await _workstationSessionRepository
                 .Query()
                 .Include(w => w.Workstation)
-                .Include(w => w.Device)
+                .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
+                .Include(w => w.Account)
                 .OrderByDescending(w => w.StartDate)
                 .Take(500)
                 .ToListAsync();
@@ -231,10 +231,10 @@ namespace HES.Core.Services
             var filter = _workstationSessionRepository
                 .Query()
                 .Include(w => w.Workstation)
-                .Include(w => w.Device)
+                .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
-                .Include(w => w.DeviceAccount)
+                .Include(w => w.Account)
                 .AsQueryable();
 
             if (workstationSessionFilter.StartDate != null && workstationSessionFilter.EndDate != null)
@@ -256,7 +256,7 @@ namespace HES.Core.Services
             }
             if (workstationSessionFilter.DeviceId != null)
             {
-                filter = filter.Where(w => w.Device.Id == workstationSessionFilter.DeviceId);
+                filter = filter.Where(w => w.HardwareVault.Id == workstationSessionFilter.DeviceId);
             }
             if (workstationSessionFilter.EmployeeId != null)
             {
@@ -272,11 +272,11 @@ namespace HES.Core.Services
             }
             if (workstationSessionFilter.DeviceAccountId != null)
             {
-                filter = filter.Where(w => w.DeviceAccountId == workstationSessionFilter.DeviceAccountId);
+                filter = filter.Where(w => w.AccountId == workstationSessionFilter.DeviceAccountId);
             }
             if (workstationSessionFilter.DeviceAccountTypeId != null)
             {
-                filter = filter.Where(w => w.DeviceAccount.Type == (AccountType)workstationSessionFilter.DeviceAccountTypeId);
+                filter = filter.Where(w => w.Account.Type == (AccountType)workstationSessionFilter.DeviceAccountTypeId);
             }
 
             return await filter
@@ -385,10 +385,10 @@ namespace HES.Core.Services
                 UnlockedBy = unlockedBy,
                 WorkstationId = workstationEventDto.WorkstationId,
                 UserSession = workstationEventDto.UserSession,
-                DeviceId = workstationEventDto.DeviceId,
+                HardwareVaultId = workstationEventDto.DeviceId,
                 EmployeeId = employeeId,
                 DepartmentId = departmentId,
-                DeviceAccountId = deviceAccountId,
+                AccountId = deviceAccountId,
             };
 
             await _workstationSessionRepository.AddAsync(workstationSession);

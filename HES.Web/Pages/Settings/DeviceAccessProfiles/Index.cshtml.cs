@@ -14,12 +14,12 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
 {
     public class IndexModel : PageModel
     {
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<IndexModel> _logger;
 
-        public IList<DeviceAccessProfile> DeviceAccessProfiles { get; set; }
-        public DeviceAccessProfile DeviceAccessProfile { get; set; }
+        public IList<HardwareVaultProfile> DeviceAccessProfiles { get; set; }
+        public HardwareVaultProfile DeviceAccessProfile { get; set; }
         public bool ProfileHasForeignKey { get; set; }
 
         [TempData]
@@ -27,7 +27,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
         [TempData]
         public string ErrorMessage { get; set; }
 
-        public IndexModel(IDeviceService deviceService,
+        public IndexModel(IHardwareVaultService deviceService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                           ILogger<IndexModel> logger)
         {
@@ -46,7 +46,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
             return Partial("_CreateProfile", this);
         }
 
-        public async Task<IActionResult> OnPostCreateProfileAsync(DeviceAccessProfile deviceAccessProfile)
+        public async Task<IActionResult> OnPostCreateProfileAsync(HardwareVaultProfile deviceAccessProfile)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
             return Partial("_EditProfile", this);
         }
 
-        public async Task<IActionResult> OnPostEditProfileAsync(DeviceAccessProfile DeviceAccessProfile)
+        public async Task<IActionResult> OnPostEditProfileAsync(HardwareVaultProfile DeviceAccessProfile)
         {
             if (!ModelState.IsValid)
             {
@@ -128,7 +128,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
                 return NotFound();
             }
 
-            ProfileHasForeignKey = DeviceAccessProfile.Devices.Count == 0 ? false : true;
+            ProfileHasForeignKey = DeviceAccessProfile.HardwareVaults.Count == 0 ? false : true;
 
             return Partial("_DeleteProfile", this);
         }

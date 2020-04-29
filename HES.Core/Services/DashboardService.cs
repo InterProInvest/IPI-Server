@@ -17,13 +17,13 @@ namespace HES.Core.Services
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IWorkstationService _workstationService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
 
         public DashboardService(IEmployeeService employeeService,
                                 IWorkstationAuditService workstationAuditService,
                                 IDeviceTaskService deviceTaskService,
                                 IWorkstationService workstationService,
-                                IDeviceService deviceService)
+                                IHardwareVaultService deviceService)
         {
             _employeeService = employeeService;
             _workstationAuditService = workstationAuditService;
@@ -44,7 +44,7 @@ namespace HES.Core.Services
             return await _deviceTaskService.TaskQuery().CountAsync();
         }
 
-        public async Task<List<DeviceTask>> GetDeviceTasks()
+        public async Task<List<HardwareVaultTask>> GetDeviceTasks()
         {
             return await _deviceTaskService.TaskQuery().ToListAsync();
         }
@@ -171,22 +171,6 @@ namespace HES.Core.Services
                     Count = deviceLock,
                     Page = "/Devices/Index",
                     Handler = "DeviceLocked"
-                });
-            }
-
-            var deviceError = await _deviceService
-               .VaultQuery()
-               .Where(d => d.Status == VaultStatus.Error)
-               .CountAsync();
-
-            if (deviceError > 0)
-            {
-                list.Add(new DashboardNotify()
-                {
-                    Message = "Device error",
-                    Count = deviceError,
-                    Page = "/Devices/Index",
-                    Handler = "DeviceError"
                 });
             }
 

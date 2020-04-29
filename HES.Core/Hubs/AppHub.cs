@@ -20,7 +20,7 @@ namespace HES.Core.Hubs
         private readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly IWorkstationAuditService _workstationAuditService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
         private readonly IEmployeeService _employeeService;
@@ -29,7 +29,7 @@ namespace HES.Core.Hubs
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                       IWorkstationAuditService workstationAuditService,
-                      IDeviceService deviceService,
+                      IHardwareVaultService deviceService,
                       IDeviceTaskService deviceTaskService,
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
@@ -236,7 +236,7 @@ namespace HES.Core.Hubs
                 .AsNoTracking()
                 .AnyAsync(d => d.Id == dto.DeviceSerialNo);
 
-            var vault = new Device()
+            var vault = new HardwareVault()
             {
                 Id = dto.DeviceSerialNo,
                 MAC = dto.Mac,
@@ -314,14 +314,14 @@ namespace HES.Core.Hubs
             }
         }
 
-        private async Task<DeviceInfoDto> GetDeviceInfo(Device device)
+        private async Task<DeviceInfoDto> GetDeviceInfo(HardwareVault device)
         {
             if (device == null)
                 return null;
 
             bool needUpdate = await _deviceTaskService
                 .TaskQuery()
-                .Where(t => t.DeviceId == device.Id)
+                .Where(t => t.HardwareVaultId == device.Id)
                 .AsNoTracking()
                 .AnyAsync();
 
@@ -368,7 +368,7 @@ namespace HES.Core.Hubs
                     deviceLicenseDto.Add(new DeviceLicenseDTO
                     {
                         Id = license.Id,
-                        DeviceId = license.DeviceId,
+                        DeviceId = license.HardwareVaultId,
                         ImportedAt = license.ImportedAt,
                         AppliedAt = license.AppliedAt,
                         EndDate = license.EndDate,

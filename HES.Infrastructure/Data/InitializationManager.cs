@@ -29,7 +29,7 @@ namespace HES.Infrastructure.Data
             using (var scope = host.Services.CreateScope())
             {
                 InitializeRoleAndAdmin(scope).Wait();
-                InitializeDeviceAccessProfile(scope).Wait();
+                InitializeHardwareVaultProfile(scope).Wait();
                 InitializeDataProtection(scope).Wait();
             }
          
@@ -58,15 +58,15 @@ namespace HES.Infrastructure.Data
             }
         }
 
-        private static async Task InitializeDeviceAccessProfile(IServiceScope scope)
+        private static async Task InitializeHardwareVaultProfile(IServiceScope scope)
         {
             using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            var profile = await context.DeviceAccessProfiles.FindAsync("default");
+            var profile = await context.HardwareVaultProfiles.FindAsync("default");
 
             if (profile == null)
             {
-                await context.DeviceAccessProfiles.AddAsync(new DeviceAccessProfile
+                await context.HardwareVaultProfiles.AddAsync(new HardwareVaultProfile
                 {
                     Id = "default",
                     Name = "Default",

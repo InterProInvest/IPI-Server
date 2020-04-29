@@ -13,7 +13,7 @@ namespace HES.Web.Pages.Devices
     public partial class SetProfile : ComponentBase
     {
         [Inject]
-        public IDeviceService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
 
         [Inject]
         public IModalDialogService ModalDialogService { get; set; }
@@ -35,7 +35,7 @@ namespace HES.Web.Pages.Devices
 
         protected override async Task OnInitializedAsync()
         {
-            VaultProfiles = new SelectList(await HardwareVaultService.GetProfilesAsync(), nameof(DeviceAccessProfile.Id), nameof(DeviceAccessProfile.Name));
+            VaultProfiles = new SelectList(await HardwareVaultService.GetProfilesAsync(), nameof(HardwareVaultProfile.Id), nameof(HardwareVaultProfile.Name));
             SelectedVaultProfileId = VaultProfiles.First().Value;
         }
 

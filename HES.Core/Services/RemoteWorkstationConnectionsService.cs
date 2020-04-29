@@ -31,7 +31,7 @@ namespace HES.Core.Services
         readonly IRemoteTaskService _remoteTaskService;
         readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         readonly IWorkstationService _workstationService;
-        readonly IDeviceService _deviceService;
+        readonly IHardwareVaultService _deviceService;
         readonly IDeviceTaskService _deviceTaskService;
         readonly IDataProtectionService _dataProtectionService;
         readonly IWorkstationAuditService _workstationAuditService;
@@ -41,7 +41,7 @@ namespace HES.Core.Services
                       IRemoteTaskService remoteTaskService,
                       IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IWorkstationService workstationService,
-                      IDeviceService deviceService,
+                      IHardwareVaultService deviceService,
                       IDeviceTaskService deviceTaskService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
@@ -58,7 +58,7 @@ namespace HES.Core.Services
             _logger = logger;
         }
 
-        #region Device
+        #region Hardware Vault
 
         public void StartUpdateRemoteDevice(IList<string> devicesId)
         {
@@ -157,9 +157,6 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
                 case VaultStatus.Reserved:
                     await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
-                    await remoteDevice.RefreshDeviceInfo();
-                    if (remoteDevice.AccessLevel.IsLinkRequired)
-                        throw new Exception($"Can't link the vault {vault.Id}, after executing the link task.");
                     await CheckPassphraseAsync(remoteDevice, vault.Id);
                     await CheckTaskAsync(remoteDevice, vault.Id, primaryAccountOnly);
                     break;
@@ -191,7 +188,7 @@ namespace HES.Core.Services
             return true;
         }
 
-        private async Task CheckLockedAsync(RemoteDevice remoteDevice, Device vault)
+        private async Task CheckLockedAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
             if (remoteDevice.AccessLevel.IsLocked)
             {
@@ -200,7 +197,7 @@ namespace HES.Core.Services
             }
         }
 
-        private async Task CheckLinkedAsync(RemoteDevice remoteDevice, Device vault)
+        private async Task CheckLinkedAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
             if (!remoteDevice.AccessLevel.IsLinkRequired)
             {
@@ -223,7 +220,7 @@ namespace HES.Core.Services
                 {
                     var existLinkTask = await _deviceTaskService
                         .TaskQuery()
-                        .Where(d => d.DeviceId == vault.Id && d.Operation == TaskOperation.Link)
+                        .Where(d => d.HardwareVaultId == vault.Id && d.Operation == TaskOperation.Link)
                         .AsNoTracking()
                         .AnyAsync();
 

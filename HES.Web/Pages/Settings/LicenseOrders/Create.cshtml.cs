@@ -18,13 +18,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
     public class CreateModel : PageModel
     {
         private readonly ILicenseService _licenseService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly ILogger<CreateModel> _logger;
 
         public NewLicenseOrder NewLicenseOrderDto { get; set; }
         public RenewLicenseOrder RenewLicenseOrderDto { get; set; }
-        public List<Device> NonLicensedDevices { get; set; }
-        public List<Device> LicensedDevices { get; set; }
+        public List<HardwareVault> NonLicensedDevices { get; set; }
+        public List<HardwareVault> LicensedDevices { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -32,7 +32,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public string ErrorMessage { get; set; }
 
         public CreateModel(ILicenseService licenseService,
-                           IDeviceService deviceService,
+                           IHardwareVaultService deviceService,
                            ILogger<CreateModel> logger)
         {
             _licenseService = licenseService;

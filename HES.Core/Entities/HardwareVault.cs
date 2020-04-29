@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Entities
 {
-    public class Device
+    public class HardwareVault
     {
         [Display(Name = "ID")]
         [Key]
@@ -26,7 +26,7 @@ namespace HES.Core.Entities
         [Required]
         public string Firmware { get; set; }
 
-        public VaultStatus Status { get; set; } // Todo set to VaultStatus
+        public VaultStatus Status { get; set; }
 
         [Display(Name = "Status Reason")]
         public VaultStatusReason StatusReason { get; set; }
@@ -44,7 +44,7 @@ namespace HES.Core.Entities
         public string MasterPassword { get; set; }
 
         [Required]
-        public string AcceessProfileId { get; set; }
+        public string HardwareVaultProfileId { get; set; }
 
         public DateTime ImportedAt { get; set; }
 
@@ -61,8 +61,8 @@ namespace HES.Core.Entities
         public Employee Employee { get; set; }
 
         [Display(Name = "Profile")]
-        [ForeignKey("AcceessProfileId")]
-        public DeviceAccessProfile DeviceAccessProfile { get; set; }
+        [ForeignKey("HardwareVaultProfileId")]
+        public HardwareVaultProfile HardwareVaultProfile { get; set; }
 
         [NotMapped]
         public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);

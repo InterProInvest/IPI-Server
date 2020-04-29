@@ -12,7 +12,7 @@ namespace HES.Web.Pages.Devices
     public partial class EditVaultRFID : ComponentBase
     {
         [Inject] 
-        public IDeviceService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
 
         [Inject]
         public ILogger<EditVaultRFID> Logger { get; set; }
@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Devices
         [Parameter] 
         public string HardwareVaultId { get; set; }
 
-        public Device HardwareVault { get; set; }
+        public HardwareVault HardwareVault { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
 

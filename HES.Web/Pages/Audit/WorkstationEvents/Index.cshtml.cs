@@ -20,7 +20,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
         private readonly IEmployeeService _employeeService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IAccountService _deviceAccountService;
         private readonly IOrgStructureService _orgStructureService;
         public IList<WorkstationEvent> WorkstationEvents { get; set; }
@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         public IndexModel(IWorkstationAuditService workstationAuditService,
                           IWorkstationService workstationService,
                           IEmployeeService employeeService,
-                          IDeviceService deviceService,
+                          IHardwareVaultService deviceService,
                           IAccountService deviceAccountService,
                           IOrgStructureService orgStructureService)
         {
