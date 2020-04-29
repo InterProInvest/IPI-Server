@@ -123,26 +123,6 @@ namespace HES.Web.Controllers
             return NoContent();
         }
 
-        [HttpPost("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> UnlockPin(string id)
-        {
-            try
-            {
-                // TODOSTATUS
-                //await _deviceService.UnlockPinAsync(id);
-                await _workstationAuditService.AddPendingUnlockEventAsync(id);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-              return StatusCode(500, new { error = ex.Message });
-            }
-
-            return NoContent();
-        }
-
         #endregion
 
         #region Access Profile

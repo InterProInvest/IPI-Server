@@ -166,15 +166,15 @@ namespace HES.Core.Services
                     break;
                 case VaultStatus.Locked:
                     await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Suspend);
-                    throw new Exception($"Vault {vault.Id} is locked.");
+                    throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Suspended:
-                    throw new Exception($"Vault {vault.Id} is locked.");
+                    throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Deactivated:
                     await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(vault.MasterPassword));
                     await _deviceService.UpdateAfterWipe(vault.Id);
                     throw new HideezException(HideezErrorCode.DeviceHasBeenWiped);
                 case VaultStatus.Compromised:
-                    throw new Exception($"Vault {vault.Id} in Compromised status.");
+                    throw new HideezException(HideezErrorCode.HesDeviceCompromised);
                 default:
                     _logger.LogCritical($"Unhandled vault status ({vault.Status})");
                     throw new Exception("Unhandled vault status.");
@@ -207,14 +207,14 @@ namespace HES.Core.Services
                 }
                 else
                 {
-                    throw new Exception("This vault is linked to another server");
+                    throw new HideezException(HideezErrorCode.HesDeviceLinkedToAnotherServer);
                 }
             }
             else
             {
                 if (vault.MasterPassword != null)
                 {
-                    throw new Exception("The vault was wiped a non-current server");
+                    throw new HideezException(HideezErrorCode.HesDeviceWipedOnAnotherServer);
                 }
                 else
                 {

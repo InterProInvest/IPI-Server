@@ -380,8 +380,7 @@ namespace HES.Core.Services
 
             if (dto.IsLocked)
             {
-                // TODO SET IsCanUnlock with new dll
-                if (!dto.IsLocked && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
+                if (!dto.IsCanUnlock && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
                 {
                     vault.Status = VaultStatus.Locked;
                 }
