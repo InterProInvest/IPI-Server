@@ -74,13 +74,13 @@ else
                 @context.LicenseStatus
             </td>
             <td>
-                @context.Employee.FullName
+                @context.Employee?.FullName
             </td>
             <td>
-                @context.Employee.Department.Company.Name
+                @context.Employee?.Department?.Company?.Name
             </td>
             <td>
-                @context.Employee.Department.Name
+                @context.Employee?.Department?.Name
             </td>
         </TableRow>
     </MainTable>

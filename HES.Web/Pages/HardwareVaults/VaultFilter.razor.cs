@@ -17,12 +17,14 @@ namespace HES.Web.Pages.HardwareVaults
         [Parameter] public Func<HardwareVaultFilter, Task> FilterChanged { get; set; }
 
         public HardwareVaultFilter Filter { get; set; }
-        public SelectList LicenseStatuses { get; set; }
+        public SelectList VaultStatusList { get; set; }
+        public SelectList LicenseStatusList { get; set; }
 
         protected override void OnInitialized()
         {
             Filter = new HardwareVaultFilter();
-            LicenseStatuses = new SelectList(Enum.GetValues(typeof(VaultLicenseStatus)).Cast<VaultLicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            VaultStatusList = new SelectList(Enum.GetValues(typeof(VaultStatus)).Cast<VaultStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            LicenseStatusList = new SelectList(Enum.GetValues(typeof(VaultLicenseStatus)).Cast<VaultLicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
         }
 
         private async Task FilteredAsync()

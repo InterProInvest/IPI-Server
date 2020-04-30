@@ -58,25 +58,25 @@ else
     </TableFilter>
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
-            <MainTableHeader Title="@nameof(HardwareVault.Id)"
+            <MainTableHeader Title="ID"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Id)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(HardwareVault.MAC)"
+            <MainTableHeader Title="MAC"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.MAC)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(HardwareVault.Battery)"
+            <MainTableHeader Title="Battery"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Battery)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(HardwareVault.Firmware)"
+            <MainTableHeader Title="Firmware"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Firmware)"
                              CurrentSortedColumn="@SortedColumn"
@@ -84,11 +84,11 @@ else
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Profile"
                              TitleWidth="7.1"
-                             SortColumn="@nameof(HardwareVault.HardwareVaultProfile.Name)"
+                             SortColumn="@nameof(HardwareVault.HardwareVaultProfile)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(HardwareVault.Status)"
+            <MainTableHeader Title="Status"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Status)"
                              CurrentSortedColumn="@SortedColumn"
@@ -112,15 +112,15 @@ else
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
-            <MainTableHeader Title="@nameof(HardwareVault.Employee)"
+            <MainTableHeader Title="Employee"
                              TitleWidth="7.1"
-                             SortColumn="@nameof(HardwareVault.Employee.FullName)"
+                             SortColumn="@nameof(HardwareVault.Employee)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
                              TitleWidth="7.1"
-                             SortColumn="@nameof(HardwareVault.Employee.EmpCompany)"
+                             SortColumn="@nameof(HardwareVault.Employee.Department.Company)"
                              CurrentSortedColumn="@SortedColumn"
                              SortedColumnChanged="SortedColumnChangedAsync"
                              SortDirectionChanged="SortDirectionChangedAsync" />
@@ -147,7 +147,7 @@ else
             <td>
                 @if (context.IsOnline)
                     {
-                    <span title="Conected device" class="state-connected">@context.Id</span>
+                    <span title="Conected" class="state-connected">@context.Id</span>
                     }
                     else
                     {
@@ -202,13 +202,13 @@ else
                 @context.Employee?.FullName
             </td>
             <td>
-                @context.Employee?.EmpCompany
-            </td>
-            <td>
-                @context.Model
+                @context.Employee?.Department?.Company?.Name
             </td>
             <td>
                 @context.Employee?.Department?.Name
+            </td>
+            <td>
+                @context.Model
             </td>
             <td>
                 @context.RFID
