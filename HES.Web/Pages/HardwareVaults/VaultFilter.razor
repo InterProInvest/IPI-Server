@@ -20,9 +20,12 @@ else
                 <InputText id="filterRfid" @bind-Value="Filter.RFID" class="form-control" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-                <label class="mb-0 text-gray">Battery</label>
-                <InputNumber id="filterBattery" @bind-Value="Filter.Battery" class="form-control" />
-                <ValidationMessage For="() => Filter.Battery" />
+                <label class="mb-0 text-gray">Battery</label> 
+                <select id="filterBattery" @bind="Filter.Battery" class="form-control">
+                    <option selected></option>
+                    <option value="low">Low</option>
+                    <option value="high">High</option>
+                </select>
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Firmware</label>

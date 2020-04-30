@@ -110,7 +110,15 @@ namespace HES.Core.Services
                 }
                 if (filter.Battery != null)
                 {
-                    query = query.Where(w => w.Battery == filter.Battery);
+                    switch (filter.Battery)
+                    {
+                        case "low":
+                            query = query.Where(w => w.Battery <= 30);
+                            break;
+                        case "high":
+                            query = query.Where(w => w.Battery >= 31);
+                            break;
+                    }
                 }
                 if (filter.Firmware != null)
                 {
@@ -139,7 +147,7 @@ namespace HES.Core.Services
                 if (filter.VaultStatus != null)
                 {
                     query = query.Where(w => w.Status == filter.VaultStatus);
-                }   
+                }
                 if (filter.LicenseStatus != null)
                 {
                     query = query.Where(w => w.LicenseStatus == filter.LicenseStatus);
@@ -248,7 +256,15 @@ namespace HES.Core.Services
                 }
                 if (filter.Battery != null)
                 {
-                    query = query.Where(w => w.Battery == filter.Battery);
+                    switch (filter.Battery)
+                    {
+                        case "low":
+                            query = query.Where(w => w.Battery <= 30);
+                            break;
+                        case "high":
+                            query = query.Where(w => w.Battery >= 31);
+                            break;
+                    }
                 }
                 if (filter.Firmware != null)
                 {

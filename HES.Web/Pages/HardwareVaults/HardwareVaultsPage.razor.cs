@@ -20,6 +20,7 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] IToastService ToastService { get; set; }
         [Inject] IJSRuntime JSRuntime { get; set; }
         [Inject] ILogger<HardwareVaultsPage> Logger { get; set; }
+        [Parameter] public string DashboardFilter { get; set; }
 
         public List<HardwareVault> HardwareVaults { get; set; }
         public HardwareVault SelectedHardwareVault { get; set; }
@@ -34,6 +35,27 @@ namespace HES.Web.Pages.HardwareVaults
 
         protected override async Task OnInitializedAsync()
         {
+            switch (DashboardFilter)
+            {
+                case "LowBattery":
+                    Filter.Battery = "low";
+                    break;
+                case "VaultLocked":
+                    Filter.VaultStatus = VaultStatus.Locked;
+                    break;
+                case "VaultReady":
+                    Filter.VaultStatus = VaultStatus.Ready;
+                    break;
+                case "LicenseWarning":
+                    Filter.LicenseStatus = VaultLicenseStatus.Warning;
+                    break;
+                case "LicenseCritical":
+                    Filter.LicenseStatus = VaultLicenseStatus.Critical;
+                    break;
+                case "LicenseExpired":
+                    Filter.LicenseStatus = VaultLicenseStatus.Expired;
+                    break;
+            }
             await LoadTableDataAsync();
         }
 

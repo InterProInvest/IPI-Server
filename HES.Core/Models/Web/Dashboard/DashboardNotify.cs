@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace HES.Core.Models
+﻿namespace HES.Core.Models
 {
     public class DashboardNotify
     {

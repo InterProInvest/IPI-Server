@@ -153,24 +153,24 @@ namespace HES.Core.Services
                 {
                     Message = "Low battery",
                     Count = lowBattery,
-                    Page = "/Devices/Index",
+                    Page = "/HardwareVaults/Index",
                     Handler = "LowBattery"
                 });
             }
 
-            var vaultLock = await _hardwareVaultService
+            var vaultLocked = await _hardwareVaultService
                 .VaultQuery()
-                .Where(d => d.Status == VaultStatus.Deactivated)
+                .Where(d => d.Status == VaultStatus.Locked)
                 .CountAsync();
 
-            if (vaultLock > 0)
+            if (vaultLocked > 0)
             {
                 list.Add(new DashboardNotify()
                 {
                     Message = "Vault locked",
-                    Count = vaultLock,
-                    Page = "/Devices/Index",
-                    Handler = "DeviceLocked"
+                    Count = vaultLocked,
+                    Page = "/HardwareVaults/Index",
+                    Handler = "VaultLocked"
                 });
             }
 
@@ -186,7 +186,7 @@ namespace HES.Core.Services
                 {
                     Message = "License warning",
                     Count = licenseWarning,
-                    Page = "/Devices/Index",
+                    Page = "/HardwareVaults/Index",
                     Handler = "LicenseWarning"
                 });
             }
@@ -203,7 +203,7 @@ namespace HES.Core.Services
                 {
                     Message = "License critical",
                     Count = licenseCritical,
-                    Page = "/Devices/Index",
+                    Page = "/HardwareVaults/Index",
                     Handler = "LicenseCritical"
                 });
             }
@@ -220,7 +220,7 @@ namespace HES.Core.Services
                 {
                     Message = "License expired",
                     Count = licenseExpired,
-                    Page = "/Devices/Index",
+                    Page = "/HardwareVaults/Index",
                     Handler = "LicenseExpired"
                 });
             }

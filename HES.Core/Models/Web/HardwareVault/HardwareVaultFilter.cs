@@ -1,6 +1,5 @@
-﻿using System;
-using HES.Core.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using HES.Core.Enums;
+using System;
 
 namespace HES.Core.Models.Web.HardwareVault
 {
@@ -10,8 +9,7 @@ namespace HES.Core.Models.Web.HardwareVault
         public string MAC { get; set; }
         public string Model { get; set; }
         public string RFID { get; set; }
-        [Range(0, 100)]
-        public int? Battery { get; set; }
+        public string Battery { get; set; }
         public string Firmware { get; set; }
         public DateTime? LastSyncedStartDate { get; set; }
         public DateTime? LastSyncedEndDate { get; set; }
