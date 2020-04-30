@@ -4,9 +4,16 @@
 }
 else
 {
-    <TableFilter SearchTextChanged="SearchTextChangedAsync">
-        <VaultFilter FilterChanged="FilterChangedAsync" />
-    </TableFilter>
+    <TableAction>
+        <FilterForm>
+            <VaultFilter FilterChanged="FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
     <MainTable Items="SoftwareVaults" SelectedItem="@SelectedSoftwareVault" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
         <TableHeader>
             <MainTableHeader Title="OS"

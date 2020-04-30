@@ -5,57 +5,56 @@
 else
 {
     <TableAction>
-        <ButtonSpinner Class="btn-primary" Text="Import Vaults" Callback="ImportVaultsAsync" />
-
-        @if (SelectedHardwareVault != null)
-        {
-            <button type="button" @onclick="EditRfidAsync" class="btn btn-light border mx-2" title="Edit RFID">
-                <img class="icon-btn" src="/svg/action/edit.svg" />
-                Edit RFID
-            </button>
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Locked)
+        <FilterForm>
+            <VaultFilter FilterChanged="FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+            <ButtonSpinner Class="btn-primary" Text="Import Vaults" Callback="ImportVaultsAsync" />
+            @if (SelectedHardwareVault != null)
             {
-                <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
-                    <img class="icon-btn" src="/svg/action/unlock.svg" />
-                    Activate vault
+                <button type="button" @onclick="EditRfidAsync" class="btn btn-light border mx-2" title="Edit RFID">
+                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                    Edit RFID
                 </button>
+                @if (SelectedHardwareVault.Status == VaultStatus.Locked)
+                {
+                    <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
+                        <img class="icon-btn" src="/svg/action/unlock.svg" />
+                        Activate vault
+                    </button>
+                }
+                @if (SelectedHardwareVault.Status == VaultStatus.Active)
+                {
+                    <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
+                        <img class="icon-btn" src="/svg/action/otp.svg" />
+                        Suspend vault
+                    </button>
+
+                    <button type="button" @onclick="ChangeVaultProfileAsync" class="btn btn-light border mx-2" title="Set vault profile">
+                        <img class="icon-btn" src="/svg/action/done.svg" />
+                        Change profile
+                    </button>
+                }
+                @if (SelectedHardwareVault.Status == VaultStatus.Active || SelectedHardwareVault.Status == VaultStatus.Locked || SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
+                {
+                    <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
+                        <img class="icon-btn" src="/svg/action/password.svg" />
+                        Vault Is Compromised
+                    </button>
+                }
+                @if (SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
+                {
+                    <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
+                        <img class="icon-btn" src="/svg/action/details.svg" />
+                        Show activation code
+                    </button>
+                }
             }
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Active)
-            {
-                <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
-                    <img class="icon-btn" src="/svg/action/otp.svg" />
-                    Suspend vault
-                </button>
-
-                <button type="button" @onclick="ChangeVaultProfileAsync" class="btn btn-light border mx-2" title="Set vault profile">
-                    <img class="icon-btn" src="/svg/action/done.svg" />
-                    Change profile
-                </button>
-            }
-
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Active || SelectedHardwareVault.Status == VaultStatus.Locked || SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
-            {
-                <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
-                    <img class="icon-btn" src="/svg/action/password.svg" />
-                    Vault Is Compromised
-                </button>
-            }
-
-            @if (SelectedHardwareVault.Status == VaultStatus.Suspended || SelectedHardwareVault.Status == VaultStatus.Reserved)
-            {
-                <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
-                    <img class="icon-btn" src="/svg/action/details.svg" />
-                    Show activation code
-                </button>
-            }
-        }
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="SearchTextChangedAsync" />       
+        </FilterButtons>
     </TableAction>
-    <TableFilter SearchTextChanged="SearchTextChangedAsync">
-        <VaultFilter FilterChanged="FilterChangedAsync" />
-    </TableFilter>
     <MainTable Items="HardwareVaults" SelectedItem="@SelectedHardwareVault" SelecedItemChanged="SelectedItemChangedAsync">
         <TableHeader>
             <MainTableHeader Title="ID"
@@ -172,7 +171,7 @@ else
                     {
                     <img src="/svg/device/battery_15.svg" alt="@context.Battery" />
                     <span>@context.Battery%</span>
-                    }               
+                    }
             </td>
             <td>
                 @context.Firmware
@@ -187,7 +186,7 @@ else
                 @if (context.LastSynced != null)
                     {
                     @context.LastSynced.Value.ToLocalTime()
-                    }                
+                    }
             </td>
             <td>
                 @context.LicenseStatus
@@ -196,7 +195,7 @@ else
                 @if (context.LicenseEndDate != null)
                     {
                     @context.LicenseEndDate.Value.ToShortDateString()
-                    }                
+                    }
             </td>
             <td>
                 @context.Employee?.FullName
