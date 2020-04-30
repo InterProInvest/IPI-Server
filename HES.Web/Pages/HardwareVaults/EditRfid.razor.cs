@@ -7,30 +7,18 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Devices
+namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class EditVaultRFID : ComponentBase
+    public partial class EditRfid : ComponentBase
     {
-        [Inject] 
-        public IHardwareVaultService HardwareVaultService { get; set; }
-
-        [Inject]
-        public ILogger<EditVaultRFID> Logger { get; set; }
-        
-        [Inject] 
-        public IModalDialogService ModalDialogService { get; set; }
-        
-        [Inject] 
-        IToastService ToastService { get; set; }
-        
-        [Parameter] 
-        public EventCallback Refresh { get; set; }
-        
-        [Parameter] 
-        public string HardwareVaultId { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public ILogger<EditRfid> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Parameter] public EventCallback Refresh { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
 
         public HardwareVault HardwareVault { get; set; }
-
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         protected override async Task OnInitializedAsync()

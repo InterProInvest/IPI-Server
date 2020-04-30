@@ -11,32 +11,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Devices
+namespace HES.Web.Pages.HardwareVaults
 {
     public partial class HardwareVaultsPage : ComponentBase
     {
-        #region DependencyInjections
-
-        [Inject]
-        IJSRuntime JSRuntime { get; set; }
-
-        [Inject]
-        IToastService ToastService { get; set; }
-
-        [Inject]
-        ILogger<HardwareVaultsPage> Logger { get; set; }
-
-        [Inject]
-        public IHardwareVaultService HardwareVaultService { get; set; }
-
-        [Inject] 
-        public IModalDialogService ModalDialogService { get; set; }
-
-        #endregion
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Inject] IJSRuntime JSRuntime { get; set; }
+        [Inject] ILogger<HardwareVaultsPage> Logger { get; set; }
 
         public List<HardwareVault> HardwareVaults { get; set; }
         public HardwareVault SelectedHardwareVault { get; set; }
-        
+
         public HardwareVaultFilter Filter { get; set; } = new HardwareVaultFilter();
         public string SearchText { get; set; } = string.Empty;
         public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
@@ -44,6 +31,11 @@ namespace HES.Web.Pages.Devices
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadTableDataAsync();
+        }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -57,10 +49,7 @@ namespace HES.Web.Pages.Devices
             }
         }
 
-        protected override async Task OnInitializedAsync()
-        {
-            await LoadTableDataAsync();
-        }
+        #region Main Table
 
         private async Task LoadTableDataAsync()
         {
@@ -78,7 +67,7 @@ namespace HES.Web.Pages.Devices
 
         private async Task SelectedItemChangedAsync(HardwareVault hardwareVault)
         {
-            await InvokeAsync(() => 
+            await InvokeAsync(() =>
             {
                 SelectedHardwareVault = hardwareVault;
                 StateHasChanged();
@@ -116,40 +105,37 @@ namespace HES.Web.Pages.Devices
             await LoadTableDataAsync();
         }
 
-        private async Task FilteredAsync(HardwareVaultFilter filter)
+        private async Task FilterChangedAsync(HardwareVaultFilter filter)
         {
             Filter = filter;
             await LoadTableDataAsync();
         }
-        
 
-        #region TableActions
+        #endregion
 
-        public async Task SynchronizeDevicesAsync()
+
+        #region Table Actions
+
+        public async Task ImportVaultsAsync()
         {
-            await JSRuntime.InvokeVoidAsync("showSpinner", "syncBtnSpinner");
-
             try
             {
                 await HardwareVaultService.ImportVaultsAsync();
                 await LoadTableDataAsync();
+                ToastService.ShowToast("Vaults imported.", ToastLevel.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast("Somethings went wrong.", ToastLevel.Error);
             }
-            finally
-            {
-                await JSRuntime.InvokeVoidAsync("showSpinner", "syncBtnSpinner");
-            }
         }
 
-        private async Task EditVaultRFIDAsync()
+        private async Task EditRfidAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(EditVaultRFID));
+                builder.OpenComponent(0, typeof(EditRfid));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
                 builder.CloseComponent();
@@ -162,42 +148,42 @@ namespace HES.Web.Pages.Devices
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(ChangeVaultStatus));
+                builder.OpenComponent(0, typeof(ChangeStatus));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
                 builder.AddAttribute(3, "VaultStatus", VaultStatus.Suspended);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Suspend Vault", body);
+            await ModalDialogService.ShowAsync("Suspend", body);
         }
 
         private async Task ActivateVaultAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(ChangeVaultStatus));
+                builder.OpenComponent(0, typeof(ChangeStatus));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
                 builder.AddAttribute(3, "VaultStatus", VaultStatus.Active);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Activate Vault", body);
+            await ModalDialogService.ShowAsync("Activate", body);
         }
 
         private async Task CompromisedVaultAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(ChangeVaultStatus));
+                builder.OpenComponent(0, typeof(ChangeStatus));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "HardwareVaultId", SelectedHardwareVault.Id);
                 builder.AddAttribute(3, "VaultStatus", VaultStatus.Compromised);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Compromised Vault", body);
+            await ModalDialogService.ShowAsync("Compromised", body);
         }
 
         private async Task ShowActivationCodeAsync()
@@ -212,17 +198,17 @@ namespace HES.Web.Pages.Devices
             await ModalDialogService.ShowAsync("Activation code", body);
         }
 
-        private async Task SetVaultProfileAsync()
+        private async Task ChangeVaultProfileAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(SetProfile));
+                builder.OpenComponent(0, typeof(ChangeProfile));
                 builder.AddAttribute(1, "HardwareVaultId", SelectedHardwareVault.Id);
                 builder.AddAttribute(2, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Set vault profile", body);
+            await ModalDialogService.ShowAsync("Profile", body);
         }
 
         #endregion

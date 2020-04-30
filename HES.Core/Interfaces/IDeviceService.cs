@@ -30,7 +30,7 @@ namespace HES.Core.Interfaces
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);
-        Task VaultCompromisedAsync(string vaultId);
+        Task VaultCompromisedAsync(string vaultId, VaultStatusReason reason, string description);
 
         IQueryable<HardwareVaultProfile> ProfileQuery();
         Task<List<HardwareVaultProfile>> GetProfilesAsync();

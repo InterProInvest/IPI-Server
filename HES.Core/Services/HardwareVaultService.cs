@@ -494,7 +494,7 @@ namespace HES.Core.Services
             var vault = await GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
-            
+
             if (vault.Status != VaultStatus.Active)
                 throw new Exception($"Vault {vaultId} status ({vault.Status}) is not allowed to execute this operation");
 
@@ -512,7 +512,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task VaultCompromisedAsync(string vaultId)
+        public async Task VaultCompromisedAsync(string vaultId, VaultStatusReason reason, string description)
         {
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
@@ -522,12 +522,15 @@ namespace HES.Core.Services
                 throw new Exception($"Vault {vaultId} not found");
 
             vault.EmployeeId = null;
+            vault.MasterPassword = null;
+            vault.NeedSync = false;
             vault.Status = VaultStatus.Compromised;
-            vault.StatusDescription = null;
+            vault.StatusReason = reason;
+            vault.StatusDescription = description;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status), nameof(HardwareVault.StatusDescription) });
+                await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.NeedSync), nameof(HardwareVault.Status), nameof(HardwareVault.StatusReason), nameof(HardwareVault.StatusDescription) });
                 await ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
                 await _hardwareVaultTaskService.RemoveAllTasksAsync(vaultId);
                 await _accountService.RemoveAllAccountsAsync(vaultId);

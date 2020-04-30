@@ -8,27 +8,16 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Devices
+namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class SetProfile : ComponentBase
+    public partial class ChangeProfile : ComponentBase
     {
-        [Inject]
-        public IHardwareVaultService HardwareVaultService { get; set; }
-
-        [Inject]
-        public IModalDialogService ModalDialogService { get; set; }
-
-        [Inject]
-        public ILogger<SetProfile> Logger { get; set; }
-
-        [Inject]
-        IToastService ToastService { get; set; }
-
-        [Parameter]
-        public EventCallback Refresh { get; set; }
-
-        [Parameter]
-        public string HardwareVaultId { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public ILogger<ChangeProfile> Logger { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Parameter] public EventCallback Refresh { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
 
         public SelectList VaultProfiles { get; set; }
         public string SelectedVaultProfileId { get; set; }
@@ -44,7 +33,7 @@ namespace HES.Web.Pages.Devices
             await ModalDialogService.CloseAsync();
         }
 
-        private async Task SetVaultProfileAsync()
+        private async Task ChangeProfileAsync()
         {
             try
             {

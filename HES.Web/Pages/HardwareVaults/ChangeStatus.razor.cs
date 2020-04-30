@@ -5,33 +5,22 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Devices
+namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class ChangeVaultStatus : ComponentBase
+    public partial class ChangeStatus : ComponentBase
     {
-        [Inject]
-        public IHardwareVaultService HardwareVaultService { get; set; }
-
-        [Inject] 
-        public ILogger<ChangeVaultStatus> Logger { get; set; }
-
-        [Inject] 
-        public IModalDialogService ModalDialogService { get; set; }
-
-        [Inject] 
-        IToastService ToastService { get; set; }
-
-        [Parameter]
-        public string HardwareVaultId { get; set; }
-
-        [Parameter]
-        public VaultStatus VaultStatus { get; set; }
-
-        [Parameter]
-        public EventCallback Refresh { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public ILogger<ChangeStatus> Logger { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] IToastService ToastService { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
+        [Parameter] public VaultStatus VaultStatus { get; set; }
+        [Parameter] public EventCallback Refresh { get; set; }
 
         public string StatusDescription { get; set; }
         public VaultStatusReason StatusReason { get; set; } = VaultStatusReason.Lost;
+        public string CompromisedConfirmText { get; set; } = string.Empty;
+        public bool CompromisedIsDisabled { get; set; } = true;
 
         private async Task ChangeStatusAsync()
         {
@@ -46,7 +35,9 @@ namespace HES.Web.Pages.Devices
                         await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
                         break;
                     case VaultStatus.Compromised:
-                        await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId);
+                        if (CompromisedIsDisabled)
+                            return;
+                        await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId, StatusReason, StatusDescription);
                         break;
                 }
 
@@ -65,6 +56,18 @@ namespace HES.Web.Pages.Devices
         private async Task CloseAsync()
         {
             await ModalDialogService.CloseAsync();
+        }
+
+        private void CompromisedConfirm()
+        {
+            if (CompromisedConfirmText == HardwareVaultId)
+            {
+                CompromisedIsDisabled = false;
+            }
+            else
+            {
+                CompromisedIsDisabled = true;
+            }
         }
     }
 }
