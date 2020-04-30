@@ -14,5 +14,6 @@ namespace HES.Core.Interfaces
         Task SendDeviceLicenseStatus(List<HardwareVault> devices);
         Task SendActivateDataProtectionAsync();
         Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo);
+        Task SendHardwareVaultActivationCodeAsync(Employee employee, string code);
     }
 }

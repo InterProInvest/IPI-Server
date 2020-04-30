@@ -222,6 +222,20 @@ namespace HES.Core.Services
             await SendAsync(mailMessage);
         }
 
+        public async Task SendHardwareVaultActivationCodeAsync(Employee employee, string code)
+        {
+            string subject = "Hideez Enterpise Server - Hardware vault";
+            string html = $@"
+                            <div style='font-family: Roboto;'>
+                                <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
+                                <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>
+                                    Your hardware vault activation code: <b>{code}</b>
+                                </div>                    
+                            </div>
+                           ";
+            await SendAsync(employee.Email, subject, html);
+        }
+
         private string GetTemplate(string name)
         {
             var path = Path.Combine(_env.WebRootPath, "templates", $"{name}.html");
