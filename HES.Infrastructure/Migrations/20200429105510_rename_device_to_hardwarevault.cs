@@ -434,6 +434,12 @@ namespace HES.Infrastructure.Migrations
              principalTable: "Workstations",
              principalColumn: "Id",
              onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.Sql(
+            @"
+                UPDATE HardwareVaults
+                SET Status = IF(MasterPassword IS NOT NULL, 2, 0);
+            ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
