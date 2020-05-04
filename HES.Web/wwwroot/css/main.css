@@ -44,6 +44,26 @@
     }
 }
 
+.loading-tab {
+    position: fixed;
+    top: 119px;
+    left: 250px;
+    z-index: 1051;
+    width: calc(100vw - 250px);
+    height: 100%;
+    overflow: hidden;
+    outline: 0;
+    background: #F7F8FC;
+}
+
+@media screen and (max-width: 768px) {
+    .loading-tab {
+        top: 0;
+        left: 68px;
+        width: calc(100vw - 68px);
+    }
+}
+
 .table-scrollable {
     overflow-y: auto;
     max-height: 60vh;
@@ -110,4 +130,44 @@
 
 .cursor-pointer {
     cursor: pointer;
+}
+
+.settings-card {
+    max-width: 998px;
+    background: #FFF;
+    border-radius: 0.25rem !important;
+    border: 1px solid #dee2e6 !important;
+    padding: 20px;
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+.icon-collapse-arrow {
+    display: inline-block;
+    margin-left: .255em;
+    vertical-align: .255em;
+    content: "";
+    border-top: 0;
+    border-right: .3em solid transparent;
+    border-bottom: .3em solid black;
+    border-left: .3em solid transparent;
+}
+
+div.collapsed > img.icon-collapse-arrow {
+    border-top: .3em solid black;
+    border-bottom: 0;
+}
+
+.icon-btn {
+    width: 20px;
+    height: 20px;
+    margin-right: 3px;
+}
+
+.is-search {
+    padding-right: calc(1.5em + .75rem);
+    background-image: url("/svg/action/search.svg");
+    background-repeat: no-repeat;
+    background-position: right calc(.375em + .1875rem) center;
+    background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 }

@@ -2,14 +2,14 @@
 
 @if (Model.HasForeignKey)
 {
-    <h5 class="text-gray mb-4 ">The company @Model.Company.Name contains departments, remove departments to remove company.</h5>
+    <h5 class="text-gray mb-4 text-break">The company @Model.Company.Name contains departments, remove departments to remove company.</h5>
     <div class="text-right">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
     </div>
 }
 else
 {
-    <h5 class="text-gray mb-4 ">You want to delete company @Model.Company.Name?</h5>
+    <h5 class="text-gray mb-4 text-break">You want to delete company @Model.Company.Name?</h5>
     <form method="post" class="text-right">
         <input type="hidden" asp-for="Company.Id" name="id" />
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>

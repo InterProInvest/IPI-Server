@@ -19,7 +19,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<Employee> _employeeRepository;
-        private readonly IAsyncRepository<DeviceAccount> _deviceAccountRepository;
+        private readonly IAsyncRepository<Account> _deviceAccountRepository;
         private readonly IAsyncRepository<SummaryByDayAndEmployee> _summaryByDayAndEmployeeRepository;
         private readonly IAsyncRepository<SummaryByEmployees> _summaryByEmployeesRepository;
         private readonly IAsyncRepository<SummaryByDepartments> _summaryByDepartmentsRepository;
@@ -30,7 +30,7 @@ namespace HES.Core.Services
                                        IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                        IAsyncRepository<Device> deviceRepository,
                                        IAsyncRepository<Employee> employeeRepository,
-                                       IAsyncRepository<DeviceAccount> deviceAccountRepository,
+                                       IAsyncRepository<Account> deviceAccountRepository,
                                        IAsyncRepository<SummaryByDayAndEmployee> summaryByDayAndEmployeeRepository,
                                        IAsyncRepository<SummaryByEmployees> summaryByEmployeesRepository,
                                        IAsyncRepository<SummaryByDepartments> summaryByDepartmentsRepository,
@@ -159,17 +159,17 @@ namespace HES.Core.Services
             {
                 var device = await _deviceRepository.GetByIdAsync(workstationEventDto.DeviceId);
                 var employee = await _employeeRepository.GetByIdAsync(device?.EmployeeId);
-                var deviceAccount = await _deviceAccountRepository
+                var account = await _deviceAccountRepository
                     .Query()
                     .Where(d => d.Name == workstationEventDto.AccountName &&
                                 d.Login == workstationEventDto.AccountLogin &&
-                                d.DeviceId == workstationEventDto.DeviceId)
+                                d.EmployeeId == device.EmployeeId)
                     .AsNoTracking()
                     .FirstOrDefaultAsync();
 
                 employeeId = device?.EmployeeId;
                 departmentId = employee?.DepartmentId;
-                deviceAccountId = deviceAccount?.Id;
+                deviceAccountId = account?.Id;
             }
 
             var workstationEvent = new WorkstationEvent()
@@ -368,7 +368,7 @@ namespace HES.Core.Services
                 var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
                 var deviceAccount = await _deviceAccountRepository
                     .Query()
-                    .Where(d => d.Name == workstationEventDto.AccountName && d.Login == workstationEventDto.AccountLogin && d.DeviceId == workstationEventDto.DeviceId)
+                    .Where(d => d.Name == workstationEventDto.AccountName && d.Login == workstationEventDto.AccountLogin && d.EmployeeId == employee.Id)
                     .AsNoTracking()
                     .FirstOrDefaultAsync();
 

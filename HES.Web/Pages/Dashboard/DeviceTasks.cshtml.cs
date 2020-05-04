@@ -26,16 +26,16 @@ namespace HES.Web.Pages.Dashboard
 
         public async Task OnGetAsync()
         {
-            DeviceTasks = await _deviceTaskService.Query()
-                .Include(d => d.DeviceAccount.Employee.Department.Company)
+            DeviceTasks = await _deviceTaskService.TaskQuery()
+                .Include(d => d.Account.Employee.Department.Company)
                 .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task OnGetLongPendingAsync()
         {
-            DeviceTasks = await _deviceTaskService.Query()
-                .Include(d => d.DeviceAccount.Employee.Department.Company)
+            DeviceTasks = await _deviceTaskService.TaskQuery()
+                .Include(d => d.Account.Employee.Department.Company)
                 .Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1))
                 .OrderByDescending(d => d.CreatedAt)
                 .ToListAsync();

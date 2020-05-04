@@ -67,29 +67,6 @@
                     <span asp-validation-for="AccountPassword.OtpSecret" class="text-danger"></span>
                 </div>
             </div>
-            <div class="row">
-                <div class="form-group col mb-4">
-                    @if (Model.Devices.Count > 1)
-                    {
-                        <label class="control-label text-gray">Choose device</label>
-                        <ul class="list-group">
-                            @foreach (var device in Model.Devices)
-                            {
-                                <li class="list-group-item">
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" name="selectedDevices" class="custom-control-input" id="p_@device.Id" value="@device.Id">
-                                        <label class="custom-control-label" for="p_@device.Id">@device.Id</label>
-                                    </div>
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <input hidden name="SelectedDevices" value="@Model.Devices.FirstOrDefault().Id">
-                    }
-                </div>
-            </div>
             <div class="form-group m-0 text-right">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <input type="submit" value="Create" class="btn btn-primary" asp-page-handler="CreatePersonalAccount" />
@@ -97,7 +74,7 @@
         </form>
     </div>
     <div class="tab-pane fade" id="pills-workstation" role="tabpanel" aria-labelledby="pills-workstation-tab">
-        <form method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);">
+        <form id="accForm" method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);" asp-page-handler="CreatePersonalWorkstationAccount">
             <input type="hidden" value="@ViewBag.EmployeeId" name="employeeId" />
             <div class="form-group">
                 <label asp-for="WorkstationAccount.Name" class="text-gray"></label>
@@ -128,30 +105,18 @@
                 <input asp-for="WorkstationAccount.ConfirmPassword" class="form-control text-navyblue" autocomplete="new-password" />
                 <span asp-validation-for="WorkstationAccount.ConfirmPassword" class="text-danger"></span>
             </div>
-            <div class="form-group mb-4">
-                @if (Model.Devices.Count > 1)
-                {
-                    <label class="control-label text-gray">Choose device</label>
-                    <ul class="list-group">
-                        @foreach (var device in Model.Devices)
-                        {
-                            <li class="list-group-item">
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" name="selectedDevicesW" class="custom-control-input" id="pw_@device.Id" value="@device.Id">
-                                    <label class="custom-control-label" for="pw_@device.Id">@device.Id</label>
-                                </div>
-                            </li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                    <input hidden name="SelectedDevicesW" value="@Model.Devices.FirstOrDefault().Id">
-                }
+            <div id="updateAdPasswordWrapper" class="form-group d-none">
+                <div class="custom-control custom-checkbox">
+                    <input id="updateAdPassword" type="checkbox" class="custom-control-input" asp-for="WorkstationAccount.UpdateAdPassword" />
+                    <label class="custom-control-label" for="updateAdPassword">Update the password in the AD</label>
+                </div>
             </div>
-            <div class="form-group m-0 text-right">
+            <input type="hidden" asp-for="ActiveDirectoryCredential.Host" value="@ViewBag.Host" />
+            <input id="adUserName" type="hidden" asp-for="ActiveDirectoryCredential.UserName" />
+            <input id="adPassword" type="hidden" asp-for="ActiveDirectoryCredential.Password" />
+            <div class="text-right">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <input type="submit" value="Create" class="btn btn-primary" asp-page-handler="CreatePersonalWorkstationAccount" />
+                <input type="button" value="Create" class="btn btn-primary" onclick="wsAccSubmit()" />
             </div>
         </form>
     </div>
@@ -159,17 +124,6 @@
 
 
 <script>
-    $("#add_personal_acc_form").on("submit", function () {
-        var devices = [];
-        $.each($("input[name='selectedDevices']:checked"), function () {
-            devices.push($(this).val());
-        });
-        if (devices.length == 0 && @Model.Devices.Count > 1) {
-            $('.list-group-item').css({ "border": "1px solid red" })
-            return false;
-        }
-    })
-
     $("input[type='checkbox']").change(function () {
         if (this.checked) {
             $('.list-group-item').css("border", "1px solid rgba(0, 0, 0, 0.125)")
@@ -178,12 +132,28 @@
 
     $(document).on('change', '#workstation_account_type', function () {
         if ($(this).find('option:selected').text() === 'Domain') {
-            $('#domain').val("");
             $('#domain_group').removeClass("d-none");
+            $('#domain').val("");
+            $('#updateAdPasswordWrapper').removeClass("d-none");
         }
         else {
             $('#domain_group').addClass("d-none");
             $('#domain').val("domain");
+            $('#updateAdPasswordWrapper').addClass("d-none");
+            $("#updateAdPassword").prop("checked", false);
         }
     });
+
+    function wsAccSubmit() {
+        if ($('#updateAdPassword').prop('checked')) {
+            var valid = $('#accForm').valid();
+            if (valid) {
+                $('#secondModalDialog').modal('show');
+            }
+            return false;
+        }
+        $('#adUserName').val('user');
+        $('#adPassword').val('password');
+        $('#accForm').submit();
+    }
 </script>

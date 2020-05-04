@@ -1,29 +1,33 @@
 ﻿@if (Groups == null)
 {
-    @if (_login.Server == null)
+    @if (Domain == null)
     {
-        <h5>Set domain ip address in parameters page to connect the domain.</h5>
+        <LoadingText />
+    }
+    else if (Domain.Host == null)
+    {
+        <h5>Set domain address in parameters page to connect the domain.</h5>
     }
     else
     {
         <h5>Enter your credentials</h5>
-        <p>These credentials will be used to connect @_login.Server</p>
-        <EditForm Model="@_login" OnValidSubmit="Connect">
+        <p>These credentials will be used to connect @_credentials.Host</p>
+        <EditForm Model="@_credentials" OnValidSubmit="Connect">
             <DataAnnotationsValidator />
             <div class="form-group">
                 <label class="control-label text-gray">User Name</label>
-                <InputText id="userName" @bind-Value="_login.UserName" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _login.UserName)" class="text-danger" />
+                <InputText id="userName" @bind-Value="_credentials.UserName" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _credentials.UserName)" class="text-danger" />
             </div>
             <div class="form-group">
                 <label class="control-label text-gray">Password</label>
-                <InputText id="password" type="password" @bind-Value="_login.Password" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _login.Password)" class="text-danger" />
+                <InputText id="password" type="password" @bind-Value="_credentials.Password" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _credentials.Password)" class="text-danger" />
             </div>
-            <div class="form-group text-right mb-0">
+            <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
                 <button type="submit" class="btn btn-primary button-min-width">
-                    <span class="spinner-border spinner-border-sm @(_isBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
                     <span>Connect</span>
                 </button>
             </div>
@@ -32,12 +36,12 @@
 }
 else
 {
-    <Alert Message="@_warningMessage" />
+    <Alert Message="@WarningMessage" />
     <div class="has-search-right my-2">
         <div class="form-control-feedback">
             <img class="img-size" src="/svg/action/search.svg" />
         </div>
-        <input type="text" class="form-control" placeholder="Search" @bind="_searchText">
+        <input type="text" class="form-control" placeholder="Search" @bind="_searchText" @bind:event="oninput" />
     </div>
     <div class="table-responsive mb-3">
         <table class="table table-fixed table-hover border rounded mb-0 disable-selection">
@@ -58,7 +62,7 @@ else
             <tbody style="max-height:55vh;">
                 @foreach (var group in Groups.Where(x => x.Group.Name.ToLower().Contains(_searchText.ToLower())))
                 {
-                    <tr @onclick="@(() => { group.Checked = !group.Checked; })">
+                    <tr @key="group.Group.Id" @onclick="@(() => { group.Checked = !group.Checked; })">
                         <td class="col-1">
                             <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
                                 <input type="checkbox" class="custom-control-input" id="@group.Group.Id" @bind="group.Checked" />

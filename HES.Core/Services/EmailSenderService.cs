@@ -1,12 +1,18 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.SoftwareVault;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using QRCoder;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,25 +20,33 @@ namespace HES.Core.Services
 {
     public class EmailSenderService : IEmailSenderService
     {
-        private readonly IConfiguration _config;
         private readonly IApplicationUserService _applicationUserService;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IHostingEnvironment _env;
+        private readonly string host;
+        private readonly int port;
+        private readonly bool enableSSL;
+        private readonly string userName;
+        private readonly string password;
 
-        public EmailSenderService(IConfiguration config, IApplicationUserService applicationUserService, IAppSettingsService appSettingsService)
+        public EmailSenderService(IConfiguration config,
+                                    IApplicationUserService applicationUserService,
+                                    IAppSettingsService appSettingsService,
+                                    IHostingEnvironment env)
         {
-            _config = config;
             _applicationUserService = applicationUserService;
             _appSettingsService = appSettingsService;
+            _env = env;
+
+            host = config.GetValue<string>("EmailSender:Host");
+            port = config.GetValue<int>("EmailSender:Port");
+            enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
+            userName = config.GetValue<string>("EmailSender:UserName");
+            password = config.GetValue<string>("EmailSender:Password");
         }
 
         private async Task SendAsync(string email, string subject, string message)
         {
-            var host = _config.GetValue<string>("EmailSender:Host");
-            var port = _config.GetValue<int>("EmailSender:Port");
-            var enableSSL = _config.GetValue<bool>("EmailSender:EnableSSL");
-            var userName = _config.GetValue<string>("EmailSender:UserName");
-            var password = _config.GetValue<string>("EmailSender:Password");
-
             using var client = new SmtpClient(host, port)
             {
                 Credentials = new NetworkCredential(userName, password),
@@ -40,6 +54,17 @@ namespace HES.Core.Services
             };
 
             await client.SendMailAsync(new MailMessage(userName, email, subject, message) { IsBodyHtml = true });
+        }
+
+        private async Task SendAsync(MailMessage mailMessage)
+        {
+            using var client = new SmtpClient(host, port)
+            {
+                Credentials = new NetworkCredential(userName, password),
+                EnableSsl = enableSSL
+            };
+
+            await client.SendMailAsync(mailMessage);
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
@@ -157,6 +182,68 @@ namespace HES.Core.Services
             {
                 await SendAsync(admin.Email, subject, html);
             }
+        }
+
+        public async Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo)
+        {
+            if (employee.Email == null)
+                throw new ArgumentNullException(nameof(employee.Email));
+
+            var htmlMessage = GetTemplate("software-vault-invitation");
+            htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
+                .Replace("{{validTo}}", validTo.Date.ToShortDateString())
+                .Replace("{{serverAddress}}", activation.ServerAddress)
+                .Replace("{{activationId}}", activation.ActivationId)
+                .Replace("{{activationCode}}", activation.ActivationCode.ToString());
+
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                                                         htmlMessage,
+                                                         Encoding.UTF8,
+                                                         MediaTypeNames.Text.Html);
+
+            var code = $"{activation.ServerAddress}\n{activation.ActivationId}\n{activation.ActivationCode}";
+            var qrCode = GetQRCode(code);
+
+            string mediaType = MediaTypeNames.Image.Jpeg;
+            LinkedResource img = new LinkedResource(qrCode, mediaType);
+            img.ContentId = "QRCode";
+            img.ContentType.MediaType = mediaType;
+            img.TransferEncoding = TransferEncoding.Base64;
+            img.ContentType.Name = img.ContentId;
+            img.ContentLink = new Uri("cid:" + img.ContentId);
+
+            htmlView.LinkedResources.Add(img);
+
+            MailMessage mailMessage = new MailMessage(userName, employee.Email);
+            mailMessage.AlternateViews.Add(htmlView);
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject = "Hideez Software Vault application";
+
+            await SendAsync(mailMessage);
+        }
+
+        private string GetTemplate(string name)
+        {
+            var path = Path.Combine(_env.WebRootPath, "templates", $"{name}.html");
+            using StreamReader reader = File.OpenText(path);
+            return reader.ReadToEnd();
+        }
+
+        private MemoryStream GetQRCode(string text)
+        {
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
+            QRCode qrCode = new QRCode(qrCodeData);
+            Bitmap qrCodeImage = qrCode.GetGraphic(20);
+            var qrCodeImageData = BitmapToBytes(qrCodeImage);
+            return new MemoryStream(qrCodeImageData);
+        }
+
+        private byte[] BitmapToBytes(Bitmap img)
+        {
+            using MemoryStream stream = new MemoryStream();
+            img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            return stream.ToArray();
         }
     }
 }

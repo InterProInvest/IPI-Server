@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
+using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,9 +23,10 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
 
         public List<ActiveDirectoryGroup> Groups { get; set; }
+        public DomainSettings Domain { get; set; }
+        public string WarningMessage { get; set; }
 
-        private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
-        private string _warningMessage;
+        private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();
         private bool _createEmployees;
         private bool _isBusy;
         private string _searchText = string.Empty;
@@ -33,11 +35,10 @@ namespace HES.Web.Pages.Groups
 
         protected override async Task OnInitializedAsync()
         {
-            var domain = await AppSettingsService.GetDomainSettingsAsync();
-            if (domain != null)
-            {
-                _login.Server = domain.IpAddress;
-            }
+            Domain = await AppSettingsService.GetDomainSettingsAsync();
+
+            if (Domain != null)
+                _credentials.Host = Domain.Host;
         }
 
         private async Task Connect()
@@ -48,11 +49,10 @@ namespace HES.Web.Pages.Groups
             }
 
             _isBusy = true;
-            await Task.Delay(1); // To display a spinner, without await is not displayed
-            
+
             try
             {
-                Groups = LdapService.GetAdGroups(_login.Server, _login.UserName, _login.Password);
+                Groups = await LdapService.GetGroupsAsync(_credentials);
             }
             catch (Exception ex)
             {
@@ -72,7 +72,7 @@ namespace HES.Web.Pages.Groups
             {
                 if (!Groups.Any(x => x.Checked))
                 {
-                    _warningMessage = "Please select at least one group.";
+                    WarningMessage = "Please select at least one group.";
                     return;
                 }
 
@@ -83,7 +83,7 @@ namespace HES.Web.Pages.Groups
 
                 _isBusy = true;
 
-                await LdapService.AddAdGroupsAsync(Groups.Where(x => x.Checked).ToList(), _createEmployees);
+                await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), _createEmployees);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();

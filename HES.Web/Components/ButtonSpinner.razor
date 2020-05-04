@@ -1,0 +1,4 @@
+﻿<button type="button" @onclick="ClickHandler" class="btn @Class">
+    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+    <span>@Text</span>
+</button>

@@ -6,9 +6,10 @@ namespace HES.Core.Interfaces
 {
     public interface ILdapService
     {
-        List<ActiveDirectoryUser> GetAdUsers(string server, string userName, string password);
-        Task AddAdUsersAsync(List<ActiveDirectoryUser> users, bool createGroups);
-        List<ActiveDirectoryGroup> GetAdGroups(string server, string userName, string password);
-        Task AddAdGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees);
+        Task<List<ActiveDirectoryUser>> GetUsersAsync(ActiveDirectoryCredential credentials);
+        Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups);
+        Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials);
+        Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials);
+        Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees);
     }
 }

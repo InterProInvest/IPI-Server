@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HES.Core.Constants;
 using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
@@ -217,6 +218,7 @@ namespace HES.Core.Hubs
                             RFID = dto.Mac.Replace(":", "").Substring(0, 10),
                             Battery = dto.Battery,
                             Firmware = dto.FirmwareVersion,
+                            AcceessProfileId = ServerConstants.DefaulAccessProfileId,
                             ImportedAt = DateTime.UtcNow,
                             LastSynced = DateTime.UtcNow
                         };
@@ -301,7 +303,7 @@ namespace HES.Core.Hubs
                 return null;
 
             bool needUpdate = await _deviceTaskService
-                .Query()
+                .TaskQuery()
                 .Where(t => t.DeviceId == device.Id)
                 .AsNoTracking()
                 .AnyAsync();

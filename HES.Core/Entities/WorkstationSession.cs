@@ -34,7 +34,7 @@ namespace HES.Core.Entities
         public Department Department { get; set; }
         [Display(Name = "Account")]
         [ForeignKey("DeviceAccountId")]
-        public DeviceAccount DeviceAccount { get; set; }
+        public Account DeviceAccount { get; set; }
 
         [NotMapped]
         public TimeSpan Duration => (EndDate ?? DateTime.UtcNow).Subtract(StartDate);

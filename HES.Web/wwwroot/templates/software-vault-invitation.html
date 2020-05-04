@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+</head>
+<body>
+    <p>
+        Dear {{employeeName}}
+    </p>
+    <p>
+        You have been invited to use Hideez Software Vault application. You can download this app from Google Play: <a href="#">[link]</a>
+    </p>
+    <p>
+        or Apple Store: <a href="#">[link]</a>
+    </p>
+    <p>
+        After you have installed the app, scan the following QR code:
+    </p>
+    <img style="width:300px; height:300px;" src='cid:QRCode' />
+    <p>
+        this invites available till {{validTo}} inclusive.
+    </p>
+
+    <p>
+        If you cannot scan the QR code, you can enter following fields manually:
+    </p>
+    <ul>
+        <li>Address of HES Server: <span style="font-weight: bold;">{{serverAddress}}</span></li>
+        <li>Activation ID: <span style="font-weight: bold;">{{activationId}}</span></li>
+        <li>Activation Code: <span style="font-weight: bold;">{{activationCode}}</span></li>
+    </ul>
+
+    <p>
+        For more info, please see the user manual for the Hideez Software Vault app  <a href="#">[link]</a>.
+    </p>
+    <p>
+        Sincerely,
+        <br />
+        Hideez Team
+    </p>
+</body>
+</html>
