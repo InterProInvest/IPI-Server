@@ -19,21 +19,24 @@ namespace HES.Core.Entities
         public string WorkstationId { get; set; }
         [Display(Name = "Session")]
         public string UserSession { get; set; }
-        public string DeviceId { get; set; }
+        public string HardwareVaultId { get; set; }
         public string EmployeeId { get; set; }
         public string DepartmentId { get; set; }
-        public string DeviceAccountId { get; set; }
+        public string AccountId { get; set; }
 
         [ForeignKey("WorkstationId")]
         public Workstation Workstation { get; set; }
-        [ForeignKey("DeviceId")]
-        public Device Device { get; set; }
+
+        [ForeignKey("HardwareVaultId")]
+        public HardwareVault HardwareVault { get; set; }
+
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
+
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
-        [ForeignKey("DeviceAccountId")]
-        [Display(Name = "Account")]
-        public Account DeviceAccount { get; set; }
+
+        [ForeignKey("AccountId")]
+        public Account Account { get; set; }
     }    
 }

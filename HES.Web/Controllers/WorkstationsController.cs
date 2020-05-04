@@ -144,7 +144,7 @@ namespace HES.Web.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<ProximityDevice>>> GetProximityDevices(string id)
+        public async Task<ActionResult<IEnumerable<WorkstationProximityVault>>> GetProximityDevices(string id)
         {
             return await _workstationService.GetProximityDevicesAsync(id);
         }
@@ -152,7 +152,7 @@ namespace HES.Web.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProximityDevice>> GetProximityDeviceById(string id)
+        public async Task<ActionResult<WorkstationProximityVault>> GetProximityDeviceById(string id)
         {
             var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
 
@@ -168,7 +168,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> AddProximityDevice(AddProximityDeviceDto proximityDeviceDto)
         {
-            IList<ProximityDevice> proximityDevices;
+            IList<WorkstationProximityVault> proximityDevices;
             try
             {
                 proximityDevices = await _workstationService.AddProximityDevicesAsync(proximityDeviceDto.WorkstationId, new string[] { proximityDeviceDto.DeviceId });
@@ -186,7 +186,7 @@ namespace HES.Web.Controllers
         [HttpPost("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProximityDevice>> DeleteProximityDevice(string id)
+        public async Task<ActionResult<WorkstationProximityVault>> DeleteProximityDevice(string id)
         {
             var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
             if (proximityDevice == null)

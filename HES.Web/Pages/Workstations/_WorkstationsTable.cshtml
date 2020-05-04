@@ -52,7 +52,7 @@
                 @Html.DisplayNameFor(model => model.Workstations[0].RFID)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Workstations[0].ProximityDevices)
+                @Html.DisplayNameFor(model => model.Workstations[0].WorkstationProximityVaults)
             </th>
             <th data-priority="3">
                 @Html.DisplayNameFor(model => model.Workstations[0].Approved)
@@ -110,7 +110,7 @@
                     }
                 </td>
                 <td>
-                    <span class="badge badge-primary">@Html.DisplayFor(modelItem => item.ProximityDevices.Count)</span>
+                    <span class="badge badge-primary">@Html.DisplayFor(modelItem => item.WorkstationProximityVaults.Count)</span>
                 </td>
                 <td data-sort="@item.Approved">
                     @if (item.Approved)

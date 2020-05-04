@@ -15,13 +15,13 @@ namespace HES.Web.Pages.Workstations
     public class DetailsModel : PageModel
     {
         private readonly IWorkstationService _workstationService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly ILogger<DetailsModel> _logger;
 
-        public IList<ProximityDevice> ProximityDevices { get; set; }
-        public IList<Device> Devices { get; set; }
+        public IList<WorkstationProximityVault> ProximityDevices { get; set; }
+        public IList<HardwareVault> Devices { get; set; }
         public Workstation Workstation { get; set; }
-        public ProximityDevice ProximityDevice { get; set; }
+        public WorkstationProximityVault ProximityDevice { get; set; }
         public bool WarningMessage { get; set; }
 
         [TempData]
@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Workstations
         public string ErrorMessage { get; set; }
 
         public DetailsModel(IWorkstationService workstationService,
-                            IDeviceService deviceService,
+                            IHardwareVaultService deviceService,
                             ILogger<DetailsModel> logger)
         {
             _workstationService = workstationService;
@@ -88,11 +88,11 @@ namespace HES.Web.Pages.Workstations
                 WarningMessage = true;
             }
 
-            var deviceQuery = _deviceService.DeviceQuery();
+            var deviceQuery = _deviceService.VaultQuery();
 
             foreach (var proximityDevice in ProximityDevices)
             {
-                deviceQuery = deviceQuery.Where(d => d.Id != proximityDevice.DeviceId);
+                deviceQuery = deviceQuery.Where(d => d.Id != proximityDevice.HardwareVaultId);
             }
 
             Devices = await deviceQuery
@@ -148,7 +148,7 @@ namespace HES.Web.Pages.Workstations
             return Partial("_EditProximitySettings", this);
         }
 
-        public async Task<IActionResult> OnPostEditProximitySettingsAsync(ProximityDevice proximityDevice)
+        public async Task<IActionResult> OnPostEditProximitySettingsAsync(WorkstationProximityVault proximityDevice)
         {
             var id = proximityDevice.WorkstationId;
             if (!ModelState.IsValid)
@@ -195,7 +195,7 @@ namespace HES.Web.Pages.Workstations
             return Partial("_DeleteProximityDevice", this);
         }
 
-        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(ProximityDevice proximityDevice)
+        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(WorkstationProximityVault proximityDevice)
         {
             if (proximityDevice == null)
             {

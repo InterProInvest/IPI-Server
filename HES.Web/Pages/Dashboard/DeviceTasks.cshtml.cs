@@ -12,13 +12,13 @@ namespace HES.Web.Pages.Dashboard
 {
     public class DeviceTasksModel : PageModel
     {
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly ILogger<DeviceTasksModel> _logger;
 
-        public IList<DeviceTask> DeviceTasks { get; set; }
+        public IList<HardwareVaultTask> DeviceTasks { get; set; }
 
 
-        public DeviceTasksModel(IDeviceTaskService deviceTaskService, ILogger<DeviceTasksModel> logger)
+        public DeviceTasksModel(IHardwareVaultTaskService deviceTaskService, ILogger<DeviceTasksModel> logger)
         {
             _deviceTaskService = deviceTaskService;
             _logger = logger;

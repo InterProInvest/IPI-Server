@@ -10,7 +10,7 @@ namespace HES.Core.Models.Web.SoftwareVault
         public DateTime? CreatedAtEndDate { get; set; }
         public DateTime? ValidToStartDate { get; set; }
         public DateTime? ValidToEndDate { get; set; }
-        public InviteVaultStatus? Status { get; set; }
+        public SoftwareVaultInvitationStatus? Status { get; set; }
         public string Email { get; set; }
         public string Employee { get; set; }
         public string Company { get; set; }

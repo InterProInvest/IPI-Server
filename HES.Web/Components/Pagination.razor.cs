@@ -8,7 +8,6 @@ namespace HES.Web.Components
 {
     public partial class Pagination : ComponentBase
     {
-        //[Parameter] public Func<int, int, Task> SelectedPageAsync { get; set; }
         [Parameter] public Func<int, Task> CurrentPageChanged { get; set; }
         [Parameter] public Func<int, Task> DisplayRowsChanged { get; set; }
         [Parameter] public int ButtonRadius { get; set; } = 1;
@@ -108,15 +107,12 @@ namespace HES.Web.Components
             }
 
             CurrentPage = pageLink.Page;
-            //await SelectedPageAsync?.Invoke(CurrentPage, DisplayRows);
             await CurrentPageChanged.Invoke(CurrentPage);
         }
 
         public async Task OnChangeShowEntries(ChangeEventArgs args)
         {
             DisplayRows = Convert.ToInt32(args.Value);
-            //CurrentPage = 1;
-            //await SelectedPageAsync?.Invoke(CurrentPage, DisplayRows);
             await DisplayRowsChanged.Invoke(DisplayRows);
         }
     }

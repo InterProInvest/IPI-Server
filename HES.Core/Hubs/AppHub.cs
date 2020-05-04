@@ -21,8 +21,8 @@ namespace HES.Core.Hubs
         private readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly IWorkstationAuditService _workstationAuditService;
-        private readonly IDeviceService _deviceService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultService _deviceService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
         private readonly IEmployeeService _employeeService;
         private readonly ILogger<AppHub> _logger;
@@ -30,8 +30,8 @@ namespace HES.Core.Hubs
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                       IWorkstationAuditService workstationAuditService,
-                      IDeviceService deviceService,
-                      IDeviceTaskService deviceTaskService,
+                      IHardwareVaultService deviceService,
+                      IHardwareVaultTaskService deviceTaskService,
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
                       ILogger<AppHub> logger)
@@ -154,9 +154,17 @@ namespace HES.Core.Hubs
         // Incoming request
         public async Task<HesResponse> OnDeviceConnected(BleDeviceDto dto)
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (dto.DeviceSerialNo == null)
+                throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
+
             try
             {
+                await AddVaultIfNotExistAsync(dto);
                 await OnDevicePropertiesChanged(dto);
+                await CheckVaultStatusAsync(dto);
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
                 return HesResponse.Ok;
             }
@@ -165,6 +173,17 @@ namespace HES.Core.Hubs
                 _logger.LogError($"[{dto.DeviceSerialNo}] {ex.Message}");
                 return new HesResponse(ex);
             }
+        }
+
+        private async Task CheckVaultStatusAsync(BleDeviceDto dto)
+        {
+            var vault = await _deviceService.GetVaultByIdAsync(dto.DeviceSerialNo);
+
+            if (vault == null)
+                return;
+
+            if (vault.Status == Enums.VaultStatus.Deactivated || vault.Status == Enums.VaultStatus.Compromised)
+                await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
         }
 
         // Incoming request
@@ -191,40 +210,14 @@ namespace HES.Core.Hubs
         {
             try
             {
-                if (dto == null || dto.DeviceSerialNo == null)
+                if (dto == null)
                     throw new ArgumentNullException(nameof(dto));
 
-                var exist = await _deviceService
-                    .DeviceQuery()
-                    .AsNoTracking()
-                    .Where(d => d.Id == dto.DeviceSerialNo)
-                    .AnyAsync();
+                if (dto.DeviceSerialNo == null)
+                    throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
-                if (exist)
-                {
-                    // Update Battery, Firmware, IsLocked, LastSynced         
-                    await _deviceService.UpdateDeviceInfoAsync(dto.DeviceSerialNo, dto.Battery, dto.FirmwareVersion, dto.IsLocked);
-                }
-                else
-                {
-                    if (dto.Mac != null)
-                    {
-                        // Add device
-                        var device = new Device()
-                        {
-                            Id = dto.DeviceSerialNo,
-                            MAC = dto.Mac,
-                            Model = dto.DeviceSerialNo.Substring(0, 5),
-                            RFID = dto.Mac.Replace(":", "").Substring(0, 10),
-                            Battery = dto.Battery,
-                            Firmware = dto.FirmwareVersion,
-                            AcceessProfileId = ServerConstants.DefaulAccessProfileId,
-                            ImportedAt = DateTime.UtcNow,
-                            LastSynced = DateTime.UtcNow
-                        };
-                        await _deviceService.AddDeviceAsync(device);
-                    }
-                }
+                await _deviceService.UpdateDeviceInfoAsync(dto);
+
                 return HesResponse.Ok;
             }
             catch (Exception ex)
@@ -234,13 +227,39 @@ namespace HES.Core.Hubs
             }
         }
 
+        private async Task AddVaultIfNotExistAsync(BleDeviceDto dto)
+        {
+            if (dto.Mac == null)
+                return;
+
+            var exist = await _deviceService
+                .VaultQuery()
+                .AsNoTracking()
+                .AnyAsync(d => d.Id == dto.DeviceSerialNo);
+
+            var vault = new HardwareVault()
+            {
+                Id = dto.DeviceSerialNo,
+                MAC = dto.Mac,
+                Model = dto.DeviceSerialNo.Substring(0, 5),
+                RFID = dto.Mac.Replace(":", "").Substring(0, 10),
+                Battery = dto.Battery,
+                Firmware = dto.FirmwareVersion,
+                HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
+                ImportedAt = DateTime.UtcNow,
+                LastSynced = DateTime.UtcNow
+            };
+
+            await _deviceService.AddVaultIfNotExistAsync(vault);
+        }
+
         // Incomming request
         public async Task<HesResponse<DeviceInfoDto>> GetInfoByRfid(string rfid)
         {
             try
             {
                 var device = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.RFID == rfid);
@@ -261,7 +280,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.MAC == mac);
@@ -282,7 +301,7 @@ namespace HES.Core.Hubs
             try
             {
                 var device = await _deviceService
-                    .DeviceQuery()
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == deviceId);
@@ -297,14 +316,14 @@ namespace HES.Core.Hubs
             }
         }
 
-        private async Task<DeviceInfoDto> GetDeviceInfo(Device device)
+        private async Task<DeviceInfoDto> GetDeviceInfo(HardwareVault device)
         {
             if (device == null)
                 return null;
 
             bool needUpdate = await _deviceTaskService
                 .TaskQuery()
-                .Where(t => t.DeviceId == device.Id)
+                .Where(t => t.HardwareVaultId == device.Id)
                 .AsNoTracking()
                 .AnyAsync();
 
@@ -351,7 +370,7 @@ namespace HES.Core.Hubs
                     deviceLicenseDto.Add(new DeviceLicenseDTO
                     {
                         Id = license.Id,
-                        DeviceId = license.DeviceId,
+                        DeviceId = license.HardwareVaultId,
                         ImportedAt = license.ImportedAt,
                         AppliedAt = license.AppliedAt,
                         EndDate = license.EndDate,

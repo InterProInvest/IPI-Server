@@ -33,3 +33,9 @@ function toggleAllCheckboxes(tableId, state) {
         $(this).attr('checked', state);
     });
 }
+
+function copyToClipboard() {
+    $("#activationCodeInput").attr("type", "Text").select();
+    document.execCommand("copy");
+    $("#activationCodeInput").attr("type", "Password").select();
+}

@@ -75,8 +75,8 @@ namespace HES.Web
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IDeviceService, DeviceService>();
-            services.AddScoped<IDeviceTaskService, DeviceTaskService>();
+            services.AddScoped<IHardwareVaultService, HardwareVaultService>();
+            services.AddScoped<IHardwareVaultTaskService, HardwareVaultTaskService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IWorkstationService, WorkstationService>();
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
@@ -188,7 +188,7 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Devices", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/HardwareVaults", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SoftwareVaults", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");

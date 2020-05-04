@@ -1097,9 +1097,9 @@ div.dataTables_scrollHead table.dataTable {
     flex-direction: column;
 }
 
-.state-connected:after {
+.state-connected:before {
     content: "";
-    margin-left: 5px;
+    margin-right: 5px;
     height: 9px;
     width: 9px;
     background-color: green;
@@ -1748,3 +1748,11 @@ div.dataTables_scrollHead table.dataTable {
 .wizard-flex-not-supported.wizard-circle .wizard-item-wait .wizard-item-icon > .wizard-icon .wizard-icon-circle {
     background: #ccc;
 }
+
+.activation-code-switch {
+    margin-left: -35px;
+}
+
+    .activation-code-switch > img {
+        cursor: pointer;
+    }

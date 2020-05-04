@@ -162,7 +162,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.AddDeviceAsync(deviceDto.EmployeeId, new string[] { deviceDto.DeviceId });
+                await _employeeService.AddHardwareVaultAsync(deviceDto.EmployeeId, new string[] { deviceDto.DeviceId });
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
@@ -180,7 +180,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.RemoveDeviceAsync(deviceDto.EmployeeId, deviceDto.DeviceId);
+                await _employeeService.RemoveHardwareVaultAsync(deviceDto.EmployeeId, deviceDto.DeviceId, deviceDto.Reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
@@ -367,7 +367,7 @@ namespace HES.Web.Controllers
             try
             {
                 account = await _employeeService.DeleteAccountAsync(id);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(account.Employee.Devices.Select(s => s.Id).ToList());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(account.Employee.HardwareVaults.Select(s => s.Id).ToList());
             }
             catch (NotFoundException)
             {

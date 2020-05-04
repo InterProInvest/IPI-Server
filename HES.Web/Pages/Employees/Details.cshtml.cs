@@ -1,6 +1,9 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models;
+using HES.Core.Models.ActiveDirectory;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,18 +13,14 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using HES.Core.Utilities;
-using HES.Core.Enums;
-using HES.Core.Models.ActiveDirectory;
 
 namespace HES.Web.Pages.Employees
 {
     public class DetailsModel : PageModel
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly ITemplateService _templateService;
         private readonly IAppSettingsService _appSettingsService;
@@ -31,17 +30,18 @@ namespace HES.Web.Pages.Employees
         private readonly IEmailSenderService _emailSender;
         private readonly ILogger<DetailsModel> _logger;
 
-        public IList<Device> Devices { get; set; }
+        public IList<HardwareVault> Devices { get; set; }
         public IList<Account> Accounts { get; set; }
         public IList<SharedAccount> SharedAccounts { get; set; }
         public WorkstationAccount WorkstationAccount { get; set; }
         public ActiveDirectoryCredential ActiveDirectoryCredential { get; set; }
 
-        public Device Device { get; set; }
+        public HardwareVault Device { get; set; }
         public Employee Employee { get; set; }
         public Account DeviceAccount { get; set; }
         public SharedAccount SharedAccount { get; set; }
         public AccountPassword AccountPassword { get; set; }
+        public VaultStatusReason Reason { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -61,7 +61,7 @@ namespace HES.Web.Pages.Employees
         public bool IsDomain { get; set; }
 
         public DetailsModel(IEmployeeService employeeService,
-                            IDeviceService deviceService,
+                            IHardwareVaultService deviceService,
                             ISharedAccountService sharedAccountService,
                             ITemplateService templateService,
                             IAppSettingsService appSettingsService,
@@ -101,7 +101,7 @@ namespace HES.Web.Pages.Employees
 
             Accounts = await _employeeService.GetAccountsByEmployeeIdAsync(Employee.Id);
 
-            ViewData["Devices"] = new SelectList(Employee.Devices.OrderBy(d => d.Id), "Id", "Id");
+            ViewData["Devices"] = new SelectList(Employee.HardwareVaults.OrderBy(d => d.Id), "Id", "Id");
 
             return Page();
         }
@@ -254,7 +254,7 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.SetAsWorkstationAccountAsync(employeeId, accountId);
                 var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -288,8 +288,8 @@ namespace HES.Web.Pages.Employees
             }
 
             Devices = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.EmployeeId == null && d.State == DeviceState.OK)
+                .VaultQuery()
+                .Where(d => d.EmployeeId == null && d.Status == VaultStatus.Ready)
                 .ToListAsync();
 
             return Partial("_AddDevice", this);
@@ -313,7 +313,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.AddDeviceAsync(employeeId, selectedDevices);
+                await _employeeService.AddHardwareVaultAsync(employeeId, selectedDevices);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
                 SuccessMessage = $"Device(s) added.";
             }
@@ -342,7 +342,7 @@ namespace HES.Web.Pages.Employees
                 return NotFound();
             }
 
-            Device = await _deviceService.GetDeviceByIdAsync(id);
+            Device = await _deviceService.GetVaultByIdAsync(id);
 
             if (Device == null)
             {
@@ -353,7 +353,7 @@ namespace HES.Web.Pages.Employees
             return Partial("_DeleteDevice", this);
         }
 
-        public async Task<IActionResult> OnPostDeleteDeviceAsync(Device device)
+        public async Task<IActionResult> OnPostDeleteDeviceAsync(HardwareVault device, VaultStatusReason reason)
         {
             if (device == null)
             {
@@ -363,17 +363,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                //if (SamlIdentityProviderEnabled)
-                //{
-                //    var user = await _userManager.FindByEmailAsync(device.Employee?.Email);
-                //    if (user != null)
-                //    {
-                //        await _userManager.DeleteAsync(user);
-                //        await _employeeService.DeleteSamlIdpAccountAsync(device.Employee.Id);
-                //    }
-                //}
-
-                await _employeeService.RemoveDeviceAsync(device.Employee.Id, device.Id);
+                await _employeeService.RemoveHardwareVaultAsync(device.Employee.Id, device.Id, reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(device.Id);
                 SuccessMessage = $"Device {device.Id} deleted.";
             }
@@ -429,7 +419,7 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.CreatePersonalAccountAsync(deviceAccount, accountPassword);
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -512,7 +502,7 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.EditPersonalAccountAsync(deviceAccount);
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -571,7 +561,7 @@ namespace HES.Web.Pages.Employees
                 }
                 await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -610,7 +600,7 @@ namespace HES.Web.Pages.Employees
             {
                 await _employeeService.EditPersonalAccountOtpAsync(deviceAccount, accountPassword);
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -637,7 +627,7 @@ namespace HES.Web.Pages.Employees
             SharedAccountIdList = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
 
             SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
-            Devices = await _deviceService.GetDevicesByEmployeeIdAsync(id);
+            Devices = await _deviceService.GetVaultsByEmployeeIdAsync(id);
 
             if (Devices == null)
             {
@@ -660,7 +650,7 @@ namespace HES.Web.Pages.Employees
             {
                 var account = await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId);
                 var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account added and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -708,7 +698,7 @@ namespace HES.Web.Pages.Employees
             {
                 var account = await _employeeService.DeleteAccountAsync(accountId);
                 var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.Devices.Select(x => x.Id).ToArray());
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account deleting and will be deleted when the device is connected to the server.";
             }
             catch (Exception ex)

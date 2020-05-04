@@ -79,7 +79,7 @@ namespace HES.Core.Services
             await SendAsync(email, subject, html);
         }
 
-        public async Task SendLicenseChangedAsync(DateTime createdAt, OrderStatus status)
+        public async Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status)
         {
             var server = await _appSettingsService.GetServerSettingsAsync();
             string subject = server.Name == null ? "HES notification" : $"({server.Name}) Notification";
@@ -107,29 +107,29 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendDeviceLicenseStatus(List<Device> devices)
+        public async Task SendDeviceLicenseStatus(List<HardwareVault> devices)
         {
             var message = new StringBuilder();
 
-            var valid = devices.Where(d => d.LicenseStatus == LicenseStatus.Valid).OrderBy(d => d.Id).ToList();
+            var valid = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Valid).OrderBy(d => d.Id).ToList();
             foreach (var item in valid)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
             }
 
-            var warning = devices.Where(d => d.LicenseStatus == LicenseStatus.Warning).OrderBy(d => d.Id).ToList();
+            var warning = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Warning).OrderBy(d => d.Id).ToList();
             foreach (var item in warning)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus} (90 days remainin)<br/>");
             }
 
-            var critical = devices.Where(d => d.LicenseStatus == LicenseStatus.Critical).OrderBy(d => d.Id).ToList();
+            var critical = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Critical).OrderBy(d => d.Id).ToList();
             foreach (var item in critical)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus} (30 days remainin)<br/>");
             }
 
-            var expired = devices.Where(d => d.LicenseStatus == LicenseStatus.Expired).OrderBy(d => d.Id).ToList();
+            var expired = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Expired).OrderBy(d => d.Id).ToList();
             foreach (var item in expired)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
@@ -220,6 +220,20 @@ namespace HES.Core.Services
             mailMessage.Subject = "Hideez Software Vault application";
 
             await SendAsync(mailMessage);
+        }
+
+        public async Task SendHardwareVaultActivationCodeAsync(Employee employee, string code)
+        {
+            string subject = "Hideez Enterpise Server - Hardware vault";
+            string html = $@"
+                            <div style='font-family: Roboto;'>
+                                <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
+                                <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>
+                                    Your hardware vault activation code: <b>{code}</b>
+                                </div>                    
+                            </div>
+                           ";
+            await SendAsync(employee.Email, subject, html);
         }
 
         private string GetTemplate(string name)

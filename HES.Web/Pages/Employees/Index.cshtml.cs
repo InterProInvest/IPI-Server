@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Employees
     public class IndexModel : PageModel
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IWorkstationService _workstationService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
@@ -27,7 +27,7 @@ namespace HES.Web.Pages.Employees
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Employee> Employees { get; set; }
-        public IList<Device> Devices { get; set; }
+        public IList<HardwareVault> Devices { get; set; }
         public IList<Workstation> Workstations { get; set; }
         public Employee Employee { get; set; }
         public EmployeeFilter EmployeeFilter { get; set; }
@@ -61,7 +61,7 @@ namespace HES.Web.Pages.Employees
 
 
         public IndexModel(IEmployeeService employeeService,
-                          IDeviceService deviceService,
+                          IHardwareVaultService deviceService,
                           IWorkstationService workstationService,
                           IOrgStructureService orgStructureService,
                           IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
@@ -85,7 +85,7 @@ namespace HES.Web.Pages.Employees
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            ViewData["DevicesCount"] = new SelectList(Employees.Select(s => s.Devices.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
+            ViewData["DevicesCount"] = new SelectList(Employees.Select(s => s.HardwareVaults.Count()).Distinct().OrderBy(f => f).ToDictionary(t => t, t => t), "Key", "Value");
 
             ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
             ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
@@ -103,13 +103,13 @@ namespace HES.Web.Pages.Employees
         {
             CompanyIdList = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             PositionIdList = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
-            DeviceIdList = new SelectList(await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null && d.State == Core.Enums.DeviceState.OK).ToListAsync(), "Id", "Id");
+            DeviceIdList = new SelectList(await _deviceService.VaultQuery().Where(d => d.EmployeeId == null && d.Status == Core.Enums.VaultStatus.Ready).ToListAsync(), "Id", "Id");
             WorkstationIdList = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
             WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             WorkstationAccountsList = new SelectList(await _sharedAccountService.Query().Where(s => s.Kind == AccountKind.Workstation && s.Deleted == false).OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
 
             Devices = await _deviceService
-               .DeviceQuery()
+               .VaultQuery()
                .Where(d => d.EmployeeId == null)
                .ToListAsync();
 
@@ -137,7 +137,7 @@ namespace HES.Web.Pages.Employees
                 // Add device
                 if (!wizard.SkipDevice)
                 {
-                    await _employeeService.AddDeviceAsync(createdEmployee.Id, new string[] { wizard.DeviceId });
+                    await _employeeService.AddHardwareVaultAsync(createdEmployee.Id, new string[] { wizard.DeviceId });
 
                     // Proximity Unlock
                     if (!wizard.SkipProximityUnlock)
@@ -275,7 +275,7 @@ namespace HES.Web.Pages.Employees
             }
 
             HasForeignKey = _deviceService
-                .DeviceQuery()
+                .VaultQuery()
                 .Where(x => x.EmployeeId == id)
                 .Any();
 

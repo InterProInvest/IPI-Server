@@ -18,13 +18,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
     public class CreateModel : PageModel
     {
         private readonly ILicenseService _licenseService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly ILogger<CreateModel> _logger;
 
         public NewLicenseOrder NewLicenseOrderDto { get; set; }
         public RenewLicenseOrder RenewLicenseOrderDto { get; set; }
-        public List<Device> NonLicensedDevices { get; set; }
-        public List<Device> LicensedDevices { get; set; }
+        public List<HardwareVault> NonLicensedDevices { get; set; }
+        public List<HardwareVault> LicensedDevices { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -32,7 +32,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public string ErrorMessage { get; set; }
 
         public CreateModel(ILicenseService licenseService,
-                           IDeviceService deviceService,
+                           IHardwareVaultService deviceService,
                            ILogger<CreateModel> logger)
         {
             _licenseService = licenseService;
@@ -43,15 +43,15 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public async Task OnGetAsync()
         {
             NonLicensedDevices = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.None || d.LicenseStatus == LicenseStatus.Expired)
+                .VaultQuery()
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.None || d.LicenseStatus == VaultLicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
 
             LicensedDevices = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.LicenseStatus != LicenseStatus.None)
-                .Where(d => d.LicenseStatus != LicenseStatus.Expired)
+                .VaultQuery()
+                .Where(d => d.LicenseStatus != VaultLicenseStatus.None)
+                .Where(d => d.LicenseStatus != VaultLicenseStatus.Expired)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -110,7 +110,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             try
             {
-                var devices = await _deviceService.DeviceQuery().Where(x => licensedDevicesIds.Contains(x.Id)).ToListAsync();
+                var devices = await _deviceService.VaultQuery().Where(x => licensedDevicesIds.Contains(x.Id)).ToListAsync();
                 var maxEndDateOfDevices = devices.Select(s => s.LicenseEndDate).Max();
                 if (renewLicenseOrderDto.EndDate <= maxEndDateOfDevices)
                 {

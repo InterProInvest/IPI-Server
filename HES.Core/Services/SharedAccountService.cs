@@ -16,12 +16,12 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
         private readonly IAccountService _accountService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly IDataProtectionService _dataProtectionService;
 
         public SharedAccountService(IAsyncRepository<SharedAccount> sharedAccountRepository,
                                     IAccountService deviceAccountService,
-                                    IDeviceTaskService deviceTaskService,
+                                    IHardwareVaultTaskService deviceTaskService,
                                     IDataProtectionService dataProtectionService)
         {
             _sharedAccountRepository = sharedAccountRepository;
@@ -145,11 +145,11 @@ namespace HES.Core.Services
             // Get all device accounts where equals this shared account
             var accounts = await _accountService
                 .Query()
-                .Include(d => d.Employee.Devices)
+                .Include(d => d.Employee.HardwareVaults)
                 .Where(d => d.Deleted == false && d.SharedAccountId == sharedAccount.Id)
                 .ToListAsync();
 
-            List<DeviceTask> tasks = new List<DeviceTask>();
+            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
 
             foreach (var account in accounts)
             {
@@ -159,14 +159,14 @@ namespace HES.Core.Services
                 account.Login = sharedAccount.Login;
                 account.UpdatedAt = DateTime.UtcNow;
 
-                foreach (var device in account.Employee.Devices)
+                foreach (var device in account.Employee.HardwareVaults)
                 {
-                    tasks.Add(new DeviceTask
+                    tasks.Add(new HardwareVaultTask
                     {
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
-                        DeviceId = device.Id
+                        HardwareVaultId = device.Id
                     });
                 }
             }
@@ -184,7 +184,7 @@ namespace HES.Core.Services
             }
 
             List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.Devices.Select(s => s.Id)));
+            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
             return deviceIds;
         }
 
@@ -206,22 +206,22 @@ namespace HES.Core.Services
                 .Where(d => d.SharedAccountId == sharedAccount.Id)
                 .ToListAsync();
 
-            List<DeviceTask> tasks = new List<DeviceTask>();
+            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
 
             foreach (var account in accounts)
             {
                 account.UpdatedAt = DateTime.UtcNow;
                 account.PasswordUpdatedAt = DateTime.UtcNow;
 
-                foreach (var device in account.Employee.Devices)
+                foreach (var device in account.Employee.HardwareVaults)
                 {
-                    tasks.Add(new DeviceTask
+                    tasks.Add(new HardwareVaultTask
                     {
                         Password = sharedAccount.Password,
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
-                        DeviceId = device.Id
+                        HardwareVaultId = device.Id
                     });
                 }
             }
@@ -239,7 +239,7 @@ namespace HES.Core.Services
             }
 
             List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.Devices.Select(s => s.Id)));
+            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
             return deviceIds;
         }
 
@@ -263,22 +263,22 @@ namespace HES.Core.Services
                 .Where(d => d.SharedAccountId == sharedAccount.Id)
                 .ToListAsync();
 
-            List<DeviceTask> tasks = new List<DeviceTask>();
+            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
 
             foreach (var account in accounts)
             {
                 account.UpdatedAt = DateTime.UtcNow;
                 account.OtpUpdatedAt = sharedAccount.OtpSecretChangedAt;
 
-                foreach (var device in account.Employee.Devices)
+                foreach (var device in account.Employee.HardwareVaults)
                 {
-                    tasks.Add(new DeviceTask
+                    tasks.Add(new HardwareVaultTask
                     {
                         OtpSecret = sharedAccount.OtpSecret ?? string.Empty,
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
-                        DeviceId = device.Id
+                        HardwareVaultId = device.Id
                     });
                 }
             }
@@ -296,7 +296,7 @@ namespace HES.Core.Services
             }
 
             List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.Devices.Select(s => s.Id)));
+            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
             return deviceIds;
         }
 
@@ -321,21 +321,21 @@ namespace HES.Core.Services
                 .Where(d => d.SharedAccountId == sharedAccount.Id)
                 .ToListAsync();
 
-            List<DeviceTask> tasks = new List<DeviceTask>();
+            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
 
             foreach (var account in accounts)
             {
                 account.Deleted = true;
                 account.UpdatedAt = DateTime.UtcNow;
 
-                foreach (var device in account.Employee.Devices)
+                foreach (var device in account.Employee.HardwareVaults)
                 {
-                    tasks.Add(new DeviceTask
+                    tasks.Add(new HardwareVaultTask
                     {
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
-                        DeviceId = device.Id
+                        HardwareVaultId = device.Id
                     });
                 }
             }
@@ -351,7 +351,7 @@ namespace HES.Core.Services
             }
 
             List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.Devices.Select(s => s.Id)));
+            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
             return deviceIds;
         }
 

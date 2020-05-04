@@ -43,7 +43,7 @@
                 @Html.DisplayNameFor(model => model.WorkstationSessions[0].UserSession)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.WorkstationSessions[0].Device)
+                @Html.DisplayNameFor(model => model.WorkstationSessions[0].HardwareVault)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.WorkstationSessions[0].Employee)
@@ -55,10 +55,10 @@
                 @Html.DisplayNameFor(model => model.WorkstationSessions[0].Department)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.WorkstationSessions[0].DeviceAccount)
+                @Html.DisplayNameFor(model => model.WorkstationSessions[0].Account)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.WorkstationSessions[0].DeviceAccount.Type)
+                @Html.DisplayNameFor(model => model.WorkstationSessions[0].Account.Type)
             </th>
         </tr>
     </thead>
@@ -102,7 +102,7 @@
                     @Html.DisplayFor(modelItem => item.UserSession)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Device.Id)
+                    @Html.DisplayFor(modelItem => item.HardwareVault.Id)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Employee.FullName)
@@ -114,10 +114,10 @@
                     @Html.DisplayFor(modelItem => item.Department.Name)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DeviceAccount.Name)
+                    @Html.DisplayFor(modelItem => item.Account.Name)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DeviceAccount.Type)
+                    @Html.DisplayFor(modelItem => item.Account.Type)
                 </td>
             </tr>
         }

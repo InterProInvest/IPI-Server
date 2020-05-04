@@ -17,7 +17,7 @@ namespace HES.Web.Pages
 
         public static string Templates => "./Templates/Index";
 
-        public static string Devices => "./Devices/Index";
+        public static string HardwareVaults => "./HardwareVaults/Index";
         
         public static string SoftwareVaults => "./SoftwareVaults/Index";
 
@@ -38,7 +38,7 @@ namespace HES.Web.Pages
 
         public static string TemplatesNavClass(ViewContext viewContext) => PageNavClass(viewContext, Templates);
 
-        public static string DevicesNavClass(ViewContext viewContext) => PageNavClass(viewContext, Devices);
+        public static string HardwareVaultsNavClass(ViewContext viewContext) => PageNavClass(viewContext, HardwareVaults);
 
         public static string SoftwareVaultsNavClass(ViewContext viewContext) => PageNavClass(viewContext, SoftwareVaults);
 

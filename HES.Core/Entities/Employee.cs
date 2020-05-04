@@ -28,7 +28,7 @@ namespace HES.Core.Entities
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
         public string PrimaryAccountId { get; set; }
-        public List<Device> Devices { get; set; }
+        public List<HardwareVault> HardwareVaults { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
         public List<SoftwareVault> SoftwareVaults { get; set; }
         public List<SoftwareVaultInvitation> SoftwareVaultInvitations { get; set; }
@@ -48,7 +48,5 @@ namespace HES.Core.Entities
         [NotMapped]
         [Display(Name = "Department")]
         public string EmpDepartment => Department?.Name;
-        [NotMapped]
-        public string CurrentDevice { get; set; }
     }
 }

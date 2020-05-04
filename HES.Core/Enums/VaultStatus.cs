@@ -2,9 +2,12 @@
 {
 	public enum VaultStatus
 	{
+		Ready,
+		Reserved,
 		Active,
+		Locked,
+		Suspended,
 		Deactivated,
-		Compromised,
-		Suspended
+		Compromised
 	}
 }
