@@ -14,22 +14,25 @@ namespace HES.Web.Pages.Settings.Parameters
     public partial class Parameters : ComponentBase
     {
         [Inject] private IAppSettingsService AppSettingsService { get; set; }
+        [Inject] private IModalDialogService ModalDialogService { get; set; }
         [Inject] private ILogger<Parameters> Logger { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] IJSRuntime JSRuntime { get; set; }
 
-        private LicensingSettings licensing = new LicensingSettings();
-        private ServerSettings server = new ServerSettings();
-        private DomainSettings domain = new DomainSettings();
-        private bool licensingIsBusy;
-        private bool serverIsBusy;
-        private bool domainIsBusy;
+        private LicensingSettings _licensing;
+        private ServerSettings _server;
+        private LdapSettings _domain;
+
+        private bool _licensingIsBusy;
+        private bool _serverIsBusy;
+        private bool _initialized;
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadLicensingSettingsAsync();
-            await LoadServerSettingsAsync();
-            await LoadDomainSettingsAsync();
+            _licensing = await LoadLicensingSettingsAsync();
+            _server = await LoadServerSettingsAsync();
+            _domain = await LoadDomainSettingsAsync();
+            _initialized = true;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -50,22 +53,25 @@ namespace HES.Web.Pages.Settings.Parameters
             await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);
         }
 
-        private async Task LoadLicensingSettingsAsync()
+        private async Task<LicensingSettings> LoadLicensingSettingsAsync()
         {
-            licensing = await AppSettingsService.GetLicensingSettingsAsync();
+            var licensingSettings = await AppSettingsService.GetLicensingSettingsAsync();
+
+            if (licensingSettings == null)
+                return new LicensingSettings();
+
+            return licensingSettings;
         }
 
         private async Task UpdateLicensingSettingsAsync()
         {
             try
             {
-                if (licensingIsBusy)
-                {
+                if (_licensingIsBusy)
                     return;
-                }
 
-                licensingIsBusy = true;
-                await AppSettingsService.SetLicensingSettingsAsync(licensing);
+                _licensingIsBusy = true;
+                await AppSettingsService.SetLicensingSettingsAsync(_licensing);
                 ToastService.ShowToast("License settings updated.", ToastLevel.Success);
             }
             catch (Exception ex)
@@ -75,26 +81,31 @@ namespace HES.Web.Pages.Settings.Parameters
             }
             finally
             {
-                licensingIsBusy = false;
+                _licensingIsBusy = false;
             }
         }
 
-        private async Task LoadServerSettingsAsync()
+        private async Task<ServerSettings> LoadServerSettingsAsync()
         {
-            server = await AppSettingsService.GetServerSettingsAsync();
+            var serverSettings = await AppSettingsService.GetServerSettingsAsync();
+
+            if (serverSettings == null)
+                return new ServerSettings();
+
+            return serverSettings;
         }
 
         private async Task UpdateServerSettingsAsync()
         {
             try
             {
-                if (serverIsBusy)
+                if (_serverIsBusy)
                 {
                     return;
                 }
 
-                serverIsBusy = true;
-                await AppSettingsService.SetServerSettingsAsync(server);
+                _serverIsBusy = true;
+                await AppSettingsService.SetServerSettingsAsync(_server);
                 ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
             }
             catch (Exception ex)
@@ -104,37 +115,30 @@ namespace HES.Web.Pages.Settings.Parameters
             }
             finally
             {
-                serverIsBusy = false;
+                _serverIsBusy = false;
             }
         }
 
-        private async Task LoadDomainSettingsAsync()
+        private async Task<LdapSettings> LoadDomainSettingsAsync()
         {
-            domain = await AppSettingsService.GetDomainSettingsAsync();
+            var domainSettings = await AppSettingsService.GetDomainSettingsAsync();
+
+            if (domainSettings == null)
+                return new LdapSettings();
+
+            return domainSettings;
         }
 
         private async Task UpdateDomainSettingsAsync()
         {
-            try
+            RenderFragment body = (builder) =>
             {
-                if (domainIsBusy)
-                {
-                    return;
-                }
+                builder.OpenComponent(0, typeof(LdapCredentials));
+                builder.AddAttribute(1, "Host", _domain.Host);
+                builder.CloseComponent();
+            };
 
-                domainIsBusy = true;
-                await AppSettingsService.SetDomainSettingsAsync(domain);
-                ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                domainIsBusy = false;
-            }
+            await ModalDialogService.ShowAsync("Active Directory", body);
         }
     }
 }

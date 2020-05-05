@@ -23,7 +23,7 @@ namespace HES.Web.Pages.Groups
         [Parameter] public EventCallback Refresh { get; set; }
 
         public List<ActiveDirectoryGroup> Groups { get; set; }
-        public DomainSettings Domain { get; set; }
+        public LdapSettings Domain { get; set; }
         public string WarningMessage { get; set; }
 
         private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();

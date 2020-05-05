@@ -22,7 +22,7 @@ namespace HES.Web.Pages.Employees
         [Inject] NavigationManager NavigationManager { get; set; }
 
         public List<ActiveDirectoryUser> Users { get; set; }
-        public DomainSettings Domain { get; set; }
+        public LdapSettings Domain { get; set; }
         public string WarningMessage { get; set; }
 
         private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();

@@ -21,11 +21,13 @@ namespace HES.Web.Pages.SoftwareVaults
 
         public ServerSettings ServerSettings { get; set; }
 
+        private bool _initialized;
         protected override async Task OnInitializedAsync()
         {
             try
             {
                 ServerSettings = await AppSettingsService.GetServerSettingsAsync();
+                _initialized = true;
             }
             catch (Exception ex)
             {

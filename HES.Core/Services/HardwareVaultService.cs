@@ -335,6 +335,9 @@ namespace HES.Core.Services
         public async Task ImportVaultsAsync()
         {
             var licensing = await _appSettingsService.GetLicensingSettingsAsync();
+           
+            if (licensing == null)
+                throw new Exception("Api Key is empty.");
 
             var client = _httpClientFactory.CreateClient();
             client.BaseAddress = new Uri(licensing.ApiAddress);

@@ -3,6 +3,7 @@ using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using Newtonsoft.Json;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -10,24 +11,29 @@ namespace HES.Core.Services
     public class AppSettingsService : IAppSettingsService
     {
         private readonly IAsyncRepository<AppSettings> _appSettingsRepository;
+        private readonly IDataProtectionService _dataProtectionService;
 
-        public AppSettingsService(IAsyncRepository<AppSettings> appSettingsRepository)
+        public AppSettingsService(IAsyncRepository<AppSettings> appSettingsRepository, IDataProtectionService dataProtectionService)
         {
             _appSettingsRepository = appSettingsRepository;
+            _dataProtectionService = dataProtectionService;
         }
 
         public async Task<LicensingSettings> GetLicensingSettingsAsync()
         {
             var licensing = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Licensing);
+
             if (licensing == null)
-            {
-                return new LicensingSettings();
-            }
+                return null;
+
             return JsonConvert.DeserializeObject<LicensingSettings>(licensing.Value);
         }
 
         public async Task SetLicensingSettingsAsync(LicensingSettings licensing)
         {
+            if (licensing == null)
+                throw new ArgumentNullException(nameof(LicensingSettings));
+
             var json = JsonConvert.SerializeObject(licensing);
 
             var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Licensing);
@@ -51,15 +57,18 @@ namespace HES.Core.Services
         public async Task<ServerSettings> GetServerSettingsAsync()
         {
             var server = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Server);
+
             if (server == null)
-            {
-                return new ServerSettings();
-            }
+                return null;
+
             return JsonConvert.DeserializeObject<ServerSettings>(server.Value);
         }
 
         public async Task SetServerSettingsAsync(ServerSettings server)
         {
+            if (server == null)
+                throw new ArgumentNullException(nameof(ServerSettings));
+
             var json = JsonConvert.SerializeObject(server);
 
             var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Server);
@@ -80,19 +89,27 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task<DomainSettings> GetDomainSettingsAsync()
+        public async Task<LdapSettings> GetDomainSettingsAsync()
         {
             var domain = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
+
             if (domain == null)
-            {
-                return new DomainSettings();
-            }
-            return JsonConvert.DeserializeObject<DomainSettings>(domain.Value);
+                return null;
+
+            var deserialized = JsonConvert.DeserializeObject<LdapSettings>(domain.Value);
+            deserialized.Password = _dataProtectionService.Decrypt(deserialized.Password);
+
+            return deserialized;
         }
 
-        public async Task SetDomainSettingsAsync(DomainSettings domain)
+        public async Task SetDomainSettingsAsync(LdapSettings ldapSettings)
         {
-            var json = JsonConvert.SerializeObject(domain);
+            if (ldapSettings == null)
+                throw new ArgumentNullException(nameof(LdapSettings));
+
+            ldapSettings.Password = _dataProtectionService.Encrypt(ldapSettings.Password);
+
+            var json = JsonConvert.SerializeObject(ldapSettings);
 
             var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
