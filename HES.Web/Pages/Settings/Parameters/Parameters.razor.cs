@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Parameters
@@ -21,11 +22,17 @@ namespace HES.Web.Pages.Settings.Parameters
 
         private LicensingSettings _licensing;
         private ServerSettings _server;
-        private LdapSettings _domain;
+        private DomainHost _domain;
 
         private bool _licensingIsBusy;
         private bool _serverIsBusy;
         private bool _initialized;
+
+        class DomainHost
+        {
+            [Required]
+            public string Host { get; set; }
+        }
 
         protected override async Task OnInitializedAsync()
         {
@@ -119,14 +126,14 @@ namespace HES.Web.Pages.Settings.Parameters
             }
         }
 
-        private async Task<LdapSettings> LoadDomainSettingsAsync()
+        private async Task<DomainHost> LoadDomainSettingsAsync()
         {
             var domainSettings = await AppSettingsService.GetDomainSettingsAsync();
 
             if (domainSettings == null)
-                return new LdapSettings();
+                return new DomainHost();
 
-            return domainSettings;
+            return new DomainHost() { Host = domainSettings.Host };
         }
 
         private async Task UpdateDomainSettingsAsync()
