@@ -18,6 +18,7 @@ namespace HES.Core.Interfaces
         Task<IList<string>> GetEmployeeDevicesAsync(string employeeId);
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> CreateEmployeeAsync(Employee employee);
+        Task<Employee> ImportEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
         Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);

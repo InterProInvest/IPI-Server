@@ -400,7 +400,7 @@ namespace HES.Web.Pages.Employees
             Templates = new SelectList(await _templateService.GetTemplatesAsync(), "Id", "Name");
             WorkstationAccountTypeList = new SelectList(Enum.GetValues(typeof(WorkstationAccountType)).Cast<WorkstationAccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             var domain = await _appSettingsService.GetDomainSettingsAsync();
-            Host = domain.Host == null ? "host" : domain.Host;
+            Host = domain == null ? "host" : domain.Host;
             return Partial("_CreatePersonalAccount", this);
         }
 
@@ -453,7 +453,8 @@ namespace HES.Web.Pages.Employees
             {
                 if (workstationAccount.UpdateAdPassword)
                 {
-                    await _ldapService.SetUserPasswordAsync(employeeId, workstationAccount.Password, activeDirectoryCredential);
+                    var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+                    await _ldapService.SetUserPasswordAsync(employee.ActiveDirectoryGuid, workstationAccount.Password, activeDirectoryCredential);
                 }
                 await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(employeeId));

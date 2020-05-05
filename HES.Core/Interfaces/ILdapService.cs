@@ -8,7 +8,7 @@ namespace HES.Core.Interfaces
     {
         Task<List<ActiveDirectoryUser>> GetUsersAsync(ActiveDirectoryCredential credentials);
         Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups);
-        Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials);
+        Task SetUserPasswordAsync(string employeeGuid, string password, ActiveDirectoryCredential credentials);
         Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials);
         Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees);
     }

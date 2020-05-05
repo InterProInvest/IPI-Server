@@ -43,7 +43,8 @@ namespace HES.Core.Services
                     {
                         Employee = new Employee()
                         {
-                            Id = GetAttributeGUID(entity),
+                            Id = Guid.NewGuid().ToString(),
+                            ActiveDirectoryGuid = GetAttributeGUID(entity),
                             FirstName = TryGetAttribute(entity, "givenName"),
                             LastName = TryGetAttribute(entity, "sn"),
                             Email = TryGetAttribute(entity, "mail"),
@@ -86,15 +87,7 @@ namespace HES.Core.Services
                 foreach (var user in users)
                 {
                     Employee employee = null;
-                    try
-                    {
-                        employee = await _employeeService.CreateEmployeeAsync(user.Employee);
-                    }
-                    catch (AlreadyExistException)
-                    {
-                        // If user exist
-                        employee = await _employeeService.GetEmployeeByFullNameAsync(user.Employee);
-                    }
+                    employee = await _employeeService.ImportEmployeeAsync(user.Employee);
 
                     if (createGroups && user.Groups != null)
                     {
@@ -106,14 +99,14 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials)
+        public async Task SetUserPasswordAsync(string employeeGuid, string password, ActiveDirectoryCredential credentials)
         {
             using (var connection = new LdapConnection())
             {
                 connection.Connect(new Uri($"ldaps://{credentials.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, new LdapCredential() { UserName = @$"addc\{credentials.UserName}", Password = credentials.Password });
 
-                var objectGUID = GetObjectGuid(employeeId);
+                var objectGUID = GetObjectGuid(employeeGuid);
                 var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry

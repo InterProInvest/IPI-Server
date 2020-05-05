@@ -33,7 +33,7 @@ namespace HES.Core.Services
                                IHardwareVaultTaskService hardwareVaultTaskService,
                                IAccountService deviceAccountService,
                                ISharedAccountService sharedAccountService,
-                               IWorkstationService workstationService,                      
+                               IWorkstationService workstationService,
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
                                IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                IDataProtectionService dataProtectionService)
@@ -148,6 +148,30 @@ namespace HES.Core.Services
             if (exist)
             {
                 throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
+            }
+
+            return await _employeeRepository.AddAsync(employee);
+        }
+
+        public async Task<Employee> ImportEmployeeAsync(Employee employee)
+        {
+            if (employee == null)
+                throw new ArgumentNullException(nameof(employee));
+
+            // If the field is NULL then the unique check does not work, therefore we write empty field
+            employee.LastName = employee.LastName ?? string.Empty;
+
+            var employeeByGuid = await _employeeRepository.Query().FirstOrDefaultAsync(x => x.ActiveDirectoryGuid == employee.ActiveDirectoryGuid);
+            if (employeeByGuid != null)
+            {
+                return employeeByGuid;
+            }
+
+            var employeeByName = await _employeeRepository.Query().FirstOrDefaultAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
+            if (employeeByName != null)
+            {
+                employeeByName.ActiveDirectoryGuid = employee.ActiveDirectoryGuid;
+                return await _employeeRepository.UpdateAsync(employeeByName);
             }
 
             return await _employeeRepository.AddAsync(employee);
@@ -589,7 +613,7 @@ namespace HES.Core.Services
 
             var employee = await GetEmployeeByIdAsync(account.EmployeeId);
             if (employee.HardwareVaults.Count == 0)
-                throw new Exception("Employee has no device");
+                throw new Exception("Employee has no Vaults");
 
             var exist = await _accountService.ExistAsync(x => x.EmployeeId == account.EmployeeId &&
                                                          x.Name == account.Name &&

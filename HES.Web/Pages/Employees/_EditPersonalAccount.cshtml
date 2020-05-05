@@ -14,7 +14,7 @@
         <input asp-for="DeviceAccount.Login" class="form-control text-navyblue" />
         <span asp-validation-for="DeviceAccount.Login" class="text-danger"></span>
     </div>
-    @if (Model.DeviceAccount.Kind != AccountKind.Workstation)
+    @if (Model.DeviceAccount.Kind != Core.Enums.AccountKind.Workstation)
     {
         <div class="form-group">
             <label asp-for="DeviceAccount.Urls" class="control-label text-gray"></label>
