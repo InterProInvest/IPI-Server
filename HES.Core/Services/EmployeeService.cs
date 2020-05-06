@@ -602,6 +602,43 @@ namespace HES.Core.Services
                 .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
                 .AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.Trim();
+
+                query = query.Where(x => 
+                                    x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.CreatedAt.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            switch (sortColumn)
+            {
+                case nameof(Account.Name):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    break;
+                case nameof(Account.Urls):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Urls) : query.OrderByDescending(x => x.Urls);
+                    break;
+                case nameof(Account.Apps):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Apps) : query.OrderByDescending(x => x.Apps);
+                    break;
+                case nameof(Account.Login):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Login) : query.OrderByDescending(x => x.Login);
+                    break;
+                case nameof(Account.Type):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Type) : query.OrderByDescending(x => x.Type);
+                    break;
+                case nameof(Account.CreatedAt):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt);
+                    break;
+                case nameof(Account.UpdatedAt):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UpdatedAt) : query.OrderByDescending(x => x.UpdatedAt);
+                    break;
+            }
+
             return await query.Skip(skip).Take(take).ToListAsync();
         }
 
@@ -613,6 +650,18 @@ namespace HES.Core.Services
                 .Include(x => x.SharedAccount)
                 .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
                 .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.Trim();
+
+                query = query.Where(x =>
+                                    x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.CreatedAt.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
 
             return await query.CountAsync();
         }

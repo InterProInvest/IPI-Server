@@ -56,90 +56,175 @@ else
         </ul>
     }
 
-    @if (Accounts.Count > 0)
-    {
-        <h4 class="text-navyblue mb-1 mt-4">Accounts</h4>
+    <h4 class="text-navyblue mb-2 mt-4">Accounts</h4>
 
-        <TableAction>
-            <ActionButtons>
+    <TableAction>
+        <ActionButtons>
+            @if (SelectedAccount != null)
+            {
 
-            </ActionButtons>
-            <FilterButtons>
-                <TableFilter EnableFilterButton="false" SearchTextChanged="SearchTextChangedAsync" />
-            </FilterButtons>
-        </TableAction>
+                @if (Employee.PrimaryAccountId != SelectedAccount.Id)
+                {
+                    <button type="button" @onclick="SetPrimaryAccountAsync" class="btn btn-light border" title="Windows account">
+                        <img class="icon-btn" src="/svg/action/star.svg" />
+                        Set as windows account
+                    </button>
+                }
 
-        <MainTable Items="Accounts" SelectedItem="@SelectedAccount" SelecedItemChanged="SelectedItemChangedAsync">
-            <TableHeader>
-                <MainTableHeader Title="Name"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.Name)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Urls"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.Urls)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Apps"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.Apps)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Login"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.Login)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Type"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.Type)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Created"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.CreatedAt)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Updated"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.UpdatedAt)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Password Updated"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.PasswordUpdatedAt)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-                <MainTableHeader Title="Otp Updated"
-                                 TitleWidth="7.1"
-                                 SortColumn="@nameof(Account.OtpUpdatedAt)"
-                                 CurrentSortedColumn="@SortedColumn"
-                                 SortedColumnChanged="SortedColumnChangedAsync"
-                                 SortDirectionChanged="SortDirectionChangedAsync" />
-            </TableHeader>
-            <TableRow>
-                <td>
+                @if (SelectedAccount.Type == AccountType.Personal)
+                {
+                    <button type="button" @onclick="EditPersonalAccountAsync" class="btn btn-light border mx-2" title="Edit personal account">
+                        <img class="icon-btn" src="/svg/action/edit.svg" />
+                        Edit
+                    </button>
+
+                    <button type="button" @onclick="EditPersonalAccountPasswordAsync" class="btn btn-light border mx-2" title="Edit personal account password">
+                        <img class="icon-btn" src="/svg/action/password.svg" />
+                        Edit password
+                    </button>
+
+                    @if (SelectedAccount.Kind != AccountKind.Workstation)
+                    {
+                        <button type="button" @onclick="EditPersonalAccountOtpAsync" class="btn btn-light border mx-2" title="Edit personal account OTP">
+                            <img class="icon-btn" src="/svg/action/otp.svg" />
+                            Edit OTP
+                        </button>
+                    }
+                }
+                <button type="button" @onclick="DeleteAccountAsync" class="btn btn-light border mx-2" title="Delete account">
+                    <img class="icon-btn" src="/svg/action/delete.svg" />
+                    Delete
+                </button>
+            }
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter EnableFilterButton="false" SearchTextChanged="SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
+
+    <MainTable Items="Accounts" SelectedItem="@SelectedAccount" SelecedItemChanged="SelectedItemChangedAsync">
+        <TableHeader>
+            <MainTableHeader Title="Name"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.Name)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Urls"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.Urls)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Apps"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.Apps)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Login"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.Login)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Type"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.Type)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Created"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.CreatedAt)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Updated"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.UpdatedAt)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Password Updated"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.PasswordUpdatedAt)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Otp Updated"
+                             TitleWidth="7.1"
+                             SortColumn="@nameof(Account.OtpUpdatedAt)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td style="vertical-align:middle">
+                @if (context.Employee.PrimaryAccountId == context.Id)
+                    {
+                    <span class="badge badge-success custom-badge" data-toggle="tooltip" data-placement="bottom" title="Windows account">
+                        @context.Name
+                    </span>
+                    }
+                    else
+                    {
                     @context.Name
-                </td>
-                <td>
-                    @context.Urls
-                </td>
-            </TableRow>
-        </MainTable>
-        <Pagination CurrentPageChanged="CurrentPageChangedAsync"
-                    DisplayRowsChanged="DisplayRowsChangedAsync"
-                    TotalRecords="TotalRecords"
-                    CurrentPage="CurrentPage"
-                    DisplayRows="DisplayRows"
-                    DisplayRecords="Accounts.Count" />
-    }
+                    }
+            </td>
+            <td>
+                @if (context.Urls != null)
+                    {
+                        foreach (var urls in context.Urls.Split(';'))
+                        {
+                        <span style="white-space: pre-line">@urls</span>
+                        }
+                    }
+            </td>
+            <td>
+                @if (context.Apps != null)
+                    {
+                        foreach (var apps in context.Apps.Split(';'))
+                        {
+                        <span style="white-space: pre-line">@apps</span>
+
+                        }
+                    }
+            </td>
+            <td>
+                @context.Login
+            </td>
+            <td>
+                @context.Type
+            </td>
+            <td>
+                @if (context.CreatedAt != null)
+                    {
+                    @context.CreatedAt.ToLocalTime()
+                    }
+            </td>
+            <td>
+                @if (context.UpdatedAt != null)
+                    {
+                    @context.UpdatedAt.Value.ToLocalTime()
+                    }
+            </td>
+            <td>
+                @((DateTime.UtcNow.Date - context.PasswordUpdatedAt.Date).TotalDays) @((DateTime.UtcNow.Date - context.PasswordUpdatedAt.Date).TotalDays == 1 ? " day" : " days" )
+            </td>
+            <td>
+                @if (context.OtpUpdatedAt != null)
+                    {
+                    @((DateTime.UtcNow.Date - context.OtpUpdatedAt.Value.Date).TotalDays) @((DateTime.UtcNow.Date - context.OtpUpdatedAt.Value.Date).TotalDays == 1 ? " day" : " days" )
+
+                    }
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                DisplayRowsChanged="DisplayRowsChangedAsync"
+                TotalRecords="TotalRecords"
+                CurrentPage="CurrentPage"
+                DisplayRows="DisplayRows"
+                DisplayRecords="Accounts.Count" />
 }

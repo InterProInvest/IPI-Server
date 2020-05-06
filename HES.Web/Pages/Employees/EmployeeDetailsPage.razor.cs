@@ -1,10 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -116,6 +114,29 @@ namespace HES.Web.Pages.Employees
         }
 
         private async Task RemoveHardwareVaultAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+
+        private async Task SetPrimaryAccountAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        private async Task EditPersonalAccountAsync()
+        {
+            await Task.CompletedTask;
+        }
+        private async Task EditPersonalAccountPasswordAsync()
+        {
+            await Task.CompletedTask;
+        }
+        private async Task EditPersonalAccountOtpAsync()
+        {
+            await Task.CompletedTask;
+        }
+        private async Task DeleteAccountAsync()
         {
             await Task.CompletedTask;
         }
