@@ -239,9 +239,8 @@ namespace HES.Core.Services
 
             bool isPrimary = device.Employee.PrimaryAccountId == task.AccountId;
             var pm = new DevicePasswordManager(remoteDevice, null);
-            var key = task.Account.StorageId;
-            //await pm.DeleteAccount(key, isPrimary);
-            throw new NotImplementedException();
+            var storageId = task.Account.StorageId;
+            await pm.DeleteAccount(storageId, isPrimary);
             return 0;
         }
 

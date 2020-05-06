@@ -2,7 +2,7 @@
 
 namespace HES.Core.Utilities
 {
-    public static class Converter
+    public static class Utils
     {
         public static uint ConvertToUnixTime(DateTime datetime)
         {

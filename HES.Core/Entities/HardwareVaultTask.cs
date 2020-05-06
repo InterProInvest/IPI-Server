@@ -13,6 +13,7 @@ namespace HES.Core.Entities
         public string OtpSecret { get; set; }
         public TaskOperation Operation { get; set; }
         public DateTime CreatedAt { get; set; }
+        public uint Timestamp { get; set; }
         public string HardwareVaultId { get; set; }
         public string AccountId { get; set; }
 
