@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Web.Account;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
@@ -224,7 +225,7 @@ namespace HES.Core.Services
                 var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
                 await _workstationSessionRepository.DeleteRangeAsync(allSessions);
                 // Remove all accounts
-                await _accountService.RemoveAllAccountsByEmployeeIdAsync(id);
+                await _accountService.DeleteAccountsByEmployeeIdAsync(id);
 
                 await _employeeRepository.DeleteAsync(employee);
 
@@ -329,7 +330,7 @@ namespace HES.Core.Services
                 {
                     vault.Status = VaultStatus.Deactivated;
                     vault.StatusReason = reason;
-                    await _accountService.RemoveAllAccountsAsync(employeeId);
+                    await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
                 }
 
                 await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
@@ -601,6 +602,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        [Obsolete("Is deprecated, use CreatePersonalAccountAsync(PersonalAccount personalAccount).")]
         public async Task<Account> CreatePersonalAccountAsync(Account account, AccountPassword accountPassword)
         {
             if (account == null)
@@ -612,8 +614,8 @@ namespace HES.Core.Services
             _dataProtectionService.Validate();
 
             var employee = await GetEmployeeByIdAsync(account.EmployeeId);
-            if (employee.HardwareVaults.Count == 0)
-                throw new Exception("Employee has no Vaults");
+            //if (employee.HardwareVaults.Count == 0)
+            //    throw new Exception("Employee has no Vaults");
 
             var exist = await _accountService.ExistAsync(x => x.EmployeeId == account.EmployeeId &&
                                                          x.Name == account.Name &&
@@ -650,7 +652,7 @@ namespace HES.Core.Services
                 createdAccount = await _accountService.AddAsync(account);
                 await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
-                await SetAsWorkstationIfEmptyAsync(createdAccount.EmployeeId, createdAccount.Id);
+                await SetAsWorkstationAccountIfEmptyAsync(createdAccount.EmployeeId, createdAccount.Id);
 
                 transactionScope.Complete();
             }
@@ -658,6 +660,137 @@ namespace HES.Core.Services
             return createdAccount;
         }
 
+        public async Task<Account> CreatePersonalAccountAsync(PersonalAccount personalAccount, bool isWorkstationAccount = false)
+        {
+            if (personalAccount == null)
+                throw new ArgumentNullException(nameof(personalAccount));
+
+            _dataProtectionService.Validate();
+
+            var exist = await _accountService.ExistAsync(x => x.EmployeeId == personalAccount.EmployeeId &&
+                                                         x.Name == personalAccount.Name &&
+                                                         x.Login == personalAccount.Login &&
+                                                         x.Deleted == false);
+            if (exist)
+                throw new AlreadyExistException("An account with the same name and login exist.");
+
+            var account = new Account()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = personalAccount.Name,
+                Urls = ValidationHepler.VerifyUrls(personalAccount.Urls),
+                Apps = personalAccount.Apps,
+                Login = personalAccount.Login,
+                Type = AccountType.Personal,
+                Kind = isWorkstationAccount ? AccountKind.Workstation : AccountKind.WebApp,
+                CreatedAt = DateTime.UtcNow,
+                PasswordUpdatedAt = DateTime.UtcNow,
+                OtpUpdatedAt = ValidationHepler.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
+                Password = personalAccount.Password,
+                OtpSecret = personalAccount.OtpSecret,
+                EmployeeId = personalAccount.EmployeeId
+            };
+
+            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
+            Employee employee = await GetEmployeeByIdAsync(personalAccount.EmployeeId);
+
+            foreach (var vault in employee.HardwareVaults)
+            {
+                tasks.Add(new HardwareVaultTask
+                {
+                    Password = _dataProtectionService.Encrypt(account.Password),
+                    OtpSecret = _dataProtectionService.Encrypt(account.OtpSecret),
+                    CreatedAt = DateTime.UtcNow,
+                    Operation = TaskOperation.Create,
+                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    HardwareVaultId = vault.Id,
+                    AccountId = account.Id
+                });
+            }
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _accountService.AddAsync(account);
+
+                if (tasks.Count > 0)
+                {
+                    await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                    await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, needSync: true);
+                }
+
+                await SetAsWorkstationAccountIfEmptyAsync(account.EmployeeId, account.Id);
+                transactionScope.Complete();
+            }
+
+            return account;
+        }
+
+        public async Task<Account> CreateWorkstationAccountAsync(WorkstationLocal workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            var personalAccount = new PersonalAccount()
+            {
+                Name = workstationAccount.Name,
+                Login = $".\\{workstationAccount.UserName}",
+                Password = workstationAccount.Password,
+                EmployeeId = workstationAccount.EmployeeId
+            };
+
+            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
+        public async Task<Account> CreateWorkstationAccountAsync(WorkstationDomain workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            var personalAccount = new PersonalAccount()
+            {
+                Name = workstationAccount.Name,
+                Login = $"{workstationAccount.Domain}\\{workstationAccount.UserName}",
+                Password = workstationAccount.Password,
+                EmployeeId = workstationAccount.EmployeeId
+            };
+
+            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
+        public async Task<Account> CreateWorkstationAccountAsync(WorkstationMicrosoft workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            var personalAccount = new PersonalAccount()
+            {
+                Name = workstationAccount.Name,
+                Login = $"@\\{workstationAccount.UserName}",
+                Password = workstationAccount.Password,
+                EmployeeId = workstationAccount.EmployeeId
+            };
+
+            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
+        public async Task<Account> CreateWorkstationAccountAsync(WorkstationAzureAD workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            var personalAccount = new PersonalAccount()
+            {
+                Name = workstationAccount.Name,
+                Login = $"AzureAD\\{workstationAccount.UserName}",
+                Password = workstationAccount.Password,
+                EmployeeId = workstationAccount.EmployeeId
+            };
+
+            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
+
+        [Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
         public async Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
         {
             if (workstationAccount == null)
@@ -709,26 +842,24 @@ namespace HES.Core.Services
                 throw new Exception($"Employee not found");
 
             if (employee.HardwareVaults.Count == 0)
-                throw new Exception("Employee has no device");
+                throw new Exception("Employee has no vaults");
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Update employee
                 employee.PrimaryAccountId = accountId;
                 await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { nameof(Employee.PrimaryAccountId) });
 
-                // Create tasks for devices
-                foreach (var device in employee.HardwareVaults)
+                foreach (var vault in employee.HardwareVaults)
                 {
-                    await _hardwareVaultTaskService.AddPrimaryAsync(device.Id, accountId);
-                    await _hardwareVaultService.UpdateNeedSyncAsync(device, true);
+                    await _hardwareVaultTaskService.AddPrimaryAsync(vault.Id, accountId);
+                    await _hardwareVaultService.UpdateNeedSyncAsync(vault, true);
                 }
 
                 transactionScope.Complete();
             }
         }
 
-        private async Task SetAsWorkstationIfEmptyAsync(string employeeId, string accountId)
+        private async Task SetAsWorkstationAccountIfEmptyAsync(string employeeId, string accountId)
         {
             var employee = await _employeeRepository.GetByIdAsync(employeeId);
 
@@ -926,7 +1057,7 @@ namespace HES.Core.Services
                 createdAccount = await _accountService.AddAsync(account);
                 await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, true);
-                await SetAsWorkstationIfEmptyAsync(createdAccount.EmployeeId, createdAccount.Id);
+                await SetAsWorkstationAccountIfEmptyAsync(createdAccount.EmployeeId, createdAccount.Id);
 
                 transactionScope.Complete();
             }

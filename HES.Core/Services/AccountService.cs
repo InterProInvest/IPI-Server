@@ -23,9 +23,13 @@ namespace HES.Core.Services
             return _accountRepository.Query();
         }
 
-        public Task<Account> GetByIdAsync(string accountId)
+        public Task<Account> GetAccountByIdAsync(string accountId)
         {
-            return _accountRepository.GetByIdAsync(accountId);
+            return _accountRepository
+                .Query()
+                .Include(x => x.Employee)
+                .Include(x => x.SharedAccount)
+                .FirstOrDefaultAsync(x => x.Id == accountId);
         }
 
         public Task<Account> AddAsync(Account deviceAccount)
@@ -58,37 +62,19 @@ namespace HES.Core.Services
             return _accountRepository.DeleteRangeAsync(deviceAccounts);
         }
 
-        public async Task RemoveAllAccountsByEmployeeIdAsync(string employeeId)
+        public async Task DeleteAccountsByEmployeeIdAsync(string employeeId)
         {
-            var allAccounts = await _accountRepository
+            var accounts = await _accountRepository
                 .Query()
-                .Where(t => t.EmployeeId == employeeId)
+                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
                 .ToListAsync();
 
-            foreach (var account in allAccounts)
+            foreach (var account in accounts)
             {
                 account.Deleted = true;
             }
 
-            await _accountRepository.UpdateOnlyPropAsync(allAccounts, new string[] { nameof(Account.Deleted) });
-        }
-
-        public async Task RemoveAllAccountsAsync(string employeeId)
-        {
-            var accounts = await _accountRepository
-                 .Query()
-                 .Where(d => d.EmployeeId == employeeId && d.Deleted == false)
-                 .ToListAsync();
-
-            if (accounts != null)
-            {
-                foreach (var account in accounts)
-                {
-                    account.Deleted = true;
-                }
-
-                await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
-            }
+            await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Account, bool>> predicate)
