@@ -33,7 +33,6 @@ namespace HES.Core.Services
                 await connection.BindAsync(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
 
                 var dn = GetDnFromHost(credentials.Host);
-
                 var filter = "(&(objectCategory=user)(givenName=*))";
                 var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
@@ -111,10 +110,12 @@ namespace HES.Core.Services
             using (var connection = new LdapConnection())
             {
                 connection.Connect(new Uri($"ldaps://{credentials.Host}:636"));
-                connection.Bind(LdapAuthType.Simple, new LdapCredential() { UserName = @$"addc\{credentials.UserName}", Password = credentials.Password });
+                connection.Bind(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
 
+                var dn = GetDnFromHost(credentials.Host);
                 var objectGUID = GetObjectGuid(employeeId);
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var filter = $"(&(objectCategory=user)(objectGUID={objectGUID}))";
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry
                 {
@@ -130,7 +131,6 @@ namespace HES.Core.Services
                         }
                 });
             }
-
         }
 
         public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials)
@@ -143,7 +143,6 @@ namespace HES.Core.Services
                 await connection.BindAsync(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
 
                 var dn = GetDnFromHost(credentials.Host);
-
                 var filter = "(objectCategory=group)";
                 var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
