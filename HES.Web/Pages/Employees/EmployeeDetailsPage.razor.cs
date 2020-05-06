@@ -98,7 +98,7 @@ namespace HES.Web.Pages.Employees
 
         #endregion
 
-        private async Task AddDeviceAsync()
+        private async Task AddHardwareVaultAsync()
         {
             await Task.CompletedTask;
         }

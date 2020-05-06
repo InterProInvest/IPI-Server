@@ -11,7 +11,7 @@ else
         <div class="col"></div>
 
         <div class="col-auto pl-1 pr-1">
-            <ButtonSpinner Class="btn-primary" Text="Add device" Callback="AddDeviceAsync" />
+            <ButtonSpinner Class="btn-primary" Text="Add HardwareVault" Callback="AddHardwareVaultAsync" />
         </div>
         <div class="col-auto pl-1 pr-1">
             <ButtonSpinner Class="btn-primary" Text="Create personal account" Callback="CreatePersonalAccountAsync" />
@@ -25,11 +25,11 @@ else
     {
         @if (Employee.HardwareVaults.Count > 1)
         {
-            <h4 class="text-navyblue">Devices</h4>
+            <h4 class="text-navyblue">HardwareVaults</h4>
         }
         else
         {
-            <h4 class="text-navyblue">Device</h4>
+            <h4 class="text-navyblue">HardwareVault</h4>
         }
         <ul class="list-group w-100 mb-3">
             @foreach (var hardwareVault in Employee.HardwareVaults)
