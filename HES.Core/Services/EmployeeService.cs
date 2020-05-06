@@ -9,6 +9,7 @@ using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -589,6 +590,30 @@ namespace HES.Core.Services
                 .Include(x => x.Employee.HardwareVaults)
                 .Include(x => x.SharedAccount)
                 .FirstOrDefaultAsync(x => x.Id == accountId);
+        }
+
+        public async Task<List<Account>> GetAccountsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string employeeId)
+        {
+            var query = _accountService
+                .Query()
+                .Include(x => x.Employee.HardwareVaults)
+                .Include(x => x.SharedAccount)
+                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
+                .AsQueryable();
+
+            return await query.Skip(skip).Take(take).ToListAsync();
+        }
+
+        public async Task<int> GetAccountsCountAsync(string searchText, string employeeId)
+        {
+            var query = _accountService
+                .Query()
+                .Include(x => x.Employee.HardwareVaults)
+                .Include(x => x.SharedAccount)
+                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
+                .AsQueryable();
+
+            return await query.CountAsync();
         }
 
         public async Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId)

@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -25,6 +26,8 @@ namespace HES.Core.Interfaces
         Task UpdateLastSeenAsync(string vaultId);
         Task AddHardwareVaultAsync(string employeeId, string[] vaultsIds);
         Task RemoveHardwareVaultAsync(string employeeId, string vaultId, VaultStatusReason reason);
+        Task<List<Account>> GetAccountsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string employeeId);
+        Task<int> GetAccountsCountAsync(string searchText, string employeeId);
         Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);
         Task<Account> GetAccountByIdAsync(string accountId);
         Task<Account> CreatePersonalAccountAsync(Account account, AccountPassword accountPassword);

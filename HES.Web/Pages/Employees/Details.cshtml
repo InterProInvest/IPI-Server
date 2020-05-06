@@ -6,76 +6,14 @@
     ViewData["ActivePage"] = MenuNavPages.Employees;
 }
 
+
 <partial name="_SuccessMessage" for="SuccessMessage" />
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
-@* Employee header *@
-<div class="row align-items-center details-card mb-3">
-    <div class="col-auto">
-        <h1 class="text-navyblue text-break m-0">@Model.Employee.FullName</h1>
-    </div>
-    <div class="col"></div>
-    @*<div class="col-auto pl-1 pr-1">
-            <component type="typeof(DetailsButtonSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />
-        </div>*@
-    <div class="col-auto pl-1 pr-1">
-        <button type="button" class="btn btn-primary open-modal-dialog" data-id="@Model.Employee.Id" data-action="AddDevice" data-title="Add device">
-            Add device
-        </button>
-    </div>
-    <div class="col-auto pl-1 pr-1">
-        <button id="personal_acc" type="button" class="btn btn-primary open-modal-dialog" data-id="@Model.Employee.Id" data-action="CreatePersonalAccount" data-title="Create personal account" data-type="Account">
-            Create personal account
-        </button>
-    </div>
-    <div class="col-auto pl-1">
-        <button id="shared_acc" type="button" class="btn btn-primary open-modal-dialog" data-id="@Model.Employee.Id" data-action="AddSharedAccount" data-title="Add shared account">
-            Add shared account
-        </button>
-    </div>
-</div>
-
-@*<component type="typeof(VaultsSection)" render-mode="ServerPrerendered" param-EmployeeId="@Model.Employee.Id" />*@
-
-@* Devices *@
-@if (Model.Employee.HardwareVaults.Count > 0)
-{
-    <h4 class="text-navyblue">Device</h4>
-    <ul class="list-group w-100 mb-3">
-        @foreach (var hardwareVault in Model.Employee.HardwareVaults)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <img class="mr-1" src="/svg/icon-hardware-vault.svg" />
-                    <span class="font-weight-bold mr-1">@hardwareVault.Id</span>
-                    <span class="mr-1">- @(hardwareVault.LicenseEndDate != null ? $"License till {hardwareVault.LicenseEndDate.Value.ToShortDateString()}" : "License status None")</span>
-                    <span class="mr-2">- @hardwareVault.Status</span>
-                    @if (hardwareVault.IsOnline)
-                    {
-                        <span class="badge badge-success">Online</span>
-                    }
-                </div>
-                <div>
-                    <button type="button" class="btn btn-light border my-1 mr-2 open-modal-dialog" data-id="@hardwareVault.Id" data-action="DeleteDevice" data-title="Remove device" title="Remove device from employee">
-                        <img class="icon-btn" src="/svg/action/delete.svg" />
-                        Delete
-                    </button>
-                </div>
-            </li>
-        }
-    </ul>
-}
-
-@* Devices tables *@
-@if (Model.Accounts.Count > 0)
-{
-    <div id="employeeDeviceAccounts">
-        <partial name="_EmployeeDeviceAccounts" />
-    </div>
-}
+<component type="typeof(EmployeeDetailsPage)" render-mode="ServerPrerendered" param-EmployeeId="@Model.EmployeeId" />
 
 @* Modal *@
-<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+@*<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -93,10 +31,10 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
 @* Second Modal *@
-<div class="modal" id="secondModalDialog" tabindex="-1" role="dialog" aria-labelledby="secondModalDialogTitle" aria-hidden="true">
+@*<div class="modal" id="secondModalDialog" tabindex="-1" role="dialog" aria-labelledby="secondModalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content second-modal">
             <div class="modal-header">
@@ -126,9 +64,10 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
-@section Scripts{
+
+@*@section Scripts{
     <script src="~/js/custom-popover.js"></script>
     <script src="~/lib/signalr/signalr.js"></script>
     <script>
@@ -278,4 +217,4 @@
         }
     </script>
     <partial name="_ValidationScriptsPartial" />
-}
+}*@

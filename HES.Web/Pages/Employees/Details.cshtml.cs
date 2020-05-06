@@ -90,7 +90,7 @@ namespace HES.Web.Pages.Employees
                 _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
-
+            EmployeeId = id;
             Employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (Employee == null)

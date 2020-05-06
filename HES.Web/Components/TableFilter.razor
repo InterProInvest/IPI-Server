@@ -1,5 +1,8 @@
-﻿<button type="button" class="btn btn-light border mx-2 text-nowrap" data-toggle="collapse" data-target="#filter-collapse" title="Filter">
-    <img class="icon-btn" src="/svg/action/filter.svg" />
-    Filter
-</button>
+﻿@if (EnableFilterButton)
+{
+    <button type="button" class="btn btn-light border mx-2 text-nowrap" data-toggle="collapse" data-target="#filter-collapse" title="Filter">
+        <img class="icon-btn" src="/svg/action/filter.svg" />
+        Filter
+    </button>
+}
 <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@SearchBoxKeyUp" class="form-control is-search" placeholder="Search">
