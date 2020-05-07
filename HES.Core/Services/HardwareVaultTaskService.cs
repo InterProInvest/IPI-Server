@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -47,6 +48,7 @@ namespace HES.Core.Services
             {
                 Operation = TaskOperation.Primary,
                 CreatedAt = DateTime.UtcNow,
+                Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
                 HardwareVaultId = vaultId,
                 AccountId = accountId
             };

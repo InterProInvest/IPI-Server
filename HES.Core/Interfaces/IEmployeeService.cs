@@ -32,20 +32,16 @@ namespace HES.Core.Interfaces
         Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);
         Task<Account> GetAccountByIdAsync(string accountId);
         Task<Account> CreatePersonalAccountAsync(PersonalAccount personalAccount, bool isWorkstationAccount = false);
-
-        [Obsolete("Is deprecated, use CreatePersonalAccountAsync(PersonalAccount personalAccount).")]
-        Task<Account> CreatePersonalAccountAsync(Account account, AccountPassword accountPassword);
         Task<Account> CreateWorkstationAccountAsync(WorkstationLocal workstationAccount);
         Task<Account> CreateWorkstationAccountAsync(WorkstationDomain workstationAccount);
         Task<Account> CreateWorkstationAccountAsync(WorkstationMicrosoft workstationAccount);
         Task<Account> CreateWorkstationAccountAsync(WorkstationAzureAD workstationAccount);
-
         [Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
         Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId);
         Task SetAsWorkstationAccountAsync(string employeeId, string accountId);
         Task EditPersonalAccountAsync(Account account);
         Task EditPersonalAccountPwdAsync(Account account, AccountPassword accountPassword);
-        Task EditPersonalAccountOtpAsync(Account account, AccountPassword accountPassword);
+        Task EditPersonalAccountOtpAsync(Account account, AccountOtp accountOtp);
         Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId);
         Task<Account> DeleteAccountAsync(string accountId);
     }

@@ -4,6 +4,7 @@ using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API;
+using HES.Core.Models.Web.Account;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -227,22 +228,33 @@ namespace HES.Web.Controllers
             Account createdAccount;
             try
             {
-                var account = new Account()
+                //var account = new Account()
+                //{
+                //    Name = accountDto.Name,
+                //    Urls = accountDto.Urls,
+                //    Apps = accountDto.Apps,
+                //    Login = accountDto.Login,
+                //    Kind = AccountKind.WebApp,
+                //    EmployeeId = accountDto.EmployeeId
+                //};
+                //var accountPassword = new AccountPassword()
+                //{
+                //    Password = accountDto.Password,
+                //    OtpSecret = accountDto.OtpSecret
+                //};
+
+                var personalAccount = new PersonalAccount()
                 {
                     Name = accountDto.Name,
                     Urls = accountDto.Urls,
                     Apps = accountDto.Apps,
                     Login = accountDto.Login,
-                    Kind = AccountKind.WebApp,
-                    EmployeeId = accountDto.EmployeeId
-                };
-                var accountPassword = new AccountPassword()
-                {
+                    EmployeeId = accountDto.EmployeeId,
                     Password = accountDto.Password,
                     OtpSecret = accountDto.OtpSecret
                 };
 
-                createdAccount = await _employeeService.CreatePersonalAccountAsync(account, accountPassword);
+                createdAccount = await _employeeService.CreatePersonalAccountAsync(personalAccount);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
