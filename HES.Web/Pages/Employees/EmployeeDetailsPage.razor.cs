@@ -10,6 +10,10 @@ namespace HES.Web.Pages.Employees
     public partial class EmployeeDetailsPage : ComponentBase
     {
         [Inject] public IEmployeeService EmployeeService { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
@@ -100,7 +104,13 @@ namespace HES.Web.Pages.Employees
 
         private async Task AddHardwareVaultAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddHardwareVault));
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Add Hardware Vault", body);
         }
 
         private async Task CreatePersonalAccountAsync()

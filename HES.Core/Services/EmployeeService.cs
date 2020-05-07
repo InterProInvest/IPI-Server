@@ -610,8 +610,7 @@ namespace HES.Core.Services
                                     x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                     x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                     x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.CreatedAt.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             }
 
             switch (sortColumn)
@@ -637,6 +636,12 @@ namespace HES.Core.Services
                 case nameof(Account.UpdatedAt):
                     query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UpdatedAt) : query.OrderByDescending(x => x.UpdatedAt);
                     break;
+                case nameof(Account.PasswordUpdatedAt):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.PasswordUpdatedAt) : query.OrderByDescending(x => x.PasswordUpdatedAt);
+                    break;
+                case nameof(Account.OtpUpdatedAt):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OtpUpdatedAt) : query.OrderByDescending(x => x.OtpUpdatedAt);
+                    break;
             }
 
             return await query.Skip(skip).Take(take).ToListAsync();
@@ -659,8 +664,7 @@ namespace HES.Core.Services
                                     x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                     x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                     x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.CreatedAt.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();
