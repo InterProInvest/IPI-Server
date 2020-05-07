@@ -31,7 +31,7 @@ namespace HES.Core.Interfaces
         Task EditProximityDeviceAsync(WorkstationProximityVault proximityDevice);
         Task DeleteProximityDeviceAsync(string proximityDeviceId);
         Task DeleteRangeProximityDevicesAsync(List<WorkstationProximityVault> proximityDevices);
-        Task RemoveAllProximityAsync(string deviceId);
+        Task DeleteProximityByVaultIdAsync(string deviceId);
         Task UpdateProximitySettingsAsync(string workstationId);
     }
 }

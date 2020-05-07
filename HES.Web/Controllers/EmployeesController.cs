@@ -163,7 +163,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.AddHardwareVaultAsync(deviceDto.EmployeeId, new string[] { deviceDto.DeviceId });
+                await _employeeService.AddHardwareVaultAsync(deviceDto.EmployeeId, deviceDto.DeviceId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
@@ -181,7 +181,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.RemoveHardwareVaultAsync(deviceDto.EmployeeId, deviceDto.DeviceId, deviceDto.Reason);
+                await _employeeService.RemoveHardwareVaultAsync(deviceDto.DeviceId, deviceDto.Reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)

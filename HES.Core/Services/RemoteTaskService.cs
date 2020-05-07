@@ -58,9 +58,7 @@ namespace HES.Core.Services
             switch (task.Operation)
             {
                 case TaskOperation.Create:
-                    account.StorageId = storageId;
-                    account.Timestamp = task.Timestamp;
-                    await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.StorageId), nameof(Account.Timestamp) });
+                    await _accountService.UpdateAfterAccountCreationAsync(account, storageId, task.Timestamp);
                     break;
                 case TaskOperation.Update:
                 case TaskOperation.Delete:

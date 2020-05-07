@@ -25,8 +25,8 @@ namespace HES.Core.Interfaces
         Task DeleteEmployeeAsync(string id);
         Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
         Task UpdateLastSeenAsync(string vaultId);
-        Task AddHardwareVaultAsync(string employeeId, string[] vaultsIds);
-        Task RemoveHardwareVaultAsync(string employeeId, string vaultId, VaultStatusReason reason);
+        Task AddHardwareVaultAsync(string employeeId, string vaultId);
+        Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);
         Task<List<Account>> GetAccountsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string employeeId);
         Task<int> GetAccountsCountAsync(string searchText, string employeeId);
         Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);

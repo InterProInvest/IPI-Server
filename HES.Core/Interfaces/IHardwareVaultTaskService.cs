@@ -18,7 +18,7 @@ namespace HES.Core.Interfaces
         Task AddWipeAsync(string vaultId, string masterPassword);
         Task UpdateOnlyPropAsync(HardwareVaultTask vaultTask, string[] properties);
         Task DeleteTaskAsync(HardwareVaultTask vaultTask);
-        Task RemoveAllTasksAsync(string vaultId);
+        Task DeleteTasksByVaultIdAsync(string vaultId);
         Task RemoveAllProfileTasksAsync(string vaultId);
     }
 }

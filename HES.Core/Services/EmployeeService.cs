@@ -255,50 +255,7 @@ namespace HES.Core.Services
 
         #region Hardware Vault
 
-        public async Task AddHardwareVaultAsync(string employeeId, string[] vaults)
-        {
-            if (employeeId == null)
-                throw new ArgumentNullException(nameof(employeeId));
-
-            if (vaults == null)
-                throw new ArgumentNullException(nameof(vaults));
-
-            _dataProtectionService.Validate();
-
-            var employee = await _employeeRepository.GetByIdAsync(employeeId);
-            if (employee == null)
-                throw new Exception("Employee not found");
-
-            if (employee.HardwareVaults?.Count() > 0)
-                throw new Exception("More than one vault cannot be added to an employee");
-
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                foreach (var vaultId in vaults)
-                {
-                    var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
-
-                    if (vault == null)
-                        throw new Exception($"Vault {vault} not found");
-
-                    if (vault.Status != VaultStatus.Ready)
-                        throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
-
-                    vault.EmployeeId = employeeId;
-                    vault.Status = VaultStatus.Reserved;
-
-                    var masterPassword = GenerateMasterPassword();
-
-                    await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
-                    await _hardwareVaultService.GenerateVaultActivationAsync(vaultId);
-                    await _hardwareVaultTaskService.AddLinkAsync(vault.Id, _dataProtectionService.Encrypt(masterPassword));
-                }
-
-                transactionScope.Complete();
-            }
-        }
-
-        public async Task RemoveHardwareVaultAsync(string employeeId, string vaultId, VaultStatusReason reason)
+        public async Task AddHardwareVaultAsync(string employeeId, string vaultId)
         {
             if (employeeId == null)
                 throw new ArgumentNullException(nameof(employeeId));
@@ -308,17 +265,80 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
+            var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            if (employee == null)
+                throw new Exception("Employee not found");
+
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
+            if (vault == null)
+                throw new Exception($"Vault {vault} not found");
+
+            if (vault.Status != VaultStatus.Ready)
+                throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
+
+            vault.EmployeeId = employeeId;
+            vault.Status = VaultStatus.Reserved;
+
+            // Create a link before creating an account
+            var linkTask = new HardwareVaultTask()
+            {
+                HardwareVaultId = vaultId,
+                Password = _dataProtectionService.Encrypt(GenerateMasterPassword()),
+                Operation = TaskOperation.Link,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var accounts = await GetAccountsByEmployeeIdAsync(employeeId);
+            var tasks = new List<HardwareVaultTask>();
+
+            // Create a task for accounts that were created without a vault
+            foreach (var account in accounts.Where(x => x.Password != null))
+            {
+                tasks.Add(new HardwareVaultTask
+                {
+                    Password = account.Password,
+                    OtpSecret = account.OtpSecret,
+                    CreatedAt = DateTime.UtcNow,
+                    Operation = TaskOperation.Create,
+                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    HardwareVaultId = vault.Id,
+                    AccountId = account.Id
+                });
+            }
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
+                await _hardwareVaultService.GenerateVaultActivationAsync(vaultId);
+                await _hardwareVaultTaskService.AddTaskAsync(linkTask);
+
+                if (tasks.Count > 0)
+                {
+                    await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
+                    await _hardwareVaultService.UpdateNeedSyncAsync(vault, needSync: true);
+                }
+
+                transactionScope.Complete();
+            }
+        }
+
+        public async Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false)
+        {
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
+            _dataProtectionService.Validate();
+
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
-            if (vault.EmployeeId != employeeId)
-                throw new Exception($"Vault {vaultId} not linked to this employee");
+            var employeeId = vault.EmployeeId;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await _hardwareVaultTaskService.RemoveAllTasksAsync(vaultId);
-                await _workstationService.RemoveAllProximityAsync(vaultId);
+                await _hardwareVaultTaskService.DeleteTasksByVaultIdAsync(vaultId);
+                await _workstationService.DeleteProximityByVaultIdAsync(vaultId);
 
                 vault.EmployeeId = null;
 
@@ -331,7 +351,9 @@ namespace HES.Core.Services
                 {
                     vault.Status = VaultStatus.Deactivated;
                     vault.StatusReason = reason;
-                    await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
+
+                    if (!isNeedBackup)
+                        await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
                 }
 
                 await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.Status) });
@@ -606,12 +628,10 @@ namespace HES.Core.Services
             {
                 searchText = searchText.Trim();
 
-                query = query.Where(x => 
-                                    x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.CreatedAt.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             }
 
             switch (sortColumn)
@@ -655,12 +675,10 @@ namespace HES.Core.Services
             {
                 searchText = searchText.Trim();
 
-                query = query.Where(x =>
-                                    x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.CreatedAt.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                          x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                          x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                          x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();
@@ -760,20 +778,20 @@ namespace HES.Core.Services
                 CreatedAt = DateTime.UtcNow,
                 PasswordUpdatedAt = DateTime.UtcNow,
                 OtpUpdatedAt = ValidationHepler.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
-                Password = personalAccount.Password,
-                OtpSecret = personalAccount.OtpSecret,
+                Password = _dataProtectionService.Encrypt(personalAccount.Password),
+                OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
                 EmployeeId = personalAccount.EmployeeId
             };
 
-            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
             Employee employee = await GetEmployeeByIdAsync(personalAccount.EmployeeId);
+            List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
 
             foreach (var vault in employee.HardwareVaults)
             {
                 tasks.Add(new HardwareVaultTask
                 {
-                    Password = _dataProtectionService.Encrypt(account.Password),
-                    OtpSecret = _dataProtectionService.Encrypt(account.OtpSecret),
+                    Password = _dataProtectionService.Encrypt(personalAccount.Password),
+                    OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
                     Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
@@ -785,6 +803,7 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _accountService.AddAsync(account);
+                await SetAsWorkstationAccountIfEmptyAsync(account.EmployeeId, account.Id);
 
                 if (tasks.Count > 0)
                 {
@@ -792,7 +811,6 @@ namespace HES.Core.Services
                     await _hardwareVaultService.UpdateNeedSyncAsync(employee.HardwareVaults, needSync: true);
                 }
 
-                await SetAsWorkstationAccountIfEmptyAsync(account.EmployeeId, account.Id);
                 transactionScope.Complete();
             }
 

@@ -126,7 +126,7 @@ namespace HES.Core.Services
             await _hardwareVaultTaskRepository.DeleteAsync(vaultTask);
         }
 
-        public async Task RemoveAllTasksAsync(string vaultId)
+        public async Task DeleteTasksByVaultIdAsync(string vaultId)
         {
             var allTasks = await _hardwareVaultTaskRepository
                 .Query()
