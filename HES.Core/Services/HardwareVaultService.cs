@@ -602,12 +602,12 @@ namespace HES.Core.Services
             {
                 await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.NeedSync), nameof(HardwareVault.Status), nameof(HardwareVault.StatusReason), nameof(HardwareVault.StatusDescription) });
                 await ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
-                await _hardwareVaultTaskService.RemoveAllTasksAsync(vaultId);
+                await _hardwareVaultTaskService.DeleteTasksByVaultIdAsync(vaultId);
 
                 if (employeeId != null)
                     await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
 
-                await _workstationService.RemoveAllProximityAsync(vaultId);
+                await _workstationService.DeleteProximityByVaultIdAsync(vaultId);
 
                 transactionScope.Complete();
             }

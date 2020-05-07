@@ -42,14 +42,23 @@ namespace HES.Core.Services
             return _accountRepository.AddRangeAsync(deviceAccounts);
         }
 
-        public Task UpdateOnlyPropAsync(Account deviceAccount, string[] properties)
+        public async Task UpdateOnlyPropAsync(Account deviceAccount, string[] properties)
         {
-            return _accountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            await _accountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
         }
 
-        public Task UpdateOnlyPropAsync(IList<Account> deviceAccounts, string[] properties)
+        public async Task UpdateOnlyPropAsync(IList<Account> deviceAccounts, string[] properties)
         {
-            return _accountRepository.UpdateOnlyPropAsync(deviceAccounts, properties);
+            await _accountRepository.UpdateOnlyPropAsync(deviceAccounts, properties);
+        }
+
+        public async Task UpdateAfterAccountCreationAsync(Account account, uint storageId, uint timestamp)
+        {
+            account.StorageId = storageId;
+            account.Timestamp = timestamp;
+            account.Password = null;
+            account.OtpSecret = null;
+            await _accountRepository.UpdateAsync(account);
         }
 
         public Task DeleteAsync(Account deviceAccount)

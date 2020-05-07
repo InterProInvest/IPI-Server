@@ -285,11 +285,13 @@ namespace HES.Core.Services
             var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
             var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
             var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+            var scopedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Account>>();
             var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
 
             var devices = await scopedDeviceRepository.Query().ToListAsync();
             var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
+            var accounts = await scopedAccountRepository.Query().ToListAsync();
             var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
             foreach (var device in devices)
@@ -329,6 +331,20 @@ namespace HES.Core.Services
                 }
             }
 
+            foreach (var account in accounts)
+            {
+                if (account.Password != null)
+                {
+                    var plainText = key.Decrypt(account.Password);
+                    account.Password = newKey.Encrypt(plainText);
+                }
+                if (account.OtpSecret != null)
+                {
+                    var plainText = key.Decrypt(account.OtpSecret);
+                    account.OtpSecret = newKey.Encrypt(plainText);
+                }
+            }
+
             if (domainSettings != null)
             {
                 var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
@@ -343,6 +359,7 @@ namespace HES.Core.Services
                 await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
                 await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
                 await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
                 await scopedAppSettingsRepository.UpdateAsync(domainSettings);
                 transactionScope.Complete();
             }
@@ -354,11 +371,13 @@ namespace HES.Core.Services
             var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
             var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
             var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+            var scopedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Account>>();
             var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
 
             var devices = await scopedDeviceRepository.Query().ToListAsync();
             var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
+            var accounts = await scopedAccountRepository.Query().ToListAsync();
             var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
             foreach (var device in devices)
@@ -383,6 +402,14 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Encrypt(account.OtpSecret);
             }
 
+            foreach (var account in accounts)
+            {
+                if (account.Password != null)
+                    account.Password = key.Encrypt(account.Password);
+                if (account.OtpSecret != null)
+                    account.OtpSecret = key.Encrypt(account.OtpSecret);
+            }
+
             if (domainSettings != null)
             {
                 var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);             
@@ -396,6 +423,7 @@ namespace HES.Core.Services
                 await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
                 await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
                 await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
                 await scopedAppSettingsRepository.UpdateAsync(domainSettings);
                 transactionScope.Complete();
             }
@@ -407,11 +435,13 @@ namespace HES.Core.Services
             var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
             var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
             var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+            var scopedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Account>>();
             var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
 
             var devices = await scopedDeviceRepository.Query().ToListAsync();
             var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
+            var accounts = await scopedAccountRepository.Query().ToListAsync();
             var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
             foreach (var device in devices)
@@ -436,6 +466,14 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Decrypt(account.OtpSecret);
             }
 
+            foreach (var account in accounts)
+            {
+                if (account.Password != null)
+                    account.Password = key.Decrypt(account.Password);
+                if (account.OtpSecret != null)
+                    account.OtpSecret = key.Decrypt(account.OtpSecret);
+            }
+
             if (domainSettings != null)
             {
                 var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
@@ -449,6 +487,7 @@ namespace HES.Core.Services
                 await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
                 await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
                 await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
+                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
                 await scopedAppSettingsRepository.UpdateAsync(domainSettings);
                 transactionScope.Complete();
             }

@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.DTO;
+using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Hideez.SDK.Communication.Workstation;
@@ -25,19 +26,23 @@ namespace HES.Core.Services
         static readonly ConcurrentDictionary<string, TaskCompletionSource<bool>> _devicesInProgress
             = new ConcurrentDictionary<string, TaskCompletionSource<bool>>();
 
-        readonly IServiceProvider _services;
-        readonly IRemoteTaskService _remoteTaskService;
-        readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
-        readonly IWorkstationService _workstationService;
-        readonly IHardwareVaultService _hardwareVaultService;
-        readonly IHardwareVaultTaskService _hardwareVaultTaskService;
-        readonly IDataProtectionService _dataProtectionService;
-        readonly IWorkstationAuditService _workstationAuditService;
-        readonly ILogger<RemoteWorkstationConnectionsService> _logger;
+        private readonly IServiceProvider _services;
+        private readonly IRemoteTaskService _remoteTaskService;
+        private readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IAccountService _accountService;
+        private readonly IWorkstationService _workstationService;
+        private readonly IHardwareVaultService _hardwareVaultService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
+        private readonly IDataProtectionService _dataProtectionService;
+        private readonly IWorkstationAuditService _workstationAuditService;
+        private readonly ILogger<RemoteWorkstationConnectionsService> _logger;
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
                       IRemoteTaskService remoteTaskService,
                       IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
+                      IEmployeeService employeeService,
+                      IAccountService accountService,
                       IWorkstationService workstationService,
                       IHardwareVaultService hardwareVaultService,
                       IHardwareVaultTaskService hardwareVaultTaskService,
@@ -48,6 +53,8 @@ namespace HES.Core.Services
             _services = services;
             _remoteTaskService = remoteTaskService;
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
+            _employeeService = employeeService;
+            _accountService = accountService;
             _workstationService = workstationService;
             _hardwareVaultService = hardwareVaultService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
@@ -168,6 +175,7 @@ namespace HES.Core.Services
                 case VaultStatus.Suspended:
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Deactivated:
+                    await CheckIsNeedBackupAsync(remoteDevice, vault);
                     await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(vault.MasterPassword));
                     await _hardwareVaultService.UpdateAfterWipe(vault.Id);
                     throw new HideezException(HideezErrorCode.DeviceHasBeenWiped);
@@ -184,6 +192,25 @@ namespace HES.Core.Services
             //await CheckTaskAsync(remoteDevice, deviceId, primaryAccountOnly);
 
             return true;
+        }
+
+        private async Task CheckIsNeedBackupAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        {
+            var serverAccounts = await _employeeService.GetAccountsByEmployeeIdAsync(vault.EmployeeId);
+            if (serverAccounts.Count > 0)
+            {
+                var pm = new DevicePasswordManager(remoteDevice, null);
+                await pm.Load();
+
+                var vaultAccounts = pm.Accounts.Select(x => x.Value);
+                foreach (var vaultAccount in vaultAccounts)
+                {
+                    var account = serverAccounts.First(x => x.StorageId == vaultAccount.StorageId);
+                    account.Password = _dataProtectionService.Encrypt(vaultAccount.Password);
+                    account.OtpSecret = _dataProtectionService.Encrypt(vaultAccount.OtpSecret);
+                }
+                await _accountService.UpdateOnlyPropAsync(serverAccounts, new string[] { nameof(Account.Password), nameof(Account.OtpSecret) });
+            }
         }
 
         private async Task CheckLockedAsync(RemoteDevice remoteDevice, HardwareVault vault)

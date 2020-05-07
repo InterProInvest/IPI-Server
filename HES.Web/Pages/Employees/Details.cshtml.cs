@@ -313,7 +313,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.AddHardwareVaultAsync(employeeId, selectedDevices);
+                await _employeeService.AddHardwareVaultAsync(employeeId, selectedDevices[0]);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(selectedDevices);
                 SuccessMessage = $"Device(s) added.";
             }
@@ -363,7 +363,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.RemoveHardwareVaultAsync(device.Employee.Id, device.Id, reason);
+                await _employeeService.RemoveHardwareVaultAsync(device.Id, reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(device.Id);
                 SuccessMessage = $"Device {device.Id} deleted.";
             }
@@ -417,9 +417,9 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.CreatePersonalAccountAsync(deviceAccount, accountPassword);
-                var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
+                //await _employeeService.CreatePersonalAccountAsync(deviceAccount, accountPassword);
+                //var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
+                //_remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)
@@ -599,7 +599,7 @@ namespace HES.Web.Pages.Employees
 
             try
             {
-                await _employeeService.EditPersonalAccountOtpAsync(deviceAccount, accountPassword);
+                await _employeeService.EditPersonalAccountOtpAsync(deviceAccount, new Core.Models.Web.Account.AccountOtp() { OtpSecret = accountPassword.OtpSecret });
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 SuccessMessage = "Account updated and will be recorded when the device is connected to the server.";

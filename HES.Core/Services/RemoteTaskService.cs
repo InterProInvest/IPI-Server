@@ -20,7 +20,7 @@ namespace HES.Core.Services
     public class RemoteTaskService : IRemoteTaskService
     {
         private readonly IHardwareVaultService _hardwareVaultService;
-        private readonly IHardwareVaultTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly ILicenseService _licenseService;
@@ -28,62 +28,61 @@ namespace HES.Core.Services
         private readonly IHubContext<EmployeeDetailsHub> _hubContext;
 
         public RemoteTaskService(IHardwareVaultService hardwareVaultService,
-                                 IHardwareVaultTaskService deviceTaskService,
-                                 IAccountService deviceAccountService,
+                                 IHardwareVaultTaskService hardwareVaultTaskService,
+                                 IAccountService accountService,
                                  IDataProtectionService dataProtectionService,
                                  ILicenseService licenseService,
                                  ILogger<RemoteTaskService> logger,
                                  IHubContext<EmployeeDetailsHub> hubContext)
         {
             _hardwareVaultService = hardwareVaultService;
-            _deviceTaskService = deviceTaskService;
-            _accountService = deviceAccountService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
+            _accountService = accountService;
             _dataProtectionService = dataProtectionService;
             _licenseService = licenseService;
             _logger = logger;
             _hubContext = hubContext;
         }
 
-        async Task TaskCompleted(string taskId, uint storageId)
+        private async Task TaskCompleted(string taskId, uint storageId)
         {
-            var deviceTask = await _deviceTaskService.GetTaskByIdAsync(taskId);
+            var task = await _hardwareVaultTaskService.GetTaskByIdAsync(taskId);
 
-            if (deviceTask == null)
+            if (task == null)
                 throw new Exception($"Device Task {taskId} not found");
 
-            var device = await _hardwareVaultService.GetVaultByIdAsync(deviceTask.HardwareVaultId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(task.HardwareVaultId);
 
-            var account = deviceTask.Account;
+            var account = task.Account;
 
-            switch (deviceTask.Operation)
+            switch (task.Operation)
             {
                 case TaskOperation.Create:
-                    account.StorageId = storageId;
-                    await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.StorageId) });
+                    await _accountService.UpdateAfterAccountCreationAsync(account, storageId, task.Timestamp);
                     break;
                 case TaskOperation.Update:
                 case TaskOperation.Delete:
                 case TaskOperation.Primary:
+                    account.Timestamp = task.Timestamp;
+                    await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.Timestamp) });
+                    break;
                 case TaskOperation.Profile:
                 case TaskOperation.Suspend:
                     break;
                 case TaskOperation.Wipe:
-                    device.Status = Enums.VaultStatus.Ready;
-                    device.MasterPassword = null;
-                    await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(HardwareVault.Status), nameof(HardwareVault.MasterPassword) });
-                    await _licenseService.DiscardLicenseAppliedAsync(device.Id);
+                    await _hardwareVaultService.UpdateAfterWipe(vault.Id);
                     break;
                 case TaskOperation.Link:
-                    device.MasterPassword = deviceTask.Password;
-                    await _hardwareVaultService.UpdateOnlyPropAsync(device, new string[] { nameof(HardwareVault.MasterPassword) });
+                    vault.MasterPassword = task.Password;
+                    await _hardwareVaultService.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.MasterPassword) });
                     break;
                 default:
-                    _logger.LogCritical($"Unhandled task operation ({deviceTask.Operation})");
+                    _logger.LogCritical($"Unhandled task operation ({task.Operation})");
                     break;
             }
 
             // Delete task
-            await _deviceTaskService.DeleteTaskAsync(deviceTask);
+            await _hardwareVaultTaskService.DeleteTaskAsync(task);
         }
 
         public async Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, TaskOperation operation)
@@ -97,7 +96,7 @@ namespace HES.Core.Services
                 return;
 
             // Crete Tasks query 
-            var query = _deviceTaskService
+            var query = _hardwareVaultTaskService
                 .TaskQuery()
                 .Include(t => t.Account)
                 .Where(t => t.HardwareVaultId == vaultId);
@@ -140,7 +139,7 @@ namespace HES.Core.Services
             await _hardwareVaultService.UpdateNeedSyncAsync(vault, false);
         }
 
-        async Task<uint> ExecuteRemoteTask(RemoteDevice remoteDevice, HardwareVaultTask task)
+        private async Task<uint> ExecuteRemoteTask(RemoteDevice remoteDevice, HardwareVaultTask task)
         {
             uint storageId = 0;
             switch (task.Operation)
@@ -189,11 +188,8 @@ namespace HES.Core.Services
             bool isPrimary = device.Employee.PrimaryAccountId == task.AccountId;
 
             var pm = new DevicePasswordManager(remoteDevice, null);
-
-            var key = task.Account.StorageId;
-            //key = await pm.SaveOrUpdateAccount(key, account.Name, task.Password, account.Login, task.OtpSecret, account.Apps, account.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
-            throw new NotImplementedException();
-            return key;
+            var ar = await pm.SaveOrUpdateAccount(0, task.Timestamp, account.Name, task.Password, account.Login, task.OtpSecret, account.Apps, account.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
+            return ar.StorageId;
         }
 
         private async Task<uint> UpdateAccountAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
@@ -212,21 +208,15 @@ namespace HES.Core.Services
             bool isPrimary = device.Employee.PrimaryAccountId == task.AccountId;
 
             var pm = new DevicePasswordManager(remoteDevice, null);
-
-            var key = task.Account.StorageId;
-            //key = await pm.SaveOrUpdateAccount(key, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
-            throw new NotImplementedException();
-            return key;
+            var ar = await pm.SaveOrUpdateAccount(task.Account.StorageId, task.Timestamp, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
+            return ar.StorageId;
         }
 
         private async Task<uint> SetAccountAsPrimaryAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
         {
             var pm = new DevicePasswordManager(remoteDevice, null);
-
-            var key = task.Account.StorageId;
-            //key = await pm.SaveOrUpdateAccount(key, null, null, null, null, null, null, true, new AccountFlagsOptions() { IsReadOnly = true });
-            throw new NotImplementedException();
-            return key;
+            var ar = await pm.SaveOrUpdateAccount(task.Account.StorageId, task.Timestamp, null, null, null, null, null, null, true, new AccountFlagsOptions() { IsReadOnly = true });
+            return ar.StorageId;
         }
 
         private async Task<uint> DeleteAccountAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
@@ -239,8 +229,7 @@ namespace HES.Core.Services
 
             bool isPrimary = device.Employee.PrimaryAccountId == task.AccountId;
             var pm = new DevicePasswordManager(remoteDevice, null);
-            var storageId = task.Account.StorageId;
-            await pm.DeleteAccount(storageId, isPrimary);
+            await pm.DeleteAccount(task.Account.StorageId, isPrimary);
             return 0;
         }
 
