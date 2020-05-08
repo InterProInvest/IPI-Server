@@ -444,7 +444,7 @@ namespace HES.Web.Pages.Employees
                 if (workstationAccount.UpdateAdPassword)
                 {
                     var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-                    await _ldapService.SetUserPasswordAsync(employee.ActiveDirectoryGuid, workstationAccount.Password, activeDirectoryCredential);
+                    await _ldapService.SetUserPasswordAsync(employee.Id, workstationAccount.Password, activeDirectoryCredential);
                 }
                 await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(employeeId));

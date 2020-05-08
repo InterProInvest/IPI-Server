@@ -117,14 +117,16 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SetUserPasswordAsync(string employeeGuid, string password, ActiveDirectoryCredential credentials)
+        public async Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials)
         {
+            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+
             using (var connection = new LdapConnection())
             {
                 connection.Connect(new Uri($"ldaps://{credentials.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(credentials));
 
-                var objectGUID = GetObjectGuid(employeeGuid);
+                var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
                 var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry
