@@ -124,7 +124,15 @@ namespace HES.Web.Pages.Employees
 
         private async Task AddSharedAccountAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddSharedAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "EmployeeId", EmployeeId);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Add Shared Account", body);
         }
 
         private async Task RemoveHardwareVaultAsync(HardwareVault hardwareVault)
