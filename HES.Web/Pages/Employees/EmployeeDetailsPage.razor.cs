@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
@@ -114,7 +115,7 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add Hardware Vault", body);
+            await ModalDialogService.ShowAsync("Add Hardware Vault", body, ModalDialogSize.Large);
         }
 
         private async Task CreatePersonalAccountAsync()

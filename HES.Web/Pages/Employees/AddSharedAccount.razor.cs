@@ -28,15 +28,13 @@ namespace HES.Web.Pages.Employees
         protected override async Task OnInitializedAsync()
         {
             SharedAccounts = await SheredAccountSevice.GetSharedAccountsAsync();
+            SelectedSharedAccount = SharedAccounts.First();
         }
 
         private async Task AddSharedAccoountAsync()
         {
             try
             {
-                if (SelectedSharedAccount == null)
-                    return;
-
                 var account = await EmployeeService.AddSharedAccountAsync(EmployeeId, SelectedSharedAccount.Id);
                 var employee = await EmployeeService.GetEmployeeByIdAsync(account.EmployeeId);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
