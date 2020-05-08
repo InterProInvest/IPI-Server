@@ -115,7 +115,7 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add Hardware Vault", body, ModalDialogSize.Large);
+            await ModalDialogService.ShowAsync("Add Hardware Vault", body);
         }
 
         private async Task CreatePersonalAccountAsync()
@@ -141,7 +141,7 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add Shared Account", body);
+            await ModalDialogService.ShowAsync("Add Shared Account", body, ModalDialogSize.Large);
         }
 
         private async Task RemoveHardwareVaultAsync(HardwareVault hardwareVault)

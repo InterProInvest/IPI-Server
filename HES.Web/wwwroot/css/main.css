@@ -172,3 +172,7 @@ div.collapsed > img.icon-collapse-arrow {
     background-position: right calc(.375em + .1875rem) center;
     background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 }
+
+.max-50-vh {
+    max-height: 50vh;
+}

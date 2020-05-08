@@ -6,7 +6,7 @@ else
 {
     <Alert Message="@WarningMessage" />
     <TableFilter EnableFilterButton="false" SearchTextChanged="SearchTextChangedAsync" />
-    <div class="list-group my-3 py-1" style="max-height:50vh;overflow-y:auto">
+    <div class="list-group my-3 py-1 overflow-auto max-50-vh">
         @foreach (var hardwareVault in HardwareVaults)
         {
             <button class="list-group-item list-group-item-action @(hardwareVault.Id == SelectedHardwareVault?.Id ? "active": string.Empty)" @onclick="async () => await SelectedItemChangedAsync(hardwareVault)">
