@@ -183,7 +183,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(HardwareVaultDetails));
-                builder.AddAttribute(1, "Device", vault);
+                builder.AddAttribute(1, "HardwareVault", vault);
                 builder.CloseComponent();
             };
 
