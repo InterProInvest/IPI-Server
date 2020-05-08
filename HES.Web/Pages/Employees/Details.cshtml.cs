@@ -90,18 +90,8 @@ namespace HES.Web.Pages.Employees
                 _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
+
             EmployeeId = id;
-            Employee = await _employeeService.GetEmployeeByIdAsync(id);
-
-            if (Employee == null)
-            {
-                _logger.LogWarning($"{nameof(Employee)} is null");
-                return NotFound();
-            }
-
-            Accounts = await _employeeService.GetAccountsByEmployeeIdAsync(Employee.Id);
-
-            ViewData["Devices"] = new SelectList(Employee.HardwareVaults.OrderBy(d => d.Id), "Id", "Id");
 
             return Page();
         }
@@ -457,7 +447,7 @@ namespace HES.Web.Pages.Employees
                     await _ldapService.SetUserPasswordAsync(employee.ActiveDirectoryGuid, workstationAccount.Password, activeDirectoryCredential);
                 }
                 await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(employeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(employeeId));
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
             catch (Exception ex)

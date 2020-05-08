@@ -93,7 +93,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<IList<string>> GetEmployeeDevicesAsync(string employeeId)
+        public async Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId)
         {
             var employee = await GetEmployeeByIdAsync(employeeId);
             return employee.HardwareVaults.Select(x => x.Id).ToList();
