@@ -1,0 +1,39 @@
+﻿@if (SharedAccounts == null)
+{
+    <LoadingTab />
+}
+else
+{
+    <div class="d-flex">
+        <div style="width:40%;">
+            <div class="list-group" style="height:15vh;overflow-y:auto">
+                @foreach (var sharedAccount in SharedAccounts)
+                {
+                    <button class="list-group-item list-group-item-action @(sharedAccount.Id == SelectedSharedAccount?.Id ? "active": string.Empty)" @onclick="() => SelectedSharedAccount = sharedAccount">
+                        @sharedAccount.Name
+                    </button>
+                }
+            </div>
+        </div>
+        <div>
+            @if (SelectedSharedAccount == null)
+            {
+                <Alert Class="ml-3" Message="Please, select a account." />
+            }
+            else
+            {
+                <div class="d-flex align-items-center ml-3" style="height:15vh">
+                    <div>
+                        <div><b>Login</b>: @SelectedSharedAccount.Login</div>
+                        <div><b>Urls</b>: @SelectedSharedAccount.Urls</div>
+                        <div><b>Apps</b>: @SelectedSharedAccount.Apps</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="text-right">
+        <button type="button" class="btn btn-secondary btn-min-w" @onclick="CloseAsync">Close</button>
+        <input type="submit" value="Add" class="btn btn-primary btn-min-w" @onclick="AddSharedAccoountAsync" />
+    </div>
+}
