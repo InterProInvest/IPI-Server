@@ -190,7 +190,7 @@ namespace HES.Core.Services
 
             var pm = new DevicePasswordManager(remoteDevice, null);
 
-            ushort key = task.Account.IdFromDevice;
+            ushort key = 0;
             key = await pm.SaveOrUpdateAccount(key, account.Name, task.Password, account.Login, task.OtpSecret, account.Apps, account.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
 
             return key;
@@ -213,7 +213,8 @@ namespace HES.Core.Services
 
             var pm = new DevicePasswordManager(remoteDevice, null);
 
-            ushort key = task.Account.IdFromDevice;
+            var account = await _accountService.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == task.AccountId);
+            ushort key = account.IdFromDevice;
             key = await pm.SaveOrUpdateAccount(key, deviceAccount.Name, task.Password, deviceAccount.Login, task.OtpSecret, deviceAccount.Apps, deviceAccount.Urls, isPrimary, new AccountFlagsOptions() { IsReadOnly = true });
 
             return key;
@@ -223,7 +224,8 @@ namespace HES.Core.Services
         {
             var pm = new DevicePasswordManager(remoteDevice, null);
 
-            ushort key = task.Account.IdFromDevice;
+            var account = await _accountService.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == task.AccountId);
+            ushort key = account.IdFromDevice;
             key = await pm.SaveOrUpdateAccount(key, null, null, null, null, null, null, true, new AccountFlagsOptions() { IsReadOnly = true });
 
             return key;
@@ -239,7 +241,8 @@ namespace HES.Core.Services
 
             bool isPrimary = device.Employee.PrimaryAccountId == task.AccountId;
             var pm = new DevicePasswordManager(remoteDevice, null);
-            ushort key = task.Account.IdFromDevice;
+            var account = await _accountService.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == task.AccountId);
+            ushort key = account.IdFromDevice;
             await pm.DeleteAccount(key, isPrimary);
             return 0;
         }
