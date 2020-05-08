@@ -23,7 +23,9 @@ namespace HES.Web.Pages.Employees
         [Inject] ILogger<AddHardwareVault> Logger { get; set; }
 
 
-        [Parameter] public Func<HardwareVaultFilter, Task> AddVault { get; set; }
+        [Parameter] public EventCallback Refresh { get; set; }
+        [Parameter] public string EmployeeId { get; set; }
+
 
 
         public List<HardwareVault> HardwareVaults { get; set; }
@@ -67,10 +69,11 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                await EmployeeService.AddHardwareVaultAsync("", new string[] { });
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(new string[] { });
+                await EmployeeService.AddHardwareVaultAsync(EmployeeId, SelectedHardwareVault.Id);
+                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
                 await ModalDialogService.CloseAsync();
-                ToastService.ShowToast("Vault added successfully", ToastLevel.Error);
+                await Refresh.InvokeAsync(this);
+                ToastService.ShowToast("Vault added successfully", ToastLevel.Success);
             }
             catch (Exception ex)
             {
@@ -78,7 +81,6 @@ namespace HES.Web.Pages.Employees
                 Logger.LogError(ex.Message, ex);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
-            
         }
 
         private async Task CloseAsync()

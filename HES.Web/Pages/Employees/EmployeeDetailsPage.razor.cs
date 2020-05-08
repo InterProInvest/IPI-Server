@@ -107,6 +107,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddHardwareVault));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "EmployeeId", EmployeeId);
                 builder.CloseComponent();
             };
 
