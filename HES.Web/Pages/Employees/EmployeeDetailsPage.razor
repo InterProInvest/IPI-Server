@@ -197,7 +197,7 @@ else
                 <td style="vertical-align:middle">
                     @if (context.Employee.PrimaryAccountId == context.Id)
                         {
-                    <span class="badge badge-success custom-badge" data-toggle="tooltip" data-placement="bottom" title="Windows account">
+                    <span class="badge @(SelectedAccount?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Workstation account">
                         @context.Name
                     </span>
                         }

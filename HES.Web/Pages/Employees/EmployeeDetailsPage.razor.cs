@@ -120,7 +120,15 @@ namespace HES.Web.Pages.Employees
 
         private async Task CreatePersonalAccountAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(CreatePersonalAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "EmployeeId", EmployeeId);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Create Personal Account", body, ModalDialogSize.Large);
         }
 
         private async Task AddSharedAccountAsync()

@@ -16,15 +16,13 @@ namespace HES.Core.Models.Web.Account
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
         public string Password { get; set; }
 
-        [Display(Name = "Confirm password")]
+        [Required]
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        [Display(Name = "OTP secret")]
         public string OtpSecret { get; set; }
 
         [Required]

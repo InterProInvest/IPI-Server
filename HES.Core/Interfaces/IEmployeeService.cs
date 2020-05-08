@@ -17,7 +17,7 @@ namespace HES.Core.Interfaces
         Task<Employee> GetEmployeeByIdAsync(string id);
         Task<Employee> GetEmployeeByFullNameAsync(Employee employee);
         Task<List<Employee>> GetEmployeesAsync();
-        Task<IList<string>> GetEmployeeDevicesAsync(string employeeId);
+        Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId);
         Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task<Employee> ImportEmployeeAsync(Employee employee);
