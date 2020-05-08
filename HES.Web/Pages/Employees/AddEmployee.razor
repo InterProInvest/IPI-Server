@@ -8,7 +8,7 @@ else
     {
         <h5>To import users from the active directory, add administrator credentials on the parameters page.</h5>
         <div class="text-right  mt-4">
-            <button type="button" class="btn btn-secondary button-min-width" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
+            <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
         </div>
     }
     else
@@ -59,8 +59,8 @@ else
             <label class="custom-control-label disable-selection" for="createGroup">Create groups for selected users</label>
         </div>
         <div class="text-right">
-            <button type="button" class="btn btn-secondary button-min-width" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-            <button type="submit" class="btn btn-primary button-min-width" @onclick="@(async () => await AddAsync())">
+            <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-min-w" @onclick="@(async () => await AddAsync())">
                 <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
                 <span>Add</span>
             </button>
