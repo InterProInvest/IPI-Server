@@ -125,9 +125,17 @@ namespace HES.Web.Pages.Employees
             await Task.CompletedTask;
         }
 
-        private async Task RemoveHardwareVaultAsync()
+        private async Task RemoveHardwareVaultAsync(HardwareVault hardwareVault)
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteHardwareVault));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVault", hardwareVault);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete Hardware Vault", body);
         }
 
 

@@ -1,0 +1,23 @@
+﻿@if (HardwareVault == null)
+{
+    <LoadingTab />
+}
+else
+{
+    <h5 class="text-gray mb-4 ">You want to remove device @HardwareVault.Id? When removing the device, all accounts associated with the device will be deleted.</h5>
+    <h6 class="text-gray">Select the reason</h6>
+
+    <div>
+        <div style="max-width:40%;" class="form-group">
+            <select id="filterBattery" @bind="DeletedReason" class="form-control">
+                <option valut="@VaultStatusReason.Withdrawal" selected>Withdrawal</option>
+                <option valut="@VaultStatusReason.Broken">Broken</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="text-right mb-2">
+        <button type="button" class="btn btn-secondary" @onclick="CancelAsync">Cancel</button>
+        <input type="button" value="Delete" @onclick="DeleteVaultAsync" class="btn btn-danger" />
+    </div>
+}

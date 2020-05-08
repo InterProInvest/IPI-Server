@@ -46,7 +46,7 @@ else
                         }
                     </div>
                     <div>
-                        <button type="button" @onclick="RemoveHardwareVaultAsync" class="btn btn-light border mx-2" title="Remove device from employee">
+                        <button type="button" @onclick="async () => await RemoveHardwareVaultAsync(hardwareVault)" class="btn btn-light border mx-2" title="Remove device from employee">
                             <img class="icon-btn" src="/svg/action/delete.svg" />
                             Delete
                         </button>
