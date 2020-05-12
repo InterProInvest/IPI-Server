@@ -249,7 +249,15 @@ namespace HES.Web.Pages.Employees
 
         private async Task DeleteAccountAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete Account", body, ModalDialogSize.Large);
         }
     }
 }

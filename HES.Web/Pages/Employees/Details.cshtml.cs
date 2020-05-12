@@ -656,51 +656,51 @@ namespace HES.Web.Pages.Employees
 
         #endregion
 
-        #region Delete Account
+        #region (Done) Delete Account
 
-        public async Task<IActionResult> OnGetDeleteAccountAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnGetDeleteAccountAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
+        //    DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
-            if (DeviceAccount == null)
-            {
-                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
-                return NotFound();
-            }
+        //    if (DeviceAccount == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(DeviceAccount)} is null");
+        //        return NotFound();
+        //    }
 
-            return Partial("_DeleteAccount", this);
-        }
+        //    return Partial("_DeleteAccount", this);
+        //}
 
-        public async Task<IActionResult> OnPostDeleteAccountAsync(string accountId, string employeeId)
-        {
-            if (accountId == null)
-            {
-                _logger.LogWarning($"{nameof(accountId)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnPostDeleteAccountAsync(string accountId, string employeeId)
+        //{
+        //    if (accountId == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(accountId)} is null");
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                var account = await _employeeService.DeleteAccountAsync(accountId);
-                var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
-                SuccessMessage = "Account deleting and will be deleted when the device is connected to the server.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        var account = await _employeeService.DeleteAccountAsync(accountId);
+        //        var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
+        //        _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
+        //        SuccessMessage = "Account deleting and will be deleted when the device is connected to the server.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employeeId;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employeeId;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
         #endregion
     }
