@@ -103,7 +103,7 @@ namespace HES.Web.Pages.Employees
             return Partial("_EmployeeDeviceAccounts", this);
         }
 
-        #region Employee
+        #region (Done) Employee
 
         //public async Task<IActionResult> OnPostEnableSamlIdentityProviderAsync(Employee employee)
         //{
@@ -219,43 +219,43 @@ namespace HES.Web.Pages.Employees
             return await _employeeService.ExistAsync(e => e.Id == id);
         }
 
-        public async Task<IActionResult> OnGetSetPrimaryAccountAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnGetSetPrimaryAccountAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
+        //    DeviceAccount = await _employeeService.GetAccountByIdAsync(id);
 
-            if (DeviceAccount == null)
-            {
-                _logger.LogWarning($"{nameof(DeviceAccount)} is null");
-                return NotFound();
-            }
+        //    if (DeviceAccount == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(DeviceAccount)} is null");
+        //        return NotFound();
+        //    }
 
-            return Partial("_SetPrimaryAccount", this);
-        }
+        //    return Partial("_SetPrimaryAccount", this);
+        //}
 
-        public async Task<IActionResult> OnPostSetPrimaryAccountAsync(string employeeId, string accountId)
-        {
-            try
-            {
-                await _employeeService.SetAsWorkstationAccountAsync(employeeId, accountId);
-                var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
-                SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //public async Task<IActionResult> OnPostSetPrimaryAccountAsync(string employeeId, string accountId)
+        //{
+        //    try
+        //    {
+        //        await _employeeService.SetAsWorkstationAccountAsync(employeeId, accountId);
+        //        var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+        //        _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
+        //        SuccessMessage = "Windows account changed and will be recorded when the device is connected to the server.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employeeId;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employeeId;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
         #endregion
 
@@ -605,54 +605,54 @@ namespace HES.Web.Pages.Employees
 
         #endregion
 
-        #region Shared Account
+        #region (Done) Shared Account
 
-        public async Task<JsonResult> OnGetJsonSharedAccountAsync(string id)
-        {
-            return new JsonResult(await _sharedAccountService.GetByIdAsync(id));
-        }
+        //public async Task<JsonResult> OnGetJsonSharedAccountAsync(string id)
+        //{
+        //    return new JsonResult(await _sharedAccountService.GetByIdAsync(id));
+        //}
 
-        public async Task<IActionResult> OnGetAddSharedAccountAsync(string id)
-        {
-            EmployeeId = id;
-            SharedAccountIdList = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
+        //public async Task<IActionResult> OnGetAddSharedAccountAsync(string id)
+        //{
+        //    EmployeeId = id;
+        //    SharedAccountIdList = new SelectList(await _sharedAccountService.GetSharedAccountsAsync(), "Id", "Name");
 
-            SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
-            Devices = await _deviceService.GetVaultsByEmployeeIdAsync(id);
+        //    SharedAccount = await _sharedAccountService.Query().FirstOrDefaultAsync(d => d.Deleted == false);
+        //    Devices = await _deviceService.GetVaultsByEmployeeIdAsync(id);
 
-            if (Devices == null)
-            {
-                _logger.LogWarning($"{nameof(Devices)} is null");
-                return NotFound();
-            }
+        //    if (Devices == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(Devices)} is null");
+        //        return NotFound();
+        //    }
 
-            return Partial("_AddSharedAccount", this);
-        }
+        //    return Partial("_AddSharedAccount", this);
+        //}
 
-        public async Task<IActionResult> OnPostAddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices)
-        {
-            if (employeeId == null)
-            {
-                _logger.LogWarning($"{nameof(employeeId)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnPostAddSharedAccountAsync(string employeeId, string sharedAccountId, string[] selectedDevices)
+        //{
+        //    if (employeeId == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(employeeId)} is null");
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                var account = await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId);
-                var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
-                SuccessMessage = "Account added and will be recorded when the device is connected to the server.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        var account = await _employeeService.AddSharedAccountAsync(employeeId, sharedAccountId);
+        //        var employee = await _employeeService.GetEmployeeByIdAsync(account.EmployeeId);
+        //        _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
+        //        SuccessMessage = "Account added and will be recorded when the device is connected to the server.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var id = employeeId;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = employeeId;
+        //    return RedirectToPage("./Details", new { id });
+        //}
 
         #endregion
 
