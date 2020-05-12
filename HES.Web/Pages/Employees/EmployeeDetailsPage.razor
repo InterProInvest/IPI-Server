@@ -5,21 +5,20 @@
 else
 {
     <div class="row align-items-center details-card mb-3">
-        <div class="col-auto">
+        <div class="col">
             <h1 class="text-navyblue text-break m-0">@Employee.FullName</h1>
         </div>
-        <div class="col"></div>
         @*<div class="col-auto pl-1 pr-1">
             <ButtonSpinner Class="btn-primary" Text="Add Software Vault" Callback="OpenModalAddSoftwareVaultAsync" />
         </div>*@
         <div class="col-auto pl-1 pr-1">
-            <ButtonSpinner Class="btn-primary" Text="Add Hardware Vault" Callback="AddHardwareVaultAsync" />
+            <ButtonSpinner Class="btn-primary" Text="Add Hardware Vault" Callback="OpenDialogAddHardwareVaultAsync" />
         </div>
         <div class="col-auto pl-1 pr-1">
-            <ButtonSpinner Class="btn-primary" Text="Create personal account" Callback="CreatePersonalAccountAsync" />
+            <ButtonSpinner Class="btn-primary" Text="Create Personal Account" Callback="OpenDialogCreatePersonalAccountAsync" />
         </div>
         <div class="col-auto pl-1">
-            <ButtonSpinner Class="btn-primary" Text="Add shared account" Callback="AddSharedAccountAsync" />
+            <ButtonSpinner Class="btn-primary" Text="Add Shared Account" Callback="OpenDialogAddSharedAccountAsync" />
         </div>
     </div>
 
@@ -79,7 +78,7 @@ else
                             <img class="icon-btn" src="/svg/action/details.svg" />
                             Details
                         </button>
-                        <button type="button" class="btn btn-light border mx-2" title="Remove hardware vault from employee" @onclick="async () => await RemoveHardwareVaultAsync(hardwareVault)">
+                        <button type="button" class="btn btn-light border mx-2" title="Remove hardware vault from employee" @onclick="async () => await OpenDialogRemoveHardwareVaultAsync(hardwareVault)">
                             <img class="icon-btn" src="/svg/action/delete.svg" />
                             Remove
                         </button>
@@ -99,7 +98,7 @@ else
 
                     @if (Employee.PrimaryAccountId != SelectedAccount.Id)
                     {
-                        <button type="button" @onclick="SetPrimaryAccountAsync" class="btn btn-light border" title="Windows account">
+                        <button type="button" @onclick="OpenDialogSetAsWorkstationAccountAsync" class="btn btn-light border" title="Windows account">
                             <img class="icon-btn" src="/svg/action/star.svg" />
                             Set as windows account
                         </button>
@@ -119,13 +118,13 @@ else
 
                         @if (SelectedAccount.Kind != AccountKind.Workstation)
                         {
-                            <button type="button" @onclick="EditPersonalAccountOtpAsync" class="btn btn-light border mx-2" title="Edit personal account OTP">
+                            <button type="button" @onclick="OpenDialogEditPersonalAccountOtpAsync" class="btn btn-light border mx-2" title="Edit personal account OTP">
                                 <img class="icon-btn" src="/svg/action/otp.svg" />
                                 Edit OTP
                             </button>
                         }
                     }
-                    <button type="button" @onclick="DeleteAccountAsync" class="btn btn-light border mx-2" title="Delete account">
+                    <button type="button" @onclick="OpenDialogDeleteAccountAsync" class="btn btn-light border mx-2" title="Delete account">
                         <img class="icon-btn" src="/svg/action/delete.svg" />
                         Delete
                     </button>

@@ -57,16 +57,16 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
+                if (_isBusy)
+                    return;
+
+                _isBusy = true;
+
                 if (!Users.Any(x => x.Checked))
                 {
                     WarningMessage = "Please select at least one user.";
                     return;
                 }
-
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
 
                 await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
                 NavigationManager.NavigateTo("/Employees", true);

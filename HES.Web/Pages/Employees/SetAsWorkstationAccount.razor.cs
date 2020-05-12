@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Employees
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
 
-        private async Task SetAsWorkstationAccoountAsync()
+        private async Task SetAsWorkstationAccountAsync()
         {
             try
             {
@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Employees
 
                 await ModalDialogService.CloseAsync();
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Windows account changed successfully.", ToastLevel.Success);
+                ToastService.ShowToast("Workstation account changed.", ToastLevel.Success);
             }
             catch (Exception ex)
             {

@@ -105,7 +105,7 @@ namespace HES.Web.Pages.Employees
 
         #endregion
 
-        private async Task AddHardwareVaultAsync()
+        private async Task OpenDialogAddHardwareVaultAsync()
         {
             RenderFragment body = (builder) =>
             {
@@ -115,10 +115,22 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add Hardware Vault", body);
+            await ModalDialogService.ShowAsync("Add hardware vault", body);
         }
 
-        private async Task CreatePersonalAccountAsync()
+        public async Task OpenModalAddSoftwareVaultAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddSoftwareVault));
+                builder.AddAttribute(1, "Employee", Employee);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Add software vault", body);
+        }
+
+        private async Task OpenDialogCreatePersonalAccountAsync()
         {
             RenderFragment body = (builder) =>
             {
@@ -128,10 +140,10 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Create Personal Account", body, ModalDialogSize.Large);
+            await ModalDialogService.ShowAsync("Create personal account", body, ModalDialogSize.Large);
         }
 
-        private async Task AddSharedAccountAsync()
+        private async Task OpenDialogAddSharedAccountAsync()
         {
             RenderFragment body = (builder) =>
             {
@@ -141,10 +153,75 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add Shared Account", body, ModalDialogSize.Large);
+            await ModalDialogService.ShowAsync("Add shared account", body, ModalDialogSize.Large);
         }
 
-        private async Task RemoveHardwareVaultAsync(HardwareVault hardwareVault)
+        private async Task OpenDialogSetAsWorkstationAccountAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(SetAsWorkstationAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Set as workstation account", body);
+        }
+
+        private async Task OpenDialogEditPersonalAccountAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit account", body);
+        }
+
+        private async Task OpenDialogEditPersonalAccountPasswordAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccountPwd));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit account password", body);
+        }
+
+        private async Task OpenDialogEditPersonalAccountOtpAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccountOtp));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit account otp", body);
+        }
+
+        private async Task OpenDialogDeleteAccountAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete Account", body);
+        }
+
+        private async Task OpenDialogRemoveHardwareVaultAsync(HardwareVault hardwareVault)
         {
             RenderFragment body = (builder) =>
             {
@@ -154,7 +231,7 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Delete Hardware Vault", body);
+            await ModalDialogService.ShowAsync("Delete hardware vault", body);
         }
 
         private async Task OpenDialogResendInvitationAsync(SoftwareVaultInvitation softwareVaultInvitation)
@@ -205,83 +282,6 @@ namespace HES.Web.Pages.Employees
             };
 
             await ModalDialogService.ShowAsync("Hardware vault details", body);
-        }
-
-        public async Task OpenModalAddSoftwareVaultAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(AddSoftwareVault));
-                builder.AddAttribute(1, "Employee", Employee);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Add software vault", body);
-        }
-
-        private async Task SetPrimaryAccountAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(SetAsWorkstationAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Windows Account", body, ModalDialogSize.Default);
-        }
-
-        private async Task OpenDialogEditPersonalAccountAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(EditPersonalAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Edit account", body);
-        }
-
-        private async Task OpenDialogEditPersonalAccountPasswordAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(EditPersonalAccountPwd));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Edit account password", body);
-        }
-
-        private async Task EditPersonalAccountOtpAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(EditPersonalAccountOtp));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Edit account otp secret", body);
-        }
-
-        private async Task DeleteAccountAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(DeleteAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Delete Account", body, ModalDialogSize.Default);
         }
     }
 }

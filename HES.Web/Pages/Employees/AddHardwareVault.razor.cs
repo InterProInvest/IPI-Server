@@ -36,17 +36,18 @@ namespace HES.Web.Pages.Employees
         protected override async Task OnInitializedAsync()
         {
             SearchText = string.Empty;
-            await LoadTableDataAsync();
+            await LoadDataAsync();
         }
 
         public int TotalRecords { get; set; }
         public string SearchText { get; set; }
 
-        private async Task LoadTableDataAsync()
+        private async Task LoadDataAsync()
         {
-            TotalRecords = await HardwareVaultService.GetVaultsCountAsync(SearchText, new HardwareVaultFilter());
-            HardwareVaults = await HardwareVaultService.GetVaultsAsync(0, TotalRecords, nameof(HardwareVault.Id), ListSortDirection.Ascending, SearchText, new HardwareVaultFilter());
-            
+            var filter = new HardwareVaultFilter() { VaultStatus = VaultStatus.Ready };
+            TotalRecords = await HardwareVaultService.GetVaultsCountAsync(SearchText, filter);
+            HardwareVaults = await HardwareVaultService.GetVaultsAsync(0, TotalRecords, nameof(HardwareVault.Id), ListSortDirection.Ascending, SearchText, filter);
+
             SelectedHardwareVault = null;
             StateHasChanged();
         }
@@ -63,7 +64,7 @@ namespace HES.Web.Pages.Employees
         private async Task SearchTextChangedAsync(string searchText)
         {
             SearchText = searchText;
-            await LoadTableDataAsync();
+            await LoadDataAsync();
         }
 
         private async Task AddVaultAsync()
