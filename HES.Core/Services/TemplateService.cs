@@ -41,7 +41,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(template));
             }
 
-            template.Urls = ValidationHepler.VerifyUrls(template.Urls);
+            template.Urls = Validation.VerifyUrls(template.Urls);
 
             return await _templateRepository.AddAsync(template);
         }
@@ -53,7 +53,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(template));
             }
 
-            template.Urls = ValidationHepler.VerifyUrls(template.Urls);
+            template.Urls = Validation.VerifyUrls(template.Urls);
 
             await _templateRepository.UpdateAsync(template);
         }

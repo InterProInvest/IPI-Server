@@ -42,6 +42,7 @@ namespace HES.Core.Interfaces
         Task EditPersonalAccountAsync(Account account);
         Task EditPersonalAccountPwdAsync(Account account, AccountPassword accountPassword);
         Task EditPersonalAccountOtpAsync(Account account, AccountOtp accountOtp);
+        Task UnchangedPersonalAccountAsync(Account account);
         Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId);
         Task<Account> DeleteAccountAsync(string accountId);
     }

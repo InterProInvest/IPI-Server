@@ -4,24 +4,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Hideez.SDK.Communication.Utils;
+using HES.Core.Exceptions;
 
 namespace HES.Core.Utilities
 {
-    public static class ValidationHepler
+    public static class Validation
     {
         public static string VerifyUrls(string urls)
         {
             if (urls == null)
-            {
                 return null;
-            }
 
             List<string> verifiedUrls = new List<string>();
             foreach (var url in urls.Split(";"))
             {
                 if (!UrlUtils.TryGetDomain(url, out string domain))
                 {
-                    throw new Exception($"'{url}' incorrect url.");
+                    throw new IncorrectUrlException($"Incorrect url.");
                 }
 
                 verifiedUrls.Add(domain);
@@ -34,15 +33,13 @@ namespace HES.Core.Utilities
         public static string VerifyOtpSecret(string otp)
         {
             if (otp == null)
-            {
                 return null;
-            }
 
             var valid = Regex.IsMatch(otp.Replace(" ", ""), @"^[a-zA-Z0-9]+$");
 
             if (!valid)
             {
-                throw new Exception("Otp secret is not valid");
+                throw new IncorrectOtpException("Incorrect OTP secret.");
             }
 
             return otp;

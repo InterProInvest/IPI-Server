@@ -144,7 +144,7 @@ else
                                 <ValidationMessage For="@(() => WorkstationDomain.Name)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
+                                <label class="control-label text-gray">Domain</label>
                                 <InputText @bind-Value="WorkstationDomain.Domain" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.Domain)" class="text-danger" />
                             </div>
@@ -251,53 +251,6 @@ else
                     </EditForm>
                     break;
             }
-
-
-            @*<form id="accForm" method="post" style="max-width:368px; position:relative; left:50%; transform:translateX(-50%);" asp-page-handler="CreatePersonalWorkstationAccount">
-                    <input type="hidden" value="EmployeeId" name="employeeId" />
-                    <div class="form-group">
-                        <label asp-for="WorkstationAccount.Name" class="text-gray"></label>
-                        <input asp-for="WorkstationAccount.Name" class="form-control text-navyblue" autocomplete="new-password" />
-                        <span asp-validation-for="WorkstationAccount.Name" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="WorkstationAccount.AccountType" class="text-gray"></label>
-                        <select id="workstation_account_type" asp-for="WorkstationAccount.AccountType" class="form-control" asp-items="ViewBag.WorkstationAccountTypeList"></select>
-                    </div>
-                    <div id="domain_group" class="form-group d-none">
-                        <label asp-for="WorkstationAccount.Domain" class="text-gray"></label>
-                        <input id="domain" asp-for="WorkstationAccount.Domain" value="doamin" class="form-control text-navyblue" autocomplete="new-password" />
-                        <span asp-validation-for="WorkstationAccount.Domain" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="WorkstationAccount.Login" class="text-gray"></label>
-                        <input id="login" asp-for="WorkstationAccount.Login" class="form-control text-navyblue" autocomplete="new-password" />
-                        <span asp-validation-for="WorkstationAccount.Login" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="WorkstationAccount.Password" class="text-gray"></label>
-                        <input asp-for="WorkstationAccount.Password" class="form-control text-navyblue" autocomplete="new-password" />
-                        <span asp-validation-for="WorkstationAccount.Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="WorkstationAccount.ConfirmPassword" class="text-gray"></label>
-                        <input asp-for="WorkstationAccount.ConfirmPassword" class="form-control text-navyblue" autocomplete="new-password" />
-                        <span asp-validation-for="WorkstationAccount.ConfirmPassword" class="text-danger"></span>
-                    </div>
-                    <div id="updateAdPasswordWrapper" class="form-group d-none">
-                        <div class="custom-control custom-checkbox">
-                            <input id="updateAdPassword" type="checkbox" class="custom-control-input" asp-for="WorkstationAccount.UpdateAdPassword" />
-                            <label class="custom-control-label" for="updateAdPassword">Update the password in the AD</label>
-                        </div>
-                    </div>
-                    <input type="hidden" asp-for="ActiveDirectoryCredential.Host" value="Host" />
-                    <input id="adUserName" type="hidden" asp-for="ActiveDirectoryCredential.UserName" />
-                    <input id="adPassword" type="hidden" asp-for="ActiveDirectoryCredential.Password" />
-                    <div class="text-right">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <input type="button" value="Create" class="btn btn-primary" onclick="wsAccSubmit()" />
-                    </div>
-                </form>*@
         </div>
     </div>
 }

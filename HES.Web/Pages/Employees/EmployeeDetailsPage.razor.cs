@@ -219,7 +219,6 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Add software vault", body);
         }
 
-
         private async Task SetPrimaryAccountAsync()
         {
             RenderFragment body = (builder) =>
@@ -233,18 +232,37 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Windows Account", body, ModalDialogSize.Default);
         }
 
-        private async Task EditPersonalAccountAsync()
+        private async Task OpenDialogEditPersonalAccountAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit account", body);
         }
-        private async Task EditPersonalAccountPasswordAsync()
+
+        private async Task OpenDialogEditPersonalAccountPasswordAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccountPwd));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit account password", body);
         }
+
         private async Task EditPersonalAccountOtpAsync()
         {
             await Task.CompletedTask;
         }
+
         private async Task DeleteAccountAsync()
         {
             RenderFragment body = (builder) =>

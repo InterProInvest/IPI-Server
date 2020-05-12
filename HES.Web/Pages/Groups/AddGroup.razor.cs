@@ -43,7 +43,7 @@ namespace HES.Web.Pages.Groups
 
                 if (LdapSettings != null)
                 {
-                    Groups = await LdapService.GetGroupsAsync(new ActiveDirectoryCredential() { Host = LdapSettings.Host, UserName = LdapSettings.UserName, Password = LdapSettings.Password });
+                    Groups = await LdapService.GetGroupsAsync(LdapSettings);
                 }
 
                 _initialized = true;

@@ -32,24 +32,29 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == accountId);
         }
 
-        public Task<Account> AddAsync(Account deviceAccount)
+        public Task<Account> AddAsync(Account account)
         {
-            return _accountRepository.AddAsync(deviceAccount);
+            return _accountRepository.AddAsync(account);
         }
 
-        public Task<IList<Account>> AddRangeAsync(IList<Account> deviceAccounts)
+        public Task<IList<Account>> AddRangeAsync(IList<Account> accounts)
         {
-            return _accountRepository.AddRangeAsync(deviceAccounts);
+            return _accountRepository.AddRangeAsync(accounts);
         }
 
-        public async Task UpdateOnlyPropAsync(Account deviceAccount, string[] properties)
+        public Task UnchangedAsync(Account account)
         {
-            await _accountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
+            return _accountRepository.Unchanged(account);
         }
 
-        public async Task UpdateOnlyPropAsync(IList<Account> deviceAccounts, string[] properties)
+        public async Task UpdateOnlyPropAsync(Account account, string[] properties)
         {
-            await _accountRepository.UpdateOnlyPropAsync(deviceAccounts, properties);
+            await _accountRepository.UpdateOnlyPropAsync(account, properties);
+        }
+
+        public async Task UpdateOnlyPropAsync(IList<Account> accounts, string[] properties)
+        {
+            await _accountRepository.UpdateOnlyPropAsync(accounts, properties);
         }
 
         public async Task UpdateAfterAccountCreationAsync(Account account, uint storageId, uint timestamp)
@@ -61,14 +66,14 @@ namespace HES.Core.Services
             await _accountRepository.UpdateAsync(account);
         }
 
-        public Task DeleteAsync(Account deviceAccount)
+        public Task DeleteAsync(Account account)
         {
-            return _accountRepository.DeleteAsync(deviceAccount);
+            return _accountRepository.DeleteAsync(account);
         }
 
-        public Task DeleteRangeAsync(IList<Account> deviceAccounts)
+        public Task DeleteRangeAsync(IList<Account> accounts)
         {
-            return _accountRepository.DeleteRangeAsync(deviceAccounts);
+            return _accountRepository.DeleteRangeAsync(accounts);
         }
 
         public async Task DeleteAccountsByEmployeeIdAsync(string employeeId)

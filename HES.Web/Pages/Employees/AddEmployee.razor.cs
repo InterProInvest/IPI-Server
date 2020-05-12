@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Employees
 
                 if (LdapSettings != null)
                 {
-                    Users = await LdapService.GetUsersAsync(new ActiveDirectoryCredential() { Host = LdapSettings.Host, UserName = LdapSettings.UserName, Password = LdapSettings.Password });
+                    Users = await LdapService.GetUsersAsync(LdapSettings);
                 }
 
                 _initialized = true;

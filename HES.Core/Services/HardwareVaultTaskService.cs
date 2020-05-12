@@ -48,7 +48,7 @@ namespace HES.Core.Services
             {
                 Operation = TaskOperation.Primary,
                 CreatedAt = DateTime.UtcNow,
-                Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                 HardwareVaultId = vaultId,
                 AccountId = accountId
             };

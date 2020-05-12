@@ -59,7 +59,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
@@ -84,7 +84,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
@@ -128,7 +128,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
@@ -172,7 +172,7 @@ namespace HES.Web.Pages.SharedAccounts
         {
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }

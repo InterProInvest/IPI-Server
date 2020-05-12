@@ -11,13 +11,14 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Account> Query();
         Task<Account> GetAccountByIdAsync(string accountId);
-        Task<Account> AddAsync(Account deviceAccount);
-        Task<IList<Account>> AddRangeAsync(IList<Account> deviceAccounts);
-        Task UpdateOnlyPropAsync(Account deviceAccount, string[] properties);
-        Task UpdateOnlyPropAsync(IList<Account> deviceAccounts, string[] properties);
+        Task<Account> AddAsync(Account account);
+        Task<IList<Account>> AddRangeAsync(IList<Account> accounts);
+        Task UnchangedAsync(Account account);
+        Task UpdateOnlyPropAsync(Account account, string[] properties);
+        Task UpdateOnlyPropAsync(IList<Account> accounts, string[] properties);
         Task UpdateAfterAccountCreationAsync(Account account, uint storageId, uint timestamp);
-        Task DeleteAsync(Account deviceAccount);
-        Task DeleteRangeAsync(IList<Account> deviceAccounts);
+        Task DeleteAsync(Account account);
+        Task DeleteRangeAsync(IList<Account> accounts);
         Task DeleteAccountsByEmployeeIdAsync(string employeeId);
         Task<bool> ExistAsync(Expression<Func<Account, bool>> predicate);
     }

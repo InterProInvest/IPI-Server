@@ -1,0 +1,39 @@
+﻿@if (!_initialized)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="_accountPassword" OnValidSubmit="EditAccountPasswordAsync">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <h5 class="text-navyblue">@Account.Name</h5>
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Password</label>
+            <InputText @bind-Value="_accountPassword.Password" type="password" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => _accountPassword.Password)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Confirm Password</label>
+            <InputText @bind-Value="_accountPassword.ConfirmPassword" type="password" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => _accountPassword.ConfirmPassword)" class="text-danger" />
+        </div>
+        @if (LdapSettings != null && Account.Kind == AccountKind.Workstation && Account.Login.Contains(LdapSettings?.Host.Split(".")[0], StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                    <input id="updPwd" type="checkbox" class="custom-control-input" @bind="_accountPassword.UpdateActiveDirectoryPassword" />
+                    <label class="custom-control-label" for="updPwd">Update the password in the Active Directory</label>
+                </div>
+            </div>
+        }
+        <div class="text-right">
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Save</span>
+            </button>
+        </div>
+    </EditForm>
+}

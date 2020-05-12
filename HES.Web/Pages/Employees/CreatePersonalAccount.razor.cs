@@ -44,6 +44,7 @@ namespace HES.Web.Pages.Employees
         protected override async Task OnInitializedAsync()
         {
             LdapSettings = await AppSettingsService.GetDomainSettingsAsync();
+
             Templates = await TemplateService.GetTemplatesAsync();
             WorkstationType = WorkstationAccountType.Local;
             WorkstationLocal = new WorkstationLocal() { EmployeeId = EmployeeId };
@@ -101,7 +102,7 @@ namespace HES.Web.Pages.Employees
                     case WorkstationAccountType.Domain:
                         await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
                         if (WorkstationDomain.UpdateActiveDirectoryPassword)
-                            await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, new ActiveDirectoryCredential() { Host = LdapSettings.Host, UserName = LdapSettings.UserName, Password = LdapSettings.Password });
+                            await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, LdapSettings);
                         break;
                     case WorkstationAccountType.Microsoft:
                         await EmployeeService.CreateWorkstationAccountAsync(WorkstationMicrosoft);
