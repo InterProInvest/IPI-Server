@@ -444,9 +444,9 @@ namespace HES.Web.Pages.Employees
                 if (workstationAccount.UpdateAdPassword)
                 {
                     var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-                    await _ldapService.SetUserPasswordAsync(employee.Id, workstationAccount.Password, activeDirectoryCredential);
+                    //await _ldapService.SetUserPasswordAsync(employee.Id, workstationAccount.Password, activeDirectoryCredential);
                 }
-                await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
+                //await _employeeService.CreateWorkstationAccountAsync(workstationAccount, employeeId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(employeeId));
                 SuccessMessage = "Account created and will be recorded when the device is connected to the server.";
             }
@@ -548,7 +548,7 @@ namespace HES.Web.Pages.Employees
             {
                 if (updateAdPwd)
                 {
-                    await _ldapService.SetUserPasswordAsync(deviceAccount.EmployeeId, accountPassword.Password, activeDirectoryCredential);
+                    //await _ldapService.SetUserPasswordAsync(deviceAccount.EmployeeId, accountPassword.Password, activeDirectoryCredential);
                 }
                 await _employeeService.EditPersonalAccountPwdAsync(deviceAccount, accountPassword);
                 var employee = await _employeeService.GetEmployeeByIdAsync(deviceAccount.EmployeeId);

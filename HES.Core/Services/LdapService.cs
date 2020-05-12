@@ -3,6 +3,7 @@ using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.AppSettings;
 using LdapForNet;
 using System;
 using System.Collections.Generic;
@@ -24,16 +25,16 @@ namespace HES.Core.Services
             _groupService = groupService;
         }
 
-        public async Task<List<ActiveDirectoryUser>> GetUsersAsync(ActiveDirectoryCredential credentials)
+        public async Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings)
         {
             var users = new List<ActiveDirectoryUser>();
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(credentials.Host);
-                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(credentials));
+                connection.Connect(ldapSettings.Host);
+                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
-                var dn = GetDnFromHost(credentials.Host);
+                var dn = GetDnFromHost(ldapSettings.Host);
 
                 var filter = "(&(objectCategory=user)(givenName=*))";
                 var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
@@ -54,7 +55,7 @@ namespace HES.Core.Services
                         DomainAccount = new WorkstationDomain()
                         {
                             Name = "Domain Account",
-                            Domain = GetFirstDnFromHost(credentials.Host),
+                            Domain = GetFirstDnFromHost(ldapSettings.Host),
                             UserName = TryGetAttribute(entity, "sAMAccountName")
                         }
                     };
@@ -117,14 +118,14 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials)
+        public async Task SetUserPasswordAsync(string employeeId, string password, LdapSettings ldapSettings)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(new Uri($"ldaps://{credentials.Host}:636"));
-                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(credentials));
+                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
                 var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
@@ -146,16 +147,16 @@ namespace HES.Core.Services
 
         }
 
-        public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials)
+        public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(LdapSettings ldapSettings)
         {
             var groups = new List<ActiveDirectoryGroup>();
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(credentials.Host);
-                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(credentials));
+                connection.Connect(ldapSettings.Host);
+                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
-                var dn = GetDnFromHost(credentials.Host);
+                var dn = GetDnFromHost(ldapSettings.Host);
 
                 var filter = "(objectCategory=group)";
                 var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
@@ -239,9 +240,9 @@ namespace HES.Core.Services
 
         #region Utils
 
-        private LdapCredential CreateLdapCredential(ActiveDirectoryCredential credentials)
+        private LdapCredential CreateLdapCredential(LdapSettings ldapSettings)
         {
-            return new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password };
+            return new LdapCredential() { UserName = @$"{GetFirstDnFromHost(ldapSettings.Host)}\{ldapSettings.UserName}", Password = ldapSettings.Password };
         }
 
         private string GetAttributeGUID(DirectoryEntry entry)

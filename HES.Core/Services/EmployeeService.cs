@@ -3,7 +3,9 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.AppSettings;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
@@ -33,7 +35,7 @@ namespace HES.Core.Services
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
                                IHardwareVaultService hardwareVaultService,
                                IHardwareVaultTaskService hardwareVaultTaskService,
-                               IAccountService deviceAccountService,
+                               IAccountService accountService,
                                ISharedAccountService sharedAccountService,
                                IWorkstationService workstationService,
                                IAsyncRepository<WorkstationEvent> workstationEventRepository,
@@ -43,7 +45,7 @@ namespace HES.Core.Services
             _employeeRepository = employeeRepository;
             _hardwareVaultService = hardwareVaultService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
-            _accountService = deviceAccountService;
+            _accountService = accountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
             _workstationEventRepository = workstationEventRepository;
@@ -628,7 +630,7 @@ namespace HES.Core.Services
             {
                 searchText = searchText.Trim();
 
-                query = query.Where(x => 
+                query = query.Where(x =>
                                     x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                     x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                     x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||

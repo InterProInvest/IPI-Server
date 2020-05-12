@@ -39,8 +39,8 @@ namespace HES.Web.Pages.Employees
 
                 await EmployeeService.EditPersonalAccountAsync(Account);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account updated.", ToastLevel.Success);
+                await Refresh.InvokeAsync(this);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
