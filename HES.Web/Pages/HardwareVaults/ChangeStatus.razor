@@ -15,7 +15,7 @@ else
         </div>
         <div class="d-flex justify-content-end mt-3">
             <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancel</button>
-            <input type="submit" class="btn btn-primary button-min-width" @onclick="ChangeStatusAsync" value="Suspend" />
+            <input type="submit" class="btn btn-primary btn-min-w" @onclick="ChangeStatusAsync" value="Suspend" />
         </div>
     }
     else if (VaultStatus == VaultStatus.Active)
@@ -25,7 +25,7 @@ else
         </div>
         <div class="d-flex justify-content-end mt-3">
             <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancel</button>
-            <input type="submit" class="btn btn-primary button-min-width" @onclick="ChangeStatusAsync" value="Activate" />
+            <input type="submit" class="btn btn-primary btn-min-w" @onclick="ChangeStatusAsync" value="Activate" />
         </div>
     }
     else if (VaultStatus == VaultStatus.Compromised)
@@ -50,7 +50,7 @@ else
         </div>
         <div class="text-right mt-4">
             <button class="btn btn-secondary mr-2" @onclick="CloseAsync">Cancel</button>
-            <input type="submit" class="btn btn-danger button-min-width" @onclick="ChangeStatusAsync" value="Compromised" disabled="@CompromisedIsDisabled" />
+            <input type="submit" class="btn btn-danger btn-min-w" @onclick="ChangeStatusAsync" value="Compromised" disabled="@CompromisedIsDisabled" />
         </div>
     }
 }

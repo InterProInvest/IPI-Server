@@ -23,72 +23,72 @@ namespace HES.Core.Services
             return _accountRepository.Query();
         }
 
-        public Task<Account> GetByIdAsync(string accountId)
+        public Task<Account> GetAccountByIdAsync(string accountId)
         {
-            return _accountRepository.GetByIdAsync(accountId);
-        }
-
-        public Task<Account> AddAsync(Account deviceAccount)
-        {
-            return _accountRepository.AddAsync(deviceAccount);
-        }
-
-        public Task<IList<Account>> AddRangeAsync(IList<Account> deviceAccounts)
-        {
-            return _accountRepository.AddRangeAsync(deviceAccounts);
-        }
-
-        public Task UpdateOnlyPropAsync(Account deviceAccount, string[] properties)
-        {
-            return _accountRepository.UpdateOnlyPropAsync(deviceAccount, properties);
-        }
-
-        public Task UpdateOnlyPropAsync(IList<Account> deviceAccounts, string[] properties)
-        {
-            return _accountRepository.UpdateOnlyPropAsync(deviceAccounts, properties);
-        }
-
-        public Task DeleteAsync(Account deviceAccount)
-        {
-            return _accountRepository.DeleteAsync(deviceAccount);
-        }
-
-        public Task DeleteRangeAsync(IList<Account> deviceAccounts)
-        {
-            return _accountRepository.DeleteRangeAsync(deviceAccounts);
-        }
-
-        public async Task RemoveAllAccountsByEmployeeIdAsync(string employeeId)
-        {
-            var allAccounts = await _accountRepository
+            return _accountRepository
                 .Query()
-                .Where(t => t.EmployeeId == employeeId)
+                .Include(x => x.Employee)
+                .Include(x => x.SharedAccount)
+                .FirstOrDefaultAsync(x => x.Id == accountId);
+        }
+
+        public Task<Account> AddAsync(Account account)
+        {
+            return _accountRepository.AddAsync(account);
+        }
+
+        public Task<IList<Account>> AddRangeAsync(IList<Account> accounts)
+        {
+            return _accountRepository.AddRangeAsync(accounts);
+        }
+
+        public Task UnchangedAsync(Account account)
+        {
+            return _accountRepository.Unchanged(account);
+        }
+
+        public async Task UpdateOnlyPropAsync(Account account, string[] properties)
+        {
+            await _accountRepository.UpdateOnlyPropAsync(account, properties);
+        }
+
+        public async Task UpdateOnlyPropAsync(IList<Account> accounts, string[] properties)
+        {
+            await _accountRepository.UpdateOnlyPropAsync(accounts, properties);
+        }
+
+        public async Task UpdateAfterAccountCreationAsync(Account account, uint storageId, uint timestamp)
+        {
+            account.StorageId = storageId;
+            account.Timestamp = timestamp;
+            account.Password = null;
+            account.OtpSecret = null;
+            await _accountRepository.UpdateAsync(account);
+        }
+
+        public Task DeleteAsync(Account account)
+        {
+            return _accountRepository.DeleteAsync(account);
+        }
+
+        public Task DeleteRangeAsync(IList<Account> accounts)
+        {
+            return _accountRepository.DeleteRangeAsync(accounts);
+        }
+
+        public async Task DeleteAccountsByEmployeeIdAsync(string employeeId)
+        {
+            var accounts = await _accountRepository
+                .Query()
+                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
                 .ToListAsync();
 
-            foreach (var account in allAccounts)
+            foreach (var account in accounts)
             {
                 account.Deleted = true;
             }
 
-            await _accountRepository.UpdateOnlyPropAsync(allAccounts, new string[] { nameof(Account.Deleted) });
-        }
-
-        public async Task RemoveAllAccountsAsync(string employeeId)
-        {
-            var accounts = await _accountRepository
-                 .Query()
-                 .Where(d => d.EmployeeId == employeeId && d.Deleted == false)
-                 .ToListAsync();
-
-            if (accounts != null)
-            {
-                foreach (var account in accounts)
-                {
-                    account.Deleted = true;
-                }
-
-                await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
-            }
+            await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Account, bool>> predicate)

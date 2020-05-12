@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models;
 using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -57,7 +58,7 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(sharedAccount));
             }
 
-            ValidationHepler.VerifyOtpSecret(sharedAccount.OtpSecret);
+            Validation.VerifyOtpSecret(sharedAccount.OtpSecret);
 
             var exist = await _sharedAccountRepository
                 .Query()
@@ -73,7 +74,7 @@ namespace HES.Core.Services
             }
 
             // Validate url
-            sharedAccount.Urls = ValidationHepler.VerifyUrls(sharedAccount.Urls);
+            sharedAccount.Urls = Validation.VerifyUrls(sharedAccount.Urls);
 
             // Set password
             sharedAccount.Password = _dataProtectionService.Encrypt(sharedAccount.Password);
@@ -140,7 +141,7 @@ namespace HES.Core.Services
             if (exist)
                 throw new Exception("An account with the same name and login exists.");
 
-            sharedAccount.Urls = ValidationHepler.VerifyUrls(sharedAccount.Urls);
+            sharedAccount.Urls = Validation.VerifyUrls(sharedAccount.Urls);
 
             // Get all device accounts where equals this shared account
             var accounts = await _accountService
@@ -250,7 +251,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            ValidationHepler.VerifyOtpSecret(sharedAccount.OtpSecret);
+            Validation.VerifyOtpSecret(sharedAccount.OtpSecret);
 
             // Update Shared Account
             sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? _dataProtectionService.Encrypt(sharedAccount.OtpSecret) : null;

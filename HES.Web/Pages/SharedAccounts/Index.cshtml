@@ -109,7 +109,7 @@
                                 <img src="~/svg/action/password.svg" />
                                 Edit password
                             </a>
-                            @if (item.Kind != AccountKind.Workstation)
+                            @if (item.Kind != Core.Enums.AccountKind.Workstation)
                             {
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditSharedAccountOtp" data-title="Edit shared account OTP">
                                     <img src="~/svg/action/otp.svg" />

@@ -153,7 +153,7 @@ namespace HES.Web.Pages.Workstations
             var id = proximityDevice.WorkstationId;
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Details", new { id });
             }

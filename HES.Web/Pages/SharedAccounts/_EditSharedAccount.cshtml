@@ -8,7 +8,7 @@
         <input asp-for="SharedAccount.Name" class="form-control text-navyblue" />
         <span asp-validation-for="SharedAccount.Name" class="text-danger"></span>
     </div>
-    @if (Model.SharedAccount.Kind != AccountKind.Workstation)
+    @if (Model.SharedAccount.Kind != Core.Enums.AccountKind.Workstation)
     {
         <div class="form-group">
             <label asp-for="SharedAccount.Urls" class="control-label text-gray"></label>

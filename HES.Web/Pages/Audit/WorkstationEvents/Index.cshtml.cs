@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-
+using HES.Core.Enums;
 
 namespace HES.Web.Pages.Audit.WorkstationEvents
 {

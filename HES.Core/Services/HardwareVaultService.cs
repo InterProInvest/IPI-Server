@@ -336,6 +336,9 @@ namespace HES.Core.Services
         {
             var licensing = await _appSettingsService.GetLicensingSettingsAsync();
 
+            if (licensing == null)
+                throw new Exception("Api Key is empty.");
+
             var client = _httpClientFactory.CreateClient();
             client.BaseAddress = new Uri(licensing.ApiAddress);
             client.DefaultRequestHeaders.Accept.Clear();
@@ -471,9 +474,9 @@ namespace HES.Core.Services
 
         public async Task UpdateNeedSyncAsync(IList<HardwareVault> vaults, bool needSync)
         {
-            foreach (var device in vaults)
+            foreach (var vault in vaults)
             {
-                device.NeedSync = needSync;
+                vault.NeedSync = needSync;
             }
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vaults, new string[] { nameof(HardwareVault.NeedSync) });
         }
@@ -584,6 +587,10 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
+            string employeeId = null;
+            if (vault.Employee.HardwareVaults.Count == 1)
+                employeeId = vault.EmployeeId;
+
             vault.EmployeeId = null;
             vault.MasterPassword = null;
             vault.NeedSync = false;
@@ -595,9 +602,12 @@ namespace HES.Core.Services
             {
                 await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.NeedSync), nameof(HardwareVault.Status), nameof(HardwareVault.StatusReason), nameof(HardwareVault.StatusDescription) });
                 await ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
-                await _hardwareVaultTaskService.RemoveAllTasksAsync(vaultId);
-                await _accountService.RemoveAllAccountsAsync(vaultId);
-                await _workstationService.RemoveAllProximityAsync(vaultId);
+                await _hardwareVaultTaskService.DeleteTasksByVaultIdAsync(vaultId);
+
+                if (employeeId != null)
+                    await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
+
+                await _workstationService.DeleteProximityByVaultIdAsync(vaultId);
 
                 transactionScope.Complete();
             }

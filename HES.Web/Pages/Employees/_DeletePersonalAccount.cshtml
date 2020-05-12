@@ -1,9 +1,0 @@
-﻿@model HES.Web.Pages.Employees.DetailsModel
-
-<h5 class="text-gray mb-4 ">You want to delete personal account @Model.DeviceAccount.Name?</h5>
-
-<form method="post" class="text-right">
-    <input type="hidden" asp-for="DeviceAccount.Id" name="id" />
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-    <input type="submit" value="Delete" class="btn btn-danger" asp-page-handler="DeletePersonalAccount" />
-</form>

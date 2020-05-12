@@ -22,36 +22,28 @@ namespace HES.Web.Pages.Employees
         [Inject] NavigationManager NavigationManager { get; set; }
 
         public List<ActiveDirectoryUser> Users { get; set; }
-        public DomainSettings Domain { get; set; }
+        public LdapSettings LdapSettings { get; set; }
         public string WarningMessage { get; set; }
 
-        private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();
-        private bool _createGroups;
         private bool _isBusy;
         private string _searchText = string.Empty;
         private bool _isSortedAscending = true;
         private string _currentSortColumn = nameof(Employee.FullName);
+        private bool _createGroups;
+        private bool _initialized;
 
         protected override async Task OnInitializedAsync()
         {
-            Domain = await AppSettingsService.GetDomainSettingsAsync();
-
-            if (Domain != null)
-                _credentials.Host = Domain.Host;
-        }
-
-        private async Task Connect()
-        {
-            if (_isBusy)
-            {
-                return;
-            }
-
-            _isBusy = true;
-            
             try
             {
-                Users = await LdapService.GetUsersAsync(_credentials);
+                LdapSettings = await AppSettingsService.GetDomainSettingsAsync();
+
+                if (LdapSettings != null)
+                {
+                    Users = await LdapService.GetUsersAsync(LdapSettings);
+                }
+
+                _initialized = true;
             }
             catch (Exception ex)
             {
@@ -59,28 +51,22 @@ namespace HES.Web.Pages.Employees
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
             }
-            finally
-            {
-                _isBusy = false;
-            }
         }
 
         private async Task AddAsync()
         {
             try
             {
+                if (_isBusy)
+                    return;
+
+                _isBusy = true;
+
                 if (!Users.Any(x => x.Checked))
                 {
                     WarningMessage = "Please select at least one user.";
                     return;
                 }
-
-                if (_isBusy)
-                {
-                    return;
-                }
-
-                _isBusy = true;
 
                 await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
                 NavigationManager.NavigateTo("/Employees", true);

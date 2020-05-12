@@ -1,8 +1,10 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API;
+using HES.Core.Models.Web.Account;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -162,7 +164,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.AddHardwareVaultAsync(deviceDto.EmployeeId, new string[] { deviceDto.DeviceId });
+                await _employeeService.AddHardwareVaultAsync(deviceDto.EmployeeId, deviceDto.DeviceId);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
@@ -180,7 +182,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                await _employeeService.RemoveHardwareVaultAsync(deviceDto.EmployeeId, deviceDto.DeviceId, deviceDto.Reason);
+                await _employeeService.RemoveHardwareVaultAsync(deviceDto.DeviceId, deviceDto.Reason);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
             }
             catch (Exception ex)
@@ -226,23 +228,34 @@ namespace HES.Web.Controllers
             Account createdAccount;
             try
             {
-                var account = new Account()
+                //var account = new Account()
+                //{
+                //    Name = accountDto.Name,
+                //    Urls = accountDto.Urls,
+                //    Apps = accountDto.Apps,
+                //    Login = accountDto.Login,
+                //    Kind = AccountKind.WebApp,
+                //    EmployeeId = accountDto.EmployeeId
+                //};
+                //var accountPassword = new AccountPassword()
+                //{
+                //    Password = accountDto.Password,
+                //    OtpSecret = accountDto.OtpSecret
+                //};
+
+                var personalAccount = new PersonalAccount()
                 {
                     Name = accountDto.Name,
                     Urls = accountDto.Urls,
                     Apps = accountDto.Apps,
                     Login = accountDto.Login,
-                    Kind = AccountKind.WebApp,
-                    EmployeeId = accountDto.EmployeeId
-                };
-                var accountPassword = new AccountPassword()
-                {
+                    EmployeeId = accountDto.EmployeeId,
                     Password = accountDto.Password,
                     OtpSecret = accountDto.OtpSecret
                 };
 
-                createdAccount = await _employeeService.CreatePersonalAccountAsync(account, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
+                createdAccount = await _employeeService.CreatePersonalAccountAsync(personalAccount);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -277,7 +290,7 @@ namespace HES.Web.Controllers
                 };
 
                 await _employeeService.EditPersonalAccountAsync(account);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(account.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(account.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -312,7 +325,7 @@ namespace HES.Web.Controllers
                 };
 
                 await _employeeService.EditPersonalAccountPwdAsync(account, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(account.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(account.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -347,7 +360,7 @@ namespace HES.Web.Controllers
                 };
 
                 await _employeeService.EditPersonalAccountPwdAsync(account, accountPassword);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(account.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(account.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -390,7 +403,7 @@ namespace HES.Web.Controllers
             try
             {
                 createdAccount = await _employeeService.AddSharedAccountAsync(sharedAccountDto.EmployeeId, sharedAccountDto.SharedAccountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -418,7 +431,7 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, localAccountDto.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -446,7 +459,7 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, domainAccountDto.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -474,7 +487,7 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, microsoftAccountDto.EmployeeId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(createdAccount.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
             {
@@ -492,7 +505,7 @@ namespace HES.Web.Controllers
             try
             {
                 await _employeeService.SetAsWorkstationAccountAsync(workstationAccountDto.EmployeeId, workstationAccountDto.AccountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeDevicesAsync(workstationAccountDto.EmployeeId));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(workstationAccountDto.EmployeeId));
             }
             catch (Exception ex)
             {

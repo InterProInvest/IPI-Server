@@ -28,6 +28,7 @@ namespace HES.Core.Entities
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
         public string PrimaryAccountId { get; set; }
+        public string ActiveDirectoryGuid { get; set; }
         public List<HardwareVault> HardwareVaults { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
         public List<SoftwareVault> SoftwareVaults { get; set; }

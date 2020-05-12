@@ -82,8 +82,8 @@ namespace HES.Core.Services
         public async Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status)
         {
             var server = await _appSettingsService.GetServerSettingsAsync();
-            string subject = server.Name == null ? "HES notification" : $"({server.Name}) Notification";
-            string hes = server.Url == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
+            string subject = server == null ? "HES notification" : $"({server.Name}) Notification";
+            string hes = server == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
             string html = $@"
                            <div style='font-family: Roboto;'>                       
                                 <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
@@ -136,8 +136,8 @@ namespace HES.Core.Services
             }
 
             var server = await _appSettingsService.GetServerSettingsAsync();
-            string subject = server.Name == null ? "HES notification" : $"({server.Name}) Notification";
-            string hes = server.Url == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
+            string subject = server == null ? "HES notification" : $"({server.Name}) Notification";
+            string hes = server == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
             string html = $@"
                            <div style='font-family: Roboto;'>                       
                                 <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>

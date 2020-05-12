@@ -35,9 +35,6 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("EmployeeId")
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<ushort>("IdFromDevice")
-                        .HasColumnType("smallint unsigned");
-
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
@@ -49,14 +46,26 @@ namespace HES.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<string>("OtpSecret")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.Property<DateTime?>("OtpUpdatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<DateTime>("PasswordUpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("SharedAccountId")
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<uint>("StorageId")
+                        .HasColumnType("int unsigned");
+
+                    b.Property<uint>("Timestamp")
+                        .HasColumnType("int unsigned");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -218,6 +227,9 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ActiveDirectoryGuid")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("DepartmentId")
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
@@ -502,6 +514,9 @@ namespace HES.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("HardwareVaultId")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.Property<int>("Operation")
                         .HasColumnType("int");
 
@@ -511,8 +526,8 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("VaultId")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                    b.Property<uint>("Timestamp")
+                        .HasColumnType("int unsigned");
 
                     b.HasKey("Id");
 

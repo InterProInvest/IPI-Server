@@ -9,6 +9,7 @@ namespace HES.Web.Components
     public partial class TableFilter : ComponentBase
     {
         [Parameter] public Func<string, Task> SearchTextChanged { get; set; }
+        [Parameter] public bool EnableFilterButton { get; set; } = true;
 
         public string SearchText { get; set; }
 

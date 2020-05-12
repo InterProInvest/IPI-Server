@@ -1,0 +1,263 @@
+﻿@if (Employee == null || Accounts == null)
+{
+    <LoadingPage />
+}
+else
+{
+    <div class="row align-items-center details-card mb-3">
+        <div class="col">
+            <h1 class="text-navyblue text-break m-0">@Employee.FullName</h1>
+        </div>
+        @*<div class="col-auto pl-1 pr-1">
+            <ButtonSpinner Class="btn-primary" Text="Add Software Vault" Callback="OpenModalAddSoftwareVaultAsync" />
+        </div>*@
+        <div class="col-auto pl-1 pr-1">
+            <ButtonSpinner Class="btn-primary" Text="Add Hardware Vault" Callback="OpenDialogAddHardwareVaultAsync" />
+        </div>
+        <div class="col-auto pl-1 pr-1">
+            <ButtonSpinner Class="btn-primary" Text="Create Personal Account" Callback="OpenDialogCreatePersonalAccountAsync" />
+        </div>
+        <div class="col-auto pl-1">
+            <ButtonSpinner Class="btn-primary" Text="Add Shared Account" Callback="OpenDialogAddSharedAccountAsync" />
+        </div>
+    </div>
+
+    @if (Employee.SoftwareVaultInvitations.Count > 0 || Employee.SoftwareVaults.Count > 0 || Employee.HardwareVaults.Count > 0)
+    {
+        <h4 class="text-navyblue">Vaults</h4>
+        <ul class="list-group w-100 mb-3">
+            @foreach (var invitation in Employee.SoftwareVaultInvitations.Where(x => x.Status != SoftwareVaultInvitationStatus.Accepted))
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img class="mr-1" src="/svg/icon-mail-sent.svg" />
+                        Software Vault Invite sent @invitation.CreatedAt.ToShortDateString() - @invitation.Status
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-light border my-1 mr-2" title="Resend invitation" @onclick="@(() => OpenDialogResendInvitationAsync(invitation))">
+                            <img class="icon-btn" src="/svg/action-email.svg" />
+                            Resend
+                        </button>
+                        <button type="button" class="btn btn-light border my-1 mr-2" title="Delete invitation" @onclick="@(() => OpenDialogDeleteInvitationAsync(invitation))">
+                            <img class="icon-btn" src="/svg/action/delete.svg" />
+                            Delete
+                        </button>
+                    </div>
+                </li>
+            }
+            @foreach (var softwareVault in Employee.SoftwareVaults)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="/svg/icon-software-vault.svg" />
+                        <span class="font-weight-bold">@softwareVault.Model</span> - @(softwareVault.LicenseEndDate != null ? $"License till {softwareVault.LicenseEndDate.Value.ToShortDateString()}" : "License status None") - @softwareVault.Status
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-light border my-1 mr-2" title="Software Vault Details" @onclick="@(() => OpenDialogSoftwareVaultDetailsAsync(softwareVault))">
+                            <img class="icon-btn" src="/svg/action/details.svg" />
+                            Details
+                        </button>
+                    </div>
+                </li>
+            }
+            @foreach (var hardwareVault in Employee.HardwareVaults)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img class="mr-1" src="/svg/icon-hardware-vault.svg" />
+                        <span class="font-weight-bold mr-1">@hardwareVault.Id</span>
+                        <span class="mr-1">- @(hardwareVault.LicenseEndDate != null ? $"License till {hardwareVault.LicenseEndDate.Value.ToShortDateString()}" : "License status None")</span>
+                        <span class="mr-2">- @hardwareVault.Status</span>
+                        @if (hardwareVault.IsOnline)
+                        {
+                            <span class="badge badge-success">Online</span>
+                        }
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-light border mx-2" title="Hardware Vault Details" @onclick="@(() => OpenDialogHardwareVaultDetailsAsync(hardwareVault))">
+                            <img class="icon-btn" src="/svg/action/details.svg" />
+                            Details
+                        </button>
+                        <button type="button" class="btn btn-light border mx-2" title="Remove hardware vault from employee" @onclick="async () => await OpenDialogRemoveHardwareVaultAsync(hardwareVault)">
+                            <img class="icon-btn" src="/svg/action/delete.svg" />
+                            Remove
+                        </button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Accounts.Count > 0)
+    {
+        <TableAction>
+            <ActionButtons>
+                <h4 class="text-navyblue mr-2">Accounts</h4>
+                @if (SelectedAccount != null)
+                {
+
+                    @if (Employee.PrimaryAccountId != SelectedAccount.Id)
+                    {
+                        <button type="button" @onclick="OpenDialogSetAsWorkstationAccountAsync" class="btn btn-light border" title="Windows account">
+                            <img class="icon-btn" src="/svg/action/star.svg" />
+                            Set as windows account
+                        </button>
+                    }
+
+                    @if (SelectedAccount.Type == AccountType.Personal)
+                    {
+                        <button type="button" @onclick="OpenDialogEditPersonalAccountAsync" class="btn btn-light border mx-2" title="Edit personal account">
+                            <img class="icon-btn" src="/svg/action/edit.svg" />
+                            Edit
+                        </button>
+
+                        <button type="button" @onclick="OpenDialogEditPersonalAccountPasswordAsync" class="btn btn-light border mx-2" title="Edit personal account password">
+                            <img class="icon-btn" src="/svg/action/password.svg" />
+                            Edit password
+                        </button>
+
+                        @if (SelectedAccount.Kind != AccountKind.Workstation)
+                        {
+                            <button type="button" @onclick="OpenDialogEditPersonalAccountOtpAsync" class="btn btn-light border mx-2" title="Edit personal account OTP">
+                                <img class="icon-btn" src="/svg/action/otp.svg" />
+                                Edit OTP
+                            </button>
+                        }
+                    }
+                    <button type="button" @onclick="OpenDialogDeleteAccountAsync" class="btn btn-light border mx-2" title="Delete account">
+                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        Delete
+                    </button>
+                }
+            </ActionButtons>
+            <FilterButtons>
+                <TableFilter EnableFilterButton="false" SearchTextChanged="SearchTextChangedAsync" />
+            </FilterButtons>
+        </TableAction>
+
+        <MainTable Items="Accounts" SelectedItem="@SelectedAccount" SelecedItemChanged="SelectedItemChangedAsync">
+            <TableHeader>
+                <MainTableHeader Title="Name"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.Name)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Urls"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.Urls)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Apps"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.Apps)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Login"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.Login)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Type"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.Type)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Created"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.CreatedAt)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Updated"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.UpdatedAt)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Password Updated"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.PasswordUpdatedAt)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+                <MainTableHeader Title="Otp Updated"
+                                 TitleWidth="7.1"
+                                 SortColumn="@nameof(Account.OtpUpdatedAt)"
+                                 CurrentSortedColumn="@SortedColumn"
+                                 SortedColumnChanged="SortedColumnChangedAsync"
+                                 SortDirectionChanged="SortDirectionChangedAsync" />
+            </TableHeader>
+            <TableRow>
+                <td style="vertical-align:middle">
+                    @if (context.Employee.PrimaryAccountId == context.Id)
+                        {
+                    <span class="badge @(SelectedAccount?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Workstation account">
+                        @context.Name
+                    </span>
+                        }
+                    else
+                        {
+                    @context.Name
+                    }
+                </td>
+                <td>
+                    @if (context.Urls != null)
+                    {
+                        foreach (var urls in context.Urls.Split(';'))
+                        {
+                    <span style="white-space: pre-line">@urls</span>
+                        }
+                    }
+                </td>
+                <td>
+                    @if (context.Apps != null)
+                    {
+                        foreach (var apps in context.Apps.Split(';'))
+                        {
+                    <span style="white-space: pre-line">@apps</span>
+
+                        }
+                    }
+                </td>
+                <td>
+                    @context.Login
+                </td>
+                <td>
+                    @context.Type
+                </td>
+                <td>
+                    @if (context.CreatedAt != null)
+                   {
+                        @context.CreatedAt.ToLocalTime()
+                    }
+                </td>
+                <td>
+                    @if (context.UpdatedAt != null)
+                    {
+                        @context.UpdatedAt.Value.ToLocalTime()
+                    }
+                </td>
+                <td>
+                    @((DateTime.UtcNow.Date - context.PasswordUpdatedAt.Date).TotalDays) @((DateTime.UtcNow.Date - context.PasswordUpdatedAt.Date).TotalDays == 1 ? " day" : " days" )
+                </td>
+                <td>
+                    @if (context.OtpUpdatedAt != null)
+                     {
+                        @((DateTime.UtcNow.Date - context.OtpUpdatedAt.Value.Date).TotalDays) @((DateTime.UtcNow.Date - context.OtpUpdatedAt.Value.Date).TotalDays == 1 ? " day" : " days" )
+                      }
+                </td>
+            </TableRow>
+        </MainTable>
+        <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                    DisplayRowsChanged="DisplayRowsChangedAsync"
+                    TotalRecords="TotalRecords"
+                    CurrentPage="CurrentPage"
+                    DisplayRows="DisplayRows"
+                    DisplayRecords="Accounts.Count" />
+    }
+}

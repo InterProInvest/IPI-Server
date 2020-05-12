@@ -21,9 +21,12 @@ namespace HES.Web.Pages.Employees
         public ServerSettings ServerSettings { get; set; }
         public DateTime ValidTo { get; set; } = DateTime.Now;
 
+        private bool _initialized;
+
         protected override async Task OnInitializedAsync()
         {
             ServerSettings = await AppSettingsService.GetServerSettingsAsync();
+            _initialized = true;
         }
 
         private async Task SendAsync()

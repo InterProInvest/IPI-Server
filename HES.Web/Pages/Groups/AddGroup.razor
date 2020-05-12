@@ -1,91 +1,69 @@
-﻿@if (Groups == null)
+﻿@if (!_initialized)
 {
-    @if (Domain == null)
-    {
-        <LoadingText />
-    }
-    else if (Domain.Host == null)
-    {
-        <h5>Set domain address in parameters page to connect the domain.</h5>
-    }
-    else
-    {
-        <h5>Enter your credentials</h5>
-        <p>These credentials will be used to connect @_credentials.Host</p>
-        <EditForm Model="@_credentials" OnValidSubmit="Connect">
-            <DataAnnotationsValidator />
-            <div class="form-group">
-                <label class="control-label text-gray">User Name</label>
-                <InputText id="userName" @bind-Value="_credentials.UserName" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _credentials.UserName)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">Password</label>
-                <InputText id="password" type="password" @bind-Value="_credentials.Password" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _credentials.Password)" class="text-danger" />
-            </div>
-            <div class="text-right">
-                <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-                <button type="submit" class="btn btn-primary button-min-width">
-                    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Connect</span>
-                </button>
-            </div>
-        </EditForm>
-    }
+    <LoadingText />
 }
 else
 {
-    <Alert Message="@WarningMessage" />
-    <div class="has-search-right my-2">
-        <div class="form-control-feedback">
-            <img class="img-size" src="/svg/action/search.svg" />
+    if (LdapSettings == null)
+    {
+        <h5>To import groups from the active directory, add administrator credentials on the parameters page.</h5>
+        <div class="text-right  mt-4">
+            <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
         </div>
-        <input type="text" class="form-control" placeholder="Search" @bind="_searchText" @bind:event="oninput" />
-    </div>
-    <div class="table-responsive mb-3">
-        <table class="table table-fixed table-hover border rounded mb-0 disable-selection">
-            <thead>
-                <tr class="cursor-pointer">
-                    <th class="col-1">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="@((e) => { Groups.ForEach(x => x.Checked = (bool)e.Value); })" />
-                            <label class="custom-control-label" for="checkAll"></label>
-                        </div>
-                    </th>
-                    <th class="col-11" @onclick="@(() => SortTable(nameof(Group.Name)))">
-                        @nameof(Group.Name)
-                        <img class="table-sort-arrow @GetSortIcon(nameof(Group.Name))" />
-                    </th>
-                </tr>
-            </thead>
-            <tbody style="max-height:55vh;">
-                @foreach (var group in Groups.Where(x => x.Group.Name.ToLower().Contains(_searchText.ToLower())))
-                {
-                    <tr @key="group.Group.Id" @onclick="@(() => { group.Checked = !group.Checked; })">
-                        <td class="col-1">
-                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
-                                <input type="checkbox" class="custom-control-input" id="@group.Group.Id" @bind="group.Checked" />
-                                <label class="custom-control-label" for="@group.Group.Id"></label>
+    }
+    else
+    {
+        <Alert Message="@WarningMessage" />
+        <div class="has-search-right my-2">
+            <div class="form-control-feedback">
+                <img class="img-size" src="/svg/action/search.svg" />
+            </div>
+            <input type="text" class="form-control" placeholder="Search" @bind="_searchText" @bind:event="oninput" />
+        </div>
+        <div class="table-responsive mb-3">
+            <table class="table table-fixed table-hover border rounded mb-0 disable-selection">
+                <thead>
+                    <tr class="cursor-pointer">
+                        <th class="col-1">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="@((e) => { Groups.ForEach(x => x.Checked = (bool)e.Value); })" />
+                                <label class="custom-control-label" for="checkAll"></label>
                             </div>
-                        </td>
-                        <td class="col-11" title="@group.Group.Description">
-                            @group.Group.Name
-                        </td>
+                        </th>
+                        <th class="col-11" @onclick="@(() => SortTable(nameof(Group.Name)))">
+                            @nameof(Group.Name)
+                            <img class="table-sort-arrow @GetSortIcon(nameof(Group.Name))" />
+                        </th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <div class="mb-2 mx-2 custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="createEmployees" @bind="_createEmployees" />
-        <label class="custom-control-label disable-selection" for="createEmployees">Create employees for selected groups</label>
-    </div>
-    <div class="text-right">
-        <button type="button" class="btn btn-secondary button-min-width" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-        <button type="button" @onclick="AddAsync" class="btn btn-primary button-min-width">
-            <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-            <span>Add</span>
-        </button>
-    </div>
+                </thead>
+                <tbody style="max-height:55vh;">
+                    @foreach (var group in Groups.Where(x => x.Group.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
+                    {
+                        <tr @key="group.Group.Id" @onclick="@(() => { group.Checked = !group.Checked; })">
+                            <td class="col-1">
+                                <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                                    <input type="checkbox" class="custom-control-input" id="@group.Group.Id" @bind="group.Checked" />
+                                    <label class="custom-control-label" for="@group.Group.Id"></label>
+                                </div>
+                            </td>
+                            <td class="col-11" title="@group.Group.Description">
+                                @group.Group.Name
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="mb-2 mx-2 custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="createEmployees" @bind="_createEmployees" />
+            <label class="custom-control-label disable-selection" for="createEmployees">Create employees for selected groups</label>
+        </div>
+        <div class="text-right">
+            <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
+            <button type="button" @onclick="AddAsync" class="btn btn-primary btn-min-w">
+                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Add</span>
+            </button>
+        </div>
+    }
 }
