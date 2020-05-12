@@ -63,11 +63,11 @@ namespace HES.Web.Pages.Employees
             StateHasChanged();
         }
 
-        private async Task SelectedItemChangedAsync(Account employee)
+        private async Task SelectedItemChangedAsync(Account account)
         {
             await InvokeAsync(() =>
             {
-                SelectedAccount = employee;
+                SelectedAccount = account;
                 StateHasChanged();
             });
         }
@@ -272,12 +272,12 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Software vault details", body);
         }
 
-        private async Task OpenDialogHardwareVaultDetailsAsync(HardwareVault vault)
+        private async Task OpenDialogHardwareVaultDetailsAsync(HardwareVault hardwareVault)
         {
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(HardwareVaultDetails));
-                builder.AddAttribute(1, "HardwareVault", vault);
+                builder.AddAttribute(1, "HardwareVault", hardwareVault);
                 builder.CloseComponent();
             };
 

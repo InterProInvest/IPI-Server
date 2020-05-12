@@ -52,7 +52,7 @@ else
                     </div>
                     <div class="form-group col">
                         <label class="control-label text-gray">Password</label>
-                        <InputText @bind-Value="PersonalAccount.Password" class="form-control text-navyblue" tabindex="5" />
+                        <InputText @bind-Value="PersonalAccount.Password" type="password" class="form-control text-navyblue" tabindex="5" />
                         <ValidationMessage For="@(() => PersonalAccount.Password)" class="text-danger" />
                     </div>
                 </div>
@@ -64,7 +64,7 @@ else
                     </div>
                     <div class="form-group col">
                         <label class="control-label text-gray">Confirm Password</label>
-                        <InputText @bind-Value="PersonalAccount.ConfirmPassword" class="form-control text-navyblue" tabindex="6" />
+                        <InputText @bind-Value="PersonalAccount.ConfirmPassword" type="password" class="form-control text-navyblue" tabindex="6" />
                         <ValidationMessage For="@(() => PersonalAccount.ConfirmPassword)" class="text-danger" />
                     </div>
                 </div>
