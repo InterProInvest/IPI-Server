@@ -107,7 +107,7 @@ else
 
                     @if (SelectedAccount.Type == AccountType.Personal)
                     {
-                        <button type="button" @onclick="EditPersonalAccountAsync" class="btn btn-light border mx-2" title="Edit personal account">
+                        <button type="button" @onclick="OpenDialogEditPersonalAccountAsync" class="btn btn-light border mx-2" title="Edit personal account">
                             <img class="icon-btn" src="/svg/action/edit.svg" />
                             Edit
                         </button>

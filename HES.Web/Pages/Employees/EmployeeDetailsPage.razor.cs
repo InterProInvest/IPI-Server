@@ -219,24 +219,34 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Add software vault", body);
         }
 
-
         private async Task SetPrimaryAccountAsync()
         {
             await Task.CompletedTask;
         }
 
-        private async Task EditPersonalAccountAsync()
+        private async Task OpenDialogEditPersonalAccountAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccount));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit personal account", body);
         }
+
         private async Task EditPersonalAccountPasswordAsync()
         {
             await Task.CompletedTask;
         }
+
         private async Task EditPersonalAccountOtpAsync()
         {
             await Task.CompletedTask;
         }
+
         private async Task DeleteAccountAsync()
         {
             await Task.CompletedTask;

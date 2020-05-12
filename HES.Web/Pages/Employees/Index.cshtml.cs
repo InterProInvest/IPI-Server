@@ -125,7 +125,7 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
@@ -232,7 +232,7 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Index");
             }
@@ -323,7 +323,7 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                var errorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
@@ -360,7 +360,7 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                var errorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }
@@ -396,7 +396,7 @@ namespace HES.Web.Pages.Employees
         {
             if (!ModelState.IsValid)
             {
-                var errorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                var errorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(errorMessage);
                 return new ContentResult() { Content = "error" };
             }

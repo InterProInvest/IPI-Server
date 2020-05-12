@@ -66,7 +66,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Create");
             }
@@ -103,7 +103,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
             if (!ModelState.IsValid)
             {
-                ErrorMessage = ValidationHepler.GetModelStateErrors(ModelState);
+                ErrorMessage = Validation.GetModelStateErrors(ModelState);
                 _logger.LogError(ErrorMessage);
                 return RedirectToPage("./Create");
             }

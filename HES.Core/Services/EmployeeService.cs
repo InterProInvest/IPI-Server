@@ -300,7 +300,7 @@ namespace HES.Core.Services
                     OtpSecret = account.OtpSecret,
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = vault.Id,
                     AccountId = account.Id
                 });
@@ -720,14 +720,14 @@ namespace HES.Core.Services
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = personalAccount.Name,
-                Urls = ValidationHepler.VerifyUrls(personalAccount.Urls),
+                Urls = Validation.VerifyUrls(personalAccount.Urls),
                 Apps = personalAccount.Apps,
                 Login = personalAccount.Login,
                 Type = AccountType.Personal,
                 Kind = isWorkstationAccount ? AccountKind.Workstation : AccountKind.WebApp,
                 CreatedAt = DateTime.UtcNow,
                 PasswordUpdatedAt = DateTime.UtcNow,
-                OtpUpdatedAt = ValidationHepler.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
+                OtpUpdatedAt = Validation.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
                 Password = _dataProtectionService.Encrypt(personalAccount.Password),
                 OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
                 EmployeeId = personalAccount.EmployeeId
@@ -744,7 +744,7 @@ namespace HES.Core.Services
                     OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = vault.Id,
                     AccountId = account.Id
                 });
@@ -927,7 +927,7 @@ namespace HES.Core.Services
 
             var employee = await GetEmployeeByIdAsync(account.EmployeeId);
 
-            account.Urls = ValidationHepler.VerifyUrls(account.Urls);
+            account.Urls = Validation.VerifyUrls(account.Urls);
             account.UpdatedAt = DateTime.UtcNow;
 
             // Create tasks if there are vaults
@@ -938,7 +938,7 @@ namespace HES.Core.Services
                 {
                     Operation = TaskOperation.Update,
                     CreatedAt = DateTime.UtcNow,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = vault.Id,
                     AccountId = account.Id
                 });
@@ -986,7 +986,7 @@ namespace HES.Core.Services
                     Password = _dataProtectionService.Encrypt(accountPassword.Password),
                     Operation = TaskOperation.Update,
                     CreatedAt = DateTime.UtcNow,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = device.Id,
                     AccountId = account.Id
                 });
@@ -1019,7 +1019,7 @@ namespace HES.Core.Services
             var employee = await GetEmployeeByIdAsync(account.EmployeeId);
 
             account.UpdatedAt = DateTime.UtcNow;
-            account.OtpUpdatedAt = ValidationHepler.VerifyOtpSecret(accountOtp.OtpSecret) == null ? null : (DateTime?)DateTime.UtcNow;
+            account.OtpUpdatedAt = Validation.VerifyOtpSecret(accountOtp.OtpSecret) == null ? null : (DateTime?)DateTime.UtcNow;
 
             // Update otp field if there are no vaults
             if (employee.HardwareVaults.Count == 0)
@@ -1034,7 +1034,7 @@ namespace HES.Core.Services
                     OtpSecret = _dataProtectionService.Encrypt(accountOtp.OtpSecret ?? string.Empty),
                     Operation = TaskOperation.Update,
                     CreatedAt = DateTime.UtcNow,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = device.Id,
                     AccountId = account.Id
                 });
@@ -1052,6 +1052,11 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
+        }
+
+        public Task UnchangedPersonalAccountAsync(Account account)
+        {
+            return _accountService.UnchangedAsync(account);
         }
 
         public async Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId)
@@ -1104,7 +1109,7 @@ namespace HES.Core.Services
                     OtpSecret = sharedAccount.OtpSecret,
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Create,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = device.Id,
                     AccountId = account.Id
                 });
@@ -1157,7 +1162,7 @@ namespace HES.Core.Services
                 {
                     CreatedAt = DateTime.UtcNow,
                     Operation = TaskOperation.Delete,
-                    Timestamp = Utils.ConvertToUnixTime(DateTime.UtcNow),
+                    Timestamp = UnixTime.ConvertToUnixTime(DateTime.UtcNow),
                     HardwareVaultId = vault.Id,
                     AccountId = account.Id
                 });
