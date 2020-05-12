@@ -252,7 +252,15 @@ namespace HES.Web.Pages.Employees
 
         private async Task EditPersonalAccountOtpAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditPersonalAccountOtp));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit account otp secret", body);
         }
 
         private async Task DeleteAccountAsync()
