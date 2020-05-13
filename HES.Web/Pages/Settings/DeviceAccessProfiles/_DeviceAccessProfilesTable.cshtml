@@ -2,7 +2,7 @@
 
 <div class="row align-items-center mr-0">
     <div class="col-auto">
-        <h1 class="text-navyblue">Device Access Profiles</h1>
+        <h1 class="text-navyblue">Hardware Vault Access Profiles</h1>
     </div>
     <div class="col" id="loading"></div>
     <div class="col-auto"></div>
@@ -65,14 +65,14 @@
                             <img src="~/svg/action/more.svg" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditProfile" data-title="Edit device access profile">
+                            <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditProfile" data-title="Edit profile">
                                 <img src="~/svg/action/edit.svg" />
                                 Edit
                             </a>
                             @if (item.Id != "default")
                             {
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteProfile" data-title="Delete device access profile">
+                                <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteProfile" data-title="Delete profile">
                                     <img src="~/svg/action/delete.svg" />
                                     Delete
                                 </a>

@@ -81,7 +81,7 @@ function InitDeviceAccessProfileDT() {
 function DeviceAccessProfileSetBreadcrumbs() {
     $('#breadcrumb').toggleClass('d-none');
     $('.breadcrumb').append('<li class="breadcrumb-item active">Settings</li>');
-    $('.breadcrumb').append('<li class="breadcrumb-item active">Device Access Profiles</li>');
+    $('.breadcrumb').append('<li class="breadcrumb-item active">Vault Access Profiles</li>');
 }
 
 // Pin connection checkbox
