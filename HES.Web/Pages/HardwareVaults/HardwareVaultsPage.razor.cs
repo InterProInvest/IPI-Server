@@ -135,7 +135,6 @@ namespace HES.Web.Pages.HardwareVaults
 
         #endregion
 
-
         #region Table Actions
 
         public async Task ImportVaultsAsync()

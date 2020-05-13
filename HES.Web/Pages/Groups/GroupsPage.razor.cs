@@ -21,44 +21,19 @@ namespace HES.Web.Pages.Groups
         [Inject] IJSRuntime JSRuntime { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        public IList<Group> Groups { get; set; }
-        public string CurrentGroupId { get; set; }
-
-        #region Search
-
-        public int Delay { get; set; } = 500;
-        public string Placeholder { get; set; } = "Search";
+        public List<Group> Groups { get; set; }
+        public Group SelectedGroup { get; set; }
+        public GroupFilter Filter { get; set; } = new GroupFilter();
         public string SearchText { get; set; } = string.Empty;
-
-        private Timer _timer;
-
-        #endregion
-
-        #region Filter
-
-        public GroupFilter GroupFilter = new GroupFilter();
-
-        #endregion
-
-        #region Pagination
-
+        public string SortedColumn { get; set; } = nameof(Group.Name);
+        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
         public int DisplayRows { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalRecords { get; set; }
 
-        #endregion
-
-        #region Sorting
-
-        public string SortColumn { get; set; } = nameof(Group.Name);
-        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
-
-        #endregion
-
         protected override async Task OnInitializedAsync()
         {
-            await LoadGroupsAsync();
-            CreateSearchTimer();
+            await LoadTableDataAsync();            
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -73,169 +48,120 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        #region Search
+        #region Main Table
 
-        private void CreateSearchTimer()
-        {
-            _timer = new Timer(Delay);
-            _timer.Elapsed += async (sender, args) =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await LoadGroupsAsync();
-                });
-            };
-            _timer.AutoReset = false;
-        }
-
-        private void OnKeyUp(KeyboardEventArgs e)
-        {
-            _timer.Stop();
-            _timer.Start();
-        }
-
-        #endregion
-
-        #region Filter
-
-        private async Task FilterGroupsAsync()
-        {
-            await LoadGroupsAsync();
-        }
-
-        private async Task ClearFilterAsync()
-        {
-            GroupFilter = new GroupFilter();
-            await LoadGroupsAsync();
-        }
-
-        #endregion
-
-        #region SortTable
-
-        private async Task SortTable(string columnName)
-        {
-            if (columnName != SortColumn)
-            {
-                SortColumn = columnName;
-                await LoadGroupsAsync();
-            }
-            else
-            {
-                SortDirection = SortDirection == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
-                await LoadGroupsAsync();
-            }
-        }
-
-        private string SetSortIcon(string columnName)
-        {
-            if (SortColumn != columnName)
-            {
-                return string.Empty;
-            }
-
-            if (SortDirection == ListSortDirection.Ascending)
-            {
-                return "table-sort-arrow-up";
-            }
-            else
-            {
-                return "table-sort-arrow-down";
-            }
-        }
-
-        #endregion
-
-        #region Pagination
-
-        //private async Task RefreshTable(int currentPage, int displayRows)
-        //{
-        //    DisplayRows = displayRows;
-        //    CurrentPage = currentPage;
-        //    await LoadGroupsAsync();
-        //}
-
-        private async Task CurrentPageChanged(int currentPage)
-        {
-            CurrentPage = currentPage;
-            await LoadGroupsAsync();
-        }
-        private async Task DisplayRowsChanged(int displayRows)
-        {
-            DisplayRows = displayRows;
-            CurrentPage = 1; // TODO calc current page if display rows changed
-            await LoadGroupsAsync();
-        }
-
-        #endregion
-
-        private async Task LoadGroupsAsync()
+        private async Task LoadTableDataAsync()
         {
             var currentTotalRows = TotalRecords;
-            TotalRecords = await GroupService.GetCountAsync(SearchText, GroupFilter);
+            TotalRecords = await GroupService.GetGroupsCountAsync(SearchText, Filter);
 
             if (currentTotalRows != TotalRecords)
                 CurrentPage = 1;
 
-            Groups = await GroupService.GetAllGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortColumn, SortDirection, SearchText, GroupFilter);
-            CurrentGroupId = null;
+            Groups = await GroupService.GetGroupsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
+            SelectedGroup = null;
+
             StateHasChanged();
         }
 
-        private void OnRowSelected(string groupId)
+        private async Task SelectedItemChangedAsync(Group group)
         {
-            CurrentGroupId = groupId;
+            await InvokeAsync(() =>
+            {
+                SelectedGroup = group;
+                StateHasChanged();
+            });
         }
 
-        private void GroupDetails()
+        private async Task SortedColumnChangedAsync(string columnName)
         {
-            NavigationManager.NavigateTo($"/Groups/Details?id={CurrentGroupId}", true);
+            SortedColumn = columnName;
+            await LoadTableDataAsync();
         }
 
-        private async Task OpenModalAddGroup()
+        private async Task SortDirectionChangedAsync(ListSortDirection sortDirection)
+        {
+            SortDirection = sortDirection;
+            await LoadTableDataAsync();
+        }
+
+        private async Task CurrentPageChangedAsync(int currentPage)
+        {
+            CurrentPage = currentPage;
+            await LoadTableDataAsync();
+        }
+
+        private async Task DisplayRowsChangedAsync(int displayRows)
+        {
+            DisplayRows = displayRows;
+            CurrentPage = 1;
+            await LoadTableDataAsync();
+        }
+
+        private async Task SearchTextChangedAsync(string searchText)
+        {
+            SearchText = searchText;
+            await LoadTableDataAsync();
+        }
+
+        private async Task FilterChangedAsync(GroupFilter filter)
+        {
+            Filter = filter;
+            await LoadTableDataAsync();
+        }
+
+        #endregion
+
+        private Task NavigateToGroupDetails()
+        {
+            NavigationManager.NavigateTo($"/Groups/Details?id={SelectedGroup.Id}", true);
+            return Task.CompletedTask;
+        }
+
+        private async Task OpenModalAddGroupAsync()
         {
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.CloseComponent();
             };
 
             await ModalDialogService.ShowAsync("Add group", body);
         }
 
-        private async Task OpenModalGreateGroup()
+        private async Task OpenModalCreateGroupAsync()
         {
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(CreateGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.CloseComponent();
             };
 
             await ModalDialogService.ShowAsync("Create group", body);
         }
 
-        private async Task OpenModalEditGroup()
+        private async Task OpenModalEditGroupAsync()
         {
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
-                builder.AddAttribute(2, "GroupId", CurrentGroupId);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "GroupId", SelectedGroup.Id);
                 builder.CloseComponent();
             };
 
             await ModalDialogService.ShowAsync("Edit group", body);
         }
 
-        private async Task OpenModalDeleteGroup()
+        private async Task OpenModalDeleteGroupAsync()
         {
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteGroup));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadGroupsAsync));
-                builder.AddAttribute(2, "GroupId", CurrentGroupId);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(2, "GroupId", SelectedGroup.Id);
                 builder.CloseComponent();
             };
 

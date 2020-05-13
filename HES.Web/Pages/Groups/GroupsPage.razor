@@ -6,99 +6,69 @@
 }
 else
 {
-    <!-- Actions -->
-    <div class="d-flex align-items-center flex-wrap mb-2">
-        <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalAddGroup">
-            Add from AD
-        </button>
-        <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalGreateGroup">
-            Create group
-        </button>
-        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Details" @onclick="GroupDetails">
-            <img class="icon-btn" src="/svg/action/details.svg" />
-            Details
-        </button>
-        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroup">
-            <img class="icon-btn" src="/svg/action/edit.svg" />
-            Edit
-        </button>
-        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroup">
-            <img class="icon-btn" src="/svg/action/delete.svg" />
-            Delete
-        </button>
-    </div>
-    <!-- Filter -->
-    <div id="filter-collapse" class="filter-card collapse">
-        <EditForm Model="GroupFilter" OnValidSubmit="FilterGroupsAsync">
-            <div class="d-flex flex-wrap">
-                <div class="filter-card-item mt-2">
-                    <label class="mb-0 text-gray">Name</label>
-                    <InputText id="groupName" @bind-Value="GroupFilter.Name" class="form-control text-navyblue" />
-                </div>  
-                <div class="filter-card-item mt-2">
-                    <label class="mb-0 text-gray">Email</label>
-                    <InputText id="groupEmail" @bind-Value="GroupFilter.Email" class="form-control text-navyblue" />
-                </div>
-                <div class="filter-card-item mt-2">
-                    <label class="mb-0 text-gray">Members Count</label>
-                    <InputText id="groupMembersCount" @bind-Value="GroupFilter.MembersCount" class="form-control text-navyblue" />
-                </div>
-                <div class="flex-fill align-self-end text-right mt-2">
-                    <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearFilterAsync">Clear</button>
-                    <input id="filterBtn" type="submit" value="Filter" class="btn btn-primary" />
-                </div>
-            </div>
-        </EditForm>
-    </div>
-    <!-- SearchBox -->
-    <div class="d-flex align-items-center flex-wrap mb-3">
-        <button type="button" class="btn btn-light border my-1 mr-2" data-toggle="collapse" data-target="#filter-collapse" title="Filter">
-            <img class="icon-btn" src="/svg/action/filter.svg" />
-            Filter
-        </button>
-        <div class="flex-fill">
-            <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control is-search" placeholder="@Placeholder">
-        </div>
-    </div>
-    <!-- Table -->
-    <div class="table-responsive mb-3">
-        <table id="groups" class="table table-hover border rounded w-100 mb-0">
-            <thead style="user-select: none; ">
-                <tr>
-                    <th style="width:70%" @onclick="@(() => SortTable(nameof(Group.Name)))">
-                        @nameof(Group.Name)
-                        <img class="table-sort-arrow @SetSortIcon(nameof(Group.Name))" />
-                    </th>
-                    <th style="width:20%" @onclick="@(() => SortTable(nameof(Group.Email)))">
-                        @nameof(Group.Email)
-                        <img class="table-sort-arrow @SetSortIcon(nameof(Group.Email))" />
-                    </th>
-                    <th style="width:10%" @onclick="@(() => SortTable(nameof(Group.GroupMemberships)))">
-                        Employees
-                        <img class="table-sort-arrow @SetSortIcon(nameof(Group.GroupMemberships))" />
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Groups)
-                {
-                    <tr @onclick="(() => OnRowSelected(item.Id))" @ondblclick="GroupDetails" class="table-row @(CurrentGroupId == item.Id ? "table-selected-row" : string.Empty)">
-                        <td title="@item.Description">
-                            @item.Name
-                        </td>
-                        <td>
-                            @item.Email
-                        </td>
-                        <td>
-                            @item.GroupMemberships.Count
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <Pagination CurrentPageChanged="CurrentPageChanged"
-                DisplayRowsChanged="DisplayRowsChanged"            
+    <TableAction>
+        <FilterForm>
+            <GroupsFilter FilterChanged="FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+            <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalAddGroupAsync">
+                Add from AD
+            </button>
+            <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalCreateGroupAsync">
+                Create group
+            </button>
+            <button type="button" class="btn btn-light border my-1 mr-2 @(SelectedGroup == null ? "d-none" : null)" title="Details" @onclick="NavigateToGroupDetails">
+                <img class="icon-btn" src="/svg/action/details.svg" />
+                Details
+            </button>
+            <button type="button" class="btn btn-light border my-1 mr-2 @(SelectedGroup == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroupAsync">
+                <img class="icon-btn" src="/svg/action/edit.svg" />
+                Edit
+            </button>
+            <button type="button" class="btn btn-light border my-1 mr-2 @(SelectedGroup == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroupAsync">
+                <img class="icon-btn" src="/svg/action/delete.svg" />
+                Delete
+            </button>
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
+    <MainTable Items="Groups" SelectedItem="@SelectedGroup" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="NavigateToGroupDetails">
+        <TableHeader>
+            <MainTableHeader Title="Name"
+                             TitleWidth="70"
+                             SortColumn="@nameof(Group.Name)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Email"
+                             TitleWidth="20"
+                             SortColumn="@nameof(Group.Email)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+            <MainTableHeader Title="Employees"
+                             TitleWidth="10"
+                             SortColumn="@nameof(Group.GroupMemberships)"
+                             CurrentSortedColumn="@SortedColumn"
+                             SortedColumnChanged="SortedColumnChangedAsync"
+                             SortDirectionChanged="SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td title="@context.Description">
+                @context.Name
+            </td>
+            <td>
+                @context.Email
+            </td>
+            <td>
+                @context.GroupMemberships.Count
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                DisplayRowsChanged="DisplayRowsChangedAsync"
                 TotalRecords="TotalRecords"
                 CurrentPage="CurrentPage"
                 DisplayRows="DisplayRows"

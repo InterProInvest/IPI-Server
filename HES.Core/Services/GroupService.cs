@@ -32,7 +32,7 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
-        public async Task<List<Group>> GetAllGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, GroupFilter groupFilter)
+        public async Task<List<Group>> GetGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, GroupFilter groupFilter)
         {
             var query = _groupRepository
                 .Query()
@@ -83,7 +83,7 @@ namespace HES.Core.Services
             return await query.Skip(skip).Take(take).AsNoTracking().ToListAsync();
         }
 
-        public async Task<int> GetCountAsync(string searchText, GroupFilter groupFilter)
+        public async Task<int> GetGroupsCountAsync(string searchText, GroupFilter groupFilter)
         {
             var query = _groupRepository.Query();
 

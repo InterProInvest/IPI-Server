@@ -32,8 +32,8 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
-            var groupsCount = await _groupService.GetCountAsync(searchText: string.Empty, groupFilter: null);
-            return await _groupService.GetAllGroupsAsync(skip: 0, take: groupsCount, sortColumn: nameof(Group.Name), sortDirection: ListSortDirection.Ascending, searchText: string.Empty, groupFilter: null);
+            var groupsCount = await _groupService.GetGroupsCountAsync(searchText: string.Empty, groupFilter: null);
+            return await _groupService.GetGroupsAsync(skip: 0, take: groupsCount, sortColumn: nameof(Group.Name), sortDirection: ListSortDirection.Ascending, searchText: string.Empty, groupFilter: null);
         }
 
         [HttpGet("{id}")]
