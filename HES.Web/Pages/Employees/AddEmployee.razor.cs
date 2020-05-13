@@ -36,7 +36,7 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                LdapSettings = await AppSettingsService.GetDomainSettingsAsync();
+                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
 
                 if (LdapSettings != null)
                 {

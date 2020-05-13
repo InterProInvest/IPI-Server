@@ -31,7 +31,7 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            LdapSettings = await AppSettingsService.GetDomainSettingsAsync();
+            LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
             _initialized = true;
         }
 

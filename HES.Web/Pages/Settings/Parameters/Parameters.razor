@@ -25,6 +25,45 @@ else
             </div>
         </EditForm>
     </SettingsCard>
+    <SettingsCard Title="Email" Description="Email settings for sending invitations and notifications.">
+        <EditForm Model="@_email" OnValidSubmit="@UpdateEmailSettingsAsync">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label class="control-label text-gray">Host</label>
+                <InputText @bind-Value="_email.Host" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _email.Host)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">Port</label>
+                <InputNumber @bind-Value="_email.Port" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _email.Port)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">SSL</label>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="emailSsl" @bind="_email.EnableSSL">
+                    <label class="custom-control-label" for="emailSsl">@(_email.EnableSSL ? "Enabled" : "Disabled")</label>
+                </div>
+                <ValidationMessage For="@(() => _email.EnableSSL)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">User Name</label>
+                <InputText @bind-Value="_email.UserName" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _email.UserName)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">Password</label>
+                <InputText @bind-Value="_email.Password" type="password" class="form-control text-navyblue" />
+                <ValidationMessage For="@(() => _email.Password)" class="text-danger" />
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <span class="spinner-border spinner-border-sm @(_emailIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                    <span>Update</span>
+                </button>
+            </div>
+        </EditForm>
+    </SettingsCard>
     <SettingsCard Title="Server" Description="Information about this server that will be used in emails.">
         <EditForm Model="@_server" OnValidSubmit="@UpdateServerSettingsAsync">
             <DataAnnotationsValidator />

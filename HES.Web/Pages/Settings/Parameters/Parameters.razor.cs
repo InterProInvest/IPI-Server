@@ -21,10 +21,12 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] IJSRuntime JSRuntime { get; set; }
 
         private LicensingSettings _licensing;
+        private EmailSettings _email;
         private ServerSettings _server;
         private DomainHost _domain;
 
         private bool _licensingIsBusy;
+        private bool _emailIsBusy;
         private bool _serverIsBusy;
         private bool _initialized;
 
@@ -37,6 +39,7 @@ namespace HES.Web.Pages.Settings.Parameters
         protected override async Task OnInitializedAsync()
         {
             _licensing = await LoadLicensingSettingsAsync();
+            _email = await LoadEmailSettingsAsync();
             _server = await LoadServerSettingsAsync();
             _domain = await LoadDomainSettingsAsync();
             _initialized = true;
@@ -92,6 +95,39 @@ namespace HES.Web.Pages.Settings.Parameters
             }
         }
 
+        private async Task<EmailSettings> LoadEmailSettingsAsync()
+        {
+            var sttings = await AppSettingsService.GetEmailSettingsAsync();
+
+            if (sttings == null)
+                return new EmailSettings();
+
+            return sttings;
+        }
+
+        private async Task UpdateEmailSettingsAsync()
+        {
+            try
+            {
+                if (_emailIsBusy)
+                    return;
+
+                _emailIsBusy = true;
+
+                await AppSettingsService.SetEmailSettingsAsync(_email);
+                ToastService.ShowToast("Email settings updated.", ToastLevel.Success);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+            }
+            finally
+            {
+                _emailIsBusy = false;
+            }
+        }
+
         private async Task<ServerSettings> LoadServerSettingsAsync()
         {
             var serverSettings = await AppSettingsService.GetServerSettingsAsync();
@@ -128,7 +164,7 @@ namespace HES.Web.Pages.Settings.Parameters
 
         private async Task<DomainHost> LoadDomainSettingsAsync()
         {
-            var domainSettings = await AppSettingsService.GetDomainSettingsAsync();
+            var domainSettings = await AppSettingsService.GetLdapSettingsAsync();
 
             if (domainSettings == null)
                 return new DomainHost();

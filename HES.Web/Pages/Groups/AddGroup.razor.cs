@@ -39,7 +39,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                LdapSettings = await AppSettingsService.GetDomainSettingsAsync();
+                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
 
                 if (LdapSettings != null)
                 {

@@ -3,7 +3,6 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using QRCoder;
 using System;
 using System.Collections.Generic;
@@ -23,45 +22,41 @@ namespace HES.Core.Services
         private readonly IApplicationUserService _applicationUserService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IHostingEnvironment _env;
-        private readonly string host;
-        private readonly int port;
-        private readonly bool enableSSL;
-        private readonly string userName;
-        private readonly string password;
 
-        public EmailSenderService(IConfiguration config,
-                                    IApplicationUserService applicationUserService,
-                                    IAppSettingsService appSettingsService,
-                                    IHostingEnvironment env)
+        public EmailSenderService(IApplicationUserService applicationUserService,
+                                  IAppSettingsService appSettingsService,
+                                  IHostingEnvironment env)
         {
             _applicationUserService = applicationUserService;
             _appSettingsService = appSettingsService;
             _env = env;
-
-            host = config.GetValue<string>("EmailSender:Host");
-            port = config.GetValue<int>("EmailSender:Port");
-            enableSSL = config.GetValue<bool>("EmailSender:EnableSSL");
-            userName = config.GetValue<string>("EmailSender:UserName");
-            password = config.GetValue<string>("EmailSender:Password");
         }
 
         private async Task SendAsync(string email, string subject, string message)
         {
-            using var client = new SmtpClient(host, port)
+            var settings = await _appSettingsService.GetEmailSettingsAsync();
+            if (settings == null)
+                throw new Exception("Email settings not set.");
+
+            using var client = new SmtpClient(settings.Host, settings.Port)
             {
-                Credentials = new NetworkCredential(userName, password),
-                EnableSsl = enableSSL
+                Credentials = new NetworkCredential(settings.UserName, settings.Password),
+                EnableSsl = settings.EnableSSL
             };
 
-            await client.SendMailAsync(new MailMessage(userName, email, subject, message) { IsBodyHtml = true });
+            await client.SendMailAsync(new MailMessage(settings.UserName, email, subject, message) { IsBodyHtml = true });
         }
 
         private async Task SendAsync(MailMessage mailMessage)
         {
-            using var client = new SmtpClient(host, port)
+            var settings = await _appSettingsService.GetEmailSettingsAsync();
+            if (settings == null)
+                throw new Exception("Email settings not set.");
+
+            using var client = new SmtpClient(settings.Host, settings.Port)
             {
-                Credentials = new NetworkCredential(userName, password),
-                EnableSsl = enableSSL
+                Credentials = new NetworkCredential(settings.UserName, settings.Password),
+                EnableSsl = settings.EnableSSL
             };
 
             await client.SendMailAsync(mailMessage);
@@ -189,6 +184,10 @@ namespace HES.Core.Services
             if (employee.Email == null)
                 throw new ArgumentNullException(nameof(employee.Email));
 
+            var settings = await _appSettingsService.GetEmailSettingsAsync();
+            if (settings == null)
+                throw new Exception("Email settings not set.");
+
             var htmlMessage = GetTemplate("software-vault-invitation");
             htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
                 .Replace("{{validTo}}", validTo.Date.ToShortDateString())
@@ -214,7 +213,7 @@ namespace HES.Core.Services
 
             htmlView.LinkedResources.Add(img);
 
-            MailMessage mailMessage = new MailMessage(userName, employee.Email);
+            MailMessage mailMessage = new MailMessage(settings.UserName, employee.Email);
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
             mailMessage.Subject = "Hideez Software Vault application";

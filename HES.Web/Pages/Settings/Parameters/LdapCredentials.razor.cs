@@ -33,7 +33,7 @@ namespace HES.Web.Pages.Settings.Parameters
 
                 _IsBusy = true;
 
-                await AppSettingsService.SetDomainSettingsAsync(_ldapSettings);
+                await AppSettingsService.SetLdapSettingsAsync(_ldapSettings);
                 ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

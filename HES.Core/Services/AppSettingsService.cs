@@ -54,6 +54,46 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task<EmailSettings> GetEmailSettingsAsync()
+        {
+            var settings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
+
+            if (settings == null)
+                return null;
+
+            var deserialized = JsonConvert.DeserializeObject<EmailSettings>(settings.Value);
+            deserialized.Password = _dataProtectionService.Decrypt(deserialized.Password);
+
+            return deserialized;        
+        }
+
+        public async Task SetEmailSettingsAsync(EmailSettings email)
+        {
+            if (email == null)
+                throw new ArgumentNullException(nameof(email));
+
+            email.Password = _dataProtectionService.Encrypt(email.Password);
+
+            var json = JsonConvert.SerializeObject(email);
+
+            var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
+
+            if (appSettings == null)
+            {
+                appSettings = new AppSettings()
+                {
+                    Id = AppSettingsConstants.Email,
+                    Value = json
+                };
+                await _appSettingsRepository.AddAsync(appSettings);
+            }
+            else
+            {
+                appSettings.Value = json;
+                await _appSettingsRepository.UpdateAsync(appSettings);
+            }
+        }
+
         public async Task<ServerSettings> GetServerSettingsAsync()
         {
             var server = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Server);
@@ -89,7 +129,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task<LdapSettings> GetDomainSettingsAsync()
+        public async Task<LdapSettings> GetLdapSettingsAsync()
         {
             var domain = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
@@ -102,7 +142,7 @@ namespace HES.Core.Services
             return deserialized;
         }
 
-        public async Task SetDomainSettingsAsync(LdapSettings ldapSettings)
+        public async Task SetLdapSettingsAsync(LdapSettings ldapSettings)
         {
             if (ldapSettings == null)
                 throw new ArgumentNullException(nameof(LdapSettings));
