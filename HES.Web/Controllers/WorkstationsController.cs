@@ -196,7 +196,7 @@ namespace HES.Web.Controllers
 
             try
             {
-                await _workstationService.DeleteProximityDeviceAsync(id);
+                await _workstationService.DeleteProximityVaultAsync(id);
             }
             catch (Exception ex)
             {

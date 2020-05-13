@@ -84,10 +84,13 @@ namespace HES.Core.Services
             {
                 filter = filter.Where(w => w.IP.Contains(workstationFilter.IP));
             }
-            if (workstationFilter.StartDate != null && workstationFilter.EndDate != null)
+            if (workstationFilter.StartDate != null)
             {
-                filter = filter.Where(w => w.LastSeen >= workstationFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
-                                        && w.LastSeen <= workstationFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                filter = filter.Where(w => w.LastSeen >= workstationFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
+            }
+            if (workstationFilter.EndDate != null)
+            {
+                filter = filter.Where(w => w.LastSeen <= workstationFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
             }
             if (workstationFilter.RFID != null)
             {
@@ -219,7 +222,7 @@ namespace HES.Core.Services
 
         #endregion
 
-        #region Proximity Device
+        #region Proximity
 
         public IQueryable<WorkstationProximityVault> ProximityDeviceQuery()
         {
@@ -313,7 +316,7 @@ namespace HES.Core.Services
             await UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
         }
 
-        public async Task DeleteProximityDeviceAsync(string proximityDeviceId)
+        public async Task DeleteProximityVaultAsync(string proximityDeviceId)
         {
             if (proximityDeviceId == null)
             {
@@ -330,7 +333,7 @@ namespace HES.Core.Services
             await UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
         }
 
-        public async Task DeleteRangeProximityDevicesAsync(List<WorkstationProximityVault> proximityDevices)
+        public async Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityDevices)
         {
             if (proximityDevices == null)
             {

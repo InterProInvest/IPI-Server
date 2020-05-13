@@ -205,7 +205,7 @@ namespace HES.Web.Pages.Workstations
 
             try
             {
-                await _workstationService.DeleteProximityDeviceAsync(proximityDevice.Id);
+                await _workstationService.DeleteProximityVaultAsync(proximityDevice.Id);
                 SuccessMessage = $"Proximity device removed.";
             }
             catch (Exception ex)

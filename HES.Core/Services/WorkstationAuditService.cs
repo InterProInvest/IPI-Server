@@ -81,10 +81,13 @@ namespace HES.Core.Services
                  .Include(w => w.Account)
                  .AsQueryable();
 
-            if (workstationEventFilter.StartDate != null && workstationEventFilter.EndDate != null)
+            if (workstationEventFilter.StartDate != null)
             {
-                filter = filter.Where(w => w.Date >= workstationEventFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime() &&
-                                           w.Date <= workstationEventFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                filter = filter.Where(w => w.Date >= workstationEventFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
+            }
+            if (workstationEventFilter.EndDate != null)
+            {
+                filter = filter.Where(w => w.Date <= workstationEventFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
             }
             if (workstationEventFilter.EventId != null)
             {
@@ -237,10 +240,13 @@ namespace HES.Core.Services
                 .Include(w => w.Account)
                 .AsQueryable();
 
-            if (workstationSessionFilter.StartDate != null && workstationSessionFilter.EndDate != null)
+            if (workstationSessionFilter.StartDate != null)
             {
-                filter = filter.Where(w => w.StartDate >= workstationSessionFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime() &&
-                                           w.EndDate <= workstationSessionFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                filter = filter.Where(w => w.StartDate >= workstationSessionFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
+            }
+            if (workstationSessionFilter.EndDate != null)
+            {
+                filter = filter.Where(w => w.EndDate <= workstationSessionFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
             }
             if (workstationSessionFilter.UnlockId != null)
             {

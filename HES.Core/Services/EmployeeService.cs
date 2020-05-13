@@ -126,11 +126,13 @@ namespace HES.Core.Services
             {
                 filter = filter.Where(w => w.HardwareVaults.Count() == employeeFilter.DevicesCount);
             }
-            if (employeeFilter.StartDate != null && employeeFilter.EndDate != null)
+            if (employeeFilter.StartDate != null)
             {
-                filter = filter.Where(w => w.LastSeen.HasValue
-                                        && w.LastSeen.Value >= employeeFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime()
-                                        && w.LastSeen.Value <= employeeFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
+                filter = filter.Where(w => w.LastSeen.Value >= employeeFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
+            }
+            if (employeeFilter.EndDate != null)
+            {
+                filter = filter.Where(w => w.LastSeen.Value <= employeeFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
             }
 
             return await filter
