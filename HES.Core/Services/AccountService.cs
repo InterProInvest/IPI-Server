@@ -76,19 +76,31 @@ namespace HES.Core.Services
             return _accountRepository.DeleteRangeAsync(accounts);
         }
 
-        public async Task DeleteAccountsByEmployeeIdAsync(string employeeId)
+        public async Task DeleteAccountsByEmployeeIdAsync(string employeeId, bool deleteFromDatabase = false)
         {
-            var accounts = await _accountRepository
-                .Query()
-                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
-                .ToListAsync();
-
-            foreach (var account in accounts)
+            if (!deleteFromDatabase)
             {
-                account.Deleted = true;
-            }
+                var accounts = await _accountRepository
+                    .Query()
+                    .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
+                    .ToListAsync();
 
-            await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
+                foreach (var account in accounts)
+                {
+                    account.Deleted = true;
+                }
+
+                await _accountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted) });
+            }
+            else
+            {
+                var accounts = await _accountRepository
+                   .Query()
+                   .Where(x => x.EmployeeId == employeeId)
+                   .ToListAsync();
+
+                await _accountRepository.DeleteRangeAsync(accounts);
+            }
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Account, bool>> predicate)

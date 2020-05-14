@@ -3,9 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
-using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Account;
-using HES.Core.Models.Web.AppSettings;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
@@ -25,6 +23,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<Employee> _employeeRepository;
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
+        private readonly ISoftwareVaultService _softwareVaultService;
         private readonly IAccountService _accountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly IWorkstationService _workstationService;
@@ -35,6 +34,7 @@ namespace HES.Core.Services
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
                                IHardwareVaultService hardwareVaultService,
                                IHardwareVaultTaskService hardwareVaultTaskService,
+                               ISoftwareVaultService softwareVaultService,
                                IAccountService accountService,
                                ISharedAccountService sharedAccountService,
                                IWorkstationService workstationService,
@@ -45,6 +45,7 @@ namespace HES.Core.Services
             _employeeRepository = employeeRepository;
             _hardwareVaultService = hardwareVaultService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
+            _softwareVaultService = softwareVaultService;
             _accountService = accountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
@@ -211,15 +212,21 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new Exception("Employee not found");
 
-            var devices = await _hardwareVaultService
+            var hardwareVaults = await _hardwareVaultService
                 .VaultQuery()
                 .Where(x => x.EmployeeId == id)
                 .AnyAsync();
 
-            if (devices)
-            {
-                throw new Exception("The employee has a device attached, first untie the device before removing.");
-            }
+            if (hardwareVaults)
+                throw new Exception("First untie the hardware vault before removing.");
+
+            var softwareVaults = await _softwareVaultService
+                .SoftwareVaultQuery()
+                .Where(x => x.EmployeeId == id)
+                .AnyAsync();
+
+            if (softwareVaults)
+                throw new Exception("First untie the software vault before removing.");
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -230,7 +237,7 @@ namespace HES.Core.Services
                 var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
                 await _workstationSessionRepository.DeleteRangeAsync(allSessions);
                 // Remove all accounts
-                await _accountService.DeleteAccountsByEmployeeIdAsync(id);
+                await _accountService.DeleteAccountsByEmployeeIdAsync(id, deleteFromDatabase: true);
 
                 await _employeeRepository.DeleteAsync(employee);
 
@@ -243,10 +250,10 @@ namespace HES.Core.Services
             return await _employeeRepository.ExistAsync(predicate);
         }
 
-        public async Task UpdateLastSeenAsync(string deviceId)
+        public async Task UpdateLastSeenAsync(string vaultId)
         {
-            var device = await _hardwareVaultService.GetVaultByIdAsync(deviceId);
-            var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
+            var employee = await _employeeRepository.GetByIdAsync(vault.EmployeeId);
 
             if (employee != null)
             {

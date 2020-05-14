@@ -182,7 +182,8 @@ namespace HES.Core.Services
                     {
                         employees.Add(new Employee()
                         {
-                            Id = GetAttributeGUID(member),
+                            Id = Guid.NewGuid().ToString(),
+                            ActiveDirectoryGuid = GetAttributeGUID(member),
                             FirstName = TryGetAttribute(member, "givenName"),
                             LastName = TryGetAttribute(member, "sn"),
                             Email = TryGetAttribute(member, "mail"),
@@ -219,17 +220,8 @@ namespace HES.Core.Services
                     {
                         foreach (var employee in group.Employees)
                         {
-                            Employee currentEmployee = null;
-                            try
-                            {
-                                currentEmployee = await _employeeService.CreateEmployeeAsync(employee);
-                            }
-                            catch (AlreadyExistException)
-                            {
-                                // If user exist
-                                currentEmployee = await _employeeService.GetEmployeeByFullNameAsync(employee);
-                                employee.Id = currentEmployee.Id;
-                            }
+                            var imported = await _employeeService.ImportEmployeeAsync(employee);
+                            employee.Id = imported.Id;
                         }
                         await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), currentGroup.Id);
                     }
