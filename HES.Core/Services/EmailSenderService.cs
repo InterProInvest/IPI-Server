@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Hosting;
 using QRCoder;
@@ -47,12 +48,8 @@ namespace HES.Core.Services
             await client.SendMailAsync(new MailMessage(settings.UserName, email, subject, message) { IsBodyHtml = true });
         }
 
-        private async Task SendAsync(MailMessage mailMessage)
+        private async Task SendAsync(MailMessage mailMessage, EmailSettings settings)
         {
-            var settings = await _appSettingsService.GetEmailSettingsAsync();
-            if (settings == null)
-                throw new Exception("Email settings not set.");
-
             using var client = new SmtpClient(settings.Host, settings.Port)
             {
                 Credentials = new NetworkCredential(settings.UserName, settings.Password),
@@ -179,6 +176,24 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task SendAdminInvitationAsync(string email, string callbackUrl)
+        {
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+
+            var htmlMessage = GetTemplate("mail_admin-invitation");
+            htmlMessage = htmlMessage.Replace("{{callbackUrl}}", callbackUrl);
+
+            MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            mailMessage.AlternateViews.Add(htmlView);
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject = $"Action required - Invitation to Hideez Enterprise Server - {serverSettings.Name}";
+
+            await SendAsync(mailMessage, emailSettings);
+        }
+
         public async Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo)
         {
             if (employee.Email == null)
@@ -188,7 +203,7 @@ namespace HES.Core.Services
             if (settings == null)
                 throw new Exception("Email settings not set.");
 
-            var htmlMessage = GetTemplate("software-vault-invitation");
+            var htmlMessage = GetTemplate("mail_software-vault-invitation");
             htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
                 .Replace("{{validTo}}", validTo.Date.ToShortDateString())
                 .Replace("{{serverAddress}}", activation.ServerAddress)
@@ -218,7 +233,7 @@ namespace HES.Core.Services
             mailMessage.IsBodyHtml = true;
             mailMessage.Subject = "Hideez Software Vault application";
 
-            await SendAsync(mailMessage);
+            await SendAsync(mailMessage, settings);
         }
 
         public async Task SendHardwareVaultActivationCodeAsync(Employee employee, string code)
@@ -235,11 +250,43 @@ namespace HES.Core.Services
             await SendAsync(employee.Email, subject, html);
         }
 
+        private async Task<EmailSettings> GetEmailSettingsAsync()
+        {
+            var settings = await _appSettingsService.GetEmailSettingsAsync();
+
+            if (settings == null)
+                throw new Exception("Email settings not set.");
+
+            return settings;
+        }
+
+        private async Task<ServerSettings> GetServerSettingsAsync()
+        {
+            var settings = await _appSettingsService.GetServerSettingsAsync();
+
+            if (settings == null)
+                throw new Exception("Server settings not set.");
+
+            return settings;
+        }
+
         private string GetTemplate(string name)
         {
             var path = Path.Combine(_env.WebRootPath, "templates", $"{name}.html");
             using StreamReader reader = File.OpenText(path);
             return reader.ReadToEnd();
+        }
+
+        private LinkedResource CreateImageResource(string name)
+        {
+            string mediaType = MediaTypeNames.Image.Jpeg;
+            var img = new LinkedResource(Path.Combine(_env.WebRootPath, "templates", $"{name}.png"));
+            img.ContentId = name;
+            img.ContentType.MediaType = mediaType;
+            img.TransferEncoding = TransferEncoding.Base64;
+            img.ContentType.Name = img.ContentId;
+            img.ContentLink = new Uri("cid:" + img.ContentId);
+            return img;
         }
 
         private MemoryStream GetQRCode(string text)
