@@ -95,7 +95,7 @@ namespace HES.Web.Pages.Settings.Administrators
                     values: new { area = "Identity", code, email },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendAdminInvitationAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+                await _emailSender.SendUserInvitationAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
                 SuccessMessage = $"The invitation has been sent to {Input.Email}.";
             }
 

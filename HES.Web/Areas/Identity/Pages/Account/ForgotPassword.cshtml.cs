@@ -1,6 +1,5 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -50,16 +49,15 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 }
                 var employee = await _employeeService.EmployeeQuery().FirstOrDefaultAsync(e => e.Email == Input.Email);
                 var resetPasswordUrl = "/Account/ResetPassword";
-                var emailTitle = "Reset Password";
                 var emailBody = $"Dear {Input.Email} <br/> Please reset your password by";
 
-                var role = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
-                if (role)
-                {
-                    resetPasswordUrl = "/Account/External/ResetAccountPassword";
-                    emailTitle = "Hideez Enterpise Server - Reset Password of SAML IdP account";
-                    emailBody = $"Dear {employee.FullName} <br/> Please reset your password by";
-                }
+                //var role = await _userManager.IsInRoleAsync(user, ApplicationRoles.UserRole);
+                //if (role)
+                //{
+                //    resetPasswordUrl = "/Account/External/ResetAccountPassword";
+                //    emailTitle = "Hideez Enterpise Server - Reset Password of SAML IdP account";
+                //    emailBody = $"Dear {employee.FullName} <br/> Please reset your password by";
+                //}
 
                 // For more information on how to enable account confirmation and password reset please 
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
@@ -71,15 +69,12 @@ namespace HES.Web.Areas.Identity.Pages.Account
                     values: new { code, email },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    emailTitle,
-                    $"{emailBody} <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                await _emailSender.SendUserResetPasswordAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
             return Page();
-        }               
+        }
     }
 }

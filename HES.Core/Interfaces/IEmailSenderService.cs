@@ -11,9 +11,10 @@ namespace HES.Core.Interfaces
     {
         Task SendEmailAsync(string email, string subject, string htmlMessage);
         Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status);
-        Task SendDeviceLicenseStatus(List<HardwareVault> devices);
+        Task SendVaultLicenseStatus(List<HardwareVault> devices);
         Task SendActivateDataProtectionAsync();
-        Task SendAdminInvitationAsync(string email, string callbackUrl);
+        Task SendUserInvitationAsync(string email, string callbackUrl);
+        Task SendUserResetPasswordAsync(string email, string callbackUrl);
         Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo);
         Task SendHardwareVaultActivationCodeAsync(Employee employee, string code);
     }

@@ -99,29 +99,29 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendDeviceLicenseStatus(List<HardwareVault> devices)
+        public async Task SendVaultLicenseStatus(List<HardwareVault> vaults)
         {
             var message = new StringBuilder();
 
-            var valid = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Valid).OrderBy(d => d.Id).ToList();
+            var valid = vaults.Where(d => d.LicenseStatus == VaultLicenseStatus.Valid).OrderBy(d => d.Id).ToList();
             foreach (var item in valid)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
             }
 
-            var warning = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Warning).OrderBy(d => d.Id).ToList();
+            var warning = vaults.Where(d => d.LicenseStatus == VaultLicenseStatus.Warning).OrderBy(d => d.Id).ToList();
             foreach (var item in warning)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus} (90 days remainin)<br/>");
             }
 
-            var critical = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Critical).OrderBy(d => d.Id).ToList();
+            var critical = vaults.Where(d => d.LicenseStatus == VaultLicenseStatus.Critical).OrderBy(d => d.Id).ToList();
             foreach (var item in critical)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus} (30 days remainin)<br/>");
             }
 
-            var expired = devices.Where(d => d.LicenseStatus == VaultLicenseStatus.Expired).OrderBy(d => d.Id).ToList();
+            var expired = vaults.Where(d => d.LicenseStatus == VaultLicenseStatus.Expired).OrderBy(d => d.Id).ToList();
             foreach (var item in expired)
             {
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
@@ -176,12 +176,12 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendAdminInvitationAsync(string email, string callbackUrl)
+        public async Task SendUserInvitationAsync(string email, string callbackUrl)
         {
             var emailSettings = await GetEmailSettingsAsync();
             var serverSettings = await GetServerSettingsAsync();
 
-            var htmlMessage = GetTemplate("mail_admin-invitation");
+            var htmlMessage = GetTemplate("mail-user-invitation");
             htmlMessage = htmlMessage.Replace("{{callbackUrl}}", callbackUrl);
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
@@ -190,6 +190,24 @@ namespace HES.Core.Services
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
             mailMessage.Subject = $"Action required - Invitation to Hideez Enterprise Server - {serverSettings.Name}";
+
+            await SendAsync(mailMessage, emailSettings);
+        }
+
+        public async Task SendUserResetPasswordAsync(string email, string callbackUrl)
+        {
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+
+            var htmlMessage = GetTemplate("mail-user-reset-password");
+            htmlMessage = htmlMessage.Replace("{{callbackUrl}}", callbackUrl);
+
+            MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            mailMessage.AlternateViews.Add(htmlView);
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject = $"Action required - Password Reset to Hideez Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -203,7 +221,7 @@ namespace HES.Core.Services
             if (settings == null)
                 throw new Exception("Email settings not set.");
 
-            var htmlMessage = GetTemplate("mail_software-vault-invitation");
+            var htmlMessage = GetTemplate("mail-software-vault-invitation");
             htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
                 .Replace("{{validTo}}", validTo.Date.ToShortDateString())
                 .Replace("{{serverAddress}}", activation.ServerAddress)
@@ -249,6 +267,7 @@ namespace HES.Core.Services
                            ";
             await SendAsync(employee.Email, subject, html);
         }
+
 
         private async Task<EmailSettings> GetEmailSettingsAsync()
         {
