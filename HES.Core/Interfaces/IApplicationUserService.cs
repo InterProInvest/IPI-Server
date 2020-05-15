@@ -9,7 +9,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<ApplicationUser> Query();
         Task<ApplicationUser> GetUserByIdAsync(string id);
-        Task DeleteUserAsync(string id);
+        Task<ApplicationUser> DeleteUserAsync(string id);
         Task<IList<ApplicationUser>> GetAllAsync();
         Task<IList<ApplicationUser>> GetAdministratorsAsync();
     }

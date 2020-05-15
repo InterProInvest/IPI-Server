@@ -338,7 +338,7 @@ namespace HES.Core.Services
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { "LicenseStatus" });
-                    await _emailSenderService.SendDeviceLicenseStatus(devicesChangedStatus);
+                    await _emailSenderService.SendVaultLicenseStatus(devicesChangedStatus);
                     transactionScope.Complete();
                 }
             }
