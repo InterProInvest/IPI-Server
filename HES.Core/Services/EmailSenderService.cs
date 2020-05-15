@@ -33,21 +33,6 @@ namespace HES.Core.Services
             _env = env;
         }
 
-        private async Task SendAsync(string email, string subject, string message)
-        {
-            var settings = await _appSettingsService.GetEmailSettingsAsync();
-            if (settings == null)
-                throw new Exception("Email settings not set.");
-
-            using var client = new SmtpClient(settings.Host, settings.Port)
-            {
-                Credentials = new NetworkCredential(settings.UserName, settings.Password),
-                EnableSsl = settings.EnableSSL
-            };
-
-            await client.SendMailAsync(new MailMessage(settings.UserName, email, subject, message) { IsBodyHtml = true });
-        }
-
         private async Task SendAsync(MailMessage mailMessage, EmailSettings settings)
         {
             using var client = new SmtpClient(settings.Host, settings.Port)
@@ -59,48 +44,37 @@ namespace HES.Core.Services
             await client.SendMailAsync(mailMessage);
         }
 
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
-        {
-            string html = $@"
-                            <div style='font-family: Roboto;'>
-                                <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
-                                <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>{htmlMessage}</div>                    
-                            </div>
-                           ";
-
-            await SendAsync(email, subject, html);
-        }
-
         public async Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status)
         {
-            var server = await _appSettingsService.GetServerSettingsAsync();
-            string subject = server == null ? "HES notification" : $"({server.Name}) Notification";
-            string hes = server == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
-            string html = $@"
-                           <div style='font-family: Roboto;'>                       
-                                <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
-                                <br/>
-                                <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
-                                    The status of your Hideez License order of {createdAt} has been changed to {status}
-                                </div>    
-                                <br/>
-                                <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
-                                    Sincerely,<br/>
-                                    your {hes} 
-                                </div>  
-                           </div>
-                          ";
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+            var administrators = await _applicationUserService.GetAdministratorsAsync();
 
-            var admins = await _applicationUserService.GetAdministratorsAsync();
+            var htmlMessage = GetTemplate("mail-license-order-status");
 
-            foreach (var admin in admins)
+            htmlMessage = htmlMessage.Replace("{{createdAt}}", createdAt.ToString()).Replace("{{status}}", status.ToString());
+
+            foreach (var admin in administrators)
             {
-                await SendAsync(admin.Email, subject, html);
+                MailMessage mailMessage = new MailMessage(emailSettings.UserName, admin.Email);
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+                htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+                mailMessage.AlternateViews.Add(htmlView);
+                mailMessage.IsBodyHtml = true;
+                mailMessage.Subject = $"Hideez License Order Status Update - {serverSettings.Name}";
+
+                await SendAsync(mailMessage, emailSettings);
             }
         }
 
         public async Task SendVaultLicenseStatus(List<HardwareVault> vaults)
         {
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+            var administrators = await _applicationUserService.GetAdministratorsAsync();
+
+            var htmlMessage = GetTemplate("mail-vault-license-status");
+
             var message = new StringBuilder();
 
             var valid = vaults.Where(d => d.LicenseStatus == VaultLicenseStatus.Valid).OrderBy(d => d.Id).ToList();
@@ -127,52 +101,40 @@ namespace HES.Core.Services
                 message.Append($"{item.Id} - {item.LicenseStatus}<br/>");
             }
 
-            var server = await _appSettingsService.GetServerSettingsAsync();
-            string subject = server == null ? "HES notification" : $"({server.Name}) Notification";
-            string hes = server == null ? "HES" : $"<a href='{server.Url}'>HES</a>";
-            string html = $@"
-                           <div style='font-family: Roboto;'>                       
-                                <div style='line-height: 1.5;font-size: 14px;'>Dear Admin,</div>
-                                <br/>
-                                <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
-                                    Some of your Hideez Key devices have changes in their license status. Please review the list below and take action if required.
-                                    <br/>
-                                    <br/>
-                                    {message}
-                                </div>    
-                                <br/>
-                                <div style='font-weight: 400; line-height: 1.5;font-size: 14px;'>
-                                    Sincerely,<br/>
-                                    your {hes} 
-                                </div>  
-                           </div>
-                          ";
+            htmlMessage = htmlMessage.Replace("{{message}}", message.ToString());
 
-            var admins = await _applicationUserService.GetAdministratorsAsync();
-
-            foreach (var admin in admins)
+            foreach (var admin in administrators)
             {
-                await SendAsync(admin.Email, subject, html);
+                MailMessage mailMessage = new MailMessage(emailSettings.UserName, admin.Email);
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+                htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+                mailMessage.AlternateViews.Add(htmlView);
+                mailMessage.IsBodyHtml = true;
+                mailMessage.Subject = $"Hideez License Status Update - {serverSettings.Name}";
+
+                await SendAsync(mailMessage, emailSettings);
             }
         }
 
         public async Task SendActivateDataProtectionAsync()
         {
-            string subject = "Hideez Enterpise Server - Activate Data Protection";
-            string html = $@"
-                            <div style='font-family: Roboto;'>
-                                <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
-                                <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>
-                                    The server has been restarted, you need to activate the data protection, please go to the server.
-                                </div>                    
-                            </div>
-                           ";
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+            var administrators = await _applicationUserService.GetAdministratorsAsync();
 
-            var admins = await _applicationUserService.GetAdministratorsAsync();
+            var htmlMessage = GetTemplate("mail-user-confirm-email");
+            htmlMessage = htmlMessage.Replace("{{callbackUrl}}", $"{serverSettings.Url}");
 
-            foreach (var admin in admins)
+            foreach (var admin in administrators)
             {
-                await SendAsync(admin.Email, subject, html);
+                MailMessage mailMessage = new MailMessage(emailSettings.UserName, admin.Email);
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+                htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+                mailMessage.AlternateViews.Add(htmlView);
+                mailMessage.IsBodyHtml = true;
+                mailMessage.Subject = $"Action required - Hideez Enterprise Server Status Update - {serverSettings.Name}";
+
+                await SendAsync(mailMessage, emailSettings);
             }
         }
 
@@ -208,6 +170,24 @@ namespace HES.Core.Services
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
             mailMessage.Subject = $"Action required - Password Reset to Hideez Enterprise Server - {serverSettings.Name}";
+
+            await SendAsync(mailMessage, emailSettings);
+        }
+
+        public async Task SendUserConfirmEmailAsync(string email, string callbackUrl)
+        {
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+
+            var htmlMessage = GetTemplate("mail-user-confirm-email");
+            htmlMessage = htmlMessage.Replace("{{callbackUrl}}", callbackUrl);
+
+            MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            mailMessage.AlternateViews.Add(htmlView);
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject = $"Action required - Confirm your email to Hideez Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -256,16 +236,20 @@ namespace HES.Core.Services
 
         public async Task SendHardwareVaultActivationCodeAsync(Employee employee, string code)
         {
-            string subject = "Hideez Enterpise Server - Hardware vault";
-            string html = $@"
-                            <div style='font-family: Roboto;'>
-                                <h1 style='color: #0E3059;'>Hideez Enterprise Server</h1>
-                                <div style='margin-bottom: 15px; font-weight: 400; line-height: 1.5;font-size: 14px;'>
-                                    Your hardware vault activation code: <b>{code}</b>
-                                </div>                    
-                            </div>
-                           ";
-            await SendAsync(employee.Email, subject, html);
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+
+            var htmlMessage = GetTemplate("mail-hardware-vault-activation-code");
+            htmlMessage = htmlMessage.Replace("{{employee}}", employee.FullName).Replace("{{code}}", code);
+
+            MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            mailMessage.AlternateViews.Add(htmlView);
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject = $"Activate Hardware Vault - Hideez Enterprise Server - {serverSettings.Name}";
+
+            await SendAsync(mailMessage, emailSettings);
         }
 
 
