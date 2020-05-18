@@ -37,7 +37,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 return NotFound();
             }
 
-            DeviceLicenses = await _licenseService.GetDeviceLicensesByOrderIdAsync(id);
+            DeviceLicenses = await _licenseService.GetLicensesByOrderIdAsync(id);
             return Page();
         }
     }

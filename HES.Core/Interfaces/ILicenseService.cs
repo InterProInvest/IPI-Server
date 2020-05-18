@@ -7,16 +7,16 @@ namespace HES.Core.Interfaces
     public interface ILicenseService
     {
         Task<List<LicenseOrder>> GetLicenseOrdersAsync();
-        Task<LicenseOrder> GetLicenseOrderByIdAsync(string id);
+        Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId);
         Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder);
-        Task DeleteOrderAsync(string id);
+        Task DeleteOrderAsync(string orderId);
         Task SendOrderAsync(string orderId);
         Task UpdateLicenseOrdersAsync();
-        Task<IList<HardwareVaultLicense>> GetDeviceLicensesByDeviceIdAsync(string deviceId);
-        Task<IList<HardwareVaultLicense>> GetDeviceLicensesByOrderIdAsync(string orderId);
-        Task<List<HardwareVaultLicense>> AddDeviceLicensesAsync(string orderId, List<string> devicesIds);
-        Task UpdateDeviceLicenseStatusAsync();
-        Task SetDeviceLicenseAppliedAsync(string deviceId, string licenseId);
-        Task DiscardLicenseAppliedAsync(string deviceId);
+        Task<IList<HardwareVaultLicense>> GetNotAppliedLicensesByHardwareVaultIdAsync(string vaultId);
+        Task<IList<HardwareVaultLicense>> GetLicensesByOrderIdAsync(string orderId);
+        Task<List<HardwareVaultLicense>> AddHardwareVaultLicensesAsync(string orderId, List<string> vaultIds);
+        Task UpdatehardwareVaultsLicenseStatusAsync();
+        Task ChangeLicenseAppliedAsync(string vaultId, string licenseId);
+        Task ChangeLicenseNotAppliedAsync(string vaultId);
     }
 }

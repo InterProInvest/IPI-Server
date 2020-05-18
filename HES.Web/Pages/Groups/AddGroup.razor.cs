@@ -26,7 +26,6 @@ namespace HES.Web.Pages.Groups
         public LdapSettings LdapSettings { get; set; }
         public string WarningMessage { get; set; }
 
-        private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();
         private bool _isBusy;
         private string _searchText = string.Empty;
         private bool _isSortedAscending = true;

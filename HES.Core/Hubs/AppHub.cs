@@ -361,7 +361,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+                var licenses = await _licenseService.GetNotAppliedLicensesByHardwareVaultIdAsync(deviceId);
 
                 var deviceLicenseDto = new List<DeviceLicenseDTO>();
 
@@ -393,7 +393,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+                await _licenseService.ChangeLicenseAppliedAsync(deviceId, licenseId);
                 return HesResponse.Ok;
             }
             catch (Exception ex)
