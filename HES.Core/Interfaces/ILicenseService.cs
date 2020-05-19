@@ -9,13 +9,16 @@ namespace HES.Core.Interfaces
         Task<List<LicenseOrder>> GetLicenseOrdersAsync();
         Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId);
         Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder);
+        Task<List<LicenseOrder>> AddOrderRangeAsync(List<LicenseOrder> licenseOrders);
         Task DeleteOrderAsync(string orderId);
         Task SendOrderAsync(string orderId);
         Task UpdateLicenseOrdersAsync();
-        Task<IList<HardwareVaultLicense>> GetNotAppliedLicensesByHardwareVaultIdAsync(string vaultId);
-        Task<IList<HardwareVaultLicense>> GetLicensesByOrderIdAsync(string orderId);
-        Task<List<HardwareVaultLicense>> AddHardwareVaultLicensesAsync(string orderId, List<string> vaultIds);
-        Task UpdatehardwareVaultsLicenseStatusAsync();
+        Task<List<HardwareVaultLicense>> GetLicensesAsync();
+        Task<List<HardwareVaultLicense>> GetNotAppliedLicensesByHardwareVaultIdAsync(string vaultId);
+        Task<List<HardwareVaultLicense>> GetLicensesByOrderIdAsync(string orderId);
+        Task<List<HardwareVaultLicense>> AddHardwareVaultDummyLicensesAsync(string orderId, List<string> vaultIds);
+        Task<List<HardwareVaultLicense>> AddHardwareVaultLicenseRangeAsync(List<HardwareVaultLicense> hardwareVaultLicenses);
+        Task UpdateHardwareVaultsLicenseStatusAsync();
         Task ChangeLicenseAppliedAsync(string vaultId, string licenseId);
         Task ChangeLicenseNotAppliedAsync(string vaultId);
     }

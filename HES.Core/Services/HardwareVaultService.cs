@@ -3,7 +3,6 @@ using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models.API.Device;
 using HES.Core.Models.API.HardwareVault;
 using HES.Core.Models.Web.HardwareVault;
 using Hideez.SDK.Communication.HES.DTO;
@@ -15,7 +14,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -26,8 +24,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<HardwareVault> _hardwareVaultRepository;
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
         private readonly IAsyncRepository<HardwareVaultProfile> _hardwareVaultProfileRepository;
-        private readonly IAsyncRepository<HardwareVaultLicense> _hardwareVaultLicenseRepository;
-        private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
+        private readonly ILicenseService _licenseService;
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly IWorkstationService _workstationService;
@@ -36,22 +33,20 @@ namespace HES.Core.Services
         private readonly IHttpClientFactory _httpClientFactory;
 
         public HardwareVaultService(IAsyncRepository<HardwareVault> hardwareVaultRepository,
-                                     IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
-                                     IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository,
-                                     IAsyncRepository<HardwareVaultLicense> hardwareVaultLicenseRepository,
-                                     IAsyncRepository<LicenseOrder> licenseOrderRepository,
-                                     IHardwareVaultTaskService hardwareVaultTaskService,
-                                     IAccountService accountService,
-                                     IWorkstationService workstationService,
-                                     IAppSettingsService appSettingsService,
-                                     IDataProtectionService dataProtectionService,
-                                     IHttpClientFactory httpClientFactory)
+                                    IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
+                                    IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository,
+                                    ILicenseService licenseService,
+                                    IHardwareVaultTaskService hardwareVaultTaskService,
+                                    IAccountService accountService,
+                                    IWorkstationService workstationService,
+                                    IAppSettingsService appSettingsService,
+                                    IDataProtectionService dataProtectionService,
+                                    IHttpClientFactory httpClientFactory)
         {
             _hardwareVaultRepository = hardwareVaultRepository;
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
             _hardwareVaultProfileRepository = hardwareVaultProfileRepository;
-            _hardwareVaultLicenseRepository = hardwareVaultLicenseRepository;
-            _licenseOrderRepository = licenseOrderRepository;
+            _licenseService = licenseService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
             _accountService = accountService;
             _workstationService = workstationService;
@@ -366,7 +361,7 @@ namespace HES.Core.Services
                 // Import license orders
                 if (importDto.LicenseOrdersDto != null)
                 {
-                    var licenseOrders = await _licenseOrderRepository.Query().ToListAsync();
+                    var licenseOrders = await _licenseService.GetLicenseOrdersAsync();
                     // Remove existing
                     importDto.LicenseOrdersDto.RemoveAll(x => licenseOrders.Select(s => s.Id).Contains(x.Id));
 
@@ -389,7 +384,7 @@ namespace HES.Core.Services
                 // Import hardware vault licenses
                 if (importDto.HardwareVaultLicensesDto != null)
                 {
-                    var hardwareVaultLicenses = await _hardwareVaultLicenseRepository.Query().ToListAsync();
+                    var hardwareVaultLicenses = await _licenseService.GetLicensesAsync();
                     // Remove existing
                     importDto.HardwareVaultLicensesDto.RemoveAll(x => hardwareVaultLicenses.Select(s => s.LicenseOrderId).Contains(x.LicenseOrderId) && hardwareVaultLicenses.Select(s => s.HardwareVaultId).Contains(x.HardwareVaultId));
 
@@ -445,10 +440,12 @@ namespace HES.Core.Services
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     await _hardwareVaultRepository.AddRangeAsync(hardwareVaultsToImport);
-                    await _licenseOrderRepository.AddRangeAsync(licenseOrdersToImport);
-                    await _hardwareVaultLicenseRepository.AddRangeAsync(hardwareVaultLicensesToImport);
+                    await _licenseService.AddOrderRangeAsync(licenseOrdersToImport);
+                    await _licenseService.AddHardwareVaultLicenseRangeAsync(hardwareVaultLicensesToImport);
+                    await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
                     transactionScope.Complete();
                 }
+
             }
         }
 
@@ -486,17 +483,10 @@ namespace HES.Core.Services
             vault.MasterPassword = null;
             vault.HasNewLicense = true;
 
-            var licenses = await _hardwareVaultLicenseRepository
-                .Query()
-                .Where(d => d.HardwareVaultId == vaultId)
-                .ToListAsync();
-
-            licenses.ForEach(x => x.AppliedAt = null);
-
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Status), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.HasNewLicense) });
-                await _hardwareVaultLicenseRepository.UpdateOnlyPropAsync(licenses, new string[] { nameof(HardwareVaultLicense.AppliedAt) });
+                await _licenseService.ChangeLicenseNotAppliedAsync(vaultId);
 
                 transactionScope.Complete();
             }

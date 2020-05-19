@@ -35,7 +35,7 @@ namespace HES.Core.HostedServices
                 var scopedLicenseService = scope.ServiceProvider.GetRequiredService<ILicenseService>();
 
                 await scopedLicenseService.UpdateLicenseOrdersAsync();
-                await scopedLicenseService.UpdatehardwareVaultsLicenseStatusAsync();
+                await scopedLicenseService.UpdateHardwareVaultsLicenseStatusAsync();
             }
             catch (Exception ex)
             {

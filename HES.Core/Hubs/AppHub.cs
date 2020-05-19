@@ -237,20 +237,23 @@ namespace HES.Core.Hubs
                 .AsNoTracking()
                 .AnyAsync(d => d.Id == dto.DeviceSerialNo);
 
-            var vault = new HardwareVault()
+            if (!exist)
             {
-                Id = dto.DeviceSerialNo,
-                MAC = dto.Mac,
-                Model = dto.DeviceSerialNo.Substring(0, 5),
-                RFID = dto.Mac.Replace(":", "").Substring(0, 10),
-                Battery = dto.Battery,
-                Firmware = dto.FirmwareVersion,
-                HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
-                ImportedAt = DateTime.UtcNow,
-                LastSynced = DateTime.UtcNow
-            };
+                var vault = new HardwareVault()
+                {
+                    Id = dto.DeviceSerialNo,
+                    MAC = dto.Mac,
+                    Model = dto.DeviceSerialNo.Substring(0, 5),
+                    RFID = dto.Mac.Replace(":", "").Substring(0, 10),
+                    Battery = dto.Battery,
+                    Firmware = dto.FirmwareVersion,
+                    HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
+                    ImportedAt = DateTime.UtcNow,
+                    LastSynced = DateTime.UtcNow
+                };
 
-            await _deviceService.AddVaultIfNotExistAsync(vault);
+                await _deviceService.AddVaultIfNotExistAsync(vault);
+            }
         }
 
         // Incomming request
