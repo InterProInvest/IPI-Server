@@ -143,7 +143,7 @@ namespace HES.Web.Pages.Employees
                     // Proximity Unlock
                     if (!wizard.SkipProximityUnlock)
                     {
-                        await _workstationService.AddProximityDevicesAsync(wizard.WorkstationId, new string[] { wizard.DeviceId });
+                        await _workstationService.AddProximityVaultsAsync(wizard.WorkstationId, new string[] { wizard.DeviceId });
                     }
 
                     // Add workstation account

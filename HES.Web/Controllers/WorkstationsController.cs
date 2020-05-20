@@ -140,39 +140,39 @@ namespace HES.Web.Controllers
 
         #endregion
 
-        #region Proximity Device
+        #region Proximity
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<WorkstationProximityVault>>> GetProximityDevices(string id)
+        public async Task<ActionResult<IEnumerable<WorkstationProximityVault>>> GetProximityVaults(string id)
         {
-            return await _workstationService.GetProximityDevicesAsync(id);
+            return await _workstationService.GetProximityVaultsByWorkstationIdAsync(id);
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<WorkstationProximityVault>> GetProximityDeviceById(string id)
+        public async Task<ActionResult<WorkstationProximityVault>> GetProximityVaultById(string id)
         {
-            var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
+            var proximityVault = await _workstationService.GetProximityVaultByIdAsync(id);
 
-            if (proximityDevice == null)
+            if (proximityVault == null)
             {
                 return NotFound();
             }
 
-            return proximityDevice;
+            return proximityVault;
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> AddProximityDevice(AddProximityDeviceDto proximityDeviceDto)
+        public async Task<IActionResult> AddProximityVault(AddProximityVaultDto proximityVaultDto)
         {
             IList<WorkstationProximityVault> proximityDevices;
             try
             {
-                proximityDevices = await _workstationService.AddProximityDevicesAsync(proximityDeviceDto.WorkstationId, new string[] { proximityDeviceDto.DeviceId });
-                await _workstationService.UpdateProximitySettingsAsync(proximityDeviceDto.WorkstationId);
+                proximityDevices = await _workstationService.AddProximityVaultsAsync(proximityVaultDto.WorkstationId, new string[] { proximityVaultDto.HardwareVaultId });
+                await _workstationService.UpdateProximitySettingsAsync(proximityVaultDto.WorkstationId);
             }
             catch (Exception ex)
             {
@@ -188,7 +188,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<WorkstationProximityVault>> DeleteProximityDevice(string id)
         {
-            var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
+            var proximityDevice = await _workstationService.GetProximityVaultByIdAsync(id);
             if (proximityDevice == null)
             {
                 return NotFound();
