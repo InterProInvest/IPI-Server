@@ -67,7 +67,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendVaultLicenseStatus(List<HardwareVault> vaults)
+        public async Task SendHardwareVaultLicenseStatus(List<HardwareVault> vaults)
         {
             var emailSettings = await GetEmailSettingsAsync();
             var serverSettings = await GetServerSettingsAsync();

@@ -237,20 +237,23 @@ namespace HES.Core.Hubs
                 .AsNoTracking()
                 .AnyAsync(d => d.Id == dto.DeviceSerialNo);
 
-            var vault = new HardwareVault()
+            if (!exist)
             {
-                Id = dto.DeviceSerialNo,
-                MAC = dto.Mac,
-                Model = dto.DeviceSerialNo.Substring(0, 5),
-                RFID = dto.Mac.Replace(":", "").Substring(0, 10),
-                Battery = dto.Battery,
-                Firmware = dto.FirmwareVersion,
-                HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
-                ImportedAt = DateTime.UtcNow,
-                LastSynced = DateTime.UtcNow
-            };
+                var vault = new HardwareVault()
+                {
+                    Id = dto.DeviceSerialNo,
+                    MAC = dto.Mac,
+                    Model = dto.DeviceSerialNo.Substring(0, 5),
+                    RFID = dto.Mac.Replace(":", "").Substring(0, 10),
+                    Battery = dto.Battery,
+                    Firmware = dto.FirmwareVersion,
+                    HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
+                    ImportedAt = DateTime.UtcNow,
+                    LastSynced = DateTime.UtcNow
+                };
 
-            await _deviceService.AddVaultIfNotExistAsync(vault);
+                await _deviceService.AddVaultIfNotExistAsync(vault);
+            }
         }
 
         // Incomming request
@@ -361,7 +364,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+                var licenses = await _licenseService.GetNotAppliedLicensesByHardwareVaultIdAsync(deviceId);
 
                 var deviceLicenseDto = new List<DeviceLicenseDTO>();
 
@@ -393,7 +396,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+                await _licenseService.ChangeLicenseAppliedAsync(deviceId, licenseId);
                 return HesResponse.Ok;
             }
             catch (Exception ex)

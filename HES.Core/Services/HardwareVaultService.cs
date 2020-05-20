@@ -3,7 +3,7 @@ using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models.API.Device;
+using HES.Core.Models.API.HardwareVault;
 using HES.Core.Models.Web.HardwareVault;
 using Hideez.SDK.Communication.HES.DTO;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<HardwareVault> _hardwareVaultRepository;
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
         private readonly IAsyncRepository<HardwareVaultProfile> _hardwareVaultProfileRepository;
-        private readonly IAsyncRepository<HardwareVaultLicense> _hardwareVaultLicenseRepository;
+        private readonly ILicenseService _licenseService;
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly IWorkstationService _workstationService;
@@ -33,20 +33,20 @@ namespace HES.Core.Services
         private readonly IHttpClientFactory _httpClientFactory;
 
         public HardwareVaultService(IAsyncRepository<HardwareVault> hardwareVaultRepository,
-                                     IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
-                                     IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository,
-                                     IAsyncRepository<HardwareVaultLicense> hardwareVaultLicenseRepository,
-                                     IHardwareVaultTaskService hardwareVaultTaskService,
-                                     IAccountService accountService,
-                                     IWorkstationService workstationService,
-                                     IAppSettingsService appSettingsService,
-                                     IDataProtectionService dataProtectionService,
-                                     IHttpClientFactory httpClientFactory)
+                                    IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
+                                    IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository,
+                                    ILicenseService licenseService,
+                                    IHardwareVaultTaskService hardwareVaultTaskService,
+                                    IAccountService accountService,
+                                    IWorkstationService workstationService,
+                                    IAppSettingsService appSettingsService,
+                                    IDataProtectionService dataProtectionService,
+                                    IHttpClientFactory httpClientFactory)
         {
             _hardwareVaultRepository = hardwareVaultRepository;
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
             _hardwareVaultProfileRepository = hardwareVaultProfileRepository;
-            _hardwareVaultLicenseRepository = hardwareVaultLicenseRepository;
+            _licenseService = licenseService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
             _accountService = accountService;
             _workstationService = workstationService;
@@ -344,7 +344,7 @@ namespace HES.Core.Services
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            var path = $"api/Devices/GetDevices/{licensing.ApiKey}";
+            var path = $"api/Devices/GetDevicesWithLicenses/{licensing.ApiKey}";
             var response = await client.GetAsync(path);
 
             response.EnsureSuccessStatusCode();
@@ -352,39 +352,99 @@ namespace HES.Core.Services
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
-                var devicesDto = JsonConvert.DeserializeObject<List<DeviceImportDto>>(data);
+                var importDto = JsonConvert.DeserializeObject<ImportHardwareVaultDto>(data);
 
-                var devicesCount = await GetVaultsCountAsync(string.Empty, null);
-                var devices = await GetVaultsAsync(0, devicesCount, nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, null);
-                var devicesToImport = new List<HardwareVault>();
-                devicesDto.RemoveAll(x => devices.Select(s => s.Id).Contains(x.DeviceId));
+                var licenseOrdersToImport = new List<LicenseOrder>();
+                var hardwareVaultLicensesToImport = new List<HardwareVaultLicense>();
+                var hardwareVaultsToImport = new List<HardwareVault>();
 
-                foreach (var deviceDto in devicesDto)
+                // Import license orders
+                if (importDto.LicenseOrdersDto != null)
                 {
-                    devicesToImport.Add(new HardwareVault()
+                    var licenseOrders = await _licenseService.GetLicenseOrdersAsync();
+                    // Remove existing
+                    importDto.LicenseOrdersDto.RemoveAll(x => licenseOrders.Select(s => s.Id).Contains(x.Id));
+
+                    foreach (var licenseOrderDto in importDto.LicenseOrdersDto)
                     {
-                        Id = deviceDto.DeviceId,
-                        MAC = deviceDto.MAC,
-                        Model = deviceDto.Model,
-                        RFID = deviceDto.RFID,
-                        Battery = 100,
-                        Firmware = deviceDto.Firmware,
-                        Status = VaultStatus.Ready,
-                        StatusReason = VaultStatusReason.None,
-                        StatusDescription = null,
-                        LastSynced = null,
-                        NeedSync = false,
-                        EmployeeId = null,
-                        MasterPassword = null,
-                        HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
-                        ImportedAt = DateTime.UtcNow,
-                        HasNewLicense = false,
-                        LicenseStatus = VaultLicenseStatus.None,
-                        LicenseEndDate = null
-                    });
+                        licenseOrdersToImport.Add(new LicenseOrder
+                        {
+                            Id = licenseOrderDto.Id,
+                            ContactEmail = licenseOrderDto.ContactEmail,
+                            Note = licenseOrderDto.Note,
+                            StartDate = licenseOrderDto.StartDate,
+                            EndDate = licenseOrderDto.EndDate,
+                            ProlongExistingLicenses = licenseOrderDto.ProlongExistingLicenses,
+                            CreatedAt = licenseOrderDto.CreatedAt,
+                            OrderStatus = licenseOrderDto.OrderStatus
+                        });
+                    }
                 }
 
-                await _hardwareVaultRepository.AddRangeAsync(devicesToImport);
+                // Import hardware vault licenses
+                if (importDto.HardwareVaultLicensesDto != null)
+                {
+                    var hardwareVaultLicenses = await _licenseService.GetLicensesAsync();
+                    // Remove existing
+                    importDto.HardwareVaultLicensesDto.RemoveAll(x => hardwareVaultLicenses.Select(s => s.LicenseOrderId).Contains(x.LicenseOrderId) && hardwareVaultLicenses.Select(s => s.HardwareVaultId).Contains(x.HardwareVaultId));
+
+                    foreach (var hardwareVaultLicenseDto in importDto.HardwareVaultLicensesDto)
+                    {
+                        hardwareVaultLicensesToImport.Add(new HardwareVaultLicense()
+                        {
+                            HardwareVaultId = hardwareVaultLicenseDto.HardwareVaultId,
+                            LicenseOrderId = hardwareVaultLicenseDto.LicenseOrderId,
+                            ImportedAt = DateTime.UtcNow,
+                            AppliedAt = null,
+                            Data = Convert.FromBase64String(hardwareVaultLicenseDto.Data),
+                            EndDate = hardwareVaultLicenseDto.EndDate
+                        });
+                    }
+                }
+
+                // Import hardware vaults
+                if (importDto.HardwareVaultsDto != null)
+                {
+                    var vaults = await GetVaultsAsync(0, await GetVaultsCountAsync(string.Empty, null), nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, null);
+                    // Remove existing
+                    importDto.HardwareVaultsDto.RemoveAll(x => vaults.Select(s => s.Id).Contains(x.HardwareVaultId));
+
+                    foreach (var hardwareVaultDto in importDto.HardwareVaultsDto)
+                    {
+                        var hardwareVaultLicense = hardwareVaultLicensesToImport.FirstOrDefault(x => x.HardwareVaultId == hardwareVaultDto.HardwareVaultId);
+
+                        hardwareVaultsToImport.Add(new HardwareVault()
+                        {
+                            Id = hardwareVaultDto.HardwareVaultId,
+                            MAC = hardwareVaultDto.MAC,
+                            Model = hardwareVaultDto.Model,
+                            RFID = hardwareVaultDto.RFID,
+                            Battery = 100,
+                            Firmware = hardwareVaultDto.Firmware,
+                            Status = VaultStatus.Ready,
+                            StatusReason = VaultStatusReason.None,
+                            StatusDescription = null,
+                            LastSynced = null,
+                            NeedSync = false,
+                            EmployeeId = null,
+                            MasterPassword = null,
+                            HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
+                            ImportedAt = DateTime.UtcNow,
+                            HasNewLicense = hardwareVaultLicense == null ? false : true,
+                            LicenseStatus = VaultLicenseStatus.None,
+                            LicenseEndDate = hardwareVaultLicense == null ? null : hardwareVaultLicense.EndDate
+                        });
+                    }
+                }
+
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await _hardwareVaultRepository.AddRangeAsync(hardwareVaultsToImport);
+                    await _licenseService.AddOrderRangeAsync(licenseOrdersToImport);
+                    await _licenseService.AddHardwareVaultLicenseRangeAsync(hardwareVaultLicensesToImport);
+                    await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
+                    transactionScope.Complete();
+                }
             }
         }
 
@@ -422,17 +482,10 @@ namespace HES.Core.Services
             vault.MasterPassword = null;
             vault.HasNewLicense = true;
 
-            var licenses = await _hardwareVaultLicenseRepository
-                .Query()
-                .Where(d => d.HardwareVaultId == vaultId)
-                .ToListAsync();
-
-            licenses.ForEach(x => x.AppliedAt = null);
-
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Status), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.HasNewLicense) });
-                await _hardwareVaultLicenseRepository.UpdateOnlyPropAsync(licenses, new string[] { nameof(HardwareVaultLicense.AppliedAt) });
+                await _licenseService.ChangeLicenseNotAppliedAsync(vaultId);
 
                 transactionScope.Complete();
             }
