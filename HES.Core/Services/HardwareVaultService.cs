@@ -344,7 +344,7 @@ namespace HES.Core.Services
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            var path = $"api/Devices/GetDevices/{licensing.ApiKey}";
+            var path = $"api/Devices/GetDevicesWithLicenses/{licensing.ApiKey}";
             var response = await client.GetAsync(path);
 
             response.EnsureSuccessStatusCode();
@@ -445,7 +445,6 @@ namespace HES.Core.Services
                     await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
                     transactionScope.Complete();
                 }
-
             }
         }
 
