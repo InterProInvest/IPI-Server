@@ -21,7 +21,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         private readonly IWorkstationService _workstationService;
         private readonly IEmployeeService _employeeService;
         private readonly IDeviceService _deviceService;
-        private readonly IDeviceAccountService _deviceAccountService;
+        private readonly IAccountService _deviceAccountService;
         private readonly IOrgStructureService _orgStructureService;
         public IList<WorkstationEvent> WorkstationEvents { get; set; }
         public WorkstationEventFilter WorkstationEventFilter { get; set; }
@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
                           IWorkstationService workstationService,
                           IEmployeeService employeeService,
                           IDeviceService deviceService,
-                          IDeviceAccountService deviceAccountService,
+                          IAccountService deviceAccountService,
                           IOrgStructureService orgStructureService)
         {
             _workstationAuditService = workstationAuditService;
@@ -76,7 +76,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
                 .OrderBy(d => d.Name)
                 .ToListAsync();
 
-            currentAccounts.Insert(0, new DeviceAccount() { Id = "active", Name = "Active" });
+            currentAccounts.Insert(0, new Account() { Id = "active", Name = "Active" });
 
             var deletedAccounts = await _deviceAccountService
                           .Query()
@@ -84,7 +84,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
                           .OrderBy(d => d.Name)
                           .ToListAsync();
 
-            deletedAccounts.Insert(0, new DeviceAccount() { Id = "deleted", Name = "Deleted" });
+            deletedAccounts.Insert(0, new Account() { Id = "deleted", Name = "Deleted" });
 
             var accounts = currentAccounts.Concat(deletedAccounts);
 

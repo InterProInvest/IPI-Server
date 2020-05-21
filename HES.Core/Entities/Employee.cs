@@ -27,11 +27,15 @@ namespace HES.Core.Entities
         public string PositionId { get; set; }
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
+        public string PrimaryAccountId { get; set; }
         public List<Device> Devices { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
+        public List<SoftwareVault> SoftwareVaults { get; set; }
+        public List<SoftwareVaultInvitation> SoftwareVaultInvitations { get; set; }
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
+
         [ForeignKey("PositionId")]
         public Position Position { get; set; }
 

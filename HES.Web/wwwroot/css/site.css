@@ -513,9 +513,18 @@ a.navbar-brand {
     border-radius: 0.25rem !important;
     width: 100%;
     padding: 20px;
+    padding-bottom: 5px;
     margin-bottom: 20px;
     border: 1px solid #dee2e6 !important;
 }
+
+.filter-card-item {
+    min-width: 200px;
+}
+
+    .filter-card-item:not(:last-child) {
+        margin-right: 15px;
+    }
 
 .details-card {
     background: #fff;
@@ -540,6 +549,7 @@ a.navbar-brand {
     padding: 20px;
     border: 1px solid #dee2e6 !important;
 }
+
 .white-card {
     background: #FFF;
     border-radius: 0.25rem !important;
@@ -972,6 +982,14 @@ div.dataTables_scrollHead table.dataTable {
     background: #FFF;
     -webkit-mask: url('../svg/sidebar/round-device.svg');
     mask: url('../svg/sidebar/round-device.svg');
+}
+
+.icon-software-vault {
+    width: 24px;
+    height: 24px;
+    background: #FFF;
+    -webkit-mask: url('../svg/sidebar-software-vault.svg');
+    mask: url('../svg/sidebar-software-vault.svg');
 }
 
 .icon-audit {

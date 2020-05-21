@@ -6,35 +6,61 @@
 }
 else
 {
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h1 class="text-navyblue">Groups</h1>
-        <div>
-            <button type="button" class="btn btn-primary" @onclick="OpenModalAddGroup">
-                Add from AD
-            </button>
-            <button type="button" class="btn btn-primary" @onclick="OpenModalGreateGroup">
-                Create group
-            </button>
-        </div>
+    <!-- Actions -->
+    <div class="d-flex align-items-center flex-wrap mb-2">
+        <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalAddGroup">
+            Add from AD
+        </button>
+        <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalGreateGroup">
+            Create group
+        </button>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Details" @onclick="GroupDetails">
+            <img class="icon-btn" src="/svg/action/details.svg" />
+            Details
+        </button>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroup">
+            <img class="icon-btn" src="/svg/action/edit.svg" />
+            Edit
+        </button>
+        <button type="button" class="btn btn-light border my-1 mr-2 @(CurrentGroupId == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroup">
+            <img class="icon-btn" src="/svg/action/delete.svg" />
+            Delete
+        </button>
     </div>
-    <div class="d-flex justify-content-end align-items-center mb-3">
-        <button class="btn btn-light m-1 p-1" title="Details" @onclick="GroupDetails" disabled="@(CurrentGroupId == null ? true : false)">
-            <img style="width:32px;height:32px;" src="/svg/action/details.svg" />
-        </button>
-        <button class="btn btn-light m-1 p-1" title="Edit Group" @onclick="OpenModalEditGroup" disabled="@(CurrentGroupId == null ? true : false)">
-            <img style="width:32px;height:32px;" src="/svg/action/edit.svg" />
-        </button>
-        <button class="btn btn-light m-1 p-1" title="Delete Group" @onclick="OpenModalDeleteGroup" disabled="@(CurrentGroupId == null ? true : false)">
-            <img style="width:32px;height:32px;" src="/svg/action/delete.svg" />
-        </button>
-        <!-- SearchBox -->
-        <div class="form-group has-search-right mb-0 ml-3">
-            <div class="form-control-feedback">
-                <img class="img-size" src="/svg/action/search.svg" />
+    <!-- Filter -->
+    <div id="filter-collapse" class="filter-card collapse">
+        <EditForm Model="GroupFilter" OnValidSubmit="FilterGroupsAsync">
+            <div class="d-flex flex-wrap">
+                <div class="filter-card-item mt-2">
+                    <label class="mb-0 text-gray">Name</label>
+                    <InputText id="groupName" @bind-Value="GroupFilter.Name" class="form-control text-navyblue" />
+                </div>  
+                <div class="filter-card-item mt-2">
+                    <label class="mb-0 text-gray">Email</label>
+                    <InputText id="groupEmail" @bind-Value="GroupFilter.Email" class="form-control text-navyblue" />
+                </div>
+                <div class="filter-card-item mt-2">
+                    <label class="mb-0 text-gray">Members Count</label>
+                    <InputText id="groupMembersCount" @bind-Value="GroupFilter.MembersCount" class="form-control text-navyblue" />
+                </div>
+                <div class="flex-fill align-self-end text-right mt-2">
+                    <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearFilterAsync">Clear</button>
+                    <input id="filterBtn" type="submit" value="Filter" class="btn btn-primary" />
+                </div>
             </div>
-            <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control " placeholder="@Placeholder">
+        </EditForm>
+    </div>
+    <!-- SearchBox -->
+    <div class="d-flex align-items-center flex-wrap mb-3">
+        <button type="button" class="btn btn-light border my-1 mr-2" data-toggle="collapse" data-target="#filter-collapse" title="Filter">
+            <img class="icon-btn" src="/svg/action/filter.svg" />
+            Filter
+        </button>
+        <div class="flex-fill">
+            <input type="text" @bind-value="SearchText" @bind-value:event="oninput" @onkeyup="@OnKeyUp" class="form-control is-search" placeholder="@Placeholder">
         </div>
     </div>
+    <!-- Table -->
     <div class="table-responsive mb-3">
         <table id="groups" class="table table-hover border rounded w-100 mb-0">
             <thead style="user-select: none; ">
@@ -71,9 +97,8 @@ else
             </tbody>
         </table>
     </div>
-    <Pagination DisplayRecordsSelector="true"
-                DisplayTotalRecordsInfo="true"
-                SelectedPageAsync="RefreshTable"
+    <Pagination CurrentPageChanged="CurrentPageChanged"
+                DisplayRowsChanged="DisplayRowsChanged"            
                 TotalRecords="TotalRecords"
                 CurrentPage="CurrentPage"
                 DisplayRows="DisplayRows"

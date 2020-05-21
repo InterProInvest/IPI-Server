@@ -47,6 +47,12 @@
                     <span class="page_labels">Devices</span>
                 </a>
             </li>
+            @*<li class="nav-item">
+                <a class="nav-link @MenuNavPages.SoftwareVaultsNavClass(ViewContext)" asp-page="/SoftwareVaults/Index">
+                    <img class="icon-software-vault i-sidebar" />
+                    <span class="page_labels">Software Vaults</span>
+                </a>
+            </li>*@
             <li class="nav-item">
                 <a class="nav-link collapsed aria-exp @MenuNavPages.AuditNavClass(ViewContext)" data-toggle="collapse" href="#collapseAudit" role="button" aria-expanded="false" aria-controls="collapseAudit">
                     <img class="icon-audit i-sidebar" />
@@ -119,11 +125,6 @@
                                     <span>Parameters</span>
                                 </a>
                             </li>
-                            @*<li class="nav-item">
-                                  <a class="nav-link @SettingsNavPages.IdentityProviderNavClass(ViewContext)" asp-page="/Settings/IdentityProvider/Index">
-                                      <span>SAML IdP</span>
-                                  </a>
-                        </li>*@
                         </ul>
                     </div>
                 </div>
@@ -134,6 +135,6 @@
     <div class="navigation-menu__footer copyright">
         <span class="d-block">© 2020 Hideez Group Inc.</span>
         <span class="d-block">Hideez Enterprise Server</span>
-        <span class="d-block">Version: @HES.Core.Constants.AppVersionConstants.Version</span>
+        <span class="d-block">Version: @HES.Core.Constants.ServerConstants.Version</span>
     </div>
 </div>

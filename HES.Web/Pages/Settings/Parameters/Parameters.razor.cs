@@ -18,9 +18,9 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] IToastService ToastService { get; set; }
         [Inject] IJSRuntime JSRuntime { get; set; }
 
-        private Licensing licensing = new Licensing();
-        private Server server = new Server();
-        private Domain domain = new Domain();
+        private LicensingSettings licensing = new LicensingSettings();
+        private ServerSettings server = new ServerSettings();
+        private DomainSettings domain = new DomainSettings();
         private bool licensingIsBusy;
         private bool serverIsBusy;
         private bool domainIsBusy;

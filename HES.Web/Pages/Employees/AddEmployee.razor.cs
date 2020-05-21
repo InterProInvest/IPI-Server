@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
+using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
@@ -21,10 +22,11 @@ namespace HES.Web.Pages.Employees
         [Inject] NavigationManager NavigationManager { get; set; }
 
         public List<ActiveDirectoryUser> Users { get; set; }
+        public DomainSettings Domain { get; set; }
+        public string WarningMessage { get; set; }
 
-        private ActiveDirectoryLogin _login = new ActiveDirectoryLogin();
+        private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();
         private bool _createGroups;
-        private string _warningMessage;
         private bool _isBusy;
         private string _searchText = string.Empty;
         private bool _isSortedAscending = true;
@@ -32,11 +34,10 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            var domain = await AppSettingsService.GetDomainSettingsAsync();
-            if (domain != null)
-            {
-                _login.Server = domain.IpAddress;
-            }
+            Domain = await AppSettingsService.GetDomainSettingsAsync();
+
+            if (Domain != null)
+                _credentials.Host = Domain.Host;
         }
 
         private async Task Connect()
@@ -47,11 +48,10 @@ namespace HES.Web.Pages.Employees
             }
 
             _isBusy = true;
-            await Task.Delay(1); // To display a spinner, without await is not displayed
             
             try
             {
-                Users = LdapService.GetAdUsers(_login.Server, _login.UserName, _login.Password);
+                Users = await LdapService.GetUsersAsync(_credentials);
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ namespace HES.Web.Pages.Employees
             {
                 if (!Users.Any(x => x.Checked))
                 {
-                    _warningMessage = "Please select at least one user.";
+                    WarningMessage = "Please select at least one user.";
                     return;
                 }
 
@@ -82,7 +82,7 @@ namespace HES.Web.Pages.Employees
 
                 _isBusy = true;
 
-                await LdapService.AddAdUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
+                await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
                 NavigationManager.NavigateTo("/Employees", true);
                 await ModalDialogService.CloseAsync();
             }

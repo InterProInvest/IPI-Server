@@ -1,9 +1,9 @@
-﻿using HES.Core.Entities;
+﻿using HES.Core.Constants;
+using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API.Device;
-using Hideez.SDK.Communication;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -12,7 +12,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -20,41 +19,23 @@ namespace HES.Core.Services
 {
     public class DeviceService : IDeviceService
     {
-        class MyHideezDevice
-        {
-            public string Id { get; set; }
-            public string MAC { get; set; }
-            public string ManufacturerUserId { get; set; }
-            public string RFID { get; set; }
-            public string Model { get; set; }
-            public string BootLoaderVersion { get; set; }
-            public DateTime Manufactured { get; set; }
-            public string CpuSerialNo { get; set; }
-            public byte[] DeviceKey { get; set; }
-            public int? BleDeviceBatchId { get; set; }
-            public string RegisteredUserId { get; set; }
-        }
-
         private readonly IAsyncRepository<Device> _deviceRepository;
         private readonly IAsyncRepository<DeviceAccessProfile> _deviceAccessProfileRepository;
         private readonly IDeviceTaskService _deviceTaskService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IAesCryptographyService _aesService;
 
         public DeviceService(IAsyncRepository<Device> deviceRepository,
                              IAsyncRepository<DeviceAccessProfile> deviceAccessProfileRepository,
                              IDeviceTaskService deviceTaskService,
                              IAppSettingsService appSettingsService,
-                             IHttpClientFactory httpClientFactory,
-                             IAesCryptographyService aesService)
+                             IHttpClientFactory httpClientFactory)
         {
             _deviceRepository = deviceRepository;
             _deviceAccessProfileRepository = deviceAccessProfileRepository;
             _deviceTaskService = deviceTaskService;
             _appSettingsService = appSettingsService;
             _httpClientFactory = httpClientFactory;
-            _aesService = aesService;
         }
 
         #region Device
@@ -150,56 +131,6 @@ namespace HES.Core.Services
             return await _deviceRepository.AddAsync(device);
         }
 
-        public async Task<(IList<Device> devicesExists, IList<Device> devicesImported, string message)> ImportDevicesAsync(string key, byte[] fileContent)
-        {
-            IList<Device> devicesExists = null;
-            IList<Device> devicesImported = null;
-            string message = null;
-
-            var objects = _aesService.DecryptObject<List<MyHideezDevice>>(fileContent, Encoding.Unicode.GetBytes(key));
-            if (objects.Count > 0)
-            {
-                // Get all exists devices
-                var isExist = await _deviceRepository.Query().Where(d => objects.Select(o => o.Id).Contains(d.Id)).ToListAsync();
-                if (isExist.Count > 0)
-                {
-                    devicesExists = isExist;
-                }
-                // Devices to import
-                var toImport = objects.Where(z => !isExist.Select(m => m.Id).Contains(z.Id)).Select(d => new Device()
-                {
-                    Id = d.Id,
-                    MAC = d.MAC,
-                    Model = d.Model,
-                    RFID = d.RFID,
-                    Battery = 100,
-                    Firmware = "3.0.0",
-                    LastSynced = null,
-                    EmployeeId = null,
-                    PrimaryAccountId = null,
-                    MasterPassword = null,
-                    AcceessProfileId = "default",
-                    ImportedAt = DateTime.UtcNow
-                })
-                .ToList();
-
-                // Add devices if count > 0
-                if (toImport.Count > 0)
-                {
-                    // Save devices
-                    await _deviceRepository.AddRangeAsync(toImport);
-                    devicesImported = toImport;
-                }
-
-                return (devicesExists, devicesImported, message);
-            }
-            else
-            {
-                message = "File is recognized, but it is no devices to import. Check file structure and try again.";
-                return (devicesExists, devicesImported, message);
-            }
-        }
-
         public async Task ImportDevicesAsync()
         {
             var licensing = await _appSettingsService.GetLicensingSettingsAsync();
@@ -233,7 +164,7 @@ namespace HES.Core.Services
                         RFID = newDeviceDto.RFID,
                         Battery = 100,
                         Firmware = newDeviceDto.Firmware,
-                        AcceessProfileId= "default",
+                        AcceessProfileId = ServerConstants.DefaulAccessProfileId,                        
                         ImportedAt = DateTime.UtcNow
                     });
                 }
@@ -280,6 +211,21 @@ namespace HES.Core.Services
             await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { "Battery", "Firmware", "State", "LastSynced" });
         }
 
+        public async Task UpdateNeedSyncAsync(Device device, bool needSync)
+        {
+            device.NeedSync = needSync;
+            await _deviceRepository.UpdateOnlyPropAsync(device, new string[] { nameof(Device.NeedSync) });
+        }
+
+        public async Task UpdateNeedSyncAsync(IList<Device> devices, bool needSync)
+        {
+            foreach (var device in devices)
+            {
+                device.NeedSync = needSync;
+            }
+            await _deviceRepository.UpdateOnlyPropAsync(devices, new string[] { nameof(Device.NeedSync) });
+        }
+
         public async Task UnlockPinAsync(string deviceId)
         {
             if (deviceId == null)
@@ -311,18 +257,18 @@ namespace HES.Core.Services
             var device = await _deviceRepository.GetByIdAsync(deviceId);
 
             device.EmployeeId = null;
-            device.PrimaryAccountId = null;
             device.MasterPassword = null;
             device.AcceessProfileId = "default";
             device.LastSynced = DateTime.UtcNow;
+            device.NeedSync = false;
 
             var properties = new List<string>()
             {
-                "EmployeeId",
-                "PrimaryAccountId",
-                "MasterPassword",
-                "AcceessProfileId",
-                "LastSynced"
+                nameof(Device.EmployeeId),
+                nameof(Device.MasterPassword),
+                nameof(Device.AcceessProfileId),
+                nameof(Device.LastSynced),
+                nameof(Device.NeedSync)
             };
 
             await _deviceRepository.UpdateOnlyPropAsync(device, properties.ToArray());
@@ -497,7 +443,7 @@ namespace HES.Core.Services
         {
             // Get devices by profile id
             var tasks = await _deviceTaskService
-               .Query()
+               .TaskQuery()
                .Where(d => d.Operation == TaskOperation.Wipe || d.Operation == TaskOperation.Link)
                .Select(s => s.DeviceId)
                .AsNoTracking()

@@ -1,9 +1,8 @@
 ﻿@model HES.Web.Pages.Employees.DetailsModel
 
-<form method="post">
+<form method="post" id="accForm" asp-page-handler="EditPersonalAccountPwd">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="DeviceAccount.Id" />
-    <input type="hidden" asp-for="DeviceAccount.DeviceId" />
     <input type="hidden" asp-for="DeviceAccount.EmployeeId" />
     <input type="hidden" asp-for="DeviceAccount.Name" />
     <input type="hidden" asp-for="DeviceAccount.Login" />
@@ -20,12 +19,35 @@
         <input asp-for="AccountPassword.ConfirmPassword" class="form-control text-navyblue" />
         <span asp-validation-for="AccountPassword.ConfirmPassword" class="text-danger"></span>
     </div>
+
+    <div id="updateAdPasswordWrapper" class="form-group @(ViewBag.IsDomain == true ? "" : "d-none")">
+        <div class="custom-control custom-checkbox">
+            <input id="updateAdPassword" type="checkbox" class="custom-control-input" name="updateAdPwd" value="true" />
+            <label class="custom-control-label" for="updateAdPassword">Update the password in the AD</label>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="ActiveDirectoryCredential.Host" value="@ViewBag.Host" />
+    <input id="adUserName" type="hidden" asp-for="ActiveDirectoryCredential.UserName" value="user" />
+    <input id="adPassword" type="hidden" asp-for="ActiveDirectoryCredential.Password" value="password" />
     <div class="form-group m-0 text-right">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="EditPersonalAccountPwd" />
+        <input type="button" value="Save" class="btn btn-primary" onclick="accSubmit()" />
     </div>
 </form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+
+<script>
+    function accSubmit() {    
+        if ($('#updateAdPassword').prop('checked')) {
+            var valid = $('#accForm').valid();
+            if (valid) {
+                $('#secondModalDialog').modal('show');
+            }
+            return false;
+        }
+        $('#adUserName').val('user');
+        $('#adPassword').val('password');
+        $('#accForm').submit();
+    }
+</script>

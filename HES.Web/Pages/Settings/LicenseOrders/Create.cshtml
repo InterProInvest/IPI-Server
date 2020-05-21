@@ -55,37 +55,7 @@ else
                             </div>
                         </div>
                         <div class="col-12 col-sm-8" style="max-height:390px; overflow-y:auto">
-                            <table id="nonLicensedDevices" class="display table table-hover inside-scrollbar w-100">
-                                <thead>
-                                    <tr>
-                                        <th class="table-col-menu">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" onchange="checkAllNonLicensedDevices(this)" class="custom-control-input" id="checkbox_all_nonLicensedDevices">
-                                                <label class="custom-control-label" for="checkbox_all_nonLicensedDevices"></label>
-                                            </div>
-                                        </th>
-                                        <th>
-                                            Serial Number
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var device in Model.NonLicensedDevices)
-                                    {
-                                        <tr>
-                                            <td class="table-col-menu">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input" name="nonLicensedDevicesIds" id="nonLicensedDevices_@device.Id" value="@device.Id">
-                                                    <label class="custom-control-label" for="nonLicensedDevices_@device.Id"></label>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => device.Id)
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                            <component type="typeof(LicenseOrderDeviceTable)" render-mode="ServerPrerendered" param-NonLicensedDevices="@Model.NonLicensedDevices" />
                         </div>
                         <div class="col">
                             <input type="submit" value="Create" class="btn btn-primary mr-2" asp-page-handler="CreateNewLicense" />
@@ -122,37 +92,7 @@ else
                             </div>
                         </div>
                         <div class="col-12 col-sm-8" style="max-height:390px; overflow-y:auto">
-                            <table id="licensedDevices" class="display table table-hover inside-scrollbar w-100">
-                                <thead>
-                                    <tr>
-                                        <th class="table-col-menu">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" onchange="checkAllLicensedDevices(this)" class="custom-control-input" id="checkbox_all_licensedDevices">
-                                                <label class="custom-control-label" for="checkbox_all_licensedDevices"></label>
-                                            </div>
-                                        </th>
-                                        <th>
-                                            Serial Number
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var device in Model.LicensedDevices)
-                                    {
-                                        <tr>
-                                            <td class="table-col-menu">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input" name="licensedDevicesIds" id="licensedDevices_@device.Id" value="@device.Id">
-                                                    <label class="custom-control-label" for="licensedDevices_@device.Id"></label>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => device.Id)
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                            <component type="typeof(RenewLicenseDeviceTable)" render-mode="ServerPrerendered" param-LicensedDevices="@Model.LicensedDevices" />        
                         </div>
                         <div class="col">
                             <input type="submit" value="Create" class="btn btn-primary mr-2" asp-page-handler="CreateRenewLicense" />

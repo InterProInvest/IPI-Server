@@ -1,0 +1,59 @@
+﻿<div class="list-group mb-3">
+    <div class="list-group-item">
+        <h6 class="mb-1">OS</h6>
+        <p class="mb-1">@SoftwareVault.OS</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Model</h6>
+        <p class="mb-1">@SoftwareVault.Model</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Client App Version</h6>
+        <p class="mb-1">@SoftwareVault.ClientAppVersion</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Created At</h6>
+        <p class="mb-1">@TimeZoneInfo.ConvertTimeFromUtc((DateTime)SoftwareVault.CreatedAt, TimeZoneInfo.Local)</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Status</h6>
+        <p class="mb-1">@SoftwareVault.Status</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Employee</h6>
+        <p class="mb-1">@SoftwareVault.Employee.FullName</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">License End Date</h6>
+        <p class="mb-1">
+            @if (SoftwareVault.LicenseEndDate != null)
+            {
+                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)SoftwareVault.LicenseEndDate, TimeZoneInfo.Local)
+            }
+            else
+            {
+                <span>No License</span>
+            }
+        </p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">License Status</h6>
+        <p class="mb-1">@SoftwareVault.LicenseStatus</p>
+    </div>
+    <div class="list-group-item">
+        <h6 class="mb-1">Need Sync</h6>
+        <p class="mb-1">
+            @if (SoftwareVault.NeedSync)
+            {
+                <span>Yes</span>
+            }
+            else
+            {
+                <span>No</span>
+            }
+        </p>
+    </div>
+</div>
+<div class="text-right">
+    <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
+</div>

@@ -88,10 +88,12 @@ namespace HES.Infrastructure
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(T entity)
+        public async Task<T> DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
             await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         public async Task DeleteRangeAsync(IList<T> entity)

@@ -7,8 +7,6 @@ namespace HES.Core.Models.API
         [Required]
         public string EmployeeId { get; set; }
         [Required]
-        public string DeviceId { get; set; }
-        [Required]
         public string SharedAccountId { get; set; }
     }
 }

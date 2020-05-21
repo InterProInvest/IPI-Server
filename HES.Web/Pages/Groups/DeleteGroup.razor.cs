@@ -12,7 +12,7 @@ namespace HES.Web.Pages.Groups
     public partial class DeleteGroup : ComponentBase
     {
         [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public ILogger<CreateGroup> Logger { get; set; }
+        [Inject] public ILogger<DeleteGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }

@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Group;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -31,17 +32,41 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
-        public async Task<List<Group>> GetAllGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText)
+        public async Task<List<Group>> GetAllGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, GroupFilter groupFilter)
         {
-            searchText = searchText.ToLower().Trim();
+            var query = _groupRepository
+                .Query()
+                .Include(x => x.GroupMemberships)
+                .AsQueryable();
 
-            var query = _groupRepository.Query()
-                            .Include(x => x.GroupMemberships)
-                            .Where(x => x.Name.ToLower().Contains(searchText) ||
-                                        x.Email.ToLower().Contains(searchText) ||
-                                        x.GroupMemberships.Count.ToString().Contains(searchText))
-                            .AsQueryable();
+            // Filter
+            if (groupFilter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(groupFilter.Name))
+                {
+                    query = query.Where(x => x.Name.ToLower().Contains(groupFilter.Name.ToLower()));
+                }
+                if (!string.IsNullOrWhiteSpace(groupFilter.Email))
+                {
+                    query = query.Where(x => x.Email.ToLower().Contains(groupFilter.Email.ToLower()));
+                }
+                if (!string.IsNullOrWhiteSpace(groupFilter.MembersCount))
+                {
+                    query = query.Where(x => x.GroupMemberships.Count().ToString().Contains(groupFilter.MembersCount));
+                }
+            }
 
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.ToLower().Trim();
+                
+                query = query.Where(x => x.Name.ToLower().Contains(searchText) ||
+                                         x.Email.ToLower().Contains(searchText) ||
+                                         x.GroupMemberships.Count.ToString().Contains(searchText));
+            }
+
+            // Sort Direction
             switch (sortColumn)
             {
                 case nameof(Group.Name):
@@ -58,13 +83,38 @@ namespace HES.Core.Services
             return await query.Skip(skip).Take(take).AsNoTracking().ToListAsync();
         }
 
-        public async Task<int> GetCountAsync(string searchText)
+        public async Task<int> GetCountAsync(string searchText, GroupFilter groupFilter)
         {
-            return await _groupRepository
-                 .Query()
-                 .CountAsync(x => x.Name.ToLower().Contains(searchText.ToLower().Trim()) ||
-                                  x.Email.ToLower().Contains(searchText.ToLower().Trim()) ||
-                                  x.GroupMemberships.Count().ToString().Contains(searchText.ToLower().Trim()));
+            var query = _groupRepository.Query();
+
+            // Filter
+            if (groupFilter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(groupFilter.Name))
+                {
+                    query = query.Where(x => x.Name.ToLower().Contains(groupFilter.Name.ToLower().Trim()));
+                }
+                if (!string.IsNullOrWhiteSpace(groupFilter.Email))
+                {
+                    query = query.Where(x => x.Email.ToLower().Contains(groupFilter.Email.ToLower().Trim()));
+                }
+                if (!string.IsNullOrWhiteSpace(groupFilter.MembersCount))
+                {
+                    query = query.Where(x => x.GroupMemberships.Count().ToString().Contains(groupFilter.MembersCount));
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.ToLower().Trim();
+
+                query = query.Where(x => x.Name.ToLower().Contains(searchText) ||
+                                    x.Email.ToLower().Contains(searchText) ||
+                                    x.GroupMemberships.Count().ToString().Contains(searchText));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<Group> GetGroupByIdAsync(string groupId)
@@ -113,10 +163,10 @@ namespace HES.Core.Services
 
         public Task UnchangedGroupAsync(Group group)
         {
-            return _groupRepository.Unchanged(group);         
+            return _groupRepository.Unchanged(group);
         }
-         
-        public async Task DeleteGroupAsync(string groupId)
+
+        public async Task<Group> DeleteGroupAsync(string groupId)
         {
             if (groupId == null)
             {
@@ -127,10 +177,10 @@ namespace HES.Core.Services
 
             if (group == null)
             {
-                throw new Exception("Group does not exist.");
+                throw new NotFoundException("Group not found.");
             }
 
-            await _groupRepository.DeleteAsync(group);
+            return await _groupRepository.DeleteAsync(group);
         }
 
         public async Task<List<GroupMembership>> GetGruopMembersAsync(string groupId)
@@ -150,7 +200,7 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.GroupId == groupId && x.EmployeeId == employeeId);
         }
 
-        public async Task<List<Employee>> GetEmployeesSkipExistingOnesInGroupAsync(string groupId)
+        public async Task<List<Employee>> GetEmployeesSkipExistingInGroupAsync(string groupId)
         {
             var members = await GetGruopMembersAsync(groupId);
 
@@ -225,7 +275,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task RemoveEmployeeFromGroupAsync(string groupMembershipId)
+        public async Task<GroupMembership> RemoveEmployeeFromGroupAsync(string groupMembershipId)
         {
             if (groupMembershipId == null)
             {
@@ -235,10 +285,10 @@ namespace HES.Core.Services
             var groupMembership = await _groupMembershipRepository.GetByIdAsync(groupMembershipId);
             if (groupMembership == null)
             {
-                throw new Exception("GroupMembership does not exist.");
+                throw new NotFoundException("GroupMembership not found.");
             }
 
-            await _groupMembershipRepository.DeleteAsync(groupMembership);
+            return await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
         public async Task CreateGroupRangeAsync(List<Group> groups)

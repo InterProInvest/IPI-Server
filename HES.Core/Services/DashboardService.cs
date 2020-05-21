@@ -36,23 +36,23 @@ namespace HES.Core.Services
 
         public string GetServerVersion()
         {
-            return AppVersionConstants.Version;
+            return ServerConstants.Version;
         }
 
         public async Task<int> GetDeviceTasksCount()
         {
-            return await _deviceTaskService.Query().CountAsync();
+            return await _deviceTaskService.TaskQuery().CountAsync();
         }
 
         public async Task<List<DeviceTask>> GetDeviceTasks()
         {
-            return await _deviceTaskService.Query().ToListAsync();
+            return await _deviceTaskService.TaskQuery().ToListAsync();
         }
 
         public async Task<List<DashboardNotify>> GetServerNotifyAsync()
         {
             var list = new List<DashboardNotify>();
-            var longPendingTasksCount = await _deviceTaskService.Query().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
+            var longPendingTasksCount = await _deviceTaskService.TaskQuery().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
 
             if (longPendingTasksCount > 0)
             {

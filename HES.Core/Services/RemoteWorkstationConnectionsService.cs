@@ -208,7 +208,7 @@ namespace HES.Core.Services
                 else
                 {
                     var existLinkTask = await _deviceTaskService
-                        .Query()
+                        .TaskQuery()
                         .Where(d => d.DeviceId == device.Id && d.Operation == TaskOperation.Link)
                         .AsNoTracking()
                         .AnyAsync();

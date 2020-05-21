@@ -31,17 +31,21 @@ namespace HES.Core.Utilities
             return result;
         }
 
-        public static void VerifyOtpSecret(string otp)
+        public static string VerifyOtpSecret(string otp)
         {
-            if (otp != null)
+            if (otp == null)
             {
-                var valid = Regex.IsMatch(otp.Replace(" ", ""), @"^[a-zA-Z0-9]+$");
-
-                if (!valid)
-                {
-                    throw new Exception("Otp secret is not valid");
-                }
+                return null;
             }
+
+            var valid = Regex.IsMatch(otp.Replace(" ", ""), @"^[a-zA-Z0-9]+$");
+
+            if (!valid)
+            {
+                throw new Exception("Otp secret is not valid");
+            }
+
+            return otp;
         }
 
         public static string GetModelStateErrors(ModelStateDictionary ModelState)

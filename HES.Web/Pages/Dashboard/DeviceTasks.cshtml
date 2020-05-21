@@ -38,10 +38,10 @@
                 Employee
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DeviceTasks[0].DeviceAccount.Employee.EmpCompany)
+                @Html.DisplayNameFor(model => model.DeviceTasks[0].Account.Employee.EmpCompany)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DeviceTasks[0].DeviceAccount.Employee.EmpDepartment)
+                @Html.DisplayNameFor(model => model.DeviceTasks[0].Account.Employee.EmpDepartment)
             </th>
         </tr>
     </thead>
@@ -88,16 +88,16 @@
                     @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.OldName)
+                    @Html.DisplayFor(modelItem => item.Account.Name)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DeviceAccount.Employee.FullName)
+                    @Html.DisplayFor(modelItem => item.Account.Employee.FullName)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DeviceAccount.Employee.EmpCompany)
+                    @Html.DisplayFor(modelItem => item.Account.Employee.EmpCompany)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DeviceAccount.Employee.EmpDepartment)
+                    @Html.DisplayFor(modelItem => item.Account.Employee.EmpDepartment)
                 </td>
             </tr>
         }

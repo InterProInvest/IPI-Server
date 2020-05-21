@@ -1,6 +1,6 @@
 ﻿@model HES.Web.Pages.Employees.DetailsModel
 
-<h5 class="text-gray mb-4 ">You want to delete @Model.DeviceAccount.Type.ToString().ToLower() account @Model.DeviceAccount.Name?</h5>
+<h5 class="text-gray mb-4 text-break">You want to delete @Model.DeviceAccount.Type.ToString().ToLower() account @Model.DeviceAccount.Name?</h5>
 
 <form method="post" class="text-right">
     <input type="hidden" asp-for="DeviceAccount.Id" name="accountId" />
