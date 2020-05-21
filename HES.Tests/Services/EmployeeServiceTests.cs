@@ -7,15 +7,19 @@ using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using System.Threading.Tasks;
 
-namespace HES.Tests
+namespace HES.Tests.Services
 {
     public class EmployeeServiceTests
     {
+        public EmployeeServiceTests()
+        {
+
+        }
+               
         [Fact]
         public async Task EditEmployeeAsync_NoEmployeeExistsSholdFail()
         {
             var employee = new Employee();
-
             var mock = new Mock<IAsyncRepository<Employee>>();
             mock.Setup(r => r.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id)).Returns(async () => 
             {
