@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models.API
+namespace HES.Core.Models.API.HardwareVault
 {
-    public class SetDeviceAccessProfileDto
+    public class ChangeHardwareVaultProfileDto
     {
         [Required]
-        public string DeviceId { get; set; }
+        public string HardwareVaultId { get; set; }
         [Required]
         public string ProfileId { get; set; }
     }

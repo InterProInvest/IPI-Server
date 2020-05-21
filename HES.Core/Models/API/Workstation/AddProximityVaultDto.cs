@@ -2,11 +2,11 @@
 
 namespace HES.Core.Models.API
 {
-    public class AddProximityDeviceDto
+    public class AddProximityVaultDto
     {
         [Required]
         public string WorkstationId { get; set; }
         [Required]
-        public string DeviceId { get; set; }
+        public string HardwareVaultId { get; set; }
     }
 }

@@ -491,7 +491,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task UpdateDeviceInfoAsync(BleDeviceDto dto)
+        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto)
         {
             var vault = await _hardwareVaultRepository.GetByIdAsync(dto.DeviceSerialNo);
             if (vault == null)
@@ -700,50 +700,50 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile deviceAccessProfile)
+        public async Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile profile)
         {
-            if (deviceAccessProfile == null)
+            if (profile == null)
             {
-                throw new ArgumentNullException(nameof(deviceAccessProfile));
+                throw new ArgumentNullException(nameof(profile));
             }
 
-            var profile = await _hardwareVaultProfileRepository
+            var exist = await _hardwareVaultProfileRepository
                 .Query()
-                .Where(d => d.Name == deviceAccessProfile.Name)
+                .Where(d => d.Name == profile.Name)
                 .AnyAsync();
 
-            if (profile)
+            if (exist)
             {
-                throw new Exception($"Name {deviceAccessProfile.Name} is already taken.");
+                throw new Exception($"Name {profile.Name} is already taken.");
             }
 
-            deviceAccessProfile.CreatedAt = DateTime.UtcNow;
-            return await _hardwareVaultProfileRepository.AddAsync(deviceAccessProfile);
+            profile.CreatedAt = DateTime.UtcNow;
+            return await _hardwareVaultProfileRepository.AddAsync(profile);
         }
 
-        public async Task EditProfileAsync(HardwareVaultProfile deviceAccessProfile)
+        public async Task EditProfileAsync(HardwareVaultProfile profile)
         {
-            if (deviceAccessProfile == null)
-                throw new ArgumentNullException(nameof(deviceAccessProfile));
+            if (profile == null)
+                throw new ArgumentNullException(nameof(profile));
 
-            var profile = await _hardwareVaultProfileRepository
+            var exist = await _hardwareVaultProfileRepository
                .Query()
-               .Where(d => d.Name == deviceAccessProfile.Name && d.Id != deviceAccessProfile.Id)
+               .Where(d => d.Name == profile.Name && d.Id != profile.Id)
                .AnyAsync();
 
-            if (profile)
-                throw new AlreadyExistException($"Name {deviceAccessProfile.Name} is already taken.");
+            if (exist)
+                throw new AlreadyExistException($"Name {profile.Name} is already taken.");
 
-            deviceAccessProfile.UpdatedAt = DateTime.UtcNow;
+            profile.UpdatedAt = DateTime.UtcNow;
 
             var vaults = await _hardwareVaultRepository
                 .Query()
-                .Where(x => x.HardwareVaultProfileId == deviceAccessProfile.Id && (x.Status == VaultStatus.Active || x.Status == VaultStatus.Locked || x.Status == VaultStatus.Suspended))
+                .Where(x => x.HardwareVaultProfileId == profile.Id && (x.Status == VaultStatus.Active || x.Status == VaultStatus.Locked || x.Status == VaultStatus.Suspended))
                 .ToListAsync();
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await _hardwareVaultProfileRepository.UpdateAsync(deviceAccessProfile);
+                await _hardwareVaultProfileRepository.UpdateAsync(profile);
 
                 foreach (var vault in vaults)
                 {
@@ -769,7 +769,7 @@ namespace HES.Core.Services
             var deviceAccessProfile = await _hardwareVaultProfileRepository.GetByIdAsync(id);
             if (deviceAccessProfile == null)
             {
-                throw new Exception("Device access profile not found");
+                throw new Exception("Profile not found");
             }
 
             await _hardwareVaultProfileRepository.DeleteAsync(deviceAccessProfile);

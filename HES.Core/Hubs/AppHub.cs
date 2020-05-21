@@ -216,7 +216,7 @@ namespace HES.Core.Hubs
                 if (dto.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
-                await _deviceService.UpdateDeviceInfoAsync(dto);
+                await _deviceService.UpdateHardwareVaultInfoAsync(dto);
 
                 return HesResponse.Ok;
             }

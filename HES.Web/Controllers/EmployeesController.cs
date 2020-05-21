@@ -4,6 +4,7 @@ using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API;
+using HES.Core.Models.API.Employee;
 using HES.Core.Models.Web.Account;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -23,17 +24,14 @@ namespace HES.Web.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IAccountService _deviceAccountService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<EmployeesController> _logger;
 
         public EmployeesController(IEmployeeService employeeService,
-                                   IAccountService deviceAccountService,
                                    IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                                    ILogger<EmployeesController> logger)
         {
             _employeeService = employeeService;
-            _deviceAccountService = deviceAccountService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
@@ -56,7 +54,6 @@ namespace HES.Web.Controllers
 
             if (employee == null)
             {
-                _logger.LogWarning($"{nameof(employee)} is null");
                 return NotFound();
             }
 
@@ -156,16 +153,16 @@ namespace HES.Web.Controllers
 
         #endregion
 
-        #region Device
+        #region Hardware Vault
 
         [HttpPost()]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> AddDevice(DeviceDto deviceDto)
+        public async Task<IActionResult> AddHardwareVault(AddHardwareVaultDto vaultDto)
         {
             try
             {
-                await _employeeService.AddHardwareVaultAsync(deviceDto.EmployeeId, deviceDto.DeviceId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
+                await _employeeService.AddHardwareVaultAsync(vaultDto.EmployeeId, vaultDto.HardwareVaultId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaultDto.HardwareVaultId);
             }
             catch (Exception ex)
             {
@@ -178,12 +175,12 @@ namespace HES.Web.Controllers
 
         [HttpDelete()]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> RemoveDevice(DeviceDto deviceDto)
+        public async Task<IActionResult> RemoveDevice(RemoveHardwareVaultDto vaultDto)
         {
             try
             {
-                await _employeeService.RemoveHardwareVaultAsync(deviceDto.DeviceId, deviceDto.Reason);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceDto.DeviceId);
+                await _employeeService.RemoveHardwareVaultAsync(vaultDto.HardwareVaultId, vaultDto.Reason, vaultDto.IsNeedBackup);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaultDto.HardwareVaultId);
             }
             catch (Exception ex)
             {
@@ -210,15 +207,15 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Account>> GetAccountById(string id)
         {
-            var deviceAccount = await _employeeService.GetAccountByIdAsync(id);
+            var account = await _employeeService.GetAccountByIdAsync(id);
 
-            if (deviceAccount == null)
+            if (account == null)
             {
-                _logger.LogWarning($"{nameof(deviceAccount)} is null");
+                _logger.LogWarning($"{nameof(account)} is null");
                 return NotFound();
             }
 
-            return deviceAccount;
+            return account;
         }
 
         [HttpPost]
@@ -228,21 +225,6 @@ namespace HES.Web.Controllers
             Account createdAccount;
             try
             {
-                //var account = new Account()
-                //{
-                //    Name = accountDto.Name,
-                //    Urls = accountDto.Urls,
-                //    Apps = accountDto.Apps,
-                //    Login = accountDto.Login,
-                //    Kind = AccountKind.WebApp,
-                //    EmployeeId = accountDto.EmployeeId
-                //};
-                //var accountPassword = new AccountPassword()
-                //{
-                //    Password = accountDto.Password,
-                //    OtpSecret = accountDto.OtpSecret
-                //};
-
                 var personalAccount = new PersonalAccount()
                 {
                     Name = accountDto.Name,
@@ -416,21 +398,12 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWindowsLocalAccount(CreateWindowsAccountDto localAccountDto)
+        public async Task<IActionResult> CreateWorkstationLocalAccount(WorkstationLocal accountDto)
         {
             Account createdAccount;
             try
             {
-                var workstationAccount = new WorkstationAccount()
-                {
-                    Name = localAccountDto.Name,
-                    AccountType = WorkstationAccountType.Local,
-                    Domain = "local",
-                    Login = localAccountDto.Login,
-                    Password = localAccountDto.Password
-                };
-
-                createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, localAccountDto.EmployeeId);
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
@@ -444,21 +417,12 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWindowsDomainAccount(CreateWindowsDomainAccountDto domainAccountDto)
+        public async Task<IActionResult> CreateWorkstationDomainAccount(WorkstationDomain accountDto)
         {
             Account createdAccount;
             try
             {
-                var workstationAccount = new WorkstationAccount()
-                {
-                    Name = domainAccountDto.Name,
-                    AccountType = WorkstationAccountType.Domain,
-                    Domain = domainAccountDto.Domain,
-                    Login = domainAccountDto.Login,
-                    Password = domainAccountDto.Password
-                };
-
-                createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, domainAccountDto.EmployeeId);
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
@@ -467,26 +431,17 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetDeviceAccountById", new { id = createdAccount.Id }, createdAccount);
+            return CreatedAtAction("GetAccountById", new { id = createdAccount.Id }, createdAccount);
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWindowsMicrosoftAccount(CreateWindowsAccountDto microsoftAccountDto)
+        public async Task<IActionResult> CreateWorkstationAzureAdAccount(WorkstationAzureAD accountDto)
         {
             Account createdAccount;
             try
             {
-                var workstationAccount = new WorkstationAccount()
-                {
-                    Name = microsoftAccountDto.Name,
-                    AccountType = WorkstationAccountType.Microsoft,
-                    Domain = "ms",
-                    Login = microsoftAccountDto.Login,
-                    Password = microsoftAccountDto.Password
-                };
-
-                createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount, microsoftAccountDto.EmployeeId);
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
@@ -495,17 +450,36 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetDeviceAccountById", new { id = createdAccount.Id }, createdAccount);
+            return CreatedAtAction("GetAccountById", new { id = createdAccount.Id }, createdAccount);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateWorkstationMicrosoftAccount(WorkstationMicrosoft accountDto)
+        {
+            Account createdAccount;
+            try
+            {
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
+
+            return CreatedAtAction("GetAccountById", new { id = createdAccount.Id }, createdAccount);
         }
 
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> SetAsWindowsAccount(SetAsWindowsAccountDto workstationAccountDto)
+        public async Task<IActionResult> SetAsWorkstationccount(SetAsWorkstationAccountDto accountDto)
         {
             try
             {
-                await _employeeService.SetAsWorkstationAccountAsync(workstationAccountDto.EmployeeId, workstationAccountDto.AccountId);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(workstationAccountDto.EmployeeId));
+                await _employeeService.SetAsWorkstationAccountAsync(accountDto.EmployeeId, accountDto.AccountId);
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(accountDto.EmployeeId));
             }
             catch (Exception ex)
             {

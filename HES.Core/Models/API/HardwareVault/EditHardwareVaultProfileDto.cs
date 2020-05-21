@@ -1,9 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models.API
+namespace HES.Core.Models.API.HardwareVault
 {
-    public class CreateDeviceAccessProfileDto
+    public class EditHardwareVaultProfileDto
     {
+        [Required]
+        public string Id { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
