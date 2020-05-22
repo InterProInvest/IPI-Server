@@ -5,11 +5,11 @@ using HES.Core.Entities;
 
 namespace HES.Tests.Builders
 {
-    public class EmployeeBilder
+    public class EmployeeBuilder
     {
         private Random _random;
 
-        public EmployeeBilder()
+        public EmployeeBuilder()
         {
             _random = new Random();
         }

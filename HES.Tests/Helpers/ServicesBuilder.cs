@@ -8,16 +8,14 @@ namespace HES.Tests.Helpers
     public class ServicesBuilder
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly string _dbName = "HesTest";
 
-        public ServicesBuilder(string dbName)
+        public ServicesBuilder(string name)
         {
-            var dbOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(dbName)
-                .Options;
-​
+            var dbOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(name).Options;
             _dbContext = new ApplicationDbContext(dbOptions);
         }
-
+        
         public EmployeeService GetEmployeeService()
         {
             var _empRepository = new Repository<Employee>(_dbContext);
