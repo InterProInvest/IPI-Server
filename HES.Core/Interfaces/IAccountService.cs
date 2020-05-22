@@ -19,7 +19,7 @@ namespace HES.Core.Interfaces
         Task UpdateAfterAccountCreationAsync(Account account, uint storageId, uint timestamp);
         Task DeleteAsync(Account account);
         Task DeleteRangeAsync(IList<Account> accounts);
-        Task DeleteAccountsByEmployeeIdAsync(string employeeId);
+        Task DeleteAccountsByEmployeeIdAsync(string employeeId, bool deleteFromDatabase = false);
         Task<bool> ExistAsync(Expression<Func<Account, bool>> predicate);
     }
 }

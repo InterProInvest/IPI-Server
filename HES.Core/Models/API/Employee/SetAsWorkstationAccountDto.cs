@@ -2,7 +2,7 @@
 
 namespace HES.Core.Models.API
 {
-    public class SetAsWindowsAccountDto
+    public class SetAsWorkstationAccountDto
     {
         [Required]
         public string EmployeeId { get; set; }

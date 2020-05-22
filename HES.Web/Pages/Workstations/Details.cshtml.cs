@@ -54,7 +54,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            ProximityDevices = await _workstationService.GetProximityDevicesAsync(id);
+            ProximityDevices = await _workstationService.GetProximityVaultsByWorkstationIdAsync(id);
 
             if (ProximityDevices == null)
             {
@@ -81,7 +81,7 @@ namespace HES.Web.Pages.Workstations
                 return NotFound();
             }
 
-            ProximityDevices = await _workstationService.GetProximityDevicesAsync(id);
+            ProximityDevices = await _workstationService.GetProximityVaultsByWorkstationIdAsync(id);
 
             if (ProximityDevices.Count >= 1)
             {
@@ -112,7 +112,7 @@ namespace HES.Web.Pages.Workstations
 
             try
             {
-                await _workstationService.AddProximityDevicesAsync(workstationId, devicesId);
+                await _workstationService.AddProximityVaultsAsync(workstationId, devicesId);
                 await _workstationService.UpdateProximitySettingsAsync(workstationId);
 
                 SuccessMessage = "Device(s) added.";
@@ -136,7 +136,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             ProximityDevice = await _workstationService
-                .ProximityDeviceQuery()
+                .ProximityVaultQuery()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ProximityDevice == null)
@@ -160,7 +160,7 @@ namespace HES.Web.Pages.Workstations
 
             try
             {
-                await _workstationService.EditProximityDeviceAsync(proximityDevice);
+                await _workstationService.EditProximityVaultAsync(proximityDevice);
                 await _workstationService.UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
 
                 SuccessMessage = $"Proximity settings updated.";
@@ -183,7 +183,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             ProximityDevice = await _workstationService
-                .ProximityDeviceQuery()
+                .ProximityVaultQuery()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ProximityDevice == null)

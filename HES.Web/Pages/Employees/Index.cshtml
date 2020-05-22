@@ -179,9 +179,9 @@
             var id = btn.data("id");
             var action = btn.data("action");
             var title = btn.data("title");
-
+  
             if (action == "CreateEmployee") {
-                $('#modalBorder'). Class('modal-lg');
+                $('#modalBorder').addClass('modal-lg');
             }
             else {
                 $('#modalBorder').removeClass('modal-lg');
@@ -189,7 +189,7 @@
 
             $('#modalDialogTitle').html(title);
             $('#modalDialog').modal('toggle');
-
+         
             $.ajax({
                 url: "/Employees?handler=" + action,
                 type: "Get",

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -96,11 +95,7 @@ namespace HES.Web.Pages.Settings.Administrators
                     values: new { area = "Identity", code, email },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Invitation to Hideez Enterprise Server",
-                    $"Dear {Input.Email} <br/> Please confirm the invitation by entering a new password using this <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>link</a>.");
-
+                await _emailSender.SendUserInvitationAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
                 SuccessMessage = $"The invitation has been sent to {Input.Email}.";
             }
 
@@ -147,15 +142,11 @@ namespace HES.Web.Pages.Settings.Administrators
 
             try
             {
-                var user = await _userManager.GetUserAsync(User);
+                var currentUserId = _userManager.GetUserId(User);
+                var user = await _applicationUserService.DeleteUserAsync(id);
 
-                await _applicationUserService.DeleteUserAsync(id);
-
-                if (user.Id == id)
-                {
-                    _logger.LogInformation($"User {user.Email} deleted himself");
+                if (user.Id == currentUserId)
                     await _signInManager.SignOutAsync();
-                }
 
                 SuccessMessage = $"User {user.Email} deleted.";
             }

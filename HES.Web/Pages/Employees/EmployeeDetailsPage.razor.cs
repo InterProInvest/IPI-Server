@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; }
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
@@ -21,9 +24,21 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            await GetEmployeeAsync();
-            InitializeCommponents();
+            await GetEmployeeAsync();   
             await LoadTableDataAsync();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var list = new List<Breadcrumb>() {
+                        new Breadcrumb () { Link = "/Employees", Content = "Employees" },
+                        new Breadcrumb () { Active = true, Content = Employee.FullName }
+                };
+
+                await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);
+            }
         }
 
         private async Task GetEmployeeAsync()
@@ -33,21 +48,12 @@ namespace HES.Web.Pages.Employees
 
         #region Main Table
 
-        public int CurrentPage { get; set; }
-        public int DisplayRows { get; set; }
+        public int CurrentPage { get; set; } = 1;
+        public int DisplayRows { get; set; } = 10;
         public int TotalRecords { get; set; }
-        public string SearchText { get; set; }
-        public string SortedColumn { get; set; }
-        public ListSortDirection SortDirection { get; set; }
-
-        private void InitializeCommponents()
-        {
-            CurrentPage = 1;
-            DisplayRows = 10;
-            SearchText = string.Empty;
-            SortedColumn = nameof(Account.Name);
-            SortDirection = ListSortDirection.Ascending;
-        }
+        public string SearchText { get; set; } = string.Empty;
+        public string SortedColumn { get; set; } = nameof(Account.Name);
+        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
 
         private async Task LoadTableDataAsync()
         {

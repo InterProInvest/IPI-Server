@@ -2,7 +2,7 @@
 
 namespace HES.Core.Models.API.License
 {
-    public class DeviceLicenseDto
+    public class HardwareVaultLicenseDto
     {
         public string DeviceId { get; set; }
         public DateTime LicenseEndDate { get; set; }

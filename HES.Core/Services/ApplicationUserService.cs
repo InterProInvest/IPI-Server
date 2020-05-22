@@ -31,19 +31,17 @@ namespace HES.Core.Services
             return await _applicationUserRepository.GetByIdAsync(id);
         }
 
-        public async Task DeleteUserAsync(string id)
+        public async Task<ApplicationUser> DeleteUserAsync(string id)
         {
             if (id == null)
-            {
                 throw new ArgumentNullException(nameof(id));
-            }
 
             var applicationUser = await _applicationUserRepository.GetByIdAsync(id);
 
-            if (applicationUser != null)
-            {
-                await _applicationUserRepository.DeleteAsync(applicationUser);
-            }
+            if (applicationUser == null)
+                throw new Exception("User not found");
+
+            return await _applicationUserRepository.DeleteAsync(applicationUser);
         }
 
         public async Task<IList<ApplicationUser>> GetAllAsync()

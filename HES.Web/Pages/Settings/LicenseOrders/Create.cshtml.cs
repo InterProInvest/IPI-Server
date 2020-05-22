@@ -82,7 +82,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     EndDate = newLicenseOrderDto.EndDate
                 };
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
-                await _licenseService.AddDeviceLicensesAsync(createdOrder.Id, nonLicensedDevicesIds);
+                await _licenseService.AddHardwareVaultDummyLicensesAsync(createdOrder.Id, nonLicensedDevicesIds);
                 SuccessMessage = "Order created";
             }
             catch (Exception ex)
@@ -127,7 +127,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     EndDate = renewLicenseOrderDto.EndDate
                 };
                 var createdOrder = await _licenseService.CreateOrderAsync(licenseOrder);
-                await _licenseService.AddDeviceLicensesAsync(createdOrder.Id, licensedDevicesIds);
+                await _licenseService.AddHardwareVaultDummyLicensesAsync(createdOrder.Id, licensedDevicesIds);
                 SuccessMessage = "Order created";
             }
             catch (Exception ex)

@@ -3,9 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
-using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Account;
-using HES.Core.Models.Web.AppSettings;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
@@ -25,6 +23,7 @@ namespace HES.Core.Services
         private readonly IAsyncRepository<Employee> _employeeRepository;
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
+        private readonly ISoftwareVaultService _softwareVaultService;
         private readonly IAccountService _accountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly IWorkstationService _workstationService;
@@ -35,6 +34,7 @@ namespace HES.Core.Services
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
                                IHardwareVaultService hardwareVaultService,
                                IHardwareVaultTaskService hardwareVaultTaskService,
+                               ISoftwareVaultService softwareVaultService,
                                IAccountService accountService,
                                ISharedAccountService sharedAccountService,
                                IWorkstationService workstationService,
@@ -45,6 +45,7 @@ namespace HES.Core.Services
             _employeeRepository = employeeRepository;
             _hardwareVaultService = hardwareVaultService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
+            _softwareVaultService = softwareVaultService;
             _accountService = accountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
@@ -71,18 +72,6 @@ namespace HES.Core.Services
                 .Include(e => e.HardwareVaults)
                 .ThenInclude(e => e.HardwareVaultProfile)
                 .FirstOrDefaultAsync(e => e.Id == id);
-        }
-
-        public async Task<Employee> GetEmployeeByFullNameAsync(Employee employee)
-        {
-            return await _employeeRepository
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.HardwareVaults)
-                .ThenInclude(e => e.HardwareVaultProfile)
-                .FirstOrDefaultAsync(x => x.FirstName == employee.FirstName &&
-                                          x.LastName == employee.LastName);
         }
 
         public async Task<List<Employee>> GetEmployeesAsync()
@@ -211,15 +200,21 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new Exception("Employee not found");
 
-            var devices = await _hardwareVaultService
+            var hardwareVaults = await _hardwareVaultService
                 .VaultQuery()
                 .Where(x => x.EmployeeId == id)
                 .AnyAsync();
 
-            if (devices)
-            {
-                throw new Exception("The employee has a device attached, first untie the device before removing.");
-            }
+            if (hardwareVaults)
+                throw new Exception("First untie the hardware vault before removing.");
+
+            var softwareVaults = await _softwareVaultService
+                .SoftwareVaultQuery()
+                .Where(x => x.EmployeeId == id)
+                .AnyAsync();
+
+            if (softwareVaults)
+                throw new Exception("First untie the software vault before removing.");
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -230,7 +225,7 @@ namespace HES.Core.Services
                 var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
                 await _workstationSessionRepository.DeleteRangeAsync(allSessions);
                 // Remove all accounts
-                await _accountService.DeleteAccountsByEmployeeIdAsync(id);
+                await _accountService.DeleteAccountsByEmployeeIdAsync(id, deleteFromDatabase: true);
 
                 await _employeeRepository.DeleteAsync(employee);
 
@@ -243,10 +238,10 @@ namespace HES.Core.Services
             return await _employeeRepository.ExistAsync(predicate);
         }
 
-        public async Task UpdateLastSeenAsync(string deviceId)
+        public async Task UpdateLastSeenAsync(string vaultId)
         {
-            var device = await _hardwareVaultService.GetVaultByIdAsync(deviceId);
-            var employee = await _employeeRepository.GetByIdAsync(device.EmployeeId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
+            var employee = await _employeeRepository.GetByIdAsync(vault.EmployeeId);
 
             if (employee != null)
             {
@@ -365,246 +360,6 @@ namespace HES.Core.Services
                 transactionScope.Complete();
             }
         }
-
-        #endregion
-
-        #region SamlIdp
-
-        //public async Task CreateSamlIdpAccountAsync(string email, string password, string hesUrl, string deviceId)
-        //{
-        //    _dataProtectionService.Validate();
-
-        //    var employee = await _employeeRepository.Query().FirstOrDefaultAsync(e => e.Email == email);
-        //    if (employee == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(employee));
-        //    }
-
-        //    var device = await _deviceService.GetDeviceByIdAsync(deviceId);
-        //    if (device == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(device));
-        //    }
-
-        //    var samlIdP = await _samlIdentityProviderService.GetByIdAsync(SamlIdentityProvider.PrimaryKey);
-
-        //    // Create account
-        //    var deviceAccountId = Guid.NewGuid().ToString();
-        //    var deviceAccount = new Account
-        //    {
-        //        Id = deviceAccountId,
-        //        Name = SamlIdentityProvider.DeviceAccountName,
-        //        Urls = $"{samlIdP.Url};{hesUrl}",
-        //        Apps = null,
-        //        Login = email,
-        //        Type = AccountType.Personal,
-        //        CreatedAt = DateTime.UtcNow,
-        //        PasswordUpdatedAt = DateTime.UtcNow,
-        //        OtpUpdatedAt = null,
-        //        EmployeeId = employee.Id,
-        //        SharedAccountId = null
-        //    };
-
-        //    // Validate url
-        //    deviceAccount.Urls = ValidationHepler.VerifyUrls(deviceAccount.Urls);
-
-        //    // Create task
-        //    var deviceTask = new DeviceTask
-        //    {
-        //        DeviceAccountId = deviceAccountId,
-        //        OldName = deviceAccount.Name,
-        //        OldUrls = deviceAccount.Urls,
-        //        OldApps = deviceAccount.Apps,
-        //        OldLogin = deviceAccount.Login,
-        //        Password = _dataProtectionService.Encrypt(password),
-        //        OtpSecret = null,
-        //        CreatedAt = DateTime.UtcNow,
-        //        Operation = TaskOperation.Create,
-        //        DeviceId = device.Id
-        //    };
-
-        //    // Add account
-        //    await _accountService.AddAsync(deviceAccount);
-
-        //    try
-        //    {
-        //        // Add task
-        //        await _deviceTaskService.AddTaskAsync(deviceTask);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        // Remove account
-        //        await _accountService.DeleteAsync(deviceAccount);
-        //        throw;
-        //    }
-        //}
-
-        //public async Task UpdatePasswordSamlIdpAccountAsync(string email, string password)
-        //{
-        //    _dataProtectionService.Validate();
-
-        //    var employee = await _employeeRepository.Query().FirstOrDefaultAsync(e => e.Email == email);
-        //    if (employee == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(employee));
-        //    }
-        //    var account = await _accountService
-        //     .Query()
-        //     .Where(d => d.EmployeeId == employee.Id && d.Name == SamlIdentityProvider.DeviceAccountName)
-        //     .FirstOrDefaultAsync();
-
-        //    // Update Account
-        //    account.UpdatedAt = DateTime.UtcNow;
-        //    await _accountService.UpdateOnlyPropAsync(account, new string[] { nameof(Account.UpdatedAt) });
-
-        //    // Create Device Task
-        //    try
-        //    {
-        //        await _deviceTaskService.AddTaskAsync(new DeviceTask
-        //        {
-        //            DeviceAccountId = account.Id,
-        //            Password = _dataProtectionService.Encrypt(password),
-        //            CreatedAt = DateTime.UtcNow,
-        //            Operation = TaskOperation.Update,
-        //            DeviceId = account.DeviceId
-        //        });
-        //    }
-        //    catch (Exception)
-        //    {
-        //        account.Status = AccountStatus.Error;
-        //        await _accountService.UpdateOnlyPropAsync(account, properties);
-        //        throw;
-        //    }
-        //}
-
-        //public async Task UpdateOtpSamlIdpAccountAsync(string email, string otp)
-        //{
-        //    if (email == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(email));
-        //    }
-        //    if (otp == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(otp));
-        //    }
-
-        //    ValidationHepler.VerifyOtpSecret(otp);
-
-        //    _dataProtectionService.Validate();
-
-        //    var employee = await _employeeRepository.Query().FirstOrDefaultAsync(e => e.Email == email);
-        //    if (employee == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(employee));
-        //    }
-        //    var deviceAccount = await _accountService
-        //     .Query()
-        //     .Where(d => d.EmployeeId == employee.Id && d.Name == SamlIdentityProvider.DeviceAccountName)
-        //     .FirstOrDefaultAsync();
-
-        //    var task = await _deviceTaskService
-        //        .Query()
-        //        .AsNoTracking()
-        //        .Where(d => d.DeviceAccountId == deviceAccount.Id && _dataProtectionService.Decrypt(d.OtpSecret) == otp)
-        //        .FirstOrDefaultAsync();
-
-        //    if (task != null)
-        //    {
-        //        return;
-        //    }
-
-        //    // Update Device Account
-        //    deviceAccount.Status = AccountStatus.Updating;
-        //    deviceAccount.UpdatedAt = DateTime.UtcNow;
-        //    string[] properties = { "Status", "UpdatedAt" };
-        //    await _accountService.UpdateOnlyPropAsync(deviceAccount, properties);
-
-        //    // Create Device Task
-        //    try
-        //    {
-        //        await _deviceTaskService.AddTaskAsync(new DeviceTask
-        //        {
-        //            DeviceAccountId = deviceAccount.Id,
-        //            OtpSecret = _dataProtectionService.Encrypt(otp),
-        //            CreatedAt = DateTime.UtcNow,
-        //            Operation = TaskOperation.Update,
-        //            DeviceId = deviceAccount.DeviceId
-        //        });
-        //    }
-        //    catch (Exception)
-        //    {
-        //        deviceAccount.Status = AccountStatus.Error;
-        //        await _accountService.UpdateOnlyPropAsync(deviceAccount, properties);
-        //        throw;
-        //    }
-        //}
-
-        //public async Task<IList<string>> UpdateUrlSamlIdpAccountAsync(string hesUrl)
-        //{
-        //    _dataProtectionService.Validate();
-
-        //    var deviceAccounts = await _accountService
-        //     .Query()
-        //     .Where(d => d.Name == SamlIdentityProvider.DeviceAccountName && d.Deleted == false)
-        //     .ToListAsync();
-
-        //    var samlIdP = await _samlIdentityProviderService.GetByIdAsync(SamlIdentityProvider.PrimaryKey);
-        //    var validUrls = ValidationHepler.VerifyUrls($"{samlIdP.Url};{hesUrl}");
-
-        //    foreach (var account in deviceAccounts)
-        //    {
-        //        // Update Device Account
-        //        account.Status = AccountStatus.Updating;
-        //        account.UpdatedAt = DateTime.UtcNow;
-        //        string[] properties = { "Status", "UpdatedAt" };
-        //        await _accountService.UpdateOnlyPropAsync(account, properties);
-
-        //        // Create Device Task
-        //        try
-        //        {
-        //            await _deviceTaskService.AddTaskAsync(new DeviceTask
-        //            {
-        //                DeviceAccountId = account.Id,
-        //                OldUrls = validUrls,
-        //                CreatedAt = DateTime.UtcNow,
-        //                Operation = TaskOperation.Update,
-        //                DeviceId = account.DeviceId
-        //            });
-        //        }
-        //        catch (Exception)
-        //        {
-        //            account.Status = AccountStatus.Error;
-        //            await _accountService.UpdateOnlyPropAsync(account, properties);
-        //            throw;
-        //        }
-        //    }
-
-        //    return deviceAccounts.Select(s => s.Id).ToList();
-        //}
-
-        //public async Task DeleteSamlIdpAccountAsync(string employeeId)
-        //{
-        //    if (employeeId == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(employeeId));
-        //    }
-
-        //    var employee = await _employeeRepository.GetByIdAsync(employeeId);
-        //    if (employee == null)
-        //    {
-        //        throw new Exception("Employee not found.");
-        //    }
-
-        //    var account = await _accountService
-        //        .Query()
-        //        .Where(d => d.EmployeeId == employeeId && d.Name == SamlIdentityProvider.DeviceAccountName)
-        //        .FirstOrDefaultAsync();
-
-        //    if (account != null)
-        //    {
-        //        await DeleteAccountAsync(account.Id);
-        //    }
-        //}
 
         #endregion
 

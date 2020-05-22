@@ -14,9 +14,9 @@ namespace HES.Web.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ILogger<LoginModel> _logger;
+        private readonly ILogger<InviteModel> _logger;
 
-        public InviteModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public InviteModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<InviteModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -81,7 +81,7 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 var login_result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: true);
                 if (login_result.Succeeded)
                 {
-                    _logger.LogInformation($"User {user} logged in.");
+                    _logger.LogInformation($"User {user} accepted the invitation.");         
                     return LocalRedirect("/");
                 }
             }
