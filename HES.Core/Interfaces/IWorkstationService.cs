@@ -23,15 +23,15 @@ namespace HES.Core.Interfaces
         Task UnapproveWorkstationAsync(string id);
         Task<bool> GetRfidStateAsync(string workstationId);
         Task UpdateRfidStateAsync(string workstationId);
-        IQueryable<WorkstationProximityVault> ProximityDeviceQuery();
-        Task<List<WorkstationProximityVault>> GetProximityDevicesAsync(string workstationId);
-        Task<WorkstationProximityVault> GetProximityDeviceByIdAsync(string id);
-        Task<IList<WorkstationProximityVault>> AddProximityDevicesAsync(string workstationId, string[] devicesIds);
-        Task AddMultipleProximityDevicesAsync(string[] workstationsIds, string[] devicesIds);
-        Task EditProximityDeviceAsync(WorkstationProximityVault proximityDevice);
-        Task DeleteProximityVaultAsync(string proximityDeviceId);
-        Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityDevices);
-        Task DeleteProximityByVaultIdAsync(string deviceId);
+        IQueryable<WorkstationProximityVault> ProximityVaultQuery();
+        Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId);
+        Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id);
+        Task<IList<WorkstationProximityVault>> AddProximityVaultsAsync(string workstationId, string[] vaultsIds);
+        Task AddMultipleProximityVaultsAsync(string[] workstationsIds, string[] vaultsIds);
+        Task EditProximityVaultAsync(WorkstationProximityVault proximityVault);
+        Task DeleteProximityVaultAsync(string proximityVaultId);
+        Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityVaults);
+        Task DeleteProximityByVaultIdAsync(string vaultId);
         Task UpdateProximitySettingsAsync(string workstationId);
     }
 }

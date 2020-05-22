@@ -22,7 +22,7 @@ namespace HES.Core.Interfaces
         Task UnchangedVaultAsync(HardwareVault vault);
         Task UpdateOnlyPropAsync(HardwareVault vault, string[] properties);
         Task UpdateAfterWipe(string vaultId);
-        Task UpdateDeviceInfoAsync(BleDeviceDto dto);
+        Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto);
         Task UpdateNeedSyncAsync(HardwareVault vault, bool needSync);
         Task UpdateNeedSyncAsync(IList<HardwareVault> vaults, bool needSync);
         Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);

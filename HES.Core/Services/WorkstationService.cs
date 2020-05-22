@@ -224,12 +224,12 @@ namespace HES.Core.Services
 
         #region Proximity
 
-        public IQueryable<WorkstationProximityVault> ProximityDeviceQuery()
+        public IQueryable<WorkstationProximityVault> ProximityVaultQuery()
         {
             return _proximityDeviceRepository.Query();
         }
 
-        public async Task<List<WorkstationProximityVault>> GetProximityDevicesAsync(string workstationId)
+        public async Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId)
         {
             return await _proximityDeviceRepository
                 .Query()
@@ -238,7 +238,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<WorkstationProximityVault> GetProximityDeviceByIdAsync(string id)
+        public async Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id)
         {
             return await _proximityDeviceRepository
                 .Query()
@@ -247,33 +247,33 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<IList<WorkstationProximityVault>> AddProximityDevicesAsync(string workstationId, string[] devicesIds)
+        public async Task<IList<WorkstationProximityVault>> AddProximityVaultsAsync(string workstationId, string[] vaultsIds)
         {
             if (workstationId == null)
             {
                 throw new ArgumentNullException(nameof(workstationId));
             }
-            if (devicesIds == null)
+            if (vaultsIds == null)
             {
-                throw new ArgumentNullException(nameof(devicesIds));
+                throw new ArgumentNullException(nameof(vaultsIds));
             }
 
-            List<WorkstationProximityVault> proximityDevices = new List<WorkstationProximityVault>();
+            List<WorkstationProximityVault> proximityVaults = new List<WorkstationProximityVault>();
 
-            foreach (var deviceId in devicesIds)
+            foreach (var vault in vaultsIds)
             {
                 var exists = await _proximityDeviceRepository
                 .Query()
-                .Where(d => d.HardwareVaultId == deviceId)
+                .Where(d => d.HardwareVaultId == vault)
                 .Where(d => d.WorkstationId == workstationId)
                 .FirstOrDefaultAsync();
 
                 if (exists == null)
                 {
-                    proximityDevices.Add(new WorkstationProximityVault
+                    proximityVaults.Add(new WorkstationProximityVault
                     {
                         WorkstationId = workstationId,
-                        HardwareVaultId = deviceId,
+                        HardwareVaultId = vault,
                         LockProximity = 30,
                         UnlockProximity = 70,
                         LockTimeout = 5
@@ -281,49 +281,49 @@ namespace HES.Core.Services
                 }
             }
 
-            var addedDevices = await _proximityDeviceRepository.AddRangeAsync(proximityDevices);
+            var addedVaults = await _proximityDeviceRepository.AddRangeAsync(proximityVaults);
             await UpdateProximitySettingsAsync(workstationId);
 
-            return addedDevices;
+            return addedVaults;
         }
 
-        public async Task AddMultipleProximityDevicesAsync(string[] workstationsIds, string[] devicesIds)
+        public async Task AddMultipleProximityVaultsAsync(string[] workstationsIds, string[] vaultsIds)
         {
             if (workstationsIds == null)
             {
                 throw new ArgumentNullException(nameof(workstationsIds));
             }
-            if (devicesIds == null)
+            if (vaultsIds == null)
             {
-                throw new ArgumentNullException(nameof(devicesIds));
+                throw new ArgumentNullException(nameof(vaultsIds));
             }
 
             foreach (var workstation in workstationsIds)
             {
-                await AddProximityDevicesAsync(workstation, devicesIds);
+                await AddProximityVaultsAsync(workstation, vaultsIds);
             }
         }
 
-        public async Task EditProximityDeviceAsync(WorkstationProximityVault proximityDevice)
+        public async Task EditProximityVaultAsync(WorkstationProximityVault proximityVault)
         {
-            if (proximityDevice == null)
+            if (proximityVault == null)
             {
-                throw new ArgumentNullException(nameof(proximityDevice));
+                throw new ArgumentNullException(nameof(proximityVault));
             }
 
             string[] properties = { "LockProximity", "UnlockProximity", "LockTimeout" };
-            await _proximityDeviceRepository.UpdateOnlyPropAsync(proximityDevice, properties);
-            await UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
+            await _proximityDeviceRepository.UpdateOnlyPropAsync(proximityVault, properties);
+            await UpdateProximitySettingsAsync(proximityVault.WorkstationId);
         }
 
-        public async Task DeleteProximityVaultAsync(string proximityDeviceId)
+        public async Task DeleteProximityVaultAsync(string proximityVaultId)
         {
-            if (proximityDeviceId == null)
+            if (proximityVaultId == null)
             {
-                throw new ArgumentNullException(nameof(proximityDeviceId));
+                throw new ArgumentNullException(nameof(proximityVaultId));
             }
 
-            var proximityDevice = await _proximityDeviceRepository.GetByIdAsync(proximityDeviceId);
+            var proximityDevice = await _proximityDeviceRepository.GetByIdAsync(proximityVaultId);
             if (proximityDevice == null)
             {
                 throw new Exception("Binding not found.");
@@ -333,26 +333,26 @@ namespace HES.Core.Services
             await UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
         }
 
-        public async Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityDevices)
+        public async Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityVaults)
         {
-            if (proximityDevices == null)
+            if (proximityVaults == null)
             {
-                throw new ArgumentNullException(nameof(proximityDevices));
+                throw new ArgumentNullException(nameof(proximityVaults));
             }
 
-            await _proximityDeviceRepository.DeleteRangeAsync(proximityDevices);
+            await _proximityDeviceRepository.DeleteRangeAsync(proximityVaults);
 
-            foreach (var item in proximityDevices)
+            foreach (var item in proximityVaults)
             {
                 await UpdateProximitySettingsAsync(item.WorkstationId);
             }
         }
 
-        public async Task DeleteProximityByVaultIdAsync(string deviceId)
+        public async Task DeleteProximityByVaultIdAsync(string vaultsId)
         {
             var allProximity = await _proximityDeviceRepository
              .Query()
-             .Where(w => w.HardwareVaultId == deviceId)
+             .Where(w => w.HardwareVaultId == vaultsId)
              .ToListAsync();
 
             await _proximityDeviceRepository.DeleteRangeAsync(allProximity);

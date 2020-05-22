@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models.API
+namespace HES.Core.Models.API.HardwareVault
 {
-    public class EditDeviceDto
+    public class EditHardwareVaultRfidDto
     {
         [Required]
         public string Id { get; set; }
