@@ -1,4 +1,4 @@
-﻿@if (PageModule.Entities == null)
+﻿@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -6,24 +6,24 @@ else
 {
     <TableAction>
         <FilterForm>
-            <VaultFilter FilterChanged="PageModule.FilterChangedAsync" />
+            <VaultFilter FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
             <ButtonSpinner Class="btn-primary" Text="Import Vaults" Callback="ImportVaultsAsync" />
-            @if (PageModule.SelectedEntity != null)
+            @if (MainTableService.SelectedEntity != null)
             {
                 <button type="button" @onclick="EditRfidAsync" class="btn btn-light border mx-2" title="Edit RFID">
                     <img class="icon-btn" src="/svg/action/edit.svg" />
                     Edit RFID
                 </button>
-                @if (PageModule.SelectedEntity.Status == VaultStatus.Locked)
+                @if (MainTableService.SelectedEntity.Status == VaultStatus.Locked)
                 {
                     <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
                         <img class="icon-btn" src="/svg/action/unlock.svg" />
                         Activate vault
                     </button>
                 }
-                @if (PageModule.SelectedEntity.Status == VaultStatus.Active)
+                @if (MainTableService.SelectedEntity.Status == VaultStatus.Active)
                 {
                     <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
                         <img class="icon-btn" src="/svg/action/otp.svg" />
@@ -35,14 +35,14 @@ else
                         Change profile
                     </button>
                 }
-                @if (PageModule.SelectedEntity.Status == VaultStatus.Active || PageModule.SelectedEntity.Status == VaultStatus.Locked || PageModule.SelectedEntity.Status == VaultStatus.Suspended || PageModule.SelectedEntity.Status == VaultStatus.Reserved)
+                @if (MainTableService.SelectedEntity.Status == VaultStatus.Active || MainTableService.SelectedEntity.Status == VaultStatus.Locked || MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
                 {
                     <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
                         <img class="icon-btn" src="/svg/action/password.svg" />
                         Vault Is Compromised
                     </button>
                 }
-                @if (PageModule.SelectedEntity.Status == VaultStatus.Suspended || PageModule.SelectedEntity.Status == VaultStatus.Reserved)
+                @if (MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
                 {
                     <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
                         <img class="icon-btn" src="/svg/action/details.svg" />
@@ -52,95 +52,95 @@ else
             }
         </ActionButtons>
         <FilterButtons>
-            <TableFilter SearchTextChanged="PageModule.SearchTextChangedAsync" />       
+            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />       
         </FilterButtons>
     </TableAction>
-    <MainTable Items="PageModule.Entities" SelectedItem="PageModule.SelectedEntity" SelecedItemChanged="PageModule.SelectedItemChangedAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
         <TableHeader>
             <MainTableHeader Title="ID"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Id)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="MAC"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.MAC)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Battery"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Battery)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Firmware"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Firmware)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Profile"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.HardwareVaultProfile)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Status"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Status)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Last Synced"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.LastSynced)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="License Status"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.LicenseStatus)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="License End Date"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.LicenseEndDate)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Employee"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Employee)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Employee.Department.Company)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Department"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Employee.Department)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="@nameof(HardwareVault.Model)"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.Model)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="@nameof(HardwareVault.RFID)"
                              TitleWidth="7.1"
                              SortColumn="@nameof(HardwareVault.RFID)"
-                             CurrentSortedColumn="@PageModule.SortedColumn"
-                             SortedColumnChanged="PageModule.SortedColumnChangedAsync"
-                             SortDirectionChanged="PageModule.SortDirectionChangedAsync" />
+                             CurrentSortedColumn="@MainTableService.SortedColumn"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
         </TableHeader>
         <TableRow>
             <td>
@@ -214,10 +214,10 @@ else
             </td>
         </TableRow>
     </MainTable>
-    <Pagination CurrentPageChanged="PageModule.CurrentPageChangedAsync"
-                DisplayRowsChanged="PageModule.DisplayRowsChangedAsync"
-                TotalRecords="PageModule.TotalRecords"
-                CurrentPage="PageModule.CurrentPage"
-                DisplayRows="PageModule.DisplayRows"
-                DisplayRecords="PageModule.Entities.Count" />
+    <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
+                DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
+                TotalRecords="MainTableService.TotalRecords"
+                CurrentPage="MainTableService.CurrentPage"
+                DisplayRows="MainTableService.DisplayRows"
+                DisplayRecords="MainTableService.Entities.Count" />
 }

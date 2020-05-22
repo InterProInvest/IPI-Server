@@ -23,16 +23,14 @@ namespace HES.Web.Components
         private string GetRowStyle(TItem item)
         {
             if (SelectedItem == null)
-            {
                 return string.Empty;
-            }
 
             return SelectedItem.Equals(item) ? "table-selected-row" : string.Empty;
         }
 
         private async Task OnRowDblClickAsync()
         {
-            if(SelecedItemDblClick == null)
+            if (SelecedItemDblClick == null)
                 return;
 
             await SelecedItemDblClick.Invoke();

@@ -3,69 +3,53 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace HES.Web.Components
+namespace HES.Core.Services
 {
-    public class MainPageModule<T, TFilter> : ComponentBase where TFilter : class, new() where T : class
+    public class MainTableService<TItem, TFilter> : ComponentBase, IMainTableService<TItem, TFilter> where TItem : class where TFilter : class, new()
     {
-        public TFilter Filter { get; set; }
-        public string SearchText { get; set; }
-        public ListSortDirection SortDirection { get; set; }
+        public TFilter Filter { get; set; } = new TFilter();
+        public string SearchText { get; set; } = string.Empty;
+        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
+        public int DisplayRows { get; set; } = 10;
+        public int CurrentPage { get; set; } = 1;
         public string SortedColumn { get; set; }
-        public int DisplayRows { get; set; }
-        public int CurrentPage { get; set; }
         public int TotalRecords { get; set; }
+        public TItem SelectedEntity { get; set; }
+        public List<TItem> Entities { get; set; }
 
-        public T SelectedEntity { get; set; }
-        public List<T> Entities { get; set; }
+        private Func<string, TFilter, Task<int>> _getEntitiesCount;
+        private Func<int, int, string, ListSortDirection, string, TFilter, Task<List<TItem>>> _getEntities;
+        private Action _stateHasChanged;
 
-        private Action _refreshUi;
-        private readonly IDataLoader<T, TFilter> _dataLoader;
-
-        private bool _isInitialized;
-
-        public MainPageModule(IDataLoader<T, TFilter> dataLoader)
+        public void Initialize(Func<int, int, string, ListSortDirection, string, TFilter, Task<List<TItem>>> getEntities, Func<string, TFilter, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn)
         {
-            _dataLoader = dataLoader;
-        }
-
-        public void InitializeModule(Action refreshUiMethod, string sortedColumn = "Id")
-        {
-            if (_isInitialized == true)
-                return;
-
-            _refreshUi = refreshUiMethod;
+            _stateHasChanged = stateHasChanged;
+            _getEntities = getEntities;
+            _getEntitiesCount = getEntitiesCount;
             SortedColumn = sortedColumn;
-            DisplayRows = 10;
-            CurrentPage = 1;
-            SortDirection = ListSortDirection.Ascending;
-            SearchText = string.Empty;
-            Filter = new TFilter();
-
-            _isInitialized = true;
         }
 
         public async Task LoadTableDataAsync()
         {
             var currentTotalRows = TotalRecords;
-            TotalRecords = await _dataLoader.GetEntitiesCountAsync(SearchText, Filter);
+            TotalRecords = await _getEntitiesCount.Invoke(SearchText, Filter);
 
             if (currentTotalRows != TotalRecords)
                 CurrentPage = 1;
 
-            Entities = await _dataLoader.GetEntitiesAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
+            Entities = await _getEntities.Invoke((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, Filter);
             SelectedEntity = null;
 
-            _refreshUi?.Invoke();
+            _stateHasChanged?.Invoke();
         }
 
-        public async Task SelectedItemChangedAsync(T item)
+        public Task SelectedItemChangedAsync(TItem item)
         {
             SelectedEntity = item;
-
-            _refreshUi?.Invoke();
+            _stateHasChanged?.Invoke();
+            return Task.CompletedTask;
         }
 
         public async Task SortedColumnChangedAsync(string columnName)

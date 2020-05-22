@@ -75,11 +75,7 @@ namespace HES.Web
         {
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
-
-            services.AddScoped<IDataLoader<HardwareVault, HardwareVaultFilter>, HardwareVaultService>();
-            services.AddScoped<MainPageModule<HardwareVault, HardwareVaultFilter>, MainPageModule<HardwareVault, HardwareVaultFilter>>();
-
-            
+            services.AddScoped(typeof(IMainTableService<,>), typeof(MainTableService<,>));
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IHardwareVaultService, HardwareVaultService>();

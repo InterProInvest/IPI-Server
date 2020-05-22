@@ -3,21 +3,18 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
 using HES.Core.Models.Web.HardwareVault;
-using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
     public partial class HardwareVaultsPage : ComponentBase
     {
-        [Inject] public MainPageModule<HardwareVault, HardwareVaultFilter> PageModule { get; set; }
-
+        [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
@@ -41,26 +38,26 @@ namespace HES.Web.Pages.HardwareVaults
             switch (DashboardFilter)
             {
                 case "LowBattery":
-                    PageModule.Filter.Battery = "low";
+                    MainTableService.Filter.Battery = "low";
                     break;
                 case "VaultLocked":
-                    PageModule.Filter.VaultStatus = VaultStatus.Locked;
+                    MainTableService.Filter.VaultStatus = VaultStatus.Locked;
                     break;
                 case "VaultReady":
-                    PageModule.Filter.VaultStatus = VaultStatus.Ready;
+                    MainTableService.Filter.VaultStatus = VaultStatus.Ready;
                     break;
                 case "LicenseWarning":
-                    PageModule.Filter.LicenseStatus = VaultLicenseStatus.Warning;
+                    MainTableService.Filter.LicenseStatus = VaultLicenseStatus.Warning;
                     break;
                 case "LicenseCritical":
-                    PageModule.Filter.LicenseStatus = VaultLicenseStatus.Critical;
+                    MainTableService.Filter.LicenseStatus = VaultLicenseStatus.Critical;
                     break;
                 case "LicenseExpired":
-                    PageModule.Filter.LicenseStatus = VaultLicenseStatus.Expired;
+                    MainTableService.Filter.LicenseStatus = VaultLicenseStatus.Expired;
                     break;
             }
-            PageModule.InitializeModule(StateHasChanged, nameof(HardwareVault.Id));
-            await PageModule.LoadTableDataAsync();
+            MainTableService.Initialize(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
+            await MainTableService.LoadTableDataAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -146,7 +143,7 @@ namespace HES.Web.Pages.HardwareVaults
             try
             {
                 await HardwareVaultService.ImportVaultsAsync();
-                await PageModule.LoadTableDataAsync();
+                await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Vaults imported.", ToastLevel.Success);
             }
             catch (Exception ex)
@@ -161,8 +158,8 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditRfid));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, PageModule.LoadTableDataAsync));
-                builder.AddAttribute(2, "HardwareVaultId", PageModule.SelectedEntity.Id);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, MainTableService.LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", MainTableService.SelectedEntity.Id);
                 builder.CloseComponent();
             };
 
@@ -174,8 +171,8 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, PageModule.LoadTableDataAsync));
-                builder.AddAttribute(2, "HardwareVaultId", PageModule.SelectedEntity.Id);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, MainTableService.LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(3, "VaultStatus", VaultStatus.Suspended);
                 builder.CloseComponent();
             };
@@ -188,8 +185,8 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, PageModule.LoadTableDataAsync));
-                builder.AddAttribute(2, "HardwareVaultId", PageModule.SelectedEntity.Id);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, MainTableService.LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(3, "VaultStatus", VaultStatus.Active);
                 builder.CloseComponent();
             };
@@ -202,8 +199,8 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, PageModule.LoadTableDataAsync));
-                builder.AddAttribute(2, "HardwareVaultId", PageModule.SelectedEntity.Id);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, MainTableService.LoadTableDataAsync));
+                builder.AddAttribute(2, "HardwareVaultId", MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(3, "VaultStatus", VaultStatus.Compromised);
                 builder.CloseComponent();
             };
@@ -216,7 +213,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ShowActivationCode));
-                builder.AddAttribute(1, "HardwareVault", PageModule.SelectedEntity);
+                builder.AddAttribute(1, "HardwareVault", MainTableService.SelectedEntity);
                 builder.CloseComponent();
             };
 
@@ -228,8 +225,8 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeProfile));
-                builder.AddAttribute(1, "HardwareVaultId", PageModule.SelectedEntity.Id);
-                builder.AddAttribute(2, "Refresh", EventCallback.Factory.Create(this, PageModule.LoadTableDataAsync));
+                builder.AddAttribute(1, "HardwareVaultId", MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, "Refresh", EventCallback.Factory.Create(this, MainTableService.LoadTableDataAsync));
                 builder.CloseComponent();
             };
 
