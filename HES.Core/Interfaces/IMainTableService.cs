@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HES.Core.Enums;
+using Microsoft.AspNetCore.Components;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -16,6 +18,11 @@ namespace HES.Core.Interfaces
         public int TotalRecords { get; set; }
         public TItem SelectedEntity { get; set; }
         public List<TItem> Entities { get; set; }
+
+        Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default);
+        Task InvokeJsAsync(string functionName, params object[] args);
+        Task<T> InvokeJsAsync<T>(string functionName, params object[] args);
+
         void Initialize(Func<int, int, string, ListSortDirection, string, TFilter, Task<List<TItem>>> getEntities, Func<string, TFilter, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn);
         Task LoadTableDataAsync();
         Task SelectedItemChangedAsync(TItem item);
