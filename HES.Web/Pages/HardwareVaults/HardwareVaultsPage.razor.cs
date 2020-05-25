@@ -18,29 +18,30 @@ namespace HES.Web.Pages.HardwareVaults
 
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<HardwareVaultsPage> Logger { get; set; }
-        [Parameter] public string DashboardFilter { get; set; }
 
+        //TODO Переделать при полном переходе на blazor
+        [Parameter] public string DashboardFilter { get; set; }
         protected override async Task OnInitializedAsync()
         {
             switch (DashboardFilter)
             {
                 case "LowBattery":
-                    MainTableService.Filter.Battery = "low";
+                    MainTableService.DataLoadingOptions.Filter.Battery = "low";
                     break;
                 case "VaultLocked":
-                    MainTableService.Filter.VaultStatus = VaultStatus.Locked;
+                    MainTableService.DataLoadingOptions.Filter.VaultStatus = VaultStatus.Locked;
                     break;
                 case "VaultReady":
-                    MainTableService.Filter.VaultStatus = VaultStatus.Ready;
+                    MainTableService.DataLoadingOptions.Filter.VaultStatus = VaultStatus.Ready;
                     break;
                 case "LicenseWarning":
-                    MainTableService.Filter.LicenseStatus = VaultLicenseStatus.Warning;
+                    MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Warning;
                     break;
                 case "LicenseCritical":
-                    MainTableService.Filter.LicenseStatus = VaultLicenseStatus.Critical;
+                    MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Critical;
                     break;
                 case "LicenseExpired":
-                    MainTableService.Filter.LicenseStatus = VaultLicenseStatus.Expired;
+                    MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Expired;
                     break;
             }
             MainTableService.Initialize(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));

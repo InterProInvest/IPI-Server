@@ -1,4 +1,5 @@
 ﻿using HES.Core.Enums;
+using HES.Core.Models.Web;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
@@ -7,13 +8,9 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IMainTableService<TItem, TFilter>
+    public interface IMainTableService<TItem, TFilter> where TFilter : class, new()
     {
-        public TFilter Filter { get; set; }
-        public string SearchText { get; set; }
-        public ListSortDirection SortDirection { get; set; }
-        public string SortedColumn { get; set; }
-        public int DisplayRows { get; set; }
+        DataLoadingOptions<TFilter> DataLoadingOptions { get; set; }
         public int CurrentPage { get; set; }
         public int TotalRecords { get; set; }
         public TItem SelectedEntity { get; set; }
@@ -21,9 +18,8 @@ namespace HES.Core.Interfaces
 
         Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default);
         Task InvokeJsAsync(string functionName, params object[] args);
-        Task<T> InvokeJsAsync<T>(string functionName, params object[] args);
 
-        void Initialize(Func<int, int, string, ListSortDirection, string, TFilter, Task<List<TItem>>> getEntities, Func<string, TFilter, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn);
+        void Initialize(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn);
         Task LoadTableDataAsync();
         Task SelectedItemChangedAsync(TItem item);
         Task SortedColumnChangedAsync(string columnName);

@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.HardwareVault;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVault;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -38,16 +39,31 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<HardwareVault>>> GetHardwareVaults()
         {
-            var count = await _hardwareVaultService.GetVaultsCountAsync(string.Empty, null);
-            return await _hardwareVaultService.GetVaultsAsync(0, count, nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, null);
+            var count = await _hardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>());
+            return await _hardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter> 
+            { 
+                Take = count,
+                SortedColumn = nameof(HardwareVault.Id),
+                SortDirection = ListSortDirection.Ascending
+            });
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<HardwareVault>>> GetFilterHardwareVaults(HardwareVaultFilter hardwareVaultFilter)
         {
-            var count = await _hardwareVaultService.GetVaultsCountAsync(string.Empty, hardwareVaultFilter);
-            return await _hardwareVaultService.GetVaultsAsync(0, count, nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, hardwareVaultFilter);
+            var count = await _hardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>
+            {
+                Filter = hardwareVaultFilter
+            });
+
+            return await _hardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(HardwareVault.Id),
+                SortDirection = ListSortDirection.Ascending,
+                Filter = hardwareVaultFilter
+            });
         }
 
         [HttpGet("{id}")]

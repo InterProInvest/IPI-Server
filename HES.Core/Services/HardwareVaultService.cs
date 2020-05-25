@@ -4,6 +4,7 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.HardwareVault;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVault;
 using Hideez.SDK.Communication.HES.DTO;
 using Microsoft.EntityFrameworkCore;
@@ -81,7 +82,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<List<HardwareVault>> GetVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, HardwareVaultFilter filter)
+        public async Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
         {
             var query = _hardwareVaultRepository
                 .Query()
@@ -90,27 +91,27 @@ namespace HES.Core.Services
                 .AsQueryable();
 
             // Filter
-            if (filter != null)
+            if (dataLoadingOptions.Filter != null)
             {
-                if (filter.Id != null)
+                if (dataLoadingOptions.Filter.Id != null)
                 {
-                    query = query.Where(w => w.Id.Contains(filter.Id, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.Id.Contains(dataLoadingOptions.Filter.Id, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.MAC != null)
+                if (dataLoadingOptions.Filter.MAC != null)
                 {
-                    query = query.Where(w => w.MAC.Contains(filter.MAC, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.MAC.Contains(dataLoadingOptions.Filter.MAC, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Model != null)
+                if (dataLoadingOptions.Filter.Model != null)
                 {
-                    query = query.Where(w => w.Model.Contains(filter.Model, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.Model.Contains(dataLoadingOptions.Filter.Model, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.RFID != null)
+                if (dataLoadingOptions.Filter.RFID != null)
                 {
-                    query = query.Where(w => w.RFID.Contains(filter.RFID, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.RFID.Contains(dataLoadingOptions.Filter.RFID, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Battery != null)
+                if (dataLoadingOptions.Filter.Battery != null)
                 {
-                    switch (filter.Battery)
+                    switch (dataLoadingOptions.Filter.Battery)
                     {
                         case "low":
                             query = query.Where(w => w.Battery <= 30);
@@ -120,112 +121,112 @@ namespace HES.Core.Services
                             break;
                     }
                 }
-                if (filter.Firmware != null)
+                if (dataLoadingOptions.Filter.Firmware != null)
                 {
-                    query = query.Where(w => w.Firmware.Contains(filter.Firmware, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.Firmware.Contains(dataLoadingOptions.Filter.Firmware, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.LastSyncedStartDate != null)
+                if (dataLoadingOptions.Filter.LastSyncedStartDate != null)
                 {
-                    query = query.Where(x => x.LastSynced >= filter.LastSyncedStartDate.Value.Date.ToUniversalTime());
+                    query = query.Where(x => x.LastSynced >= dataLoadingOptions.Filter.LastSyncedStartDate.Value.Date.ToUniversalTime());
                 }
-                if (filter.LastSyncedEndDate != null)
+                if (dataLoadingOptions.Filter.LastSyncedEndDate != null)
                 {
-                    query = query.Where(x => x.LastSynced <= filter.LastSyncedEndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
+                    query = query.Where(x => x.LastSynced <= dataLoadingOptions.Filter.LastSyncedEndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
                 }
-                if (filter.Employee != null)
+                if (dataLoadingOptions.Filter.Employee != null)
                 {
-                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(filter.Employee, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Company != null)
+                if (dataLoadingOptions.Filter.Company != null)
                 {
-                    query = query.Where(x => x.Employee.Department.Company.Name.Contains(filter.Company, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(x => x.Employee.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Department != null)
+                if (dataLoadingOptions.Filter.Department != null)
                 {
-                    query = query.Where(x => x.Employee.Department.Name.Contains(filter.Department, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(x => x.Employee.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.VaultStatus != null)
+                if (dataLoadingOptions.Filter.VaultStatus != null)
                 {
-                    query = query.Where(w => w.Status == filter.VaultStatus);
+                    query = query.Where(w => w.Status == dataLoadingOptions.Filter.VaultStatus);
                 }
-                if (filter.LicenseStatus != null)
+                if (dataLoadingOptions.Filter.LicenseStatus != null)
                 {
-                    query = query.Where(w => w.LicenseStatus == filter.LicenseStatus);
+                    query = query.Where(w => w.LicenseStatus == dataLoadingOptions.Filter.LicenseStatus);
                 }
-                if (filter.LicenseEndDate != null)
+                if (dataLoadingOptions.Filter.LicenseEndDate != null)
                 {
-                    query = query.Where(x => x.LicenseEndDate <= filter.LicenseEndDate.Value.Date);
+                    query = query.Where(x => x.LicenseEndDate <= dataLoadingOptions.Filter.LicenseEndDate.Value.Date);
                 }
             }
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.Id.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.MAC.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Battery.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Firmware.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVaultProfile.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Model.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.RFID.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.Id.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.MAC.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Battery.ToString().Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Firmware.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVaultProfile.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Employee.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Employee.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Model.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.RFID.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             // Sort Direction
-            switch (sortColumn)
+            switch (dataLoadingOptions.SortedColumn)
             {
                 case nameof(HardwareVault.Id):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
                     break;
                 case nameof(HardwareVault.MAC):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.MAC) : query.OrderByDescending(x => x.MAC);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.MAC) : query.OrderByDescending(x => x.MAC);
                     break;
                 case nameof(HardwareVault.Battery):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Battery) : query.OrderByDescending(x => x.Battery);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Battery) : query.OrderByDescending(x => x.Battery);
                     break;
                 case nameof(HardwareVault.Firmware):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Firmware) : query.OrderByDescending(x => x.Firmware);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Firmware) : query.OrderByDescending(x => x.Firmware);
                     break;
                 case nameof(HardwareVault.HardwareVaultProfile):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultProfile.Name) : query.OrderByDescending(x => x.HardwareVaultProfile.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultProfile.Name) : query.OrderByDescending(x => x.HardwareVaultProfile.Name);
                     break;
                 case nameof(HardwareVault.Status):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Status) : query.OrderByDescending(x => x.Status);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Status) : query.OrderByDescending(x => x.Status);
                     break;
                 case nameof(HardwareVault.LastSynced):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LastSynced) : query.OrderByDescending(x => x.LastSynced);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LastSynced) : query.OrderByDescending(x => x.LastSynced);
                     break;
                 case nameof(HardwareVault.LicenseStatus):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LicenseStatus) : query.OrderByDescending(x => x.LicenseStatus);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LicenseStatus) : query.OrderByDescending(x => x.LicenseStatus);
                     break;
                 case nameof(HardwareVault.LicenseEndDate):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LicenseEndDate) : query.OrderByDescending(x => x.LicenseEndDate);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LicenseEndDate) : query.OrderByDescending(x => x.LicenseEndDate);
                     break;
                 case nameof(HardwareVault.Employee):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
                     break;
                 case nameof(HardwareVault.Employee.Department.Company):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Company) : query.OrderByDescending(x => x.Employee.Department.Company);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Company) : query.OrderByDescending(x => x.Employee.Department.Company);
                     break;
                 case nameof(HardwareVault.Employee.Department):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Name) : query.OrderByDescending(x => x.Employee.Department.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Name) : query.OrderByDescending(x => x.Employee.Department.Name);
                     break;
                 case nameof(HardwareVault.Model):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Model) : query.OrderByDescending(x => x.Model);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Model) : query.OrderByDescending(x => x.Model);
                     break;
                 case nameof(HardwareVault.RFID):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.RFID) : query.OrderByDescending(x => x.RFID);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.RFID) : query.OrderByDescending(x => x.RFID);
                     break;
             }
 
-            return await query.Skip(skip).Take(take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
 
-        public async Task<int> GetVaultsCountAsync(string searchText, HardwareVaultFilter filter)
+        public async Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
         {
             var query = _hardwareVaultRepository
                 .Query()
@@ -234,29 +235,28 @@ namespace HES.Core.Services
                 .Include(d => d.Employee.Department.Company)
                 .AsQueryable();
 
-
             // Filter
-            if (filter != null)
+            if (dataLoadingOptions.Filter != null)
             {
-                if (filter.Id != null)
+                if (dataLoadingOptions.Filter.Id != null)
                 {
-                    query = query.Where(w => w.Id.Contains(filter.Id, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.Id.Contains(dataLoadingOptions.Filter.Id, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.MAC != null)
+                if (dataLoadingOptions.Filter.MAC != null)
                 {
-                    query = query.Where(w => w.MAC.Contains(filter.MAC, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.MAC.Contains(dataLoadingOptions.Filter.MAC, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Model != null)
+                if (dataLoadingOptions.Filter.Model != null)
                 {
-                    query = query.Where(w => w.Model.Contains(filter.Model, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.Model.Contains(dataLoadingOptions.Filter.Model, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.RFID != null)
+                if (dataLoadingOptions.Filter.RFID != null)
                 {
-                    query = query.Where(w => w.RFID.Contains(filter.RFID, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.RFID.Contains(dataLoadingOptions.Filter.RFID, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Battery != null)
+                if (dataLoadingOptions.Filter.Battery != null)
                 {
-                    switch (filter.Battery)
+                    switch (dataLoadingOptions.Filter.Battery)
                     {
                         case "low":
                             query = query.Where(w => w.Battery <= 30);
@@ -266,59 +266,59 @@ namespace HES.Core.Services
                             break;
                     }
                 }
-                if (filter.Firmware != null)
+                if (dataLoadingOptions.Filter.Firmware != null)
                 {
-                    query = query.Where(w => w.Firmware.Contains(filter.Firmware, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(w => w.Firmware.Contains(dataLoadingOptions.Filter.Firmware, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.LastSyncedStartDate != null)
+                if (dataLoadingOptions.Filter.LastSyncedStartDate != null)
                 {
-                    query = query.Where(x => x.LastSynced >= filter.LastSyncedStartDate.Value.Date.ToUniversalTime());
+                    query = query.Where(x => x.LastSynced >= dataLoadingOptions.Filter.LastSyncedStartDate.Value.Date.ToUniversalTime());
                 }
-                if (filter.LastSyncedEndDate != null)
+                if (dataLoadingOptions.Filter.LastSyncedEndDate != null)
                 {
-                    query = query.Where(x => x.LastSynced <= filter.LastSyncedEndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
+                    query = query.Where(x => x.LastSynced <= dataLoadingOptions.Filter.LastSyncedEndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
                 }
-                if (filter.Employee != null)
+                if (dataLoadingOptions.Filter.Employee != null)
                 {
-                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(filter.Employee, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Company != null)
+                if (dataLoadingOptions.Filter.Company != null)
                 {
-                    query = query.Where(x => x.Employee.Department.Company.Name.Contains(filter.Company, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(x => x.Employee.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.Department != null)
+                if (dataLoadingOptions.Filter.Department != null)
                 {
-                    query = query.Where(x => x.Employee.Department.Name.Contains(filter.Department, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(x => x.Employee.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.VaultStatus != null)
+                if (dataLoadingOptions.Filter.VaultStatus != null)
                 {
-                    query = query.Where(w => w.Status == filter.VaultStatus);
+                    query = query.Where(w => w.Status == dataLoadingOptions.Filter.VaultStatus);
                 }
-                if (filter.LicenseStatus != null)
+                if (dataLoadingOptions.Filter.LicenseStatus != null)
                 {
-                    query = query.Where(w => w.LicenseStatus == filter.LicenseStatus);
+                    query = query.Where(w => w.LicenseStatus == dataLoadingOptions.Filter.LicenseStatus);
                 }
-                if (filter.LicenseEndDate != null)
+                if (dataLoadingOptions.Filter.LicenseEndDate != null)
                 {
-                    query = query.Where(x => x.LicenseEndDate <= filter.LicenseEndDate.Value.Date);
+                    query = query.Where(x => x.LicenseEndDate <= dataLoadingOptions.Filter.LicenseEndDate.Value.Date);
                 }
             }
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.Id.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.MAC.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Battery.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Firmware.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVaultProfile.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Model.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.RFID.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.Id.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.MAC.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Battery.ToString().Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Firmware.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVaultProfile.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Employee.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Employee.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Model.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.RFID.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();
@@ -405,7 +405,14 @@ namespace HES.Core.Services
                 // Import hardware vaults
                 if (importDto.HardwareVaultsDto != null)
                 {
-                    var vaults = await GetVaultsAsync(0, await GetVaultsCountAsync(string.Empty, null), nameof(HardwareVault.Id), ListSortDirection.Ascending, string.Empty, null);
+                    var vaults = await GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>() 
+                    {
+                        Take = await GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>()),
+                        SortedColumn = nameof(HardwareVault.Id),
+                        SortDirection = ListSortDirection.Ascending
+
+                    });
+                    
                     // Remove existing
                     importDto.HardwareVaultsDto.RemoveAll(x => vaults.Select(s => s.Id).Contains(x.HardwareVaultId));
 
