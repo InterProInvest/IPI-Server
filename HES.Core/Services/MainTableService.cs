@@ -31,14 +31,14 @@ namespace HES.Core.Services
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
-        public void Initialize(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn)
+        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn)
         {
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
             _getEntitiesCount = getEntitiesCount;
-            DataLoadingOptions.SortedColumn = sortedColumn;
-
             _modalDialogService.OnClose += LoadTableDataAsync;
+            DataLoadingOptions.SortedColumn = sortedColumn;
+            await LoadTableDataAsync();
         }
 
         public async Task LoadTableDataAsync()
@@ -51,7 +51,7 @@ namespace HES.Core.Services
 
             DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
             Entities = await _getEntities.Invoke(DataLoadingOptions);
-            SelectedEntity = null;
+            SelectedEntity = Entities.Contains(SelectedEntity) ? SelectedEntity : null;
 
             _stateHasChanged?.Invoke();
         }

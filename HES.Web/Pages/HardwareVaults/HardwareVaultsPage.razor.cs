@@ -6,6 +6,7 @@ using HES.Core.Models.Web.HardwareVault;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
@@ -16,9 +17,8 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<HardwareVaultsPage> Logger { get; set; }
-
-        //TODO Переделать при полном переходе на blazor
         [Parameter] public string DashboardFilter { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             switch (DashboardFilter)
@@ -42,16 +42,20 @@ namespace HES.Web.Pages.HardwareVaults
                     MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Expired;
                     break;
             }
-            MainTableService.Initialize(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
-            await MainTableService.LoadTableDataAsync();
+
+            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (!firstRender)
-                return;
-
-            await MainTableService.InvokeJsAsync("createBreadcrumbs", new Breadcrumb[] { new Breadcrumb { Active = true, Content = "Hardware Vaults" } });
+            if (firstRender)
+            {
+                var items = new List<Breadcrumb>()
+                {
+                    new Breadcrumb () { Active = true, Content = "Hardware Vaults" }
+                };
+                await MainTableService.InvokeJsAsync("createBreadcrumbs", items);
+            }
         }
 
         public async Task ImportVaultsAsync()
