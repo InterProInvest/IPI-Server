@@ -22,7 +22,7 @@ namespace HES.Core.Interfaces
         Task<Employee> ImportEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
-        Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
+        //Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
         Task UpdateLastSeenAsync(string vaultId);
         Task AddHardwareVaultAsync(string employeeId, string vaultId);
         Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);

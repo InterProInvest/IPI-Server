@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -27,8 +26,6 @@ namespace HES.Core.Services
         private readonly IAccountService _accountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly IWorkstationService _workstationService;
-        private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
-        private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
 
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
@@ -38,8 +35,6 @@ namespace HES.Core.Services
                                IAccountService accountService,
                                ISharedAccountService sharedAccountService,
                                IWorkstationService workstationService,
-                               IAsyncRepository<WorkstationEvent> workstationEventRepository,
-                               IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                IDataProtectionService dataProtectionService)
         {
             _employeeRepository = employeeRepository;
@@ -49,8 +44,6 @@ namespace HES.Core.Services
             _accountService = accountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
-            _workstationEventRepository = workstationEventRepository;
-            _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
         }
 
@@ -90,6 +83,7 @@ namespace HES.Core.Services
             return employee.HardwareVaults.Select(x => x.Id).ToList();
         }
 
+        // TODO Delete this method
         public async Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter)
         {
             var filter = _employeeRepository
@@ -186,7 +180,16 @@ namespace HES.Core.Services
                 throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
-            var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
+            var properties = new string[]
+            {
+                nameof(Employee.FirstName),
+                nameof(Employee.LastName),
+                nameof(Employee.Email),
+                nameof(Employee.PhoneNumber),
+                nameof(Employee.DepartmentId),
+                nameof(Employee.PositionId)
+            };
+
             await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
         }
 
@@ -216,38 +219,21 @@ namespace HES.Core.Services
             if (softwareVaults)
                 throw new Exception("First untie the software vault before removing.");
 
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                // Remove all events
-                var allEvents = await _workstationEventRepository.Query().Where(e => e.EmployeeId == id).ToListAsync();
-                await _workstationEventRepository.DeleteRangeAsync(allEvents);
-                // Remove all sessions
-                var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
-                await _workstationSessionRepository.DeleteRangeAsync(allSessions);
-                // Remove all accounts
-                await _accountService.DeleteAccountsByEmployeeIdAsync(id, deleteFromDatabase: true);
-
-                await _employeeRepository.DeleteAsync(employee);
-
-                transactionScope.Complete();
-            }
-        }
-
-        public async Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate)
-        {
-            return await _employeeRepository.ExistAsync(predicate);
+            await _employeeRepository.DeleteAsync(employee);
         }
 
         public async Task UpdateLastSeenAsync(string vaultId)
         {
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
-            var employee = await _employeeRepository.GetByIdAsync(vault.EmployeeId);
+            if (vault?.EmployeeId == null)
+                return;
 
-            if (employee != null)
-            {
-                employee.LastSeen = DateTime.UtcNow;
-                await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { "LastSeen" });
-            }
+            var employee = await _employeeRepository.GetByIdAsync(vault.EmployeeId);
+            if (employee == null)
+                return;
+
+            employee.LastSeen = DateTime.UtcNow;
+            await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { nameof(Employee.LastSeen) });
         }
 
         #endregion

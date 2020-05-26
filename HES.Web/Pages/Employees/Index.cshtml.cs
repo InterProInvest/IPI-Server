@@ -244,16 +244,16 @@ namespace HES.Web.Pages.Employees
             }
             catch (Exception ex)
             {
-                if (!await EmployeeExistsAsync(employee.Id))
-                {
-                    _logger.LogError("Employee dos not exists.");
-                    return NotFound();
-                }
-                else
-                {
-                    ErrorMessage = ex.Message;
-                    _logger.LogError(ex.Message);
-                }
+                //if (!await EmployeeExistsAsync(employee.Id))
+                //{
+                //    _logger.LogError("Employee dos not exists.");
+                //    return NotFound();
+                //}
+                //else
+                //{
+                ErrorMessage = ex.Message;
+                _logger.LogError(ex.Message);
+                //}
             }
 
             return RedirectToPage("./Index");
@@ -305,10 +305,10 @@ namespace HES.Web.Pages.Employees
             return RedirectToPage("./Index");
         }
 
-        private async Task<bool> EmployeeExistsAsync(string id)
-        {
-            return await _employeeService.ExistAsync(e => e.Id == id);
-        }
+        //private async Task<bool> EmployeeExistsAsync(string id)
+        //{
+        //    return await _employeeService.ExistAsync(e => e.Id == id);
+        //}
 
         #endregion
 
