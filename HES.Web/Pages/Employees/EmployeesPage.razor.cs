@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
