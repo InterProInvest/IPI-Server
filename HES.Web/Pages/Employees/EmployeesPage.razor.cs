@@ -2,6 +2,7 @@
 using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore.Metadata;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -10,6 +11,8 @@ namespace HES.Web.Pages.Employees
     {
         [Inject] public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
         [Inject] public IEmployeeService EmployeeService { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
+
 
 
 
@@ -21,8 +24,15 @@ namespace HES.Web.Pages.Employees
 
         private async Task ImportEmployeesFromAdAsync()
         {
-            await MainTableService.ShowModalAsync("Import from Ad", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddEmployee));
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Import from Ad", body);
         }
+
         private async Task CreateEmployeeAsync()
         {
             await MainTableService.ShowModalAsync("Details", null);
@@ -30,7 +40,10 @@ namespace HES.Web.Pages.Employees
 
         private async Task EmployeeDetailsAsync()
         {
-            await MainTableService.ShowModalAsync("Details", null);
+            await InvokeAsync(() =>
+            {
+                NavigationManager.NavigateTo($"/Employees/Details?id={MainTableService.SelectedEntity.Id}", true);
+            });
         }
 
         private async Task EditEmployeeAsync()
@@ -40,7 +53,14 @@ namespace HES.Web.Pages.Employees
 
         private async Task DeleteEmployeeAsync()
         {
-            await MainTableService.ShowModalAsync("Delete", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteEmployee));
+                builder.AddAttribute(1, nameof(DeleteEmployee.Employee), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Delete", body);
         }
     }
 }

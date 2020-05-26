@@ -6,24 +6,29 @@ else
 {
     <TableAction>
         <FilterForm>
-           @* <VaultFilter FilterChanged="MainTableService.FilterChangedAsync" />*@
+            <EmployeeFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <ButtonSpinner Class="btn-primary" Text="Import from AD" Callback="() => { }" />
-            <ButtonSpinner Class="btn-primary" Text="Create employee" Callback="() => { }" />
+            <button type="button" @onclick="ImportEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Import employee from AD">
+                Import from AD
+            </button>
+
+            <button type="button" @onclick="CreateEmployeeAsync" class="btn btn-primary mx-1" title="Create employee">
+                Create employee
+            </button>
             @if (MainTableService.SelectedEntity != null)
             {
-                <button type="button" @onclick="() => { }" class="btn btn-light border mx-2" title="Edit RFID">
+                <button type="button" @onclick="EmployeeDetailsAsync" class="btn btn-light border mx-1" title="Employee details">
                     <img class="icon-btn" src="/svg/action/details.svg" />
                     Details
                 </button>
 
-                <button type="button" @onclick="() => { }" class="btn btn-light border mx-2" title="Edit RFID">
+                <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
                     <img class="icon-btn" src="/svg/action/edit.svg" />
                     Edit
                 </button>
 
-                <button type="button" @onclick="() => { }" class="btn btn-light border mx-2" title="Edit RFID">
+                <button type="button" @onclick="DeleteEmployeeAsync" class="btn btn-light border mx-1" title="Delete employee">
                     <img class="icon-btn" src="/svg/action/delete.svg" />
                     Delete
                 </button>
