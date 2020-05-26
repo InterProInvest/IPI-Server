@@ -6,7 +6,10 @@
     ViewData["ActivePage"] = MenuNavPages.Employees;
 }
 
-<partial name="_SuccessMessage" for="SuccessMessage" />
+
+<component type="typeof(EmployeesPage)" render-mode="ServerPrerendered" />
+
+@*<partial name="_SuccessMessage" for="SuccessMessage" />
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
 <div id="filter-collapse" class="filter-card collapse pb-1">
@@ -80,14 +83,14 @@
             </div>
         </div>
     </form>
-</div>
+</div>*@
 
-<div id="content">
+@*<div id="content">
     <partial name="_EmployeesTable" />
-</div>
+</div>*@
 
 @* Modal *@
-<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+@*<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
     <div id="modalBorder" class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -105,10 +108,10 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
 @* Second Modal *@
-<div class="modal" id="secondModalDialog" tabindex="-1" role="dialog" aria-labelledby="secondModalDialogTitle" aria-hidden="true">
+@*<div class="modal" id="secondModalDialog" tabindex="-1" role="dialog" aria-labelledby="secondModalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content second-modal">
             <div class="modal-header">
@@ -126,9 +129,9 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
-@section Scripts{
+@*@section Scripts{
     <script src="~/js/dt-init-employees.js"></script>
     <script>
         // Initialize DateTimePicker
@@ -482,4 +485,4 @@
         });
     </script>
     <partial name="_ValidationScriptsPartial" />
-}
+}*@
