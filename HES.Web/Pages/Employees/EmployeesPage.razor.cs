@@ -1,6 +1,5 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
@@ -16,7 +15,7 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            //await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
+            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
         }
 
 

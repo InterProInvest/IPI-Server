@@ -1,4 +1,4 @@
-﻿@if (MainTableService.Entities != null)
+﻿@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -36,50 +36,50 @@ else
     <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
         <TableHeader>
             <MainTableHeader Title="Name"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.FullName)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Email"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.Email)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Phone Number"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.PhoneNumber)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.Department.Company)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Department"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.Department)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Position"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.Position)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Last Seen"
-                             TitleWidth="7.1"
+                             TitleWidth="12.5"
                              SortColumn="@nameof(Employee.LastSeen)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="HardwareVaults"
-                             TitleWidth="7.1"
-                             SortColumn="@nameof(Employee.HardwareVaults)"
+            <MainTableHeader Title="Vaults Count"
+                             TitleWidth="12.5"
+                             SortColumn="@nameof(Employee.VaultsCount)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
@@ -105,12 +105,12 @@ else
             </td>
             <td>
                 @if (context.LastSeen != null)
-                    {
+                {
                     @context.LastSeen.Value.ToLocalTime()
-                    }
+                }
             </td>
             <td>
-                @context.HardwareVaults?.Count
+                @context.VaultsCount
             </td>
         </TableRow>
     </MainTable>
@@ -120,5 +120,4 @@ else
                 CurrentPage="MainTableService.CurrentPage"
                 DisplayRows="MainTableService.DataLoadingOptions.Take"
                 DisplayRecords="MainTableService.Entities.Count" />
-}
 }
