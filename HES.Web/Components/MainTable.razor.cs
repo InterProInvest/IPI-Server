@@ -10,8 +10,8 @@ namespace HES.Web.Components
         [Parameter] public RenderFragment TableHeader { get; set; }
         [Parameter] public RenderFragment<TItem> TableRow { get; set; }
         [Parameter] public IReadOnlyList<TItem> Items { get; set; }
-        [Parameter] public Func<TItem, Task> SelecedItemChanged { get; set; }
         [Parameter] public TItem SelectedItem { get; set; }
+        [Parameter] public Func<TItem, Task> SelecedItemChanged { get; set; }
         [Parameter] public Func<Task> SelecedItemDblClick { get; set; }
 
         private async Task OnRowSelectedAsync(TItem item)

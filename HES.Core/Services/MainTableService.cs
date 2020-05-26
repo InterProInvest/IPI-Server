@@ -14,24 +14,20 @@ namespace HES.Core.Services
     {
         private readonly IJSRuntime _jSRuntime;
         private readonly IModalDialogService _modalDialogService;
-
-        public DataLoadingOptions<TFilter> DataLoadingOptions { get; set; }
-
-        public int CurrentPage { get; set; } = 1;
-        public int TotalRecords { get; set; }
-
-        public TItem SelectedEntity { get; set; }
-        public List<TItem> Entities { get; set; }
-
         private Func<DataLoadingOptions<TFilter>, Task<int>> _getEntitiesCount;
         private Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> _getEntities;
         private Action _stateHasChanged;
+
+        public DataLoadingOptions<TFilter> DataLoadingOptions { get; set; }
+        public TItem SelectedEntity { get; set; }
+        public List<TItem> Entities { get; set; }
+        public int TotalRecords { get; set; }
+        public int CurrentPage { get; set; } = 1;
 
         public MainTableService(IJSRuntime jSRuntime, IModalDialogService modalDialogService)
         {
             _jSRuntime = jSRuntime;
             _modalDialogService = modalDialogService;
-
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
@@ -44,9 +40,6 @@ namespace HES.Core.Services
 
             _modalDialogService.OnClose += LoadTableDataAsync;
         }
-
-
-        #region Table Actions
 
         public async Task LoadTableDataAsync()
         {
@@ -62,45 +55,50 @@ namespace HES.Core.Services
 
             _stateHasChanged?.Invoke();
         }
+
         public Task SelectedItemChangedAsync(TItem item)
         {
             SelectedEntity = item;
             _stateHasChanged?.Invoke();
             return Task.CompletedTask;
         }
+
         public async Task FilterChangedAsync(TFilter filter)
         {
             DataLoadingOptions.Filter = filter;
             await LoadTableDataAsync();
         }
+
         public async Task CurrentPageChangedAsync(int currentPage)
         {
             CurrentPage = currentPage;
             await LoadTableDataAsync();
         }
+
         public async Task DisplayRowsChangedAsync(int displayRows)
         {
             DataLoadingOptions.Take = displayRows;
             CurrentPage = 1;
             await LoadTableDataAsync();
         }
+
         public async Task SearchTextChangedAsync(string searchText)
         {
             DataLoadingOptions.SearchText = searchText;
             await LoadTableDataAsync();
         }
+
         public async Task SortedColumnChangedAsync(string columnName)
         {
             DataLoadingOptions.SortedColumn = columnName;
             await LoadTableDataAsync();
         }
+
         public async Task SortDirectionChangedAsync(ListSortDirection sortDirection)
         {
             DataLoadingOptions.SortDirection = sortDirection;
             await LoadTableDataAsync();
         }
-
-        #endregion
 
         public async Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default)
         {

@@ -13,9 +13,7 @@ namespace HES.Web.Pages.HardwareVaults
     public partial class HardwareVaultsPage : ComponentBase
     {
         [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
-
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
-
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<HardwareVaultsPage> Logger { get; set; }
 
