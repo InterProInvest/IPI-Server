@@ -5,6 +5,8 @@ using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Core.Models.API.Employee;
+using HES.Core.Models.Employees;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.Account;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,7 +45,13 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
-            return await _employeeService.GetEmployeesAsync();
+            var count = await _employeeService.GetEmployeesCountAsync(new DataLoadingOptions<EmployeeFilter>());
+            return await _employeeService.GetEmployeesAsync(new DataLoadingOptions<EmployeeFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Employee.FullName),
+                SortDirection = ListSortDirection.Ascending
+            });
         }
 
         [HttpGet("{id}")]
@@ -64,7 +73,18 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Employee>>> GetFilteredEmployees(EmployeeFilter employeeFilter)
         {
-            return await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
+            var count = await _employeeService.GetEmployeesCountAsync(new DataLoadingOptions<EmployeeFilter>
+            {
+                Filter = employeeFilter
+            });
+
+            return await _employeeService.GetEmployeesAsync(new DataLoadingOptions<EmployeeFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Employee.FullName),
+                SortDirection = ListSortDirection.Ascending,
+                Filter = employeeFilter
+            });
         }
 
         [HttpPost]
