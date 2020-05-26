@@ -1,12 +1,13 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Models;
+using HES.Core.Models.Employees;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.Account;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
@@ -15,14 +16,13 @@ namespace HES.Core.Interfaces
     {
         IQueryable<Employee> EmployeeQuery();
         Task<Employee> GetEmployeeByIdAsync(string id);
-        Task<List<Employee>> GetEmployeesAsync();
+        Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
+        Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId);
-        Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter);
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task<Employee> ImportEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
-        //Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate);
         Task UpdateLastSeenAsync(string vaultId);
         Task AddHardwareVaultAsync(string employeeId, string vaultId);
         Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);

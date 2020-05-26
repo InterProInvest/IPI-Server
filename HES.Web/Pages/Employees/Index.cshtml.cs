@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HES.Core.Utilities;
 using HES.Core.Enums;
+using HES.Core.Models.Employees;
 
 namespace HES.Web.Pages.Employees
 {
@@ -82,7 +83,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task OnGetAsync()
         {
-            Employees = await _employeeService.GetEmployeesAsync();
+            //Employees = await _employeeService.GetEmployeesAsync(new Core.Models.Web.DataLoadingOptions<EmployeeFilter>() { });
 
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
             ViewData["Positions"] = new SelectList(await _orgStructureService.PositionQuery().OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
@@ -96,7 +97,7 @@ namespace HES.Web.Pages.Employees
 
         public async Task<IActionResult> OnPostFilterEmployeesAsync(EmployeeFilter employeeFilter)
         {
-            Employees = await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
+            //Employees = await _employeeService.GetFilteredEmployeesAsync(employeeFilter);
             return Partial("_EmployeesTable", this);
         }
 
