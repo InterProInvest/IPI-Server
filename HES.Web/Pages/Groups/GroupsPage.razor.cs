@@ -3,13 +3,11 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
 using HES.Core.Models.Web.Group;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace HES.Web.Pages.Groups
 {

@@ -15,7 +15,6 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public ILogger<EditRfid> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string HardwareVaultId { get; set; }
 
         public HardwareVault HardwareVault { get; set; }
@@ -45,7 +44,6 @@ namespace HES.Web.Pages.HardwareVaults
             try
             {
                 await HardwareVaultService.EditRfidAsync(HardwareVault);
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("RFID updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

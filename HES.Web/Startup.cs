@@ -2,8 +2,10 @@ using HES.Core.Entities;
 using HES.Core.HostedServices;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.HardwareVault;
 using HES.Core.Services;
 using HES.Infrastructure;
+using HES.Web.Components;
 using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -57,6 +59,7 @@ namespace HES.Web
         {
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IMainTableService<,>), typeof(MainTableService<,>));
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IHardwareVaultService, HardwareVaultService>();
