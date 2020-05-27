@@ -19,6 +19,7 @@ namespace HES.Core.Interfaces
         Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId);
+        Task UnchangedEmployeeAsync(Employee employee);
         Task<Employee> CreateEmployeeAsync(Employee employee);
         Task<Employee> ImportEmployeeAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);

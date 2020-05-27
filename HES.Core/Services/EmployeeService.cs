@@ -69,6 +69,11 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
+        public Task UnchangedEmployeeAsync(Employee employee)
+        {
+            return _employeeRepository.Unchanged(employee);
+        }
+
         public async Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions)
         {
             var query = _employeeRepository

@@ -14,13 +14,10 @@ namespace HES.Web.Pages.Employees
         [Inject] NavigationManager NavigationManager { get; set; }
 
 
-
-
         protected override async Task OnInitializedAsync()
         {
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
         }
-
 
         private async Task ImportEmployeesFromAdAsync()
         {
@@ -48,7 +45,14 @@ namespace HES.Web.Pages.Employees
 
         private async Task EditEmployeeAsync()
         {
-            await MainTableService.ShowModalAsync("Edit", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditEmployee));
+                builder.AddAttribute(1, nameof(DeleteEmployee.Employee), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Edit", body);
         }
 
         private async Task DeleteEmployeeAsync()
