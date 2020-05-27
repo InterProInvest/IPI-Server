@@ -50,7 +50,7 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<HardwareVault>>> GetFilterHardwareVaults(HardwareVaultFilter hardwareVaultFilter)
+        public async Task<ActionResult<IEnumerable<HardwareVault>>> GetFilteredHardwareVaults(HardwareVaultFilter hardwareVaultFilter)
         {
             var count = await _hardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>
             {

@@ -187,20 +187,20 @@ namespace HES.Core.Hubs
         }
 
         // Incoming request
-        public async Task<HesResponse> OnDeviceDisconnected(string deviceId)
+        public async Task<HesResponse> OnDeviceDisconnected(string vaultId)
         {
             try
             {
-                if (!string.IsNullOrEmpty(deviceId))
+                if (!string.IsNullOrEmpty(vaultId))
                 {
-                    _remoteDeviceConnectionsService.OnDeviceDisconnected(deviceId, GetWorkstationId());
-                    await _employeeService.UpdateLastSeenAsync(deviceId);
+                    _remoteDeviceConnectionsService.OnDeviceDisconnected(vaultId, GetWorkstationId());
+                    await _employeeService.UpdateLastSeenAsync(vaultId);
                 }
                 return HesResponse.Ok;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[{deviceId}] {ex.Message}");
+                _logger.LogError($"[{vaultId}] {ex.Message}");
                 return new HesResponse(ex);
             }
         }

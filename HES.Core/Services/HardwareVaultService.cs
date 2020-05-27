@@ -82,6 +82,20 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<HardwareVault>> GetVaultsAsync()
+        {
+            var count = await GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>());
+            return await GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>()
+            {
+                Skip = 0,
+                Take = count,
+                SortedColumn = nameof(HardwareVault.Id),
+                SortDirection = ListSortDirection.Ascending,
+                SearchText = string.Empty,
+                Filter = null
+            });
+        }
+
         public async Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
         {
             var query = _hardwareVaultRepository
@@ -145,9 +159,9 @@ namespace HES.Core.Services
                 {
                     query = query.Where(x => x.Employee.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
                 }
-                if (dataLoadingOptions.Filter.VaultStatus != null)
+                if (dataLoadingOptions.Filter.Status != null)
                 {
-                    query = query.Where(w => w.Status == dataLoadingOptions.Filter.VaultStatus);
+                    query = query.Where(w => w.Status == dataLoadingOptions.Filter.Status);
                 }
                 if (dataLoadingOptions.Filter.LicenseStatus != null)
                 {
@@ -210,7 +224,7 @@ namespace HES.Core.Services
                     query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
                     break;
                 case nameof(HardwareVault.Employee.Department.Company):
-                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Company) : query.OrderByDescending(x => x.Employee.Department.Company);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Company.Name) : query.OrderByDescending(x => x.Employee.Department.Company.Name);
                     break;
                 case nameof(HardwareVault.Employee.Department):
                     query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Department.Name) : query.OrderByDescending(x => x.Employee.Department.Name);
@@ -290,9 +304,9 @@ namespace HES.Core.Services
                 {
                     query = query.Where(x => x.Employee.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
                 }
-                if (dataLoadingOptions.Filter.VaultStatus != null)
+                if (dataLoadingOptions.Filter.Status != null)
                 {
-                    query = query.Where(w => w.Status == dataLoadingOptions.Filter.VaultStatus);
+                    query = query.Where(w => w.Status == dataLoadingOptions.Filter.Status);
                 }
                 if (dataLoadingOptions.Filter.LicenseStatus != null)
                 {
@@ -405,14 +419,14 @@ namespace HES.Core.Services
                 // Import hardware vaults
                 if (importDto.HardwareVaultsDto != null)
                 {
-                    var vaults = await GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>() 
+                    var vaults = await GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>()
                     {
                         Take = await GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>()),
                         SortedColumn = nameof(HardwareVault.Id),
                         SortDirection = ListSortDirection.Ascending
 
                     });
-                    
+
                     // Remove existing
                     importDto.HardwareVaultsDto.RemoveAll(x => vaults.Select(s => s.Id).Contains(x.HardwareVaultId));
 

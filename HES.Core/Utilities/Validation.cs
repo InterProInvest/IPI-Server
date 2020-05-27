@@ -12,7 +12,7 @@ namespace HES.Core.Utilities
     {
         public static string VerifyUrls(string urls)
         {
-            if (urls == null)
+            if (string.IsNullOrEmpty(urls))
                 return null;
 
             List<string> verifiedUrls = new List<string>();
@@ -32,7 +32,7 @@ namespace HES.Core.Utilities
 
         public static string VerifyOtpSecret(string otp)
         {
-            if (otp == null)
+            if (string.IsNullOrEmpty(otp))
                 return null;
 
             var valid = Regex.IsMatch(otp.Replace(" ", ""), @"^[a-zA-Z0-9]+$");

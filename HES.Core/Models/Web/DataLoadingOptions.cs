@@ -13,8 +13,8 @@ namespace HES.Core.Models.Web
 
         public DataLoadingOptions()
         {
-            Take = 10;
             Skip = 0;
+            Take = 10;
             Filter = new TFilter();
             SearchText = string.Empty;
             SortDirection = ListSortDirection.Ascending;

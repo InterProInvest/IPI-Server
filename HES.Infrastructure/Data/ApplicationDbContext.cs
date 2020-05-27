@@ -23,6 +23,9 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Employee>().HasMany(x => x.GroupMemberships).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.SoftwareVaults).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.SoftwareVaultInvitations).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Employee>().HasMany(x => x.Accounts).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Employee>().HasMany(x => x.WorkstationEvents).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Employee>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             // Set Unique 
             modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
             base.OnModelCreating(modelBuilder);

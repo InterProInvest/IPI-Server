@@ -1,0 +1,316 @@
+﻿@if (!initialized)
+{
+    <LoadingText />
+}
+else
+{
+    <div class="wizard-header mb-3">
+        <div class="wizard wizard-horizontal wizard-label-vertical wizard-circle">
+            <div class="wizard-item @cssProfile">
+                <div class="wizard-item-tail"></div>
+                <div class="wizard-item-icon">
+                    <span class="wizard-icon">
+                        <span class="wizard-icon-circle">
+                        </span>
+                    </span>
+                </div>
+                <div class="wizard-item-content">
+                    <div class="wizard-item-title">Profile</div>
+                </div>
+            </div>
+            <div class="wizard-item @cssHardwareVault">
+                <div class="wizard-item-tail"></div>
+                <div class="wizard-item-icon">
+                    <span class="wizard-icon">
+                        <span class="wizard-icon-circle">
+                        </span>
+                    </span>
+                </div>
+                <div class="wizard-item-content">
+                    <div class="wizard-item-title">Hardware Vault</div>
+                </div>
+            </div>
+            <div class="wizard-item @cssWorkstationAccount">
+                <div class="wizard-item-tail"></div>
+                <div class="wizard-item-icon">
+                    <span class="wizard-icon">
+                        <span class="wizard-icon-circle">
+                        </span>
+                    </span>
+                </div>
+                <div class="wizard-item-content">
+                    <div class="wizard-item-title">Account</div>
+                </div>
+            </div>
+            <div class="wizard-item @cssOverview">
+                <div class="wizard-item-tail"></div>
+                <div class="wizard-item-icon">
+                    <span class="wizard-icon">
+                        <span class="wizard-icon-circle">
+                        </span>
+                    </span>
+                </div>
+                <div class="wizard-item-content">
+                    <div class="wizard-item-title">Overview</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Employee -->
+    <div class="wizard-tab @(wizardStep != WizardStep.Profile ? "d-none" : null)">
+        <EditForm EditContext="@employeeContext">
+            <DataAnnotationsValidator />
+            <ValidationErrorMessage @ref="EmployeeValidationErrorMessage" />
+            <div class="row">
+                <div class="form-group col">
+                    <label class="control-label text-gray">First Name</label>
+                    <InputText @bind-Value="employee.FirstName" class="form-control text-navyblue" />
+                    <ValidationMessage For="@(() => employee.FirstName)" class="text-danger" />
+                </div>
+                <div class="form-group col">
+                    <label class="control-label text-gray">Last Name</label>
+                    <InputText @bind-Value="employee.LastName" class="form-control text-navyblue" />
+                    <ValidationMessage For="@(() => employee.LastName)" class="text-danger" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col">
+                    <label class="control-label text-gray">Email</label>
+                    <InputText @bind-Value="employee.Email" class="form-control text-navyblue" />
+                    <ValidationMessage For="@(() => employee.Email)" class="text-danger" />
+                </div>
+                <div class="form-group col">
+                    <label class="control-label text-gray">Phone Number</label>
+                    <InputText @bind-Value="employee.PhoneNumber" class="form-control text-navyblue" />
+                    <ValidationMessage For="@(() => employee.PhoneNumber)" class="text-danger" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col">
+                    <label class="control-label text-gray">Company</label>
+                    <select class="form-control" @onchange="CompanyChangedAsync">
+                        <option selected></option>
+                        @foreach (var item in Companies)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group col">
+                    <label class="control-label text-gray">Department</label>
+                    <select @bind="employee.DepartmentId" class="form-control">
+                        @foreach (var item in Departments)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col">
+                    <label class="control-label text-gray">Position</label>
+                    <select @bind="employee.PositionId" class="form-control">
+                        <option selected></option>
+                        @foreach (var item in Positions)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col"></div>
+            </div>
+        </EditForm>
+    </div>
+    <!-- Hardware Vault -->
+    <div class="wizard-tab @(wizardStep != WizardStep.HardwareVault ? "d-none" : null)">
+        <div class="row">
+            <div class="col col-sm-6 offset-md-3">
+                <label class="control-label text-gray">Hardware Vault</label>
+                <select @bind="hardwareVaultId" class="form-control">
+                    @foreach (var item in HardwareVaults)
+                    {
+                        <option value="@item.Id">@item.Id</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <!-- Workstation Account -->
+    <div class="wizard-tab  @(wizardStep != WizardStep.WorkstationAccount ? "d-none" : null)">
+        @if (SharedAccounts.Count > 0)
+        {
+            <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab-accounts" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active ws-account-nav" id="pills-personal-tab" data-toggle="pill" href="#pills-personal" role="tab" @onclick="@(()=> AccountTypeChanged(AccountType.Personal))">Personal account</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ws-account-nav" id="pills-shared-tab" data-toggle="pill" href="#pills-shared" role="tab" @onclick="@(()=> AccountTypeChanged(AccountType.Shared))">Shared account</a>
+                </li>
+            </ul>
+        }
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="pills-personal" role="tabpanel">
+                <div class="row">
+                    <div class="col col-sm-6 offset-md-3">
+                        <div class="form-group">
+                            <label class="control-label text-gray">Select workstation account type</label>
+                            <select class="form-control" @bind="WorkstationType">
+                                <option selected value="@Core.Enums.WorkstationAccountType.Local">Local</option>
+                                <option value="@Core.Enums.WorkstationAccountType.Domain">Domain</option>
+                                <option value="@Core.Enums.WorkstationAccountType.AzureAD">AzureAD</option>
+                                <option value="@Core.Enums.WorkstationAccountType.Microsoft">Microsoft</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                @switch (WorkstationType)
+                {
+                    case Core.Enums.WorkstationAccountType.Local:
+                    case Core.Enums.WorkstationAccountType.Microsoft:
+                    case Core.Enums.WorkstationAccountType.AzureAD:
+                        <EditForm EditContext="workstationAccountContext">
+                            <DataAnnotationsValidator />
+                            <div class="row">
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Account Name</label>
+                                    <InputText @bind-Value="workstationAccount.Name" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationAccount.Name)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">User Logon Name</label>
+                                    <InputText @bind-Value="workstationAccount.UserName" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationAccount.UserName)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Password</label>
+                                    <InputText @bind-Value="workstationAccount.Password" type="password" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationAccount.Password)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Confirm Password</label>
+                                    <InputText @bind-Value="workstationAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationAccount.ConfirmPassword)" class="text-danger" />
+                                </div>
+                            </div>
+                        </EditForm>
+                        break;
+                    case Core.Enums.WorkstationAccountType.Domain:
+                        <EditForm EditContext="workstationDomainContext">
+                            <DataAnnotationsValidator />
+                            <div class="row">
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Account Name</label>
+                                    <InputText @bind-Value="workstationDomain.Name" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationDomain.Name)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Domain</label>
+                                    <InputText @bind-Value="workstationDomain.Domain" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationDomain.Domain)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">User Logon Name</label>
+                                    <InputText @bind-Value="workstationDomain.UserName" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationDomain.UserName)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Password</label>
+                                    <InputText @bind-Value="workstationDomain.Password" type="password" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationDomain.Password)" class="text-danger" />
+                                </div>
+                                <div class="form-group col col-sm-6 offset-md-3">
+                                    <label class="control-label text-gray">Confirm Password</label>
+                                    <InputText @bind-Value="workstationDomain.ConfirmPassword" type="password" class="form-control text-navyblue" />
+                                    <ValidationMessage For="@(() => workstationDomain.ConfirmPassword)" class="text-danger" />
+                                </div>
+                            </div>
+                        </EditForm>
+                        break;
+                }
+            </div>
+            @if (SharedAccounts.Count > 0)
+            {
+                <div class="tab-pane fade" id="pills-shared" role="tabpanel">
+                    <div class="row">
+                        <div class="col col-sm-6 offset-md-3">
+                            <label class="control-label text-gray">Workstation Shared Accounts</label>
+                            <select @bind="sharedAccountId" class="form-control">
+                                @foreach (var item in SharedAccounts)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- Overview -->
+    <div class="wizard-tab @(wizardStep != WizardStep.Overview ? "d-none" : null)">
+        <div class="row">
+            <!-- Employee -->
+            <div class="col">
+                <h4 class="mx-2 text-navyblue">Employee</h4>
+                <div class="border rounded py-2 px-3">
+                    <div class="font-weight-bold">Full Name</div>
+                    <div class="text-break overflow-hidden text-truncate" style="max-width:200px;">@employee.FullName</div>
+                    <div class="font-weight-bold">Company</div>
+                    <div>@(string.IsNullOrEmpty(employee.DepartmentId) ? "" : Departments.FirstOrDefault(x=>x.Id == employee.DepartmentId).Company.Name)</div>
+                    <div class="font-weight-bold">Department</div>
+                    <div>@(string.IsNullOrEmpty(employee.DepartmentId) ? "" : Departments.FirstOrDefault(x=>x.Id == employee.DepartmentId).Name)</div>
+                    <div class="font-weight-bold">Position</div>
+                    <div>@(string.IsNullOrEmpty(employee.PositionId) ? "" : Positions.FirstOrDefault(x=>x.Id == employee.PositionId).Name)</div>
+                </div>
+            </div>
+            <!-- Hardware Vault -->
+            <div class="col">
+                <h4 class="mx-2 text-navyblue">Hardware Vault</h4>
+                <div class="border rounded py-2 px-3">
+                    <div class="font-weight-bold">Serial number</div>
+                    <div>@hardwareVaultId</div>
+                </div>
+            </div>
+            <!-- Workstation Account -->
+            <div class="col">
+                <h4 class="mx-2 text-navyblue">Account</h4>
+                @if (AccountType == AccountType.Personal)
+                {
+                    @if (WorkstationType == WorkstationAccountType.Domain)
+                    {
+                        <div class="border rounded py-2 px-3">
+                            <div class="font-weight-bold">Account name</div>
+                            <div>@(accountSkiped ? "" : workstationDomain.Name)</div>
+                            <div class="font-weight-bold">User name</div>
+                            <div>@(accountSkiped ? "" : workstationDomain.UserName)</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="border rounded py-2 px-3">
+                            <div class="font-weight-bold">Account name</div>
+                            <div>@(accountSkiped ? "" : workstationAccount.Name)</div>
+                            <div class="font-weight-bold">User name</div>
+                            <div>@(accountSkiped ? "" : workstationAccount.UserName)</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="border rounded py-2 px-3">
+                        <div class="font-weight-bold">Account name</div>
+                        <div>@(sharedAccountId == null ? "" : SharedAccounts.FirstOrDefault(x=>x.Id == sharedAccountId).Name)</div>
+                        <div class="font-weight-bold">User name</div>
+                        <div>@(sharedAccountId == null ? "" : SharedAccounts.FirstOrDefault(x => x.Id == sharedAccountId).Login)</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <!-- Navigation Buttons -->
+    <div class="text-right">
+        <button type="button" class="btn btn-outline-secondary mr-3 @(wizardStep != WizardStep.WorkstationAccount ? "d-none" : null)" @onclick="SkipAccount">Skip</button>
+        <button type="button" class="btn btn-secondary  @(wizardStep == WizardStep.Profile ? "d-none" : null)" @onclick="Back">Back</button>
+        <button type="button" class="btn btn-primary" @onclick="Next">@(wizardStep == WizardStep.Overview ? "Create" : "Next")</button>
+    </div>
+}

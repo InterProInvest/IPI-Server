@@ -1,0 +1,71 @@
+﻿@if (!Initialized)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="@Employee" OnValidSubmit="EditAsync">
+        <DataAnnotationsValidator />
+        <ValidationErrorMessage @ref="ValidationErrorMessage" />
+        <div class="form-group">
+            <label class="control-label text-gray">First Name</label>
+            <InputText @bind-Value="Employee.FirstName" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => Employee.FirstName)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Last Name</label>
+            <InputText @bind-Value="Employee.LastName" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => Employee.LastName)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Email</label>
+            <InputText @bind-Value="Employee.Email" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => Employee.Email)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Phone Number</label>
+            <InputText @bind-Value="Employee.PhoneNumber" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => Employee.PhoneNumber)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gra">Company</label>
+            <select @onchange="OnCompanyChangeAsync" class="form-control text-navyblue">
+                <option></option>
+                @foreach (var item in Companies)
+                {
+                    if (Employee.Department?.CompanyId == item.Id)
+                    {
+                        <option value="@item.Id" selected>@item.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gra">Department</label>
+            <select @bind="Employee.DepartmentId" class="form-control text-navyblue">
+                @foreach (var item in Departments)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gra">Position</label>
+            <select @bind="Employee.PositionId" class="form-control text-navyblue">
+                <option></option>
+                @foreach (var item in Positions)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </select>
+        </div>
+        <div class="text-right">
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+    </EditForm>
+}

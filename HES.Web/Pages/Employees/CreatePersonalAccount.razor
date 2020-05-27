@@ -90,17 +90,17 @@ else
                     <div class="form-group">
                         <label class="control-label text-gray">Select workstation account type</label>
                         <select class="form-control" @bind="WorkstationType">
-                            <option selected value="@Core.Models.WorkstationAccountType.Local">Local</option>
-                            <option value="@Core.Models.WorkstationAccountType.Domain">Domain</option>
-                            <option value="@Core.Models.WorkstationAccountType.AzureAD">AzureAD</option>
-                            <option value="@Core.Models.WorkstationAccountType.Microsoft">Microsoft</option>
+                            <option selected value="@Core.Enums.WorkstationAccountType.Local">Local</option>
+                            <option value="@Core.Enums.WorkstationAccountType.Domain">Domain</option>
+                            <option value="@Core.Enums.WorkstationAccountType.AzureAD">AzureAD</option>
+                            <option value="@Core.Enums.WorkstationAccountType.Microsoft">Microsoft</option>
                         </select>
                     </div>
                 </div>
             </div>
             @switch (WorkstationType)
             {
-                case Core.Models.WorkstationAccountType.Local:
+                case Core.Enums.WorkstationAccountType.Local:
                     <EditForm Model="WorkstationLocal" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -116,12 +116,12 @@ else
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationLocal.Password" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationLocal.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationLocal.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationLocal.ConfirmPassword" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationLocal.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationLocal.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
@@ -134,7 +134,7 @@ else
                         </div>
                     </EditForm>
                     break;
-                case Core.Models.WorkstationAccountType.Domain:
+                case Core.Enums.WorkstationAccountType.Domain:
                     <EditForm Model="WorkstationDomain" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -155,12 +155,12 @@ else
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationDomain.Password" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationDomain.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationDomain.ConfirmPassword" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationDomain.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
@@ -182,7 +182,7 @@ else
                         </div>
                     </EditForm>
                     break;
-                case Core.Models.WorkstationAccountType.Microsoft:
+                case Core.Enums.WorkstationAccountType.Microsoft:
                     <EditForm Model="WorkstationMicrosoft" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -198,12 +198,12 @@ else
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationMicrosoft.Password" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationMicrosoft.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationMicrosoft.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationMicrosoft.ConfirmPassword" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationMicrosoft.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationMicrosoft.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
@@ -216,7 +216,7 @@ else
                         </div>
                     </EditForm>
                     break;
-                case Core.Models.WorkstationAccountType.AzureAD:
+                case Core.Enums.WorkstationAccountType.AzureAD:
                     <EditForm Model="WorkstationAzureAD" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -232,12 +232,12 @@ else
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationAzureAD.Password" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationAzureAD.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationAzureAD.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationAzureAD.ConfirmPassword" class="form-control text-navyblue" />
+                                <InputText @bind-Value="WorkstationAzureAD.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationAzureAD.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>

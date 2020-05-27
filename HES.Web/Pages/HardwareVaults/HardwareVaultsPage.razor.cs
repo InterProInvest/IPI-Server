@@ -27,10 +27,10 @@ namespace HES.Web.Pages.HardwareVaults
                     MainTableService.DataLoadingOptions.Filter.Battery = "low";
                     break;
                 case "VaultLocked":
-                    MainTableService.DataLoadingOptions.Filter.VaultStatus = VaultStatus.Locked;
+                    MainTableService.DataLoadingOptions.Filter.Status = VaultStatus.Locked;
                     break;
                 case "VaultReady":
-                    MainTableService.DataLoadingOptions.Filter.VaultStatus = VaultStatus.Ready;
+                    MainTableService.DataLoadingOptions.Filter.Status = VaultStatus.Ready;
                     break;
                 case "LicenseWarning":
                     MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Warning;
