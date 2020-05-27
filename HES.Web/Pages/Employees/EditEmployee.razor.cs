@@ -1,53 +1,57 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
     public partial class EditEmployee : ComponentBase
     {
+        [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditEmployee> Logger { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
         [Parameter] public Employee Employee { get; set; }
 
-        public SelectList Companies { get; set; }
-        public SelectList Departments { get; set; }
-        public SelectList Positions { get; set; }
-
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public List<Company> Companies { get; set; }
+        public List<Department> Departments { get; set; }
+        public List<Position> Positions { get; set; }
         public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            var a = await OrgStructureService.CompanyQuery().ToListAsync();
-            Companies = new SelectList(a, nameof(Company.Id), nameof(Company.Name));
-            
-            if (Employee.Department?.CompanyId != null)
-                Departments = new SelectList(await OrgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), nameof(Department.Id), nameof(Department.Name));
+            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
+            Companies = await OrgStructureService.GetCompaniesAsync();
 
-            Positions = new SelectList(await OrgStructureService.PositionQuery().ToListAsync(), nameof(Position.Id), nameof(Position.Name));
+            if (Employee.DepartmentId == null)
+            {
+                Departments = new List<Department>();
+            }
+            else
+            {
+                Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(Employee.Department.CompanyId);
+            }
 
+            Positions = await OrgStructureService.GetPositionsAsync();
             Initialized = true;
         }
 
         public async Task OnCompanyChangeAsync(ChangeEventArgs args)
         {
-            string companyId = (string)args.Value;
+            var companyId = (string)args.Value;
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return;
+            if (companyId == string.Empty)
+                Employee.DepartmentId = null;
 
-            Employee.Department.CompanyId = companyId;
-            Departments = new SelectList(await OrgStructureService.DepartmentQuery().Where(d => d.CompanyId == Employee.Department.CompanyId).ToListAsync(), nameof(Department.Id), nameof(Department.Name));
+            Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(companyId);
         }
 
         private async Task EditAsync()
@@ -58,6 +62,10 @@ namespace HES.Web.Pages.Employees
                 ToastService.ShowToast("Employee updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(Employee.FirstName), ex.Message);
+            }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
@@ -66,10 +74,10 @@ namespace HES.Web.Pages.Employees
             }
         }
 
-        private async Task CloseAsync()
+        private async Task ModalDialogService_OnCancel()
         {
             await EmployeeService.UnchangedEmployeeAsync(Employee);
-            await ModalDialogService.CloseAsync();
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
     }
 }

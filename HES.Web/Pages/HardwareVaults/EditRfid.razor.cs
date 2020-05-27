@@ -24,6 +24,7 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;
                 HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
 
                 if (HardwareVault == null)
@@ -55,10 +56,10 @@ namespace HES.Web.Pages.HardwareVaults
             }
         }
 
-        private async Task CloseAsync()
+        private async Task ModalDialogService_OnCancel()
         {
             await HardwareVaultService.UnchangedVaultAsync(HardwareVault);
-            await ModalDialogService.CloseAsync();
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
     }
 }

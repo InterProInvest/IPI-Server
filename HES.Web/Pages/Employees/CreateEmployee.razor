@@ -256,11 +256,11 @@ else
                     <div class="font-weight-bold">Full Name</div>
                     <div class="text-break overflow-hidden text-truncate" style="max-width:200px;">@employee.FullName</div>
                     <div class="font-weight-bold">Company</div>
-                    <div>@(employee.DepartmentId == null ? "" : Departments.FirstOrDefault(x=>x.Id == employee.DepartmentId).Company.Name)</div>
+                    <div>@(string.IsNullOrEmpty(employee.DepartmentId) ? "" : Departments.FirstOrDefault(x=>x.Id == employee.DepartmentId).Company.Name)</div>
                     <div class="font-weight-bold">Department</div>
-                    <div>@(employee.DepartmentId == null ? "" : Departments.FirstOrDefault(x=>x.Id == employee.DepartmentId).Name)</div>
+                    <div>@(string.IsNullOrEmpty(employee.DepartmentId) ? "" : Departments.FirstOrDefault(x=>x.Id == employee.DepartmentId).Name)</div>
                     <div class="font-weight-bold">Position</div>
-                    <div>@(employee.PositionId == null ? "" : Positions.FirstOrDefault(x=>x.Id == employee.PositionId).Name)</div>
+                    <div>@(string.IsNullOrEmpty(employee.PositionId) ? "" : Positions.FirstOrDefault(x=>x.Id == employee.PositionId).Name)</div>
                 </div>
             </div>
             <!-- Hardware Vault -->
@@ -313,5 +313,4 @@ else
         <button type="button" class="btn btn-secondary  @(wizardStep == WizardStep.Profile ? "d-none" : null)" @onclick="Back">Back</button>
         <button type="button" class="btn btn-primary" @onclick="Next">@(wizardStep == WizardStep.Overview ? "Create" : "Next")</button>
     </div>
-
 }

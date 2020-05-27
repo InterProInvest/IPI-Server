@@ -9,9 +9,11 @@ namespace HES.Core.Interfaces
     {
         event Func<string, RenderFragment, ModalDialogSize, Task> OnShow;
         event Func<Task> OnClose;
+        event Func<Task> OnCancel;
 
         Task ShowAsync(string title, RenderFragment body);
         Task ShowAsync(string title, RenderFragment body, ModalDialogSize size);
         Task CloseAsync();
+        Task CancelAsync();
     }
 }
