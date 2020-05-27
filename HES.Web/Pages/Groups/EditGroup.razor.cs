@@ -26,6 +26,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;
                 Group = await GroupService.GetGroupByIdAsync(GroupId);
 
                 if (Group == null)
@@ -62,10 +63,10 @@ namespace HES.Web.Pages.Groups
             }
         }
 
-        private async Task CloseAsync()
+        private async Task ModalDialogService_OnCancel()
         {
             await GroupService.UnchangedGroupAsync(Group);
-            await ModalDialogService.CloseAsync();
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
     }
 }

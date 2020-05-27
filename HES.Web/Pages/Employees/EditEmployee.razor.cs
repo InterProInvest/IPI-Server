@@ -72,6 +72,7 @@ namespace HES.Web.Pages.Employees
         private async Task ModalDialogService_OnCancel()
         {
             await EmployeeService.UnchangedEmployeeAsync(Employee);
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
     }
 }
