@@ -159,10 +159,10 @@
             <div class="tab-pane fade show active" id="pills-personal" role="tabpanel">
                 <input id="accountName" type="hidden" asp-for="Wizard.WorkstationAccount.Name" value="Windows Account" />
                 <div class="row">
-                    <div class="form-group col">
+                    @*<div class="form-group col">
                         <label asp-for="Wizard.WorkstationAccount.AccountType" class="text-gray"></label>
                         <select id="workstation_account_type" asp-for="Wizard.WorkstationAccount.AccountType" class="form-control" asp-items="ViewBag.WorkstationAccountTypeList"></select>
-                    </div>
+                    </div>*@
                     <div id="domain_group" class="form-group col invisible">
                         <label asp-for="Wizard.WorkstationAccount.Domain" class="text-gray"></label>
                         <input id="domain" asp-for="Wizard.WorkstationAccount.Domain" class="form-control text-navyblue" value="local" autocomplete="new-password" />

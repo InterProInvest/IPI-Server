@@ -1,4 +1,5 @@
 ﻿using HES.Core.Attributes;
+using HES.Core.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -37,11 +38,11 @@ namespace HES.Core.Models
         public bool Skip { get; set; }
     }
 
-    public enum WorkstationAccountType
-    {
-        Local,
-        Domain,
-        Microsoft,
-        AzureAD
-    }
+    //public enum WorkstationAccountType
+    //{
+    //    Local,
+    //    Domain,
+    //    Microsoft,
+    //    AzureAD
+    //}
 }

@@ -352,6 +352,16 @@ namespace HES.Core.Services
             await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { nameof(Employee.LastSeen) });
         }
 
+        public async Task<bool> CheckEmployeeNameExistAsync(Employee employee)
+        {
+            if (employee == null)
+                throw new ArgumentNullException(nameof(employee));
+
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
+            return await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
+        }
+
         #endregion
 
         #region Hardware Vault
@@ -628,6 +638,35 @@ namespace HES.Core.Services
             return account;
         }
 
+        public async Task<Account> CreateWorkstationAccountAsync(HES.Core.Models.Web.Account.WorkstationAccount workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            switch (workstationAccount.Type)
+            {
+                case WorkstationAccountType.Local:
+                    workstationAccount.UserName = $".\\{workstationAccount.UserName}";
+                    break;
+                case WorkstationAccountType.AzureAD:
+                    workstationAccount.UserName = $"AzureAD\\{workstationAccount.UserName}";
+                    break;
+                case WorkstationAccountType.Microsoft:
+                    workstationAccount.UserName = $"@\\{workstationAccount.UserName}";
+                    break;
+            }
+
+            var personalAccount = new PersonalAccount()
+            {
+                Name = workstationAccount.Name,
+                Login = workstationAccount.UserName,
+                Password = workstationAccount.Password,
+                EmployeeId = workstationAccount.EmployeeId
+            };
+
+            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
         public async Task<Account> CreateWorkstationAccountAsync(WorkstationLocal workstationAccount)
         {
             if (workstationAccount == null)
@@ -692,40 +731,40 @@ namespace HES.Core.Services
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
         }
 
-        [Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
-        public async Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
-        {
-            if (workstationAccount == null)
-                throw new ArgumentNullException(nameof(workstationAccount));
+        //[Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
+        //public async Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
+        //{
+        //    if (workstationAccount == null)
+        //        throw new ArgumentNullException(nameof(workstationAccount));
 
-            if (employeeId == null)
-                throw new ArgumentNullException(nameof(employeeId));
+        //    if (employeeId == null)
+        //        throw new ArgumentNullException(nameof(employeeId));
 
-            var account = new PersonalAccount()
-            {
-                Name = workstationAccount.Name,
-                EmployeeId = employeeId,
-                Password = workstationAccount.Password
-            };
+        //    var account = new PersonalAccount()
+        //    {
+        //        Name = workstationAccount.Name,
+        //        EmployeeId = employeeId,
+        //        Password = workstationAccount.Password
+        //    };
 
-            switch (workstationAccount.AccountType)
-            {
-                case WorkstationAccountType.Local:
-                    account.Login = $".\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.Domain:
-                    account.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.Microsoft:
-                    account.Login = $"@\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.AzureAD:
-                    account.Login = $"AzureAD\\{workstationAccount.Login}";
-                    break;
-            }
+        //    switch (workstationAccount.AccountType)
+        //    {
+        //        case WorkstationAccountType.Local:
+        //            account.Login = $".\\{workstationAccount.Login}";
+        //            break;
+        //        case WorkstationAccountType.Domain:
+        //            account.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
+        //            break;
+        //        case WorkstationAccountType.Microsoft:
+        //            account.Login = $"@\\{workstationAccount.Login}";
+        //            break;
+        //        case WorkstationAccountType.AzureAD:
+        //            account.Login = $"AzureAD\\{workstationAccount.Login}";
+        //            break;
+        //    }
 
-            return await CreatePersonalAccountAsync(account, true);
-        }
+        //    return await CreatePersonalAccountAsync(account, true);
+        //}
 
         public async Task SetAsWorkstationAccountAsync(string employeeId, string accountId)
         {

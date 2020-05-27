@@ -16,7 +16,7 @@ namespace HES.Core.Models.Web.HardwareVault
         public string Employee { get; set; }
         public string Company { get; set; }
         public string Department { get; set; }
-        public VaultStatus? VaultStatus { get; set; }
+        public VaultStatus? Status { get; set; }
         public VaultLicenseStatus? LicenseStatus { get; set; }
         public DateTime? LicenseEndDate { get; set; }
     }

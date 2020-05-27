@@ -4,7 +4,6 @@ using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVault;
 using Hideez.SDK.Communication.HES.DTO;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,8 +14,8 @@ namespace HES.Core.Interfaces
         IQueryable<HardwareVault> VaultQuery();
         Task<HardwareVault> GetVaultByIdAsync(string id);
         Task<List<HardwareVault>> GetVaultsByEmployeeIdAsync(string id);
-        Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions);
-        Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions);
+        Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> options);
+        Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> options);
         Task<HardwareVault> AddVaultIfNotExistAsync(HardwareVault vault);
         Task ImportVaultsAsync();
         Task EditRfidAsync(HardwareVault vault);

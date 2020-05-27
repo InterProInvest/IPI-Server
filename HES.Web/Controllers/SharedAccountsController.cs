@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using HES.Core.Enums;
 
 namespace HES.Web.Controllers
 {

@@ -90,17 +90,17 @@ else
                     <div class="form-group">
                         <label class="control-label text-gray">Select workstation account type</label>
                         <select class="form-control" @bind="WorkstationType">
-                            <option selected value="@Core.Models.WorkstationAccountType.Local">Local</option>
-                            <option value="@Core.Models.WorkstationAccountType.Domain">Domain</option>
-                            <option value="@Core.Models.WorkstationAccountType.AzureAD">AzureAD</option>
-                            <option value="@Core.Models.WorkstationAccountType.Microsoft">Microsoft</option>
+                            <option selected value="@Core.Enums.WorkstationAccountType.Local">Local</option>
+                            <option value="@Core.Enums.WorkstationAccountType.Domain">Domain</option>
+                            <option value="@Core.Enums.WorkstationAccountType.AzureAD">AzureAD</option>
+                            <option value="@Core.Enums.WorkstationAccountType.Microsoft">Microsoft</option>
                         </select>
                     </div>
                 </div>
             </div>
             @switch (WorkstationType)
             {
-                case Core.Models.WorkstationAccountType.Local:
+                case Core.Enums.WorkstationAccountType.Local:
                     <EditForm Model="WorkstationLocal" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -134,7 +134,7 @@ else
                         </div>
                     </EditForm>
                     break;
-                case Core.Models.WorkstationAccountType.Domain:
+                case Core.Enums.WorkstationAccountType.Domain:
                     <EditForm Model="WorkstationDomain" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -182,7 +182,7 @@ else
                         </div>
                     </EditForm>
                     break;
-                case Core.Models.WorkstationAccountType.Microsoft:
+                case Core.Enums.WorkstationAccountType.Microsoft:
                     <EditForm Model="WorkstationMicrosoft" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
@@ -216,7 +216,7 @@ else
                         </div>
                     </EditForm>
                     break;
-                case Core.Models.WorkstationAccountType.AzureAD:
+                case Core.Enums.WorkstationAccountType.AzureAD:
                     <EditForm Model="WorkstationAzureAD" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">

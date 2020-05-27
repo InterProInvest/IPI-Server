@@ -25,7 +25,12 @@ namespace HES.Web.Pages.Employees
         }
         private async Task CreateEmployeeAsync()
         {
-            await MainTableService.ShowModalAsync("Details", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(CreateEmployee));
+                builder.CloseComponent();
+            };
+            await MainTableService.ShowModalAsync("Details", body, Core.Enums.ModalDialogSize.Large);
         }
 
         private async Task EmployeeDetailsAsync()

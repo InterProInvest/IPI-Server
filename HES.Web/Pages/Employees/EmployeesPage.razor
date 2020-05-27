@@ -9,7 +9,7 @@ else
            @* <VaultFilter FilterChanged="MainTableService.FilterChangedAsync" />*@
         </FilterForm>
         <ActionButtons>
-            <ButtonSpinner Class="btn-primary" Text="Import from AD" Callback="() => { }" />
+            <ButtonSpinner Class="btn-primary" Text="Import from AD" Callback="CreateEmployeeAsync" />
             <ButtonSpinner Class="btn-primary" Text="Create employee" Callback="() => { }" />
             @if (MainTableService.SelectedEntity != null)
             {

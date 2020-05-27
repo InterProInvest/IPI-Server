@@ -150,7 +150,7 @@ namespace HES.Web.Pages.Employees
                     // Add workstation account
                     if (!wizard.WorkstationAccount.Skip)
                     {
-                        await _employeeService.CreateWorkstationAccountAsync(wizard.WorkstationAccount, createdEmployee.Id);
+                        //await _employeeService.CreateWorkstationAccountAsync(wizard.WorkstationAccount, createdEmployee.Id);
                     }
 
                     _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(wizard.DeviceId);
@@ -167,40 +167,40 @@ namespace HES.Web.Pages.Employees
             return RedirectToPage("./Index");
         }
 
-        public async Task<JsonResult> OnGetJsonWorkstationSharedAccountsAsync(string id)
-        {
-            if (id == null)
-            {
-                return new JsonResult(new WorkstationAccount());
-            }
+        //public async Task<JsonResult> OnGetJsonWorkstationSharedAccountsAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return new JsonResult(new WorkstationAccount());
+        //    }
 
-            var accountType = WorkstationAccountType.Local;
-            var shared = await _sharedAccountService.Query().Where(d => d.Id == id).FirstOrDefaultAsync();
-            var sharedType = shared.Login.Split('\\')[0];
-            var sharedLogin = shared.Login.Split('\\')[1];
-            switch (sharedType)
-            {
-                case ".":
-                    accountType = WorkstationAccountType.Local;
-                    break;
-                case "@":
-                    accountType = WorkstationAccountType.Microsoft;
-                    break;
-                default:
-                    accountType = WorkstationAccountType.Domain;
-                    break;
-            }
-            var personal = new WorkstationAccount()
-            {
-                Name = shared.Name,
-                AccountType = accountType,
-                Login = sharedLogin,
-                Domain = sharedType,
-                Password = _dataProtectionService.Decrypt(shared.Password),
-                ConfirmPassword = _dataProtectionService.Decrypt(shared.Password)
-            };
-            return new JsonResult(personal);
-        }
+        //    var accountType = WorkstationAccountType.Local;
+        //    var shared = await _sharedAccountService.Query().Where(d => d.Id == id).FirstOrDefaultAsync();
+        //    var sharedType = shared.Login.Split('\\')[0];
+        //    var sharedLogin = shared.Login.Split('\\')[1];
+        //    switch (sharedType)
+        //    {
+        //        case ".":
+        //            accountType = WorkstationAccountType.Local;
+        //            break;
+        //        case "@":
+        //            accountType = WorkstationAccountType.Microsoft;
+        //            break;
+        //        default:
+        //            accountType = WorkstationAccountType.Domain;
+        //            break;
+        //    }
+        //    var personal = new WorkstationAccount()
+        //    {
+        //        Name = shared.Name,
+        //        AccountType = accountType,
+        //        Login = sharedLogin,
+        //        Domain = sharedType,
+        //        Password = _dataProtectionService.Decrypt(shared.Password),
+        //        ConfirmPassword = _dataProtectionService.Decrypt(shared.Password)
+        //    };
+        //    return new JsonResult(personal);
+        //}
 
         public async Task<IActionResult> OnGetEditEmployeeAsync(string id)
         {

@@ -45,7 +45,7 @@ namespace HES.Web.Pages.Employees
 
         private async Task LoadDataAsync()
         {
-            var filter = new HardwareVaultFilter() { VaultStatus = VaultStatus.Ready };
+            var filter = new HardwareVaultFilter() { Status = VaultStatus.Ready };
             TotalRecords = await HardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>
             {
                 SearchText = SearchText,

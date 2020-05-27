@@ -48,6 +48,7 @@ namespace HES.Core.Entities
         public string FullName => $"{FirstName} {LastName}";
         [NotMapped]
         public int VaultsCount => HardwareVaults.Count + SoftwareVaults.Count;
+
         [NotMapped]
         [Display(Name = "Company")]
         public string EmpCompany => Department?.Company?.Name;
