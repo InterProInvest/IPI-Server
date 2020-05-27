@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -60,6 +61,10 @@ namespace HES.Web.Pages.Employees
                 await EmployeeService.EditEmployeeAsync(Employee);
                 ToastService.ShowToast("Employee updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
+            }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(Employee.FirstName), ex.Message);
             }
             catch (Exception ex)
             {

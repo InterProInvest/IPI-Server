@@ -1,28 +1,21 @@
-﻿using HES.Core.Attributes;
-using HES.Core.Enums;
+﻿using HES.Core.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HES.Core.Models
 {
     public class WorkstationAccount
     {
 
-        [RequiredIf("Skip")]
         public string Name { get; set; }
 
-        [RequiredIf("Skip")]
         [Display(Name = "Type")]
         public WorkstationAccountType AccountType { get; set; }
 
-        [RequiredIf("Skip")]
         public string Domain { get; set; }
 
-        [RequiredIf("Skip")]
         [Display(Name = "User Name")]
         public string Login { get; set; }
 
-        [RequiredIf("Skip")]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 3)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
@@ -37,12 +30,4 @@ namespace HES.Core.Models
         public bool UpdateAdPassword { get; set; }
         public bool Skip { get; set; }
     }
-
-    //public enum WorkstationAccountType
-    //{
-    //    Local,
-    //    Domain,
-    //    Microsoft,
-    //    AzureAD
-    //}
 }
