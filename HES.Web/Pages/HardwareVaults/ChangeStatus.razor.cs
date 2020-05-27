@@ -15,7 +15,6 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] IToastService ToastService { get; set; }
         [Parameter] public string HardwareVaultId { get; set; }
         [Parameter] public VaultStatus VaultStatus { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
 
         public string StatusDescription { get; set; }
         public VaultStatusReason StatusReason { get; set; } = VaultStatusReason.Lost;
@@ -41,7 +40,6 @@ namespace HES.Web.Pages.HardwareVaults
                         break;
                 }
 
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault suspended", ToastLevel.Success);
                 await CloseAsync();
             }

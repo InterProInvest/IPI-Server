@@ -29,10 +29,13 @@ namespace HES.Core.Entities
         public DateTime? LastSeen { get; set; }
         public string PrimaryAccountId { get; set; }
         public string ActiveDirectoryGuid { get; set; }
+        public List<Account> Accounts { get; set; }
         public List<HardwareVault> HardwareVaults { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
         public List<SoftwareVault> SoftwareVaults { get; set; }
         public List<SoftwareVaultInvitation> SoftwareVaultInvitations { get; set; }
+        public List<WorkstationEvent> WorkstationEvents { get; set; }
+        public List<WorkstationSession> WorkstationSessions { get; set; }
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
@@ -43,6 +46,9 @@ namespace HES.Core.Entities
         [NotMapped]
         [Display(Name = "Name")]
         public string FullName => $"{FirstName} {LastName}";
+        [NotMapped]
+        public int VaultsCount => HardwareVaults.Count + SoftwareVaults.Count;
+
         [NotMapped]
         [Display(Name = "Company")]
         public string EmpCompany => Department?.Company?.Name;

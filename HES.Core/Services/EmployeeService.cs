@@ -3,6 +3,8 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Employees;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.Account;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.Security;
@@ -12,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -27,8 +28,6 @@ namespace HES.Core.Services
         private readonly IAccountService _accountService;
         private readonly ISharedAccountService _sharedAccountService;
         private readonly IWorkstationService _workstationService;
-        private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
-        private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
         private readonly IDataProtectionService _dataProtectionService;
 
         public EmployeeService(IAsyncRepository<Employee> employeeRepository,
@@ -38,8 +37,6 @@ namespace HES.Core.Services
                                IAccountService accountService,
                                ISharedAccountService sharedAccountService,
                                IWorkstationService workstationService,
-                               IAsyncRepository<WorkstationEvent> workstationEventRepository,
-                               IAsyncRepository<WorkstationSession> workstationSessionRepository,
                                IDataProtectionService dataProtectionService)
         {
             _employeeRepository = employeeRepository;
@@ -49,8 +46,6 @@ namespace HES.Core.Services
             _accountService = accountService;
             _sharedAccountService = sharedAccountService;
             _workstationService = workstationService;
-            _workstationEventRepository = workstationEventRepository;
-            _workstationSessionRepository = workstationSessionRepository;
             _dataProtectionService = dataProtectionService;
         }
 
@@ -74,61 +69,181 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<List<Employee>> GetEmployeesAsync()
+        public Task UnchangedEmployeeAsync(Employee employee)
         {
-            return await _employeeRepository
+            return _employeeRepository.Unchanged(employee);
+        }
+
+        public async Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions)
+        {
+            var query = _employeeRepository
                 .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.HardwareVaults)
-                .ToListAsync();
+                .Include(x => x.Department.Company)
+                .Include(x => x.Position)
+                .Include(x => x.HardwareVaults)
+                .Include(x => x.SoftwareVaults)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    query = query.Where(x => (x.FirstName + " " + x.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Email != null)
+                {
+                    query = query.Where(w => w.Email.Contains(dataLoadingOptions.Filter.Email, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.PhoneNumber != null)
+                {
+                    query = query.Where(w => w.PhoneNumber.Contains(dataLoadingOptions.Filter.PhoneNumber, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(x => x.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(x => x.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Position != null)
+                {
+                    query = query.Where(x => x.Position.Name.Contains(dataLoadingOptions.Filter.Position, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.LastSeenStartDate != null)
+                {
+                    query = query.Where(w => w.LastSeen >= dataLoadingOptions.Filter.LastSeenStartDate);
+                }
+                if (dataLoadingOptions.Filter.LastSeenEndDate != null)
+                {
+                    query = query.Where(x => x.LastSeen <= dataLoadingOptions.Filter.LastSeenEndDate);
+                }
+                if (dataLoadingOptions.Filter.VaultsCount != null)
+                {
+                    query = query.Where(x => (x.HardwareVaults.Count + x.SoftwareVaults.Count) == dataLoadingOptions.Filter.VaultsCount);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => (x.FirstName + " " + x.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Email.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.PhoneNumber.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Position.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVaults.Count + x.SoftwareVaults.Count).ToString().Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(Employee.FullName):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.FirstName).ThenBy(x => x.LastName) : query.OrderByDescending(x => x.FirstName).ThenByDescending(x => x.LastName);
+                    break;
+                case nameof(Employee.Email):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Email) : query.OrderByDescending(x => x.Email);
+                    break;
+                case nameof(Employee.PhoneNumber):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.PhoneNumber) : query.OrderByDescending(x => x.PhoneNumber);
+                    break;
+                case nameof(Employee.Department.Company):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Company.Name) : query.OrderByDescending(x => x.Department.Company.Name);
+                    break;
+                case nameof(Employee.Department):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Name) : query.OrderByDescending(x => x.Department.Name);
+                    break;
+                case nameof(Employee.Position):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Position.Name) : query.OrderByDescending(x => x.Position.Name);
+                    break;
+                case nameof(Employee.LastSeen):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LastSeen) : query.OrderByDescending(x => x.LastSeen);
+                    break;
+                case nameof(Employee.VaultsCount):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaults.Count).ThenBy(x => x.SoftwareVaults.Count) : query.OrderByDescending(x => x.HardwareVaults.Count).ThenByDescending(x => x.SoftwareVaults.Count);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+
+        public async Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions)
+        {
+            var query = _employeeRepository
+            .Query()
+            .Include(x => x.Department.Company)
+            .Include(x => x.Position)
+            .Include(x => x.HardwareVaults)
+            .Include(x => x.SoftwareVaults)
+            .AsQueryable();
+
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    query = query.Where(x => (x.FirstName + " " + x.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Email != null)
+                {
+                    query = query.Where(w => w.Email.Contains(dataLoadingOptions.Filter.Email, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.PhoneNumber != null)
+                {
+                    query = query.Where(w => w.PhoneNumber.Contains(dataLoadingOptions.Filter.PhoneNumber, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(x => x.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(x => x.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Position != null)
+                {
+                    query = query.Where(x => x.Position.Name.Contains(dataLoadingOptions.Filter.Position, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.LastSeenStartDate != null)
+                {
+                    query = query.Where(w => w.LastSeen >= dataLoadingOptions.Filter.LastSeenStartDate);
+                }
+                if (dataLoadingOptions.Filter.LastSeenEndDate != null)
+                {
+                    query = query.Where(x => x.LastSeen <= dataLoadingOptions.Filter.LastSeenEndDate);
+                }
+                if (dataLoadingOptions.Filter.VaultsCount != null)
+                {
+                    query = query.Where(x => (x.HardwareVaults.Count + x.SoftwareVaults.Count) == dataLoadingOptions.Filter.VaultsCount);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => (x.FirstName + " " + x.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Email.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.PhoneNumber.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Position.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVaults.Count + x.SoftwareVaults.Count).ToString().Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId)
         {
             var employee = await GetEmployeeByIdAsync(employeeId);
             return employee.HardwareVaults.Select(x => x.Id).ToList();
-        }
-
-        public async Task<List<Employee>> GetFilteredEmployeesAsync(EmployeeFilter employeeFilter)
-        {
-            var filter = _employeeRepository
-                .Query()
-                .Include(e => e.Department.Company)
-                .Include(e => e.Position)
-                .Include(e => e.HardwareVaults)
-                .AsQueryable();
-
-            if (employeeFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == employeeFilter.CompanyId);
-            }
-            if (employeeFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == employeeFilter.DepartmentId);
-            }
-            if (employeeFilter.PositionId != null)
-            {
-                filter = filter.Where(w => w.PositionId == employeeFilter.PositionId);
-            }
-            if (employeeFilter.DevicesCount != null)
-            {
-                filter = filter.Where(w => w.HardwareVaults.Count() == employeeFilter.DevicesCount);
-            }
-            if (employeeFilter.StartDate != null)
-            {
-                filter = filter.Where(w => w.LastSeen.Value >= employeeFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
-            }
-            if (employeeFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.LastSeen.Value <= employeeFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-
-            return await filter
-                .OrderBy(e => e.FirstName)
-                .ThenBy(e => e.LastName)
-                .Take(employeeFilter.Records)
-                .ToListAsync();
         }
 
         public async Task<Employee> CreateEmployeeAsync(Employee employee)
@@ -186,7 +301,16 @@ namespace HES.Core.Services
                 throw new AlreadyExistException($"{employee.FirstName} {employee.LastName} already exists.");
             }
 
-            var properties = new string[] { "FirstName", "LastName", "Email", "PhoneNumber", "DepartmentId", "PositionId" };
+            var properties = new string[]
+            {
+                nameof(Employee.FirstName),
+                nameof(Employee.LastName),
+                nameof(Employee.Email),
+                nameof(Employee.PhoneNumber),
+                nameof(Employee.DepartmentId),
+                nameof(Employee.PositionId)
+            };
+
             await _employeeRepository.UpdateOnlyPropAsync(employee, properties);
         }
 
@@ -216,38 +340,31 @@ namespace HES.Core.Services
             if (softwareVaults)
                 throw new Exception("First untie the software vault before removing.");
 
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                // Remove all events
-                var allEvents = await _workstationEventRepository.Query().Where(e => e.EmployeeId == id).ToListAsync();
-                await _workstationEventRepository.DeleteRangeAsync(allEvents);
-                // Remove all sessions
-                var allSessions = await _workstationSessionRepository.Query().Where(s => s.EmployeeId == id).ToListAsync();
-                await _workstationSessionRepository.DeleteRangeAsync(allSessions);
-                // Remove all accounts
-                await _accountService.DeleteAccountsByEmployeeIdAsync(id, deleteFromDatabase: true);
-
-                await _employeeRepository.DeleteAsync(employee);
-
-                transactionScope.Complete();
-            }
-        }
-
-        public async Task<bool> ExistAsync(Expression<Func<Employee, bool>> predicate)
-        {
-            return await _employeeRepository.ExistAsync(predicate);
+            await _employeeRepository.DeleteAsync(employee);
         }
 
         public async Task UpdateLastSeenAsync(string vaultId)
         {
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
-            var employee = await _employeeRepository.GetByIdAsync(vault.EmployeeId);
+            if (vault?.EmployeeId == null)
+                return;
 
-            if (employee != null)
-            {
-                employee.LastSeen = DateTime.UtcNow;
-                await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { "LastSeen" });
-            }
+            var employee = await _employeeRepository.GetByIdAsync(vault.EmployeeId);
+            if (employee == null)
+                return;
+
+            employee.LastSeen = DateTime.UtcNow;
+            await _employeeRepository.UpdateOnlyPropAsync(employee, new string[] { nameof(Employee.LastSeen) });
+        }
+
+        public async Task<bool> CheckEmployeeNameExistAsync(Employee employee)
+        {
+            if (employee == null)
+                throw new ArgumentNullException(nameof(employee));
+
+            // If the field is NULL then the unique check does not work; therefore, we write empty
+            employee.LastName = employee.LastName ?? string.Empty;
+            return await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
         }
 
         #endregion
@@ -526,6 +643,35 @@ namespace HES.Core.Services
             return account;
         }
 
+        public async Task<Account> CreateWorkstationAccountAsync(HES.Core.Models.Web.Account.WorkstationAccount workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            switch (workstationAccount.Type)
+            {
+                case WorkstationAccountType.Local:
+                    workstationAccount.UserName = $".\\{workstationAccount.UserName}";
+                    break;
+                case WorkstationAccountType.AzureAD:
+                    workstationAccount.UserName = $"AzureAD\\{workstationAccount.UserName}";
+                    break;
+                case WorkstationAccountType.Microsoft:
+                    workstationAccount.UserName = $"@\\{workstationAccount.UserName}";
+                    break;
+            }
+
+            var personalAccount = new PersonalAccount()
+            {
+                Name = workstationAccount.Name,
+                Login = workstationAccount.UserName,
+                Password = workstationAccount.Password,
+                EmployeeId = workstationAccount.EmployeeId
+            };
+
+            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
         public async Task<Account> CreateWorkstationAccountAsync(WorkstationLocal workstationAccount)
         {
             if (workstationAccount == null)
@@ -590,40 +736,40 @@ namespace HES.Core.Services
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
         }
 
-        [Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
-        public async Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
-        {
-            if (workstationAccount == null)
-                throw new ArgumentNullException(nameof(workstationAccount));
+        //[Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
+        //public async Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
+        //{
+        //    if (workstationAccount == null)
+        //        throw new ArgumentNullException(nameof(workstationAccount));
 
-            if (employeeId == null)
-                throw new ArgumentNullException(nameof(employeeId));
+        //    if (employeeId == null)
+        //        throw new ArgumentNullException(nameof(employeeId));
 
-            var account = new PersonalAccount()
-            {
-                Name = workstationAccount.Name,
-                EmployeeId = employeeId,
-                Password = workstationAccount.Password
-            };
+        //    var account = new PersonalAccount()
+        //    {
+        //        Name = workstationAccount.Name,
+        //        EmployeeId = employeeId,
+        //        Password = workstationAccount.Password
+        //    };
 
-            switch (workstationAccount.AccountType)
-            {
-                case WorkstationAccountType.Local:
-                    account.Login = $".\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.Domain:
-                    account.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.Microsoft:
-                    account.Login = $"@\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.AzureAD:
-                    account.Login = $"AzureAD\\{workstationAccount.Login}";
-                    break;
-            }
+        //    switch (workstationAccount.AccountType)
+        //    {
+        //        case WorkstationAccountType.Local:
+        //            account.Login = $".\\{workstationAccount.Login}";
+        //            break;
+        //        case WorkstationAccountType.Domain:
+        //            account.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
+        //            break;
+        //        case WorkstationAccountType.Microsoft:
+        //            account.Login = $"@\\{workstationAccount.Login}";
+        //            break;
+        //        case WorkstationAccountType.AzureAD:
+        //            account.Login = $"AzureAD\\{workstationAccount.Login}";
+        //            break;
+        //    }
 
-            return await CreatePersonalAccountAsync(account, true);
-        }
+        //    return await CreatePersonalAccountAsync(account, true);
+        //}
 
         public async Task SetAsWorkstationAccountAsync(string employeeId, string accountId)
         {

@@ -49,6 +49,14 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<SharedAccount>> GetWorkstationSharedAccountsAsync()
+        {
+            return await _sharedAccountRepository
+                .Query()
+                .Where(d => d.Deleted == false && d.Kind == AccountKind.Workstation)
+                .ToListAsync();
+        }
+
         public async Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount)
         {
             _dataProtectionService.Validate();

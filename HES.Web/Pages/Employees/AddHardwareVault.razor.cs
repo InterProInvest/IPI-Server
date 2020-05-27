@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVault;
 using HES.Core.Utilities;
 using Microsoft.AspNetCore.Components;
@@ -44,9 +45,21 @@ namespace HES.Web.Pages.Employees
 
         private async Task LoadDataAsync()
         {
-            var filter = new HardwareVaultFilter() { VaultStatus = VaultStatus.Ready };
-            TotalRecords = await HardwareVaultService.GetVaultsCountAsync(SearchText, filter);
-            HardwareVaults = await HardwareVaultService.GetVaultsAsync(0, TotalRecords, nameof(HardwareVault.Id), ListSortDirection.Ascending, SearchText, filter);
+            var filter = new HardwareVaultFilter() { Status = VaultStatus.Ready };
+            TotalRecords = await HardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>
+            {
+                SearchText = SearchText,
+                Filter = filter
+            });
+
+            HardwareVaults = await HardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter> 
+            { 
+                Take = TotalRecords,
+                SortedColumn = nameof(HardwareVault.Id),
+                SortDirection = ListSortDirection.Ascending,
+                SearchText = SearchText,
+                Filter = filter
+            });
 
             SelectedHardwareVault = null;
             StateHasChanged();

@@ -16,7 +16,6 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public ILogger<ChangeProfile> Logger { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string HardwareVaultId { get; set; }
 
         public SelectList VaultProfiles { get; set; }
@@ -38,7 +37,6 @@ namespace HES.Web.Pages.HardwareVaults
             try
             {
                 await HardwareVaultService.ChangeVaultProfileAsync(HardwareVaultId, SelectedVaultProfileId);
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Success vault profile updated", ToastLevel.Success);
                 await CloseAsync();
             }
