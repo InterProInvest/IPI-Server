@@ -68,7 +68,7 @@ namespace HES.Web.Pages.Employees
 
         private async Task CloseAsync()
         {
-            await EmployeeService.UnchangedEmployeeAsync(Employee);
+            //await EmployeeService.UnchangedEmployeeAsync(Employee);
             await ModalDialogService.CloseAsync();
         }
     }
