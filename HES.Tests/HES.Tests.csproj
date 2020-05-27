@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\HES.Core\HES.Core.csproj" />
     <ProjectReference Include="..\HES.Infrastructure\HES.Infrastructure.csproj" />
+    <ProjectReference Include="..\HES.Web\HES.Web.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
-﻿using HES.Core.Services;
+﻿using HES.Core.Interfaces;
+using HES.Core.Services;
 using HES.Tests.Builders;
 using HES.Tests.Helpers;
 using System;
@@ -16,7 +17,7 @@ namespace HES.Tests.Services.EmplpyeeServiceTest
     {
         private readonly EmployeeBuilder employeeBuilder;
         private readonly ServicesBuilder servicesBuilder;
-        private readonly EmployeeService employeeService;
+        private readonly IEmployeeService employeeService;
 
         public CreateEmployee()
         {
@@ -24,7 +25,7 @@ namespace HES.Tests.Services.EmplpyeeServiceTest
 
             employeeBuilder = new EmployeeBuilder();
 
-            employeeService = servicesBuilder.GetEmployeeService();
+            employeeService = servicesBuilder.EmployeeService;
         }
 
         [Fact]

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using HES.Tests.Builders;
 using HES.Tests.Helpers;
 using Xunit.Extensions.Ordering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HES.Tests.Services
 {
@@ -17,13 +18,13 @@ namespace HES.Tests.Services
     {
         private readonly EmployeeBuilder employeeBuilder;
         private readonly ServicesBuilder servicesBuilder;
-        private readonly EmployeeService employeeService;
+        private readonly IEmployeeService employeeService;
 
         public EmployeeServiceTests()
         {
             servicesBuilder = new ServicesBuilder("q1");
             employeeBuilder = new EmployeeBuilder();
-            employeeService = servicesBuilder.GetEmployeeService();
+            employeeService = servicesBuilder.EmployeeService;
         }
 
         [Fact]
@@ -48,7 +49,7 @@ namespace HES.Tests.Services
                 await Task.CompletedTask;
                 return true;
             });
-            var employeeService = new EmployeeService(mock.Object, null, null, null, null, null, null, null, null, null);
+            var employeeService = new EmployeeService(mock.Object, null, null, null, null, null, null, null);
 
 
             await Assert.ThrowsAsync<AlreadyExistException>(async () => await employeeService.EditEmployeeAsync(employee));
@@ -59,7 +60,7 @@ namespace HES.Tests.Services
         {
             var mock = new Mock<IAsyncRepository<Employee>>();
 
-            var employeeService = new EmployeeService(mock.Object, null, null, null, null, null, null, null, null, null);
+            var employeeService = new EmployeeService(mock.Object, null, null, null, null, null, null, null);
 
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await employeeService.EditEmployeeAsync(null));
         }
