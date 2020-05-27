@@ -198,17 +198,26 @@ namespace HES.Web.Pages.Employees
                         await EmployeeService.AddHardwareVaultAsync(employee.Id, hardwareVaultId);
 
                     if (!accountSkiped)
-                        switch (WorkstationType)
+                    {
+                        if (AccountType == AccountType.Personal)
                         {
-                            case WorkstationAccountType.Local:
-                            case WorkstationAccountType.AzureAD:
-                            case WorkstationAccountType.Microsoft:
-                                await EmployeeService.CreateWorkstationAccountAsync(workstationAccount);
-                                break;
-                            case WorkstationAccountType.Domain:
-                                await EmployeeService.CreateWorkstationAccountAsync(workstationDomain);
-                                break;
+                            switch (WorkstationType)
+                            {
+                                case WorkstationAccountType.Local:
+                                case WorkstationAccountType.AzureAD:
+                                case WorkstationAccountType.Microsoft:
+                                    await EmployeeService.CreateWorkstationAccountAsync(workstationAccount);
+                                    break;
+                                case WorkstationAccountType.Domain:
+                                    await EmployeeService.CreateWorkstationAccountAsync(workstationDomain);
+                                    break;
+                            }
                         }
+                        else
+                        {
+                            await EmployeeService.AddSharedAccountAsync(employee.Id, sharedAccountId);
+                        }
+                    }
 
                     transactionScope.Complete();
                 }

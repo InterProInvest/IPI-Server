@@ -12,7 +12,6 @@ namespace HES.Core.Services
 {
     public class MainTableService<TItem, TFilter> : IDisposable, IMainTableService<TItem, TFilter> where TItem : class where TFilter : class, new()
     {
-        private readonly IAsyncRepository<TItem> _asyncRepository;
         private readonly IJSRuntime _jSRuntime;
         private readonly IModalDialogService _modalDialogService;
         private Func<DataLoadingOptions<TFilter>, Task<int>> _getEntitiesCount;
@@ -25,12 +24,9 @@ namespace HES.Core.Services
         public int TotalRecords { get; set; }
         public int CurrentPage { get; set; } = 1;
 
-        public MainTableService(IJSRuntime jSRuntime, 
-            IAsyncRepository<TItem> asyncRepository, 
-            IModalDialogService modalDialogService)
+        public MainTableService(IJSRuntime jSRuntime, IModalDialogService modalDialogService)
         {
             _jSRuntime = jSRuntime;
-            _asyncRepository = asyncRepository;
             _modalDialogService = modalDialogService;
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
@@ -40,7 +36,7 @@ namespace HES.Core.Services
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
             _getEntitiesCount = getEntitiesCount;
-            _modalDialogService.OnClose += OnModalCloseAsync;
+            _modalDialogService.OnClose += LoadTableDataAsync;
             DataLoadingOptions.SortedColumn = sortedColumn;
             await LoadTableDataAsync();
         }
@@ -114,15 +110,9 @@ namespace HES.Core.Services
             await _jSRuntime.InvokeVoidAsync(functionName, args);
         }
 
-        private async Task OnModalCloseAsync()
-        {
-            await _asyncRepository.Unchanged(SelectedEntity);
-            await LoadTableDataAsync();
-        }
-
         public void Dispose()
         {
-            _modalDialogService.OnClose -= OnModalCloseAsync;
+            _modalDialogService.OnClose -= LoadTableDataAsync;
         }
     }
 }

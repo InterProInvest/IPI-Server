@@ -2,7 +2,9 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
+using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -16,6 +18,18 @@ namespace HES.Web.Pages.Employees
         protected override async Task OnInitializedAsync()
         {
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var items = new List<Breadcrumb>()
+                {
+                    new Breadcrumb () { Active = true, Content = "Employees" }
+                };
+                await MainTableService.InvokeJsAsync("createBreadcrumbs", items);
+            }
         }
 
         private async Task ImportEmployeesFromAdAsync()

@@ -10,6 +10,7 @@ namespace HES.Core.Services
     {
         public event Func<string, RenderFragment, ModalDialogSize, Task> OnShow;
         public event Func<Task> OnClose;
+        public event Func<Task> OnCancel;
 
         public async Task ShowAsync(string title, RenderFragment body)
         {
@@ -24,6 +25,11 @@ namespace HES.Core.Services
         public async Task CloseAsync()
         {
             await OnClose?.Invoke();
+        }
+
+        public async Task CancelAsync()
+        {
+            await OnCancel?.Invoke();
         }
     }
 }

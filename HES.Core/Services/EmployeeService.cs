@@ -254,6 +254,9 @@ namespace HES.Core.Services
             // If the field is NULL then the unique check does not work; therefore, we write empty
             employee.LastName = employee.LastName ?? string.Empty;
 
+            employee.DepartmentId = string.IsNullOrWhiteSpace(employee.DepartmentId) ? null : employee.DepartmentId;
+            employee.PositionId = string.IsNullOrWhiteSpace(employee.PositionId) ? null : employee.PositionId;
+
             var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName);
             if (exist)
             {
@@ -294,6 +297,9 @@ namespace HES.Core.Services
 
             // If the field is NULL then the unique check does not work; therefore, we write empty
             employee.LastName = employee.LastName ?? string.Empty;
+
+            employee.DepartmentId = string.IsNullOrWhiteSpace(employee.DepartmentId) ? null : employee.DepartmentId;
+            employee.PositionId = string.IsNullOrWhiteSpace(employee.PositionId) ? null : employee.PositionId;
 
             var exist = await _employeeRepository.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id);
             if (exist)
