@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
@@ -10,19 +11,24 @@ namespace HES.Web.Pages.Employees
     {
         [Inject] public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
         [Inject] public IEmployeeService EmployeeService { get; set; }
-
-
+        [Inject] NavigationManager NavigationManager { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
         }
 
-
         private async Task ImportEmployeesFromAdAsync()
         {
-            await MainTableService.ShowModalAsync("Import from Ad", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(AddEmployee));
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Import from AD", body);
         }
+
         private async Task CreateEmployeeAsync()
         {
             RenderFragment body = (builder) =>
@@ -30,22 +36,39 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(CreateEmployee));
                 builder.CloseComponent();
             };
-            await MainTableService.ShowModalAsync("Details", body, Core.Enums.ModalDialogSize.Large);
+            await MainTableService.ShowModalAsync("Create Employee", body, ModalDialogSize.Large);
         }
 
         private async Task EmployeeDetailsAsync()
         {
-            await MainTableService.ShowModalAsync("Details", null);
+            await InvokeAsync(() =>
+            {
+                NavigationManager.NavigateTo($"/Employees/Details?id={MainTableService.SelectedEntity.Id}", true);
+            });
         }
 
         private async Task EditEmployeeAsync()
         {
-            await MainTableService.ShowModalAsync("Edit", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditEmployee));
+                builder.AddAttribute(1, nameof(DeleteEmployee.Employee), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Edit", body);
         }
 
         private async Task DeleteEmployeeAsync()
         {
-            await MainTableService.ShowModalAsync("Delete", null);
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteEmployee));
+                builder.AddAttribute(1, nameof(DeleteEmployee.Employee), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Delete", body);
         }
     }
 }
