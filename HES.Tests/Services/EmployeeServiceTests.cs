@@ -1,68 +1,43 @@
-﻿using Moq;
-using Xunit;
-using System;
-using HES.Core.Services;
-using HES.Core.Entities;
-using HES.Core.Exceptions;
+﻿using Xunit;
 using HES.Core.Interfaces;
 using System.Threading.Tasks;
 using HES.Tests.Builders;
 using HES.Tests.Helpers;
 using Xunit.Extensions.Ordering;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HES.Tests.Services
 {
-    [Order(2)]
     public class EmployeeServiceTests
     {
         private readonly EmployeeBuilder employeeBuilder;
-        private readonly ServicesBuilder servicesBuilder;
         private readonly IEmployeeService employeeService;
+        private readonly string employeeId = "123456789";
+        private readonly string employeeFullName = "Test Hideez";
 
         public EmployeeServiceTests()
         {
-            servicesBuilder = new ServicesBuilder("q1");
             employeeBuilder = new EmployeeBuilder();
-            employeeService = servicesBuilder.EmployeeService;
+            employeeService = new ServicesBuilder("hes_test").EmployeeService;
         }
 
+        [Order(1)]
         [Fact]
-        public async Task CreateEmployee()
+        public async Task CreateEmployeeAsync()
         {
-            var employee1 = employeeBuilder.GetEmployeeWithName("123", "Alexey Leonov");
-            var employee2 = employeeBuilder.GetEmployeeWithName("123", "Vitalii  Martyniuk");
-
-            var result = await employeeService.CreateEmployeeAsync(employee1);
-            var q = await employeeService.GetEmployeeByIdAsync(result.Id);
-
-            Assert.Equal(result.Id, q.Id);
+            var employee = employeeBuilder.GetEmployeeWithName(employeeId, employeeFullName);
+            var result = await employeeService.CreateEmployeeAsync(employee);
+            Assert.NotNull(result);
         }
 
+        [Order(2)]
         [Fact]
-        public async Task EditEmployeeAsync_NoEmployeeExistsSholdFail()
+        public async Task GetEmployeeByIdAsync()
         {
-            var employee = new Employee();
-            var mock = new Mock<IAsyncRepository<Employee>>();
-            mock.Setup(r => r.ExistAsync(x => x.FirstName == employee.FirstName && x.LastName == employee.LastName && x.Id != employee.Id)).Returns(async () =>
-            {
-                await Task.CompletedTask;
-                return true;
-            });
-            var employeeService = new EmployeeService(mock.Object, null, null, null, null, null, null, null);
+            var result = await employeeService.GetEmployeeByIdAsync(employeeId);
 
-
-            await Assert.ThrowsAsync<AlreadyExistException>(async () => await employeeService.EditEmployeeAsync(employee));
-        }
-
-        [Fact]
-        public async Task EditEmployeeAsync_EmployeeIsNullSholdFail()
-        {
-            var mock = new Mock<IAsyncRepository<Employee>>();
-
-            var employeeService = new EmployeeService(mock.Object, null, null, null, null, null, null, null);
-
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await employeeService.EditEmployeeAsync(null));
+            Assert.NotNull(result);
+            Assert.Equal(result.Id, employeeId);
+            Assert.Equal(result.FullName, employeeFullName);
         }
     }
 }
