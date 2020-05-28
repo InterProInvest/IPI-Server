@@ -1,7 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models;
+using HES.Core.Models.SharedAccounts;
 using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System;

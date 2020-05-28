@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models.Web.Account
+namespace HES.Core.Models.API.Employee
 {
-    public class WorkstationLocal
+    public class AddWorkstationAccountDto
     {
         [Required]
         public string Name { get; set; }
@@ -11,13 +11,7 @@ namespace HES.Core.Models.Web.Account
         public string UserName { get; set; }
 
         [Required]
-        [DataType(DataType.Password)]
         public string Password { get; set; }
-
-        [Required]
-        [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; }
 
         [Required]
         public string EmployeeId { get; set; }

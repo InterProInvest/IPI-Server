@@ -418,12 +418,21 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWorkstationLocalAccount(WorkstationLocal accountDto)
+        public async Task<IActionResult> CreateWorkstationLocalAccount(AddWorkstationAccountDto accountDto)
         {
             Account createdAccount;
             try
             {
-                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
+                var workstationAccount = new Core.Models.Web.Account.WorkstationAccount()
+                {
+                    Name = accountDto.Name,
+                    UserName = accountDto.UserName,
+                    Password = accountDto.Password,
+                    EmployeeId = accountDto.EmployeeId,
+                    Type = WorkstationAccountType.Local
+                };
+
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
@@ -456,12 +465,21 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWorkstationAzureAdAccount(WorkstationAzureAD accountDto)
+        public async Task<IActionResult> CreateWorkstationAzureAdAccount(AddWorkstationAccountDto accountDto)
         {
             Account createdAccount;
             try
             {
-                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
+                var workstationAccount = new Core.Models.Web.Account.WorkstationAccount()
+                {
+                    Name = accountDto.Name,
+                    UserName = accountDto.UserName,
+                    Password = accountDto.Password,
+                    EmployeeId = accountDto.EmployeeId,
+                    Type = WorkstationAccountType.AzureAD
+                };
+
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)
@@ -475,12 +493,21 @@ namespace HES.Web.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateWorkstationMicrosoftAccount(WorkstationMicrosoft accountDto)
+        public async Task<IActionResult> CreateWorkstationMicrosoftAccount(AddWorkstationAccountDto accountDto)
         {
             Account createdAccount;
             try
             {
-                createdAccount = await _employeeService.CreateWorkstationAccountAsync(accountDto);
+                var workstationAccount = new Core.Models.Web.Account.WorkstationAccount()
+                {
+                    Name = accountDto.Name,
+                    UserName = accountDto.UserName,
+                    Password = accountDto.Password,
+                    EmployeeId = accountDto.EmployeeId,
+                    Type = WorkstationAccountType.Microsoft
+                };
+
+                createdAccount = await _employeeService.CreateWorkstationAccountAsync(workstationAccount);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(createdAccount.EmployeeId));
             }
             catch (Exception ex)

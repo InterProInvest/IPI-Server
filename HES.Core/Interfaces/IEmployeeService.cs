@@ -32,11 +32,8 @@ namespace HES.Core.Interfaces
         Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);
         Task<Account> GetAccountByIdAsync(string accountId);
         Task<Account> CreatePersonalAccountAsync(PersonalAccount personalAccount, bool isWorkstationAccount = false);
-        Task<Account> CreateWorkstationAccountAsync(HES.Core.Models.Web.Account.WorkstationAccount workstationAccount);
-        Task<Account> CreateWorkstationAccountAsync(WorkstationLocal workstationAccount);
+        Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount);
         Task<Account> CreateWorkstationAccountAsync(WorkstationDomain workstationAccount);
-        Task<Account> CreateWorkstationAccountAsync(WorkstationMicrosoft workstationAccount);
-        Task<Account> CreateWorkstationAccountAsync(WorkstationAzureAD workstationAccount);
         Task SetAsWorkstationAccountAsync(string employeeId, string accountId);
         Task EditPersonalAccountAsync(Account account);
         Task EditPersonalAccountPwdAsync(Account account, AccountPassword accountPassword);

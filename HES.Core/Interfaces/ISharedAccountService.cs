@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
+using HES.Core.Models.SharedAccounts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
