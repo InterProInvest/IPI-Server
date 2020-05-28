@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using HES.Core.Entities;
@@ -16,7 +17,7 @@ namespace HES.Tests.Builders
 
         public Employee GetEmptyEmployee(bool needId = true)
         {
-            return new Employee() { Id = needId ? Guid.NewGuid().ToString() : null } ;
+            return new Employee() { Id = needId ? Guid.NewGuid().ToString() : null };
         }
 
         public Employee GetEmployeeWithName(string id, string fullName)
@@ -49,7 +50,7 @@ namespace HES.Tests.Builders
 
         public Employee GetEmployeeCopy(Employee employee)
         {
-            return new Employee() 
+            return new Employee()
             {
                 Id = employee.Id,
                 FirstName = employee.FirstName,
@@ -121,6 +122,24 @@ namespace HES.Tests.Builders
 
 
             return stringBuilder.ToString();
+        }
+
+        public List<Employee> GetTestEmployees()
+        {
+            var employees = new List<Employee>();
+
+            for (int i = 0; i < 100; i++)
+            {
+                employees.Add(new Employee()
+                {
+                    Id = $"{i}",
+                    FirstName = $"Test{i}",
+                    LastName = $"Hideez{i}",
+                    Email = $"th.{i}@hideez.com",
+                    PhoneNumber = $"380{i}"
+                });
+            }
+            return employees;
         }
     }
 }
