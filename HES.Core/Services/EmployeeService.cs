@@ -678,22 +678,6 @@ namespace HES.Core.Services
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
         }
 
-        public async Task<Account> CreateWorkstationAccountAsync(WorkstationLocal workstationAccount)
-        {
-            if (workstationAccount == null)
-                throw new ArgumentNullException(nameof(workstationAccount));
-
-            var personalAccount = new PersonalAccount()
-            {
-                Name = workstationAccount.Name,
-                Login = $".\\{workstationAccount.UserName}",
-                Password = workstationAccount.Password,
-                EmployeeId = workstationAccount.EmployeeId
-            };
-
-            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
-        }
-
         public async Task<Account> CreateWorkstationAccountAsync(WorkstationDomain workstationAccount)
         {
             if (workstationAccount == null)
@@ -709,73 +693,6 @@ namespace HES.Core.Services
 
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
         }
-
-        public async Task<Account> CreateWorkstationAccountAsync(WorkstationMicrosoft workstationAccount)
-        {
-            if (workstationAccount == null)
-                throw new ArgumentNullException(nameof(workstationAccount));
-
-            var personalAccount = new PersonalAccount()
-            {
-                Name = workstationAccount.Name,
-                Login = $"@\\{workstationAccount.UserName}",
-                Password = workstationAccount.Password,
-                EmployeeId = workstationAccount.EmployeeId
-            };
-
-            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
-        }
-
-        public async Task<Account> CreateWorkstationAccountAsync(WorkstationAzureAD workstationAccount)
-        {
-            if (workstationAccount == null)
-                throw new ArgumentNullException(nameof(workstationAccount));
-
-            var personalAccount = new PersonalAccount()
-            {
-                Name = workstationAccount.Name,
-                Login = $"AzureAD\\{workstationAccount.UserName}",
-                Password = workstationAccount.Password,
-                EmployeeId = workstationAccount.EmployeeId
-            };
-
-            return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
-        }
-
-        //[Obsolete("Is deprecated, use CreateWorkstationAccountAsync(WorkstationLocal/Domain/Azure/MS).")]
-        //public async Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount, string employeeId)
-        //{
-        //    if (workstationAccount == null)
-        //        throw new ArgumentNullException(nameof(workstationAccount));
-
-        //    if (employeeId == null)
-        //        throw new ArgumentNullException(nameof(employeeId));
-
-        //    var account = new PersonalAccount()
-        //    {
-        //        Name = workstationAccount.Name,
-        //        EmployeeId = employeeId,
-        //        Password = workstationAccount.Password
-        //    };
-
-        //    switch (workstationAccount.AccountType)
-        //    {
-        //        case WorkstationAccountType.Local:
-        //            account.Login = $".\\{workstationAccount.Login}";
-        //            break;
-        //        case WorkstationAccountType.Domain:
-        //            account.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
-        //            break;
-        //        case WorkstationAccountType.Microsoft:
-        //            account.Login = $"@\\{workstationAccount.Login}";
-        //            break;
-        //        case WorkstationAccountType.AzureAD:
-        //            account.Login = $"AzureAD\\{workstationAccount.Login}";
-        //            break;
-        //    }
-
-        //    return await CreatePersonalAccountAsync(account, true);
-        //}
 
         public async Task SetAsWorkstationAccountAsync(string employeeId, string accountId)
         {

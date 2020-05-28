@@ -1,7 +1,7 @@
 ﻿using HES.Core.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models
+namespace HES.Core.Models.SharedAccounts
 {
     public class WorkstationAccount
     {

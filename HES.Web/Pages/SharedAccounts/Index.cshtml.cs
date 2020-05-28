@@ -1,6 +1,9 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models;
+using HES.Core.Models.SharedAccounts;
+using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,11 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using HES.Core.Utilities;
-using HES.Core.Enums;
 
 namespace HES.Web.Pages.SharedAccounts
 {

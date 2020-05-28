@@ -30,10 +30,8 @@ namespace HES.Web.Pages.Employees
         public PersonalAccount PersonalAccount { get; set; }
         public List<Template> Templates { get; set; }
         public WorkstationAccountType WorkstationType { get; set; }
-        public WorkstationLocal WorkstationLocal { get; set; }
+        public WorkstationAccount WorkstationAccount { get; set; }
         public WorkstationDomain WorkstationDomain { get; set; }
-        public WorkstationAzureAD WorkstationAzureAD { get; set; }
-        public WorkstationMicrosoft WorkstationMicrosoft { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public LdapSettings LdapSettings { get; set; }
 
@@ -42,13 +40,10 @@ namespace HES.Web.Pages.Employees
         protected override async Task OnInitializedAsync()
         {
             LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
-
             Templates = await TemplateService.GetTemplatesAsync();
             WorkstationType = WorkstationAccountType.Local;
-            WorkstationLocal = new WorkstationLocal() { EmployeeId = EmployeeId };
+            WorkstationAccount = new WorkstationAccount() { EmployeeId = EmployeeId };
             WorkstationDomain = new WorkstationDomain() { EmployeeId = EmployeeId };
-            WorkstationAzureAD = new WorkstationAzureAD() { EmployeeId = EmployeeId };
-            WorkstationMicrosoft = new WorkstationMicrosoft() { EmployeeId = EmployeeId };
             PersonalAccount = new PersonalAccount() { EmployeeId = EmployeeId };
         }
 
@@ -95,18 +90,15 @@ namespace HES.Web.Pages.Employees
                 switch (WorkstationType)
                 {
                     case WorkstationAccountType.Local:
-                        await EmployeeService.CreateWorkstationAccountAsync(WorkstationLocal);
+                    case WorkstationAccountType.Microsoft:
+                    case WorkstationAccountType.AzureAD:
+                        WorkstationAccount.Type = WorkstationType;
+                        await EmployeeService.CreateWorkstationAccountAsync(WorkstationAccount);
                         break;
                     case WorkstationAccountType.Domain:
                         await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
                         if (WorkstationDomain.UpdateActiveDirectoryPassword)
                             await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, LdapSettings);
-                        break;
-                    case WorkstationAccountType.Microsoft:
-                        await EmployeeService.CreateWorkstationAccountAsync(WorkstationMicrosoft);
-                        break;
-                    case WorkstationAccountType.AzureAD:
-                        await EmployeeService.CreateWorkstationAccountAsync(WorkstationAzureAD);
                         break;
                 }
 

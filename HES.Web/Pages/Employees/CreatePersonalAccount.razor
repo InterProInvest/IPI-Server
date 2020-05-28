@@ -101,28 +101,30 @@ else
             @switch (WorkstationType)
             {
                 case Core.Enums.WorkstationAccountType.Local:
-                    <EditForm Model="WorkstationLocal" OnValidSubmit="CreateWorkstationAccountAsync">
+                case Core.Enums.WorkstationAccountType.Microsoft:
+                case Core.Enums.WorkstationAccountType.AzureAD:
+                    <EditForm Model="WorkstationAccount" OnValidSubmit="CreateWorkstationAccountAsync">
                         <DataAnnotationsValidator />
                         <div class="row">
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Account Name</label>
-                                <InputText @bind-Value="WorkstationLocal.Name" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationLocal.Name)" class="text-danger" />
+                                <InputText @bind-Value="WorkstationAccount.Name" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationAccount.Name)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">User Logon Name</label>
-                                <InputText @bind-Value="WorkstationLocal.UserName" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationLocal.UserName)" class="text-danger" />
+                                <InputText @bind-Value="WorkstationAccount.UserName" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationAccount.UserName)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationLocal.Password" type="password" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationLocal.Password)" class="text-danger" />
+                                <InputText @bind-Value="WorkstationAccount.Password" type="password" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationAccount.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationLocal.ConfirmPassword" type="password" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationLocal.ConfirmPassword)" class="text-danger" />
+                                <InputText @bind-Value="WorkstationAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationAccount.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
                         <div class="text-right">
@@ -173,74 +175,6 @@ else
                                 </div>
                             </div>
                         }
-                        <div class="text-right">
-                            <button type="button" class="btn btn-secondary" @onclick="@(async () => await CloseAsync())">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                                <span>Create</span>
-                            </button>
-                        </div>
-                    </EditForm>
-                    break;
-                case Core.Enums.WorkstationAccountType.Microsoft:
-                    <EditForm Model="WorkstationMicrosoft" OnValidSubmit="CreateWorkstationAccountAsync">
-                        <DataAnnotationsValidator />
-                        <div class="row">
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Account Name</label>
-                                <InputText @bind-Value="WorkstationMicrosoft.Name" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationMicrosoft.Name)" class="text-danger" />
-                            </div>
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
-                                <InputText @bind-Value="WorkstationMicrosoft.UserName" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationMicrosoft.UserName)" class="text-danger" />
-                            </div>
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationMicrosoft.Password" type="password" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationMicrosoft.Password)" class="text-danger" />
-                            </div>
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationMicrosoft.ConfirmPassword" type="password" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationMicrosoft.ConfirmPassword)" class="text-danger" />
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <button type="button" class="btn btn-secondary" @onclick="@(async () => await CloseAsync())">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                                <span>Create</span>
-                            </button>
-                        </div>
-                    </EditForm>
-                    break;
-                case Core.Enums.WorkstationAccountType.AzureAD:
-                    <EditForm Model="WorkstationAzureAD" OnValidSubmit="CreateWorkstationAccountAsync">
-                        <DataAnnotationsValidator />
-                        <div class="row">
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Account Name</label>
-                                <InputText @bind-Value="WorkstationAzureAD.Name" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationAzureAD.Name)" class="text-danger" />
-                            </div>
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
-                                <InputText @bind-Value="WorkstationAzureAD.UserName" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationAzureAD.UserName)" class="text-danger" />
-                            </div>
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Password</label>
-                                <InputText @bind-Value="WorkstationAzureAD.Password" type="password" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationAzureAD.Password)" class="text-danger" />
-                            </div>
-                            <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Confirm Password</label>
-                                <InputText @bind-Value="WorkstationAzureAD.ConfirmPassword" type="password" class="form-control text-navyblue" />
-                                <ValidationMessage For="@(() => WorkstationAzureAD.ConfirmPassword)" class="text-danger" />
-                            </div>
-                        </div>
                         <div class="text-right">
                             <button type="button" class="btn btn-secondary" @onclick="@(async () => await CloseAsync())">Cancel</button>
                             <button type="submit" class="btn btn-primary">
