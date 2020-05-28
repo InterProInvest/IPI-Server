@@ -42,14 +42,19 @@ namespace HES.Tests.Services
             Assert.Equal(result.Count, testEmployees.Count);
         }
 
-
         [Fact, Order(2)]
         public async Task GetEmployeesAsync()
         {
+            var expectedCount = 100;
+            var count = await employeeService.GetEmployeesCountAsync(new DataLoadingOptions<EmployeeFilter>()
+            {
+                SearchText = string.Empty,
+                Filter = null
+            });
             var result = await employeeService.GetEmployeesAsync(new DataLoadingOptions<EmployeeFilter>()
             {
                 Skip = 0,
-                Take = 99,
+                Take = count,
                 SortDirection = ListSortDirection.Ascending,
                 SortedColumn = nameof(Employee.Id),
                 SearchText = string.Empty,
@@ -57,7 +62,7 @@ namespace HES.Tests.Services
             });
 
             Assert.NotEmpty(result);
-            Assert.Equal(99, result.Count);
+            Assert.Equal(expectedCount, result.Count);
         }
 
         [Fact, Order(3)]
@@ -71,6 +76,16 @@ namespace HES.Tests.Services
         }
 
         [Fact, Order(4)]
+        public async Task CheckEmployeeNameExistAsync()
+        {
+            var employee = new Employee() { FirstName = "Test10", LastName = "Hideez10" };
+
+            var result = await employeeService.CheckEmployeeNameExistAsync(employee);
+
+            Assert.True(result);
+        }
+
+        [Fact, Order(5)]
         public async Task EditEmployeeAsync()
         {
             var employee = await employeeService.GetEmployeeByIdAsync(testId);
@@ -83,7 +98,7 @@ namespace HES.Tests.Services
             Assert.Equal(employee, result);
         }
 
-        [Fact, Order(5)]
+        [Fact, Order(6)]
         public async Task DeleteEmployeeAsync()
         {
             await employeeService.DeleteEmployeeAsync(testId);
