@@ -2,9 +2,12 @@
 using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
+using HES.Core.Services;
 using HES.Tests.Builders;
 using HES.Tests.Helpers;
+using HES.Web;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,15 +18,18 @@ using Xunit.Extensions.Ordering;
 [assembly: TestCollectionOrderer("Xunit.Extensions.Ordering.CollectionOrderer", "Xunit.Extensions.Ordering")]
 namespace HES.Tests.Services
 {
-    public class EmployeeServiceTests
+    public class EmployeeServiceTests : IClassFixture<CustomWebAppFactory<Startup>>
     {
         private readonly EmployeeBuilder employeeBuilder;
         private readonly IEmployeeService employeeService;
         private readonly string testId = "10";
         private readonly string testFullName = "Test10 Hideez10";
 
-        public EmployeeServiceTests()
+        private readonly CustomWebAppFactory<Startup> _factory;
+
+        public EmployeeServiceTests(CustomWebAppFactory<Startup> factory)
         {
+            _factory = factory;
             employeeBuilder = new EmployeeBuilder();
             employeeService = new ServicesBuilder("hes_test").EmployeeService;
         }
