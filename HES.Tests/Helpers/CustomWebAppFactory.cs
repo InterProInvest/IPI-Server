@@ -5,6 +5,7 @@ using HES.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using HES.Core.Interfaces;
 
 namespace HES.Tests.Helpers
 {
@@ -23,7 +24,7 @@ namespace HES.Tests.Helpers
 
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("testDb");
+                    options.UseInMemoryDatabase("hes_tests_db");
                 });
 
                 var sp = services.BuildServiceProvider();
@@ -35,10 +36,15 @@ namespace HES.Tests.Helpers
                     var logger = scopedServices
                         .GetRequiredService<ILogger<CustomWebAppFactory<TStartup>>>();
 
-                    // Ensure the database is created.
                     db.Database.EnsureCreated();
                 }
             });
+        }
+
+        public IEmployeeService GetEmployeeService()
+        {
+            var scope = Services.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<IEmployeeService>();
         }
     }
 }
