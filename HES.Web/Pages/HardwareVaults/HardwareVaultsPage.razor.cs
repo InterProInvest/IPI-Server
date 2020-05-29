@@ -1,12 +1,10 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.Breadcrumb;
 using HES.Core.Models.Web.HardwareVault;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
@@ -15,8 +13,9 @@ namespace HES.Web.Pages.HardwareVaults
     {
         [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<HardwareVaultsPage> Logger { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<HardwareVaultsPage> Logger { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -44,18 +43,7 @@ namespace HES.Web.Pages.HardwareVaults
             }
 
             await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                var items = new List<Breadcrumb>()
-                {
-                    new Breadcrumb () { Active = true, Content = "Hardware Vaults" }
-                };
-                await MainTableService.InvokeJsAsync("createBreadcrumbs", items);
-            }
+            await BreadcrumbsService.SetHardwareVaults();
         }
 
         public async Task ImportVaultsAsync()

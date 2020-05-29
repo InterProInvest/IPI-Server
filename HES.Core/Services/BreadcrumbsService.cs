@@ -38,6 +38,16 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetHardwareVaults()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Hardware Vaults" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetGroups()
         {
             Breadcrumbs = new List<Breadcrumb>()
@@ -54,6 +64,17 @@ namespace HES.Core.Services
             {
                 new Breadcrumb () { Active = false, Link= "/Groups", Content = "Groups" },
                 new Breadcrumb () { Active = true, Content = name}
+            };
+
+            return Task.CompletedTask;
+        }
+
+        public Task SetParameters()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Settings" },
+                new Breadcrumb () { Active = true, Content = "Parameters" }
             };
 
             return Task.CompletedTask;

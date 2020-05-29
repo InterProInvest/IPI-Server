@@ -1,12 +1,9 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
-using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
@@ -14,17 +11,16 @@ namespace HES.Web.Pages.Settings.Parameters
 {
     public partial class Parameters : ComponentBase
     {
-        [Inject] private IAppSettingsService AppSettingsService { get; set; }
-        [Inject] private IModalDialogService ModalDialogService { get; set; }
-        [Inject] private ILogger<Parameters> Logger { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] IJSRuntime JSRuntime { get; set; }
+        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        [Inject] public ILogger<Parameters> Logger { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
 
         private LicensingSettings _licensing;
         private EmailSettings _email;
         private ServerSettings _server;
         private DomainHost _domain;
-
         private bool _licensingIsBusy;
         private bool _emailIsBusy;
         private bool _serverIsBusy;
@@ -38,29 +34,12 @@ namespace HES.Web.Pages.Settings.Parameters
 
         protected override async Task OnInitializedAsync()
         {
+            await BreadcrumbsService.SetParameters();
             _licensing = await LoadLicensingSettingsAsync();
             _email = await LoadEmailSettingsAsync();
             _server = await LoadServerSettingsAsync();
             _domain = await LoadDomainSettingsAsync();
             _initialized = true;
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await CreateBreadcrumbs();
-            }
-        }
-
-        private async Task CreateBreadcrumbs()
-        {
-            var list = new List<Breadcrumb>() {
-                new Breadcrumb () { Active = true, Content = "Settings" },
-                new Breadcrumb () { Active = true, Content = "Parameters" }
-            };
-
-            await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);
         }
 
         private async Task<LicensingSettings> LoadLicensingSettingsAsync()
