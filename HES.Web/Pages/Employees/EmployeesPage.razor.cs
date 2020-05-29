@@ -2,9 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
-using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -13,23 +11,13 @@ namespace HES.Web.Pages.Employees
     {
         [Inject] public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
         [Inject] public IEmployeeService EmployeeService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                var items = new List<Breadcrumb>()
-                {
-                    new Breadcrumb () { Active = true, Content = "Employees" }
-                };
-                await MainTableService.InvokeJsAsync("createBreadcrumbs", items);
-            }
+            await BreadcrumbsService.SetEmployees();
         }
 
         private async Task ImportEmployeesFromAdAsync()

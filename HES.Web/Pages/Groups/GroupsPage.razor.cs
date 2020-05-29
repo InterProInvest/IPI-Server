@@ -14,9 +14,9 @@ namespace HES.Web.Pages.Groups
     public partial class GroupsPage : ComponentBase
     {
         [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public ILogger<GroupsPage> Logger { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] IJSRuntime JSRuntime { get; set; }
+        [Inject] public ILogger<GroupsPage> Logger { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
         public List<Group> Groups { get; set; }
@@ -31,19 +31,8 @@ namespace HES.Web.Pages.Groups
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadTableDataAsync();            
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                var items = new List<Breadcrumb>()
-                {
-                    new Breadcrumb () { Active = true, Content = "Groups" }
-                };
-                await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
-            }
+            await LoadTableDataAsync();
+            await BreadcrumbsService.SetGroups();
         }
 
         #region Main Table

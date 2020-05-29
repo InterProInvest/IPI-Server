@@ -84,6 +84,7 @@ namespace HES.Web
             services.AddScoped<ILdapService, LdapService>();
             services.AddScoped<ISoftwareVaultService, SoftwareVaultService>();
 
+            services.AddSingleton<IBreadcrumbsService, BreadcrumbsService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();

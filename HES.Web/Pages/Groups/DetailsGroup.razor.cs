@@ -15,11 +15,11 @@ namespace HES.Web.Pages.Groups
     public partial class DetailsGroup : ComponentBase
     {
         [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public ILogger<DetailsGroup> Logger { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] IJSRuntime JSRuntime { get; set; }
-        [Inject] NavigationManager NavigationManager { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<DetailsGroup> Logger { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string GroupId { get; set; }
 
         public Group Group { get; set; }
@@ -30,20 +30,13 @@ namespace HES.Web.Pages.Groups
             try
             {
                 await LoadGroupMembershipsAsync();
+                await BreadcrumbsService.SetGroupDetails(Group.Name);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
-            }
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await CreateBreadcrumbsAsync();
             }
         }
 
@@ -55,16 +48,6 @@ namespace HES.Web.Pages.Groups
                 NavigationManager.NavigateTo("/NotFound");
             }
             GroupMemberships = await GroupService.GetGruopMembersAsync(GroupId);
-        }
-
-        private async Task CreateBreadcrumbsAsync()
-        {
-            var items = new List<Breadcrumb>()
-            {
-                new Breadcrumb () { Active = false, Link="/Groups", Content = "Groups" },
-                new Breadcrumb () { Active = true, Content = "Details" }
-            };
-            await JSRuntime.InvokeVoidAsync("createBreadcrumbs", items);
         }
 
         private async Task OpenModalAddEmployees()

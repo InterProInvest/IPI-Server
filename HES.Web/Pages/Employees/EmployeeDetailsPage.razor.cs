@@ -1,7 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ namespace HES.Web.Pages.Employees
     {
         [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IJSRuntime JSRuntime { get; set; }
         [Parameter] public string EmployeeId { get; set; }
@@ -24,21 +24,9 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            await GetEmployeeAsync();   
+            await GetEmployeeAsync();
             await LoadTableDataAsync();
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                var list = new List<Breadcrumb>() {
-                        new Breadcrumb () { Link = "/Employees", Content = "Employees" },
-                        new Breadcrumb () { Active = true, Content = Employee.FullName }
-                };
-
-                await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);
-            }
+            await BreadcrumbsService.SetEmployeeDetails(Employee.FullName);
         }
 
         private async Task GetEmployeeAsync()
