@@ -710,9 +710,6 @@ namespace HES.Core.Services
             if (employee == null)
                 throw new Exception($"Employee not found");
 
-            if (employee.HardwareVaults.Count == 0)
-                throw new Exception("Employee has no vaults");
-
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 employee.PrimaryAccountId = accountId;
@@ -851,7 +848,7 @@ namespace HES.Core.Services
 
             // Update otp field if there are no vaults
             if (employee.HardwareVaults.Count == 0)
-                account.Password = _dataProtectionService.Encrypt(accountOtp.OtpSecret);
+                account.OtpSecret = _dataProtectionService.Encrypt(accountOtp.OtpSecret);
 
             // Create tasks if there are vaults
             List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
