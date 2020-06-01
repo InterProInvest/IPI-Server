@@ -69,6 +69,16 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetLicenseOrders()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "License Orders" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetParameters()
         {
             Breadcrumbs = new List<Breadcrumb>()

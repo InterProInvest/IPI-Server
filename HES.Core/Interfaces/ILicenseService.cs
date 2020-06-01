@@ -14,8 +14,8 @@ namespace HES.Core.Interfaces
         Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId);
         Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder);
         Task<List<LicenseOrder>> AddOrderRangeAsync(List<LicenseOrder> licenseOrders);
-        Task DeleteOrderAsync(string orderId);
-        Task SendOrderAsync(string orderId);
+        Task DeleteOrderAsync(LicenseOrder licenseOrder);
+        Task SendOrderAsync(LicenseOrder licenseOrder);
         Task UpdateLicenseOrdersAsync();
         Task<List<HardwareVaultLicense>> GetLicensesAsync();
         Task<List<HardwareVaultLicense>> GetNotAppliedLicensesByHardwareVaultIdAsync(string vaultId);

@@ -6,7 +6,7 @@ else
 {
     <TableAction>
         <FilterForm>
-            @*<EmployeeFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />*@
+            <LicenseOrderFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
             <button type="button" @onclick="CreateLicenseOrderAsync" class="btn btn-primary mx-1" title="New Order">

@@ -264,19 +264,14 @@ namespace HES.Core.Services
             return await _licenseOrderRepository.AddRangeAsync(licenseOrders) as List<LicenseOrder>;
         }
 
-        public async Task DeleteOrderAsync(string orderId)
+        public async Task DeleteOrderAsync(LicenseOrder licenseOrder)
         {
-            if (orderId == null)
-                throw new ArgumentNullException(nameof(orderId));
-
-            var licenseOrder = await _licenseOrderRepository.GetByIdAsync(orderId);
-
             if (licenseOrder == null)
                 throw new Exception("Order does not exist.");
 
             var deviceLicenses = await _hardwareVaultLicenseRepository
                 .Query()
-                .Where(d => d.LicenseOrderId == orderId)
+                .Where(d => d.LicenseOrderId == licenseOrder.Id)
                 .ToListAsync();
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -287,13 +282,9 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SendOrderAsync(string orderId)
+        public async Task SendOrderAsync(LicenseOrder licenseOrder)
         {
-            var order = await GetLicenseOrderByIdAsync(orderId);
-            if (order == null)
-                throw new Exception("Order not found.");
-
-            var vaultLicenses = await GetLicensesByOrderIdAsync(orderId);
+            var vaultLicenses = await GetLicensesByOrderIdAsync(licenseOrder.Id);
             if (vaultLicenses == null)
                 throw new Exception("Hardware vault licenses not found.");
 
@@ -304,26 +295,25 @@ namespace HES.Core.Services
 
             var licenseOrderDto = new LicenseOrderDto()
             {
-                Id = order.Id,
-                ContactEmail = order.ContactEmail,
-                CustomerNote = order.Note,
-                LicenseStartDate = order.StartDate,
-                LicenseEndDate = order.EndDate,
-                ProlongExistingLicenses = order.ProlongExistingLicenses,
+                Id = licenseOrder.Id,
+                ContactEmail = licenseOrder.ContactEmail,
+                CustomerNote = licenseOrder.Note,
+                LicenseStartDate = licenseOrder.StartDate,
+                LicenseEndDate = licenseOrder.EndDate,
+                ProlongExistingLicenses = licenseOrder.ProlongExistingLicenses,
                 CustomerId = licensing.ApiKey,
                 Devices = vaultLicenses.Select(d => d.HardwareVaultId).ToList()
             };
 
             var response = await HttpClientPostOrderAsync(licenseOrderDto);
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                order.OrderStatus = LicenseOrderStatus.Sent;
-                await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
-                return;
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                throw new Exception(errorMessage);
             }
 
-            var ex = await response.Content.ReadAsStringAsync();
-            throw new Exception(ex);
+            licenseOrder.OrderStatus = LicenseOrderStatus.Sent;
+            await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
         }
 
         public async Task UpdateLicenseOrdersAsync()

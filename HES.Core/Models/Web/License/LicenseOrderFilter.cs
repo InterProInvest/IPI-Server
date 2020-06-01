@@ -1,6 +1,5 @@
-﻿using HES.Core.Entities;
+﻿using System;
 using HES.Core.Enums;
-using System;
 
 namespace HES.Core.Models.Web.License
 {

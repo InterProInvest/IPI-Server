@@ -1,9 +1,0 @@
-﻿@model HES.Web.Pages.Settings.LicenseOrders.IndexModel
-
-<h5 class="text-gray mb-4 ">Confirm sending order.</h5>
-
-<form method="post" class="text-right">
-    <input type="hidden" value="@Model.OrderId" name="orderId" />
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-    <input type="submit" value="Send" class="btn btn-primary" asp-page-handler="SendOrder" />
-</form>
