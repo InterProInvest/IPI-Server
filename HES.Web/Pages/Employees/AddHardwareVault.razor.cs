@@ -2,7 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.HardwareVault;
+using HES.Core.Models.Web.HardwareVaults;
 using HES.Core.Utilities;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;

@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.License;
+using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 
@@ -20,7 +21,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         private async Task CreateLicenseOrderAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(CreateOrder));
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Create Order", body, ModalDialogSize.Large);
         }
 
         private async Task SendLicenseOrderAsync()

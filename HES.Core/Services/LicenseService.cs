@@ -3,7 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.License;
+using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -248,12 +248,21 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == orderId);
         }
 
-        public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder)
+        public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder, List<HardwareVault> hardwareVaults)
         {
             if (licenseOrder == null)
                 throw new ArgumentNullException(nameof(licenseOrder));
 
-            return await _licenseOrderRepository.AddAsync(licenseOrder);
+            LicenseOrder createdOrder;
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                createdOrder = await _licenseOrderRepository.AddAsync(licenseOrder);
+                await AddHardwareVaultEmptyLicensesAsync(createdOrder.Id, hardwareVaults.Select(x => x.Id).ToList());
+                transactionScope.Complete();
+            }
+
+            return createdOrder;
         }
 
         public async Task<List<LicenseOrder>> AddOrderRangeAsync(List<LicenseOrder> licenseOrders)
@@ -384,7 +393,7 @@ namespace HES.Core.Services
         public async Task<List<HardwareVaultLicense>> GetLicensesAsync()
         {
             return await _hardwareVaultLicenseRepository
-                .Query()               
+                .Query()
                 .ToListAsync();
         }
 
@@ -404,7 +413,7 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<List<HardwareVaultLicense>> AddHardwareVaultDummyLicensesAsync(string orderId, List<string> vaultIds)
+        public async Task<List<HardwareVaultLicense>> AddHardwareVaultEmptyLicensesAsync(string orderId, List<string> vaultIds)
         {
             if (vaultIds == null)
                 throw new ArgumentNullException(nameof(vaultIds));
