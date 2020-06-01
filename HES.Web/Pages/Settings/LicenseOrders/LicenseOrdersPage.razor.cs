@@ -21,5 +21,29 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, StateHasChanged, nameof(LicenseOrder.CreatedAt));
         }
 
+        private async Task CreateLicenseOrderAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        private async Task SendLicenseOrderAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        private async Task LicenseOrderDetailsAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        private async Task EditLicenseOrderAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        private async Task DeleteLicenseOrderAsync()
+        {
+            await Task.CompletedTask;
+        }
     }
 }

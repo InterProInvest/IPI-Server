@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -95,11 +96,149 @@ namespace HES.Core.Services
 
         public async Task<List<LicenseOrder>> GetLicenseOrdersAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
         {
-            return await _licenseOrderRepository.Query().ToListAsync();
+            var query = _licenseOrderRepository.Query();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Note))
+                {
+                    query = query.Where(x => x.Note.Contains(dataLoadingOptions.Filter.Note, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.ContactEmail))
+                {
+                    query = query.Where(w => w.ContactEmail.Contains(dataLoadingOptions.Filter.ContactEmail, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!dataLoadingOptions.Filter.ProlongLicense != null)
+                {
+                    query = query.Where(w => w.ProlongExistingLicenses == dataLoadingOptions.Filter.ProlongLicense);
+                }
+                if (dataLoadingOptions.Filter.OrderStatus != null)
+                {
+                    query = query.Where(x => x.OrderStatus == dataLoadingOptions.Filter.OrderStatus);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateStart != null)
+                {
+                    query = query.Where(w => w.StartDate >= dataLoadingOptions.Filter.LicenseStartDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateEnd != null)
+                {
+                    query = query.Where(x => x.StartDate <= dataLoadingOptions.Filter.LicenseStartDateEnd);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateStart != null)
+                {
+                    query = query.Where(w => w.EndDate >= dataLoadingOptions.Filter.LicenseEndDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateEnd != null)
+                {
+                    query = query.Where(x => x.EndDate <= dataLoadingOptions.Filter.LicenseEndDateEnd);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateStart != null)
+                {
+                    query = query.Where(w => w.CreatedAt >= dataLoadingOptions.Filter.CreatedDateStart);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateEnd != null)
+                {
+                    query = query.Where(x => x.CreatedAt <= dataLoadingOptions.Filter.CreatedDateEnd);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.ContactEmail.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Note.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(LicenseOrder.ContactEmail):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.ContactEmail) : query.OrderByDescending(x => x.ContactEmail);
+                    break;
+                case nameof(LicenseOrder.Note):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Note) : query.OrderByDescending(x => x.Note);
+                    break;
+                case nameof(LicenseOrder.ProlongExistingLicenses):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.ProlongExistingLicenses) : query.OrderByDescending(x => x.ProlongExistingLicenses);
+                    break;
+                case nameof(LicenseOrder.StartDate):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate);
+                    break;
+                case nameof(LicenseOrder.EndDate):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.EndDate) : query.OrderByDescending(x => x.EndDate);
+                    break;
+                case nameof(LicenseOrder.CreatedAt):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt);
+                    break;
+                case nameof(LicenseOrder.OrderStatus):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OrderStatus) : query.OrderByDescending(x => x.OrderStatus);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
         public async Task<int> GetLicenseOrdersCountAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
         {
-            return await _licenseOrderRepository.Query().CountAsync();
+            var query = _licenseOrderRepository.Query();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Note))
+                {
+                    query = query.Where(x => x.Note.Contains(dataLoadingOptions.Filter.Note, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.ContactEmail))
+                {
+                    query = query.Where(w => w.ContactEmail.Contains(dataLoadingOptions.Filter.ContactEmail, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!dataLoadingOptions.Filter.ProlongLicense != null)
+                {
+                    query = query.Where(w => w.ProlongExistingLicenses == dataLoadingOptions.Filter.ProlongLicense);
+                }
+                if (dataLoadingOptions.Filter.OrderStatus != null)
+                {
+                    query = query.Where(x => x.OrderStatus == dataLoadingOptions.Filter.OrderStatus);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateStart != null)
+                {
+                    query = query.Where(w => w.StartDate >= dataLoadingOptions.Filter.LicenseStartDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateEnd != null)
+                {
+                    query = query.Where(x => x.StartDate <= dataLoadingOptions.Filter.LicenseStartDateEnd);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateStart != null)
+                {
+                    query = query.Where(w => w.EndDate >= dataLoadingOptions.Filter.LicenseEndDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateEnd != null)
+                {
+                    query = query.Where(x => x.EndDate <= dataLoadingOptions.Filter.LicenseEndDateEnd);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateStart != null)
+                {
+                    query = query.Where(w => w.CreatedAt >= dataLoadingOptions.Filter.CreatedDateStart);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateEnd != null)
+                {
+                    query = query.Where(x => x.CreatedAt <= dataLoadingOptions.Filter.CreatedDateEnd);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.ContactEmail.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Note.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId)
