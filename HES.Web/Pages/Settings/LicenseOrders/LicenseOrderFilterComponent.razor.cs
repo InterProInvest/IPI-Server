@@ -1,5 +1,5 @@
 ﻿using HES.Core.Interfaces;
-using HES.Core.Models.Web.License;
+using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Threading.Tasks;
