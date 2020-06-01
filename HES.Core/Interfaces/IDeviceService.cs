@@ -1,7 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.HardwareVault;
+using HES.Core.Models.Web.HardwareVaults;
 using Hideez.SDK.Communication.HES.DTO;
 using System.Collections.Generic;
 using System.Linq;
