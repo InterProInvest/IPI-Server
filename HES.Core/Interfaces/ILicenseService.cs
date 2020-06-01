@@ -1,4 +1,6 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.License;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,6 +9,8 @@ namespace HES.Core.Interfaces
     public interface ILicenseService
     {
         Task<List<LicenseOrder>> GetLicenseOrdersAsync();
+        Task<List<LicenseOrder>> GetLicenseOrdersAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions);
+        Task<int> GetLicenseOrdersCountAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions);
         Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId);
         Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder);
         Task<List<LicenseOrder>> AddOrderRangeAsync(List<LicenseOrder> licenseOrders);

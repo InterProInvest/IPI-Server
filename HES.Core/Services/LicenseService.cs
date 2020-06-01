@@ -2,6 +2,8 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.License;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -89,6 +91,15 @@ namespace HES.Core.Services
         public async Task<List<LicenseOrder>> GetLicenseOrdersAsync()
         {
             return await _licenseOrderRepository.Query().ToListAsync();
+        }
+
+        public async Task<List<LicenseOrder>> GetLicenseOrdersAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
+        {
+            return await _licenseOrderRepository.Query().ToListAsync();
+        }
+        public async Task<int> GetLicenseOrdersCountAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
+        {
+            return await _licenseOrderRepository.Query().CountAsync();
         }
 
         public async Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId)
