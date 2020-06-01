@@ -23,6 +23,7 @@ namespace HES.Core.Interfaces
         Task UnapproveWorkstationAsync(string id);
         Task<bool> GetRfidStateAsync(string workstationId);
         Task UpdateRfidStateAsync(string workstationId);
+        Task<bool> CheckIsApprovedAsync(string workstationId);
         IQueryable<WorkstationProximityVault> ProximityVaultQuery();
         Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId);
         Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id);

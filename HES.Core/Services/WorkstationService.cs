@@ -1,6 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using Hideez.SDK.Communication;
+using Hideez.SDK.Communication.HES.Client;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Workstation;
 using Microsoft.EntityFrameworkCore;
@@ -218,6 +220,19 @@ namespace HES.Core.Services
             var isEnabled = await GetRfidStateAsync(workstationId);
 
             await RemoteWorkstationConnectionsService.UpdateRfidIndicatorStateAsync(workstationId, isEnabled);
+        }
+
+        public async Task<bool> CheckIsApprovedAsync(string workstationId)
+        {
+            var workstaton = await _workstationRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == workstationId);
+
+            if (workstaton == null)
+                return false;
+
+            if (workstaton.Approved == false)
+                return false;
+
+            return true;
         }
 
         #endregion

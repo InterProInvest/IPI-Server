@@ -141,9 +141,6 @@ namespace HES.Core.Services
 
         private async Task<bool> UpdateRemoteDevice(string vaultId, string workstationId, bool primaryAccountOnly)
         {
-            // TODO ignore not approved workstations
-            //throw new HideezException(HideezErrorCode.HesWorkstationNotApproved);
-
             var remoteDevice = await _remoteDeviceConnectionsService
                .ConnectDevice(vaultId, workstationId)
                .TimeoutAfter(30_000);
