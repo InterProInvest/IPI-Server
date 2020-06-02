@@ -1,7 +1,7 @@
 ﻿using HES.Core.Enums;
 using System;
 
-namespace HES.Core.Models.Web.HardwareVault
+namespace HES.Core.Models.Web.HardwareVaults
 {
     public class HardwareVaultFilter
     {

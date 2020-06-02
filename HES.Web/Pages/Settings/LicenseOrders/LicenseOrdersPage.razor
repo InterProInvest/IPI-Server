@@ -6,30 +6,32 @@ else
 {
     <TableAction>
         <FilterForm>
-            <EmployeeFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
+            <LicenseOrderFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <button type="button" @onclick="ImportEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Import employee from AD">
-                Import from AD
-            </button>
-            <button type="button" @onclick="CreateEmployeeAsync" class="btn btn-primary mx-1" title="Create employee">
-                Create employee
+            <button type="button" @onclick="CreateLicenseOrderAsync" class="btn btn-primary mx-1" title="New Order">
+                New Order
             </button>
             @if (MainTableService.SelectedEntity != null)
             {
-                <button type="button" @onclick="EmployeeDetailsAsync" class="btn btn-light border mx-1" title="Employee details">
+                if (MainTableService.SelectedEntity.OrderStatus == LicenseOrderStatus.New)
+                {
+                    <button type="button" @onclick="SendLicenseOrderAsync" class="btn btn-light border mx-1" title="Send license order">
+                        <img class="icon-btn" src="/svg/action/send.svg" />
+                        Send
+                    </button>
+                    <button type="button" @onclick="EditLicenseOrderAsync" class="btn btn-light border mx-1" title="Edit license order">
+                        <img class="icon-btn" src="/svg/action/edit.svg" />
+                        Edit
+                    </button>
+                    <button type="button" @onclick="DeleteLicenseOrderAsync" class="btn btn-light border mx-1" title="Delete license order">
+                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        Delete
+                    </button>
+                }
+                <button type="button" @onclick="LicenseOrderDetailsAsync" class="btn btn-light border mx-1" title="License order details">
                     <img class="icon-btn" src="/svg/action/details.svg" />
                     Details
-                </button>
-
-                <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
-                    <img class="icon-btn" src="/svg/action/edit.svg" />
-                    Edit
-                </button>
-
-                <button type="button" @onclick="DeleteEmployeeAsync" class="btn btn-light border mx-1" title="Delete employee">
-                    <img class="icon-btn" src="/svg/action/delete.svg" />
-                    Delete
                 </button>
             }
         </ActionButtons>
@@ -37,60 +39,53 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="EmployeeDetailsAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
         <TableHeader>
-            <MainTableHeader Title="Name"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.FullName)"
+            <MainTableHeader Title="Contact Email"
+                             TitleWidth="16"
+                             SortColumn="@nameof(LicenseOrder.ContactEmail)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Email"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.Email)"
+            <MainTableHeader Title="Note"
+                             TitleWidth="20"
+                             SortColumn="@nameof(LicenseOrder.Note)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Phone Number"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.PhoneNumber)"
+            <MainTableHeader Title="Prolong"
+                             TitleWidth="8"
+                             SortColumn="@nameof(LicenseOrder.ProlongExistingLicenses)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Company"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.Department.Company)"
+            <MainTableHeader Title="Start Date"
+                             TitleWidth="14"
+                             SortColumn="@nameof(LicenseOrder.StartDate)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Department"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.Department)"
+            <MainTableHeader Title="End Date"
+                             TitleWidth="14"
+                             SortColumn="@nameof(LicenseOrder.EndDate)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Position"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.Position)"
+            <MainTableHeader Title="Created At"
+                             TitleWidth="14"
+                             SortColumn="@nameof(LicenseOrder.CreatedAt)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Last Seen"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.LastSeen)"
-                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
-                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
-                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
-                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="Vaults Count"
-                             TitleWidth="12.5"
-                             SortColumn="@nameof(Employee.VaultsCount)"
+            <MainTableHeader Title="Order Status"
+                             TitleWidth="14"
+                             SortColumn="@nameof(LicenseOrder.OrderStatus)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
@@ -98,31 +93,41 @@ else
         </TableHeader>
         <TableRow>
             <td>
-                @context.FullName
+                @context.ContactEmail
             </td>
             <td>
-                @context.Email
+                @context.Note
             </td>
             <td>
-                @context.PhoneNumber
+                @if (context.ProlongExistingLicenses)
+                    {
+                    <span class="badge badge-success">Yes</span>
+                    }
+                    else
+                    {
+                    <span class="badge badge-secondary">No</span>
+                    }
             </td>
             <td>
-                @context.Department?.Company?.Name
+                @if (context.StartDate != null)
+                    {
+                    @context.StartDate.Value.ToShortDateString()
+                    }
             </td>
             <td>
-                @context.Department?.Name
+                @if (context.EndDate != null)
+                    {
+                    @context.EndDate.ToShortDateString()
+                    }
             </td>
             <td>
-                @context.Position?.Name
+                @if (context.CreatedAt != null)
+                    {
+                    @context.CreatedAt.ToLocalTime()
+                    }
             </td>
             <td>
-                @if (context.LastSeen != null)
-                {
-                    @context.LastSeen.Value.ToLocalTime()
-                }
-            </td>
-            <td>
-                @context.VaultsCount
+                @context.OrderStatus.ToString()
             </td>
         </TableRow>
     </MainTable>

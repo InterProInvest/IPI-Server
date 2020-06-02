@@ -1,0 +1,79 @@
+﻿<div class="row">
+    <div class="col-6">
+        <ul class="list-group mb-3">
+            <li class="list-group-item d-flex align-items-center">
+                <span class="font-weight-bold">Contact Email</span>
+                <span class="mx-1">-</span>
+                <span>@LicenseOrder.ContactEmail</span>
+            </li>
+            <li class="list-group-item d-flex align-items-center">
+                <span class="font-weight-bold">Note</span>
+                <span class="mx-1">-</span>
+                <span class="text-truncate">@LicenseOrder.Note</span>
+            </li>
+            <li class="list-group-item d-flex align-items-center">
+                <span class="font-weight-bold">Prolong</span>
+                <span class="mx-1">-</span>
+                <span>
+                    @if (LicenseOrder.ProlongExistingLicenses)
+                    {
+                        <span>Yes</span>
+                    }
+                    else
+                    {
+                        <span>No</span>
+                    }
+                </span>
+            </li>
+            @if (!LicenseOrder.ProlongExistingLicenses)
+            {
+                <li class="list-group-item d-flex align-items-center">
+                    <span class="font-weight-bold">Start Date</span>
+                    <span class="mx-1">-</span>
+                    <span>@LicenseOrder.StartDate.Value.ToShortDateString()</span>
+                </li>
+            }
+            <li class="list-group-item d-flex align-items-center">
+                <span class="font-weight-bold">End Date</span>
+                <span class="mx-1">-</span>
+                <span>@LicenseOrder.EndDate.ToShortDateString()</span>
+            </li>
+            <li class="list-group-item d-flex align-items-center">
+                <span class="font-weight-bold">Created At</span>
+                <span class="mx-1">-</span>
+                <span>@LicenseOrder.CreatedAt.ToLocalTime()</span>
+            </li>
+            <li class="list-group-item d-flex align-items-center">
+                <span class="font-weight-bold">Order Status</span>
+                <span class="mx-1">-</span>
+                <span>@LicenseOrder.OrderStatus</span>
+            </li>
+        </ul>
+    </div>
+    <div class="col-6">
+        <div style="max-height:344px;overflow:auto" class="border">
+            <table class="table table-hover w-100 disable-selection mb-0">
+                <thead>
+                    <tr>
+                        <th>
+                            Serial Number
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var licenseOrder in LicenseOrder.HardwareVaultLicenses)
+                    {
+                        <tr>
+                            <td>
+                                @licenseOrder.HardwareVaultId
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="text-right mt-3">
+    <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Close</button>
+</div>
