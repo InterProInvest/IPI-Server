@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class CreateOrder : ComponentBase
+    public partial class CreateLicenseOrder : ComponentBase
     {
         [Inject] ILicenseService LicenseService { get; set; }
         [Inject] IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<CreateOrder> Logger { get; set; }
+        [Inject] ILogger<CreateLicenseOrder> Logger { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
 

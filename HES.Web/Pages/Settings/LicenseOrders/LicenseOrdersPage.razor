@@ -10,7 +10,7 @@ else
         </FilterForm>
         <ActionButtons>
             <button type="button" @onclick="CreateLicenseOrderAsync" class="btn btn-primary mx-1" title="New Order">
-            New Order
+                New Order
             </button>
             @if (MainTableService.SelectedEntity != null)
             {
@@ -42,43 +42,43 @@ else
     <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
         <TableHeader>
             <MainTableHeader Title="Contact Email"
-                             TitleWidth="12.5"
+                             TitleWidth="16"
                              SortColumn="@nameof(LicenseOrder.ContactEmail)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Note"
-                             TitleWidth="12.5"
+                             TitleWidth="20"
                              SortColumn="@nameof(LicenseOrder.Note)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Prolong"
-                             TitleWidth="12.5"
+                             TitleWidth="8"
                              SortColumn="@nameof(LicenseOrder.ProlongExistingLicenses)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Start Date"
-                             TitleWidth="12.5"
+                             TitleWidth="14"
                              SortColumn="@nameof(LicenseOrder.StartDate)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="End Date"
-                             TitleWidth="12.5"
+                             TitleWidth="14"
                              SortColumn="@nameof(LicenseOrder.EndDate)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Created At"
-                             TitleWidth="12.5"
+                             TitleWidth="14"
                              SortColumn="@nameof(LicenseOrder.CreatedAt)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Order Status"
-                             TitleWidth="12.5"
+                             TitleWidth="14"
                              SortColumn="@nameof(LicenseOrder.OrderStatus)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
@@ -104,13 +104,13 @@ else
             <td>
                 @if (context.StartDate != null)
                     {
-                    @context.StartDate.Value.ToLocalTime()
+                    @context.StartDate.Value.ToShortDateString()
                     }
             </td>
             <td>
                 @if (context.EndDate != null)
                     {
-                    @context.EndDate.ToLocalTime()
+                    @context.EndDate.ToShortDateString()
                     }
             </td>
             <td>

@@ -23,7 +23,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(CreateOrder));
+                builder.OpenComponent(0, typeof(CreateLicenseOrder));
                 builder.CloseComponent();
             };
 
