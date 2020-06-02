@@ -11,10 +11,9 @@ namespace HES.Web.Components
         [Parameter] public double TitleWidth { get; set; }
         [Parameter] public string SortColumn { get; set; }
         [Parameter] public string CurrentSortedColumn { get; set; }
+        [Parameter] public ListSortDirection CurrentSortDirection { get; set; }
         [Parameter] public Func<string,Task> SortedColumnChanged { get; set; }
         [Parameter] public Func<ListSortDirection, Task> SortDirectionChanged { get; set; }
-
-        private ListSortDirection _sortDirection = ListSortDirection.Ascending;
 
         private async Task SortTable()
         {
@@ -24,8 +23,8 @@ namespace HES.Web.Components
             }
             else
             {
-                _sortDirection = _sortDirection == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
-                await SortDirectionChanged.Invoke(_sortDirection);
+                CurrentSortDirection = CurrentSortDirection == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+                await SortDirectionChanged.Invoke(CurrentSortDirection);
             }
         }
 
@@ -36,7 +35,7 @@ namespace HES.Web.Components
                 return string.Empty;
             }
 
-            if (_sortDirection == ListSortDirection.Ascending)
+            if (CurrentSortDirection == ListSortDirection.Ascending)
             {
                 return "table-sort-arrow-up";
             }

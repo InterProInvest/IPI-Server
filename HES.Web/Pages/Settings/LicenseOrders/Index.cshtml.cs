@@ -3,7 +3,6 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -31,34 +30,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public async Task OnGetAsync()
         {
             LicenseOrder = await _licenseService.GetLicenseOrdersAsync();
-        }
-        public IActionResult OnGetSendOrder(string orderId)
-        {
-            if (orderId == null)
-            {
-                _logger.LogWarning($"{nameof(orderId)} is null");
-                return NotFound();
-            }
-
-            OrderId = orderId;
-
-            return Partial("_SendOrder", this);
-        }
-
-        public async Task<IActionResult> OnPostSendOrderAsync(string orderId)
-        {
-            try
-            {
-                await _licenseService.SendOrderAsync(orderId);
-                SuccessMessage = "License order has been sent.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
-
-            return RedirectToPage("./Index");
         }
     }
 }

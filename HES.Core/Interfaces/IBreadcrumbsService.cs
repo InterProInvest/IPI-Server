@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
         Task SetHardwareVaults();
         Task SetGroups();
         Task SetGroupDetails(string name);
+        Task SetLicenseOrders();
         Task SetParameters();
     }
 }

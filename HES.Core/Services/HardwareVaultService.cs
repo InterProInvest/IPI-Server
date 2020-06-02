@@ -5,7 +5,7 @@ using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.HardwareVault;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.HardwareVault;
+using HES.Core.Models.Web.HardwareVaults;
 using Hideez.SDK.Communication.HES.DTO;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -80,6 +80,26 @@ namespace HES.Core.Services
                 .Include(d => d.HardwareVaultProfile)
                 .Where(d => d.EmployeeId == employeeId)
                 .ToListAsync();
+        }
+
+        public async Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync()
+        {
+            return await _hardwareVaultRepository
+                    .Query()
+                    .Where(x => x.LicenseStatus == VaultLicenseStatus.None ||
+                                x.LicenseStatus == VaultLicenseStatus.Expired)
+                    .AsNoTracking()
+                    .ToListAsync();
+        }
+
+        public async Task<List<HardwareVault>> GetVaultsWithLicenseAsync()
+        {
+            return await _hardwareVaultRepository
+                    .Query()
+                     .Where(x => x.LicenseStatus != VaultLicenseStatus.None &&
+                            x.LicenseStatus != VaultLicenseStatus.Expired)
+                    .AsNoTracking()
+                    .ToListAsync();
         }
 
         public async Task<List<HardwareVault>> GetVaultsAsync()

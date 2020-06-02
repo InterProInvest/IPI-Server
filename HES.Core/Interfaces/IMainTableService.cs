@@ -17,7 +17,7 @@ namespace HES.Core.Interfaces
         public int TotalRecords { get; set; }
         Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default);
         Task InvokeJsAsync(string functionName, params object[] args);
-        Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn);
+        Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending);
         Task LoadTableDataAsync();
         Task SelectedItemChangedAsync(TItem item);
         Task SortedColumnChangedAsync(string columnName);

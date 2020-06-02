@@ -2,11 +2,14 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.License;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -91,6 +94,159 @@ namespace HES.Core.Services
             return await _licenseOrderRepository.Query().ToListAsync();
         }
 
+        public async Task<List<LicenseOrder>> GetLicenseOrdersAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
+        {
+            var query = _licenseOrderRepository
+                .Query()
+                .Include(x => x.HardwareVaultLicenses)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Note))
+                {
+                    query = query.Where(x => x.Note.Contains(dataLoadingOptions.Filter.Note, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.ContactEmail))
+                {
+                    query = query.Where(w => w.ContactEmail.Contains(dataLoadingOptions.Filter.ContactEmail, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!dataLoadingOptions.Filter.ProlongLicense != null)
+                {
+                    query = query.Where(w => w.ProlongExistingLicenses == dataLoadingOptions.Filter.ProlongLicense);
+                }
+                if (dataLoadingOptions.Filter.OrderStatus != null)
+                {
+                    query = query.Where(x => x.OrderStatus == dataLoadingOptions.Filter.OrderStatus);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateStart != null)
+                {
+                    query = query.Where(w => w.StartDate >= dataLoadingOptions.Filter.LicenseStartDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateEnd != null)
+                {
+                    query = query.Where(x => x.StartDate <= dataLoadingOptions.Filter.LicenseStartDateEnd);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateStart != null)
+                {
+                    query = query.Where(w => w.EndDate >= dataLoadingOptions.Filter.LicenseEndDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateEnd != null)
+                {
+                    query = query.Where(x => x.EndDate <= dataLoadingOptions.Filter.LicenseEndDateEnd);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateStart != null)
+                {
+                    query = query.Where(w => w.CreatedAt >= dataLoadingOptions.Filter.CreatedDateStart);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateEnd != null)
+                {
+                    query = query.Where(x => x.CreatedAt <= dataLoadingOptions.Filter.CreatedDateEnd);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.ContactEmail.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Note.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(LicenseOrder.ContactEmail):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.ContactEmail) : query.OrderByDescending(x => x.ContactEmail);
+                    break;
+                case nameof(LicenseOrder.Note):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Note) : query.OrderByDescending(x => x.Note);
+                    break;
+                case nameof(LicenseOrder.ProlongExistingLicenses):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.ProlongExistingLicenses) : query.OrderByDescending(x => x.ProlongExistingLicenses);
+                    break;
+                case nameof(LicenseOrder.StartDate):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate);
+                    break;
+                case nameof(LicenseOrder.EndDate):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.EndDate) : query.OrderByDescending(x => x.EndDate);
+                    break;
+                case nameof(LicenseOrder.CreatedAt):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt);
+                    break;
+                case nameof(LicenseOrder.OrderStatus):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OrderStatus) : query.OrderByDescending(x => x.OrderStatus);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+        public async Task<int> GetLicenseOrdersCountAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
+        {
+            var query = _licenseOrderRepository
+                .Query()
+                .Include(x => x.HardwareVaultLicenses)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Note))
+                {
+                    query = query.Where(x => x.Note.Contains(dataLoadingOptions.Filter.Note, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.ContactEmail))
+                {
+                    query = query.Where(w => w.ContactEmail.Contains(dataLoadingOptions.Filter.ContactEmail, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!dataLoadingOptions.Filter.ProlongLicense != null)
+                {
+                    query = query.Where(w => w.ProlongExistingLicenses == dataLoadingOptions.Filter.ProlongLicense);
+                }
+                if (dataLoadingOptions.Filter.OrderStatus != null)
+                {
+                    query = query.Where(x => x.OrderStatus == dataLoadingOptions.Filter.OrderStatus);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateStart != null)
+                {
+                    query = query.Where(w => w.StartDate >= dataLoadingOptions.Filter.LicenseStartDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseStartDateEnd != null)
+                {
+                    query = query.Where(x => x.StartDate <= dataLoadingOptions.Filter.LicenseStartDateEnd);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateStart != null)
+                {
+                    query = query.Where(w => w.EndDate >= dataLoadingOptions.Filter.LicenseEndDateStart);
+                }
+                if (dataLoadingOptions.Filter.LicenseEndDateEnd != null)
+                {
+                    query = query.Where(x => x.EndDate <= dataLoadingOptions.Filter.LicenseEndDateEnd);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateStart != null)
+                {
+                    query = query.Where(w => w.CreatedAt >= dataLoadingOptions.Filter.CreatedDateStart);
+                }
+                if (dataLoadingOptions.Filter.CreatedDateEnd != null)
+                {
+                    query = query.Where(x => x.CreatedAt <= dataLoadingOptions.Filter.CreatedDateEnd);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.ContactEmail.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Note.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
+        }
+
         public async Task<LicenseOrder> GetLicenseOrderByIdAsync(string orderId)
         {
             return await _licenseOrderRepository
@@ -98,12 +254,36 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == orderId);
         }
 
-        public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder)
+        public async Task<LicenseOrder> CreateOrderAsync(LicenseOrder licenseOrder, List<HardwareVault> hardwareVaults)
         {
             if (licenseOrder == null)
                 throw new ArgumentNullException(nameof(licenseOrder));
 
-            return await _licenseOrderRepository.AddAsync(licenseOrder);
+            LicenseOrder createdOrder;
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                createdOrder = await _licenseOrderRepository.AddAsync(licenseOrder);
+                await AddOrUpdateHardwareVaultEmptyLicensesAsync(createdOrder.Id, hardwareVaults.Select(x => x.Id).ToList());
+                transactionScope.Complete();
+            }
+
+            return createdOrder;
+        }
+
+        public async Task<LicenseOrder> EditOrderAsync(LicenseOrder licenseOrder, List<HardwareVault> hardwareVaults)
+        {
+            if (licenseOrder == null)
+                throw new ArgumentNullException(nameof(licenseOrder));
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _licenseOrderRepository.UpdateAsync(licenseOrder);
+                await AddOrUpdateHardwareVaultEmptyLicensesAsync(licenseOrder.Id, hardwareVaults.Select(x => x.Id).ToList());
+                transactionScope.Complete();
+            }
+
+            return licenseOrder;
         }
 
         public async Task<List<LicenseOrder>> AddOrderRangeAsync(List<LicenseOrder> licenseOrders)
@@ -114,36 +294,17 @@ namespace HES.Core.Services
             return await _licenseOrderRepository.AddRangeAsync(licenseOrders) as List<LicenseOrder>;
         }
 
-        public async Task DeleteOrderAsync(string orderId)
+        public async Task DeleteOrderAsync(LicenseOrder licenseOrder)
         {
-            if (orderId == null)
-                throw new ArgumentNullException(nameof(orderId));
-
-            var licenseOrder = await _licenseOrderRepository.GetByIdAsync(orderId);
-
             if (licenseOrder == null)
                 throw new Exception("Order does not exist.");
 
-            var deviceLicenses = await _hardwareVaultLicenseRepository
-                .Query()
-                .Where(d => d.LicenseOrderId == orderId)
-                .ToListAsync();
-
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await _hardwareVaultLicenseRepository.DeleteRangeAsync(deviceLicenses);
-                await _licenseOrderRepository.DeleteAsync(licenseOrder);
-                transactionScope.Complete();
-            }
+            await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
 
-        public async Task SendOrderAsync(string orderId)
+        public async Task SendOrderAsync(LicenseOrder licenseOrder)
         {
-            var order = await GetLicenseOrderByIdAsync(orderId);
-            if (order == null)
-                throw new Exception("Order not found.");
-
-            var vaultLicenses = await GetLicensesByOrderIdAsync(orderId);
+            var vaultLicenses = await GetLicensesByOrderIdAsync(licenseOrder.Id);
             if (vaultLicenses == null)
                 throw new Exception("Hardware vault licenses not found.");
 
@@ -154,26 +315,25 @@ namespace HES.Core.Services
 
             var licenseOrderDto = new LicenseOrderDto()
             {
-                Id = order.Id,
-                ContactEmail = order.ContactEmail,
-                CustomerNote = order.Note,
-                LicenseStartDate = order.StartDate,
-                LicenseEndDate = order.EndDate,
-                ProlongExistingLicenses = order.ProlongExistingLicenses,
+                Id = licenseOrder.Id,
+                ContactEmail = licenseOrder.ContactEmail,
+                CustomerNote = licenseOrder.Note,
+                LicenseStartDate = licenseOrder.StartDate,
+                LicenseEndDate = licenseOrder.EndDate,
+                ProlongExistingLicenses = licenseOrder.ProlongExistingLicenses,
                 CustomerId = licensing.ApiKey,
                 Devices = vaultLicenses.Select(d => d.HardwareVaultId).ToList()
             };
 
             var response = await HttpClientPostOrderAsync(licenseOrderDto);
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                order.OrderStatus = LicenseOrderStatus.Sent;
-                await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
-                return;
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                throw new Exception(errorMessage);
             }
 
-            var ex = await response.Content.ReadAsStringAsync();
-            throw new Exception(ex);
+            licenseOrder.OrderStatus = LicenseOrderStatus.Sent;
+            await _licenseOrderRepository.UpdateOnlyPropAsync(licenseOrder, new string[] { "OrderStatus" });
         }
 
         public async Task UpdateLicenseOrdersAsync()
@@ -244,7 +404,7 @@ namespace HES.Core.Services
         public async Task<List<HardwareVaultLicense>> GetLicensesAsync()
         {
             return await _hardwareVaultLicenseRepository
-                .Query()               
+                .Query()
                 .ToListAsync();
         }
 
@@ -264,10 +424,12 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<List<HardwareVaultLicense>> AddHardwareVaultDummyLicensesAsync(string orderId, List<string> vaultIds)
+        public async Task<List<HardwareVaultLicense>> AddOrUpdateHardwareVaultEmptyLicensesAsync(string orderId, List<string> vaultIds)
         {
-            if (vaultIds == null)
-                throw new ArgumentNullException(nameof(vaultIds));
+            var existsHardwareVaultLicenses = await GetLicensesByOrderIdAsync(orderId);
+
+            if (existsHardwareVaultLicenses != null)
+                await _hardwareVaultLicenseRepository.DeleteRangeAsync(existsHardwareVaultLicenses);
 
             var hardwareVaultLicenses = new List<HardwareVaultLicense>();
 

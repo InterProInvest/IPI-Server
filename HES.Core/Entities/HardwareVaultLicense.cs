@@ -17,5 +17,11 @@ namespace HES.Core.Entities
         public DateTime? AppliedAt { get; set; }
         public DateTime? EndDate { get; set; }
         public byte[] Data { get; set; }
+
+        [ForeignKey("HardwareVaultId")]
+        public HardwareVault HardwareVault { get; set; }
+
+        [ForeignKey("LicenseOrderId")]
+        public LicenseOrder LicenseOrder { get; set; }
     }
 }

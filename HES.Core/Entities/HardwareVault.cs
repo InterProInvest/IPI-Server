@@ -66,5 +66,8 @@ namespace HES.Core.Entities
 
         [NotMapped]
         public bool IsOnline => RemoteDeviceConnectionsService.IsDeviceConnectedToHost(Id);
+
+        [NotMapped]
+        public bool Checked { get; set; }
     }
 }

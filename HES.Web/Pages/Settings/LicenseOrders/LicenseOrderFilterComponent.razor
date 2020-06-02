@@ -1,0 +1,60 @@
+﻿@if (Filter == null)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License Start Date From</label>
+                <input type="datetime-local" class="form-control" @bind="Filter.LicenseStartDateStart" @bind:format="yyyy-MM-dd" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License Start Date To</label>
+                <input type="datetime-local" class="form-control" @bind="Filter.LicenseStartDateEnd" @bind:format="yyyy-MM-dd" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License End Date From</label>
+                <input type="datetime-local" class="form-control" @bind="Filter.LicenseEndDateStart" @bind:format="yyyy-MM-dd" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License End Date To</label>
+                <input type="datetime-local" class="form-control" @bind="Filter.LicenseEndDateEnd" @bind:format="yyyy-MM-dd" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Order Created At From</label>
+                <input type="datetime-local" class="form-control" @bind="Filter.CreatedDateStart" @bind:format="yyyy-MM-ddTHH:mm" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Order Created At To</label>
+                <input type="datetime-local" class="form-control" @bind="Filter.CreatedDateEnd" @bind:format="yyyy-MM-ddTHH:mm" />
+            </div>
+
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Contact Email</label>
+                <InputText class="form-control" @bind-Value="Filter.ContactEmail" />
+            </div>
+
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Note</label>
+                <InputText class="form-control" @bind-Value="Filter.Note" />
+            </div>
+
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Prolong License</label>
+                <select @onchange="OnChange_ProlongLicense" class="form-control">
+                    <option selected></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="col align-self-end text-right form-group">
+                <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                <input type="submit" value="Filter" class="btn btn-primary" />
+            </div>
+        </div>
+    </EditForm>
+}
