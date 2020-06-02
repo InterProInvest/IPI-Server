@@ -123,23 +123,5 @@ namespace HES.Tests.Builders
 
             return stringBuilder.ToString();
         }
-
-        public List<Employee> GetTestEmployees()
-        {
-            var employees = new List<Employee>();
-
-            for (int i = 0; i < 100; i++)
-            {
-                employees.Add(new Employee()
-                {
-                    Id = $"{i}",
-                    FirstName = $"Test{i}",
-                    LastName = $"Hideez{i}",
-                    Email = $"th.{i}@hideez.com",
-                    PhoneNumber = $"380{i}"
-                });
-            }
-            return employees;
-        }
     }
 }

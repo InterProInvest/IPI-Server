@@ -2,12 +2,11 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
-using HES.Core.Models.Employees;
-using HES.Core.Models.Web;
 using HES.Core.Models.Web.Account;
 using HES.Tests.Builders;
 using HES.Tests.Helpers;
 using HES.Web;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.Linq;
@@ -23,270 +22,220 @@ namespace HES.Tests.Services
     public class EmployeeServiceTests : IClassFixture<CustomWebAppFactory<Startup>>
     {
         private readonly IEmployeeService _employeeService;
-        private readonly EmployeeBuilder _employeeBuilder;
-        private readonly CustomWebAppFactory<Startup> _factory;
+        private EmployeeServiceTestingOptions _testingOptions;
 
         public EmployeeServiceTests(CustomWebAppFactory<Startup> factory)
         {
-            _factory = factory;
-            _employeeService = _factory.GetEmployeeService();
-            _employeeBuilder = new EmployeeBuilder();
+            _employeeService = factory.GetEmployeeService();
+            _testingOptions = new EmployeeServiceTestingOptions(100, 10, 20);
         }
 
         [Fact, Order(1)]
         public async Task CreateEmployeeAsync()
         {
-            var testEmployees = _employeeBuilder.GetTestEmployees();
-            foreach (var item in testEmployees)
-            {
-                await _employeeService.CreateEmployeeAsync(item);
-            }
+            foreach (var employee in _testingOptions.TestingEmployees)
+                await _employeeService.CreateEmployeeAsync(employee);
+
             var result = await _employeeService.EmployeeQuery().ToListAsync();
 
             Assert.NotEmpty(result);
-            Assert.Equal(result.Count, testEmployees.Count);
+            Assert.Equal(_testingOptions.EmployeesCount, result.Count);
         }
 
         [Fact, Order(2)]
-        public async Task GetEmployeesAsync()
+        public async Task GetEmployeesCountAsync()
         {
-            var expectedCount = 100;
-            var count = await _employeeService.GetEmployeesCountAsync(new DataLoadingOptions<EmployeeFilter>()
-            {
-                SearchText = string.Empty,
-                Filter = null
-            });
-            var result = await _employeeService.GetEmployeesAsync(new DataLoadingOptions<EmployeeFilter>()
-            {
-                Skip = 0,
-                Take = count,
-                SortDirection = ListSortDirection.Ascending,
-                SortedColumn = nameof(Employee.Id),
-                SearchText = string.Empty,
-                Filter = null
-            });
+            var employeesCount = await _employeeService.GetEmployeesCountAsync(_testingOptions.DataLoadingOptions);
 
-            Assert.NotEmpty(result);
-            Assert.Equal(expectedCount, result.Count);
+            Assert.Equal(_testingOptions.EmployeesCount, employeesCount);
         }
 
-        [Theory, Order(3)]
-        [InlineData("10", "Test10 Hideez10")]
-        public async Task GetEmployeeByIdAsync(string testId, string fullName)
+        [Fact, Order(3)]
+        public async Task GetEmployeesAsync()
         {
-            var result = await _employeeService.GetEmployeeByIdAsync(testId);
+            var result = await _employeeService.GetEmployeesAsync(_testingOptions.DataLoadingOptions);
 
-            Assert.NotNull(result);
-            Assert.Equal(result.Id, testId);
-            Assert.Equal(result.FullName, fullName);
+            Assert.NotEmpty(result);
+            Assert.Equal(_testingOptions.EmployeesCount, result.Count);
         }
 
         [Fact, Order(4)]
-        public async Task CheckEmployeeNameExistAsync()
+        public async Task GetEmployeeByIdAsync()
         {
-            var employee = new Employee() { FirstName = "Test10", LastName = "Hideez10" };
+            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
 
-            var result = await _employeeService.CheckEmployeeNameExistAsync(employee);
-
-            Assert.True(result);
+            Assert.NotNull(result);
+            Assert.Equal(_testingOptions.CRUDEmployeeId, result.Id);
+            Assert.Equal(_testingOptions.CRUDEmployee.FullName, result.FullName);
         }
 
-        [Theory, Order(5)]
-        [InlineData("10")]
-        public async Task EditEmployeeAsync(string testId)
+        [Fact, Order(5)]
+        public async Task CheckEmployeeNameExistAsync()
         {
-            var employee = await _employeeService.GetEmployeeByIdAsync(testId);
+            var result = await _employeeService.CheckEmployeeNameExistAsync(_testingOptions.CRUDEmployee);
+            var employeeResult = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+
+            Assert.True(result);
+            Assert.Equal(_testingOptions.CRUDEmployee.FullName, employeeResult.FullName);
+        }
+
+        [Fact, Order(6)]
+        public async Task EditEmployeeAsync()
+        {
+            var employee = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
             employee.FirstName = "Test00";
             employee.LastName = "Hideez00";
-            await _employeeService.EditEmployeeAsync(employee);
-            var result = await _employeeService.GetEmployeeByIdAsync(testId);
 
-            Assert.NotNull(employee);
+            await _employeeService.EditEmployeeAsync(employee);
+            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+
+            Assert.NotNull(result);
             Assert.Equal(employee, result);
         }
 
-        [Theory, Order(6)]
-        [InlineData("10")]
-        public async Task DeleteEmployeeAsync(string testId)
+        [Fact, Order(7)]
+        public async Task DeleteEmployeeAsync()
         {
-            await _employeeService.DeleteEmployeeAsync(testId);
-            var result = await _employeeService.GetEmployeeByIdAsync(testId);
+            await _employeeService.DeleteEmployeeAsync(_testingOptions.CRUDEmployeeId);
+            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
 
             Assert.Null(result);
         }
 
-
-        [Fact, Order(7)]
+        [Fact, Order(8)]
         public async Task CreatePersonalAccountAsync()
         {
-            var account = new PersonalAccount()
-            {
-                Name = "stackoverflow",
-                Urls = "stackoverflow.com",
-                Login = "login1",
-                Password = "qwerty",
-                ConfirmPassword = "qwerty",
-                EmployeeId = "20"
-            };
-            var result = await _employeeService.CreatePersonalAccountAsync(account);
+            var result = await _employeeService.CreatePersonalAccountAsync(_testingOptions.PersonalAccount);
 
             Assert.NotNull(result.Id);
             Assert.True(result.Kind == AccountKind.WebApp);
         }
 
-        [Fact, Order(8)]
+        [Fact, Order(9)]
         public async Task CreateWorkstationLocalAccountAsync()
         {
-            var account = new WorkstationAccount()
-            {
-                Name = "local",
-                UserName = "user_local",
-                Password = "qwerty",
-                ConfirmPassword = "qwerty",
-                EmployeeId = "20",
-                Type = WorkstationAccountType.Local
-            };
-            var result = await _employeeService.CreateWorkstationAccountAsync(account);
-
-            Assert.NotNull(result.Id);
-            Assert.True(result.Kind == AccountKind.Workstation);
-        }
-
-        [Fact, Order(9)]
-        public async Task CreateWorkstationDomainAccountAsync()
-        {
-            var account = new WorkstationDomain()
-            {
-                Name = "domain",
-                UserName = "user_domain",
-                Password = "qwerty",
-                ConfirmPassword = "qwerty",
-                EmployeeId = "20",
-            };
-            var result = await _employeeService.CreateWorkstationAccountAsync(account);
+            var result = await _employeeService.CreateWorkstationAccountAsync(_testingOptions.WorkstationAccount);
 
             Assert.NotNull(result.Id);
             Assert.True(result.Kind == AccountKind.Workstation);
         }
 
         [Fact, Order(10)]
-        public async Task CreateWorkstationMSAccountAsync()
+        public async Task CreateWorkstationDomainAccountAsync()
         {
-            var account = new WorkstationAccount()
-            {
-                Name = "ms",
-                UserName = "user_ms",
-                Password = "qwerty",
-                ConfirmPassword = "qwerty",
-                EmployeeId = "20",
-                Type = WorkstationAccountType.Microsoft
-            };
-
-            var result = await _employeeService.CreateWorkstationAccountAsync(account);
+            var result = await _employeeService.CreateWorkstationAccountAsync(_testingOptions.WorkstationDomainAccount);
 
             Assert.NotNull(result.Id);
             Assert.True(result.Kind == AccountKind.Workstation);
         }
 
         [Fact, Order(11)]
-        public async Task CreateWorkstationAzureAccountAsync()
+        public async Task CreateWorkstationMSAccountAsync()
         {
-            var account = new WorkstationAccount()
-            {
-                Name = "azure",
-                UserName = "user_azure",
-                Password = "qwerty",
-                ConfirmPassword = "qwerty",
-                EmployeeId = "20",
-                Type = WorkstationAccountType.AzureAD
-            };
-            var result = await _employeeService.CreateWorkstationAccountAsync(account);
+            var result = await _employeeService.CreateWorkstationAccountAsync(_testingOptions.WorkstationMsAccount);
 
             Assert.NotNull(result.Id);
             Assert.True(result.Kind == AccountKind.Workstation);
         }
 
-
         [Fact, Order(12)]
-        public async Task GetAccountsAsync()
+        public async Task CreateWorkstationAzureAccountAsync()
         {
+            var result = await _employeeService.CreateWorkstationAccountAsync(_testingOptions.WorkstationAzureAccount);
 
-            var accountsCount = await _employeeService.GetAccountsCountAsync(string.Empty, "20");
-
-            var result = await _employeeService.GetAccountsAsync(0, accountsCount, nameof(Account.Id), ListSortDirection.Ascending, string.Empty, "20");
-
-            Assert.NotEmpty(result);
-            Assert.Equal(accountsCount, result.Count);
+            Assert.NotNull(result.Id);
+            Assert.True(result.Kind == AccountKind.Workstation);
         }
 
         [Fact, Order(13)]
-        public async Task GetAccountsByEmployeeIdAsync()
+        public async Task GetAccountsCountAsync()
         {
-            var result = await _employeeService.GetAccountsByEmployeeIdAsync("20");
+            var accountsCount = await _employeeService.GetAccountsCountAsync(string.Empty, _testingOptions.AccountsEmployeeId);
 
-            Assert.NotNull(result);
-            Assert.All(result, x => Assert.True(x.EmployeeId == "20"));
+            Assert.Equal(_testingOptions.AccountsCount, accountsCount);
+
         }
 
         [Fact, Order(14)]
-        public async Task SetAsWorkstationAccountAsync()
+        public async Task GetAccountsAsync()
         {
-            var accounts = await _employeeService.GetAccountsAsync(0, 100, nameof(Account.Id), ListSortDirection.Ascending, string.Empty, "20");
-            var accountId = accounts.FirstOrDefault(x => x.Name == "azure").Id;
+            var result = await _employeeService.GetAccountsAsync(0, _testingOptions.AccountsCount, nameof(Account.Id), ListSortDirection.Ascending, string.Empty, _testingOptions.AccountsEmployeeId);
 
-            await _employeeService.SetAsWorkstationAccountAsync("20", accountId);
-
-            var employee = await _employeeService.GetEmployeeByIdAsync("20");
-
-            Assert.True(employee.PrimaryAccountId == accountId);
+            Assert.NotEmpty(result);
+            Assert.Equal(_testingOptions.AccountsCount, result.Count);
         }
 
         [Fact, Order(15)]
-        public async Task GetAccountByIdAsync()
+        public async Task GetAccountsByEmployeeIdAsync()
         {
-            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var accountId = accounts.FirstOrDefault(x => x.Name == "stackoverflow").Id;
+            var result = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
 
-            var account = await _employeeService.GetAccountByIdAsync(accountId);
-
-            Assert.NotNull(account);
-            Assert.True(account.Id == accountId);
+            Assert.NotNull(result);
+            Assert.Equal(_testingOptions.AccountsCount, result.Count);
+            Assert.All(result, x => Assert.True(x.EmployeeId == _testingOptions.AccountsEmployeeId));
         }
 
         [Fact, Order(16)]
+        public async Task SetAsWorkstationAccountAsync()
+        {
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.WorkstationAzureAccount.Name);
+
+            await _employeeService.SetAsWorkstationAccountAsync(_testingOptions.AccountsEmployeeId, account.Id);
+
+            var employee = await _employeeService.GetEmployeeByIdAsync(_testingOptions.AccountsEmployeeId);
+
+            Assert.True(employee.PrimaryAccountId == account.Id);
+        }
+
+        [Fact, Order(17)]
+        public async Task GetAccountByIdAsync()
+        {
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.PersonalAccount.Name);
+
+            var result = await _employeeService.GetAccountByIdAsync(account.Id);
+
+            Assert.NotNull(result);
+            Assert.True(account.Id == result.Id);
+            Assert.True(_testingOptions.AccountsEmployeeId == result.EmployeeId);
+        }
+
+        [Fact, Order(18)]
         public async Task UnchangedPersonalAccountAsync()
         {
-            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var account = accounts.FirstOrDefault(x => x.Name == "stackoverflow");
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.PersonalAccount.Name);
 
             account.Name = "test"; 
 
             await _employeeService.UnchangedPersonalAccountAsync(account);
             
-            Assert.True(account.Name != "test");
+            Assert.True(account.Name == _testingOptions.PersonalAccount.Name);
         }
 
-        [Fact, Order(17)]
+        [Fact, Order(19)]
         public async Task EditPersonalAccountAsync()
         {
-            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var account = accounts.FirstOrDefault(x => x.Name == "stackoverflow");
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.PersonalAccount.Name);
 
-            account.Name = "New name";
+            account.Name = _testingOptions.NewAccountName;
             await _employeeService.EditPersonalAccountAsync(account);
 
-            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var result = accountsResult.FirstOrDefault(x => x.Name == "New name");
+            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var result = accountsResult.FirstOrDefault(x => x.Name == _testingOptions.NewAccountName);
 
             Assert.NotNull(result);
             Assert.True(result.Id == account.Id);
+            Assert.True(result.Name == _testingOptions.NewAccountName);
         }
 
-        [Fact, Order(18)]
+        [Fact, Order(20)]
         public async Task EditPersonalAccountPwdAsync()
         {
-            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var account = accounts.FirstOrDefault(x => x.Name == "New name");
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.NewAccountName);
 
             await _employeeService.EditPersonalAccountPwdAsync(account, new AccountPassword
             {
@@ -294,8 +243,8 @@ namespace HES.Tests.Services
                 ConfirmPassword = "newPassword"
             });
 
-            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var result = accountsResult.FirstOrDefault(x => x.Name == "New name");
+            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var result = accountsResult.FirstOrDefault(x => x.Name == _testingOptions.NewAccountName);
 
             Assert.NotNull(result);
             Assert.True(result.Id == account.Id);
@@ -303,19 +252,19 @@ namespace HES.Tests.Services
         }
 
 
-        [Fact, Order(19)]
+        [Fact, Order(21)]
         public async Task EditPersonalAccountOtpAsync()
         {
-            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var account = accounts.FirstOrDefault(x => x.Name == "New name");
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.NewAccountName);
 
             await _employeeService.EditPersonalAccountOtpAsync(account, new AccountOtp
             {
                 OtpSecret = "newOtpSecret"
             });
 
-            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var result = accountsResult.FirstOrDefault(x => x.Name == "New name");
+            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var result = accountsResult.FirstOrDefault(x => x.Name == _testingOptions.NewAccountName);
 
             Assert.NotNull(result);
             Assert.True(result.Id == account.Id);
@@ -323,15 +272,15 @@ namespace HES.Tests.Services
         }
 
 
-        [Fact, Order(20)]
+        [Fact, Order(22)]
         public async Task DeleteAccountAsync()
         {
-            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync("20");
-            var account = accounts.FirstOrDefault(x => x.Name == "New name");
+            var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
+            var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.NewAccountName);
 
             await _employeeService.DeleteAccountAsync(account.Id);
 
-            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync("20");
+            var accountsResult = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
             var result = accountsResult.FirstOrDefault(x => x.Id == account.Id);
 
             Assert.Null(result);
