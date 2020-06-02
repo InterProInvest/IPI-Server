@@ -31,13 +31,14 @@ namespace HES.Core.Services
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
-        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn)
+        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending)
         {
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
             _getEntitiesCount = getEntitiesCount;
             _modalDialogService.OnClose += LoadTableDataAsync;
             DataLoadingOptions.SortedColumn = sortedColumn;
+            DataLoadingOptions.SortDirection = sortDirection;
             await LoadTableDataAsync();
         }
 

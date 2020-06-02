@@ -144,7 +144,7 @@ else
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach (var hardwareVault in _renewLicenseOrder.HardwareVaults.Where(x => x.Id.Contains(_newLicenseOrder.SearchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
+                                            @foreach (var hardwareVault in _renewLicenseOrder.HardwareVaults.Where(x => x.Id.Contains(_renewLicenseOrder.SearchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
                                             {
                                                 <tr @key="hardwareVault.Id" @onclick="@(() => { hardwareVault.Checked = !hardwareVault.Checked; })">
                                                     <td class="table-col-menu">

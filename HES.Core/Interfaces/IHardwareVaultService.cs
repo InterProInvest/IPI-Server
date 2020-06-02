@@ -14,6 +14,8 @@ namespace HES.Core.Interfaces
         IQueryable<HardwareVault> VaultQuery();
         Task<HardwareVault> GetVaultByIdAsync(string id);
         Task<List<HardwareVault>> GetVaultsByEmployeeIdAsync(string id);
+        Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync();
+        Task<List<HardwareVault>> GetVaultsWithLicenseAsync();
         Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> options);
         Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> options);
         Task<HardwareVault> AddVaultIfNotExistAsync(HardwareVault vault);

@@ -82,6 +82,26 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync()
+        {
+            return await _hardwareVaultRepository
+                    .Query()
+                    .Where(x => x.LicenseStatus == VaultLicenseStatus.None ||
+                                x.LicenseStatus == VaultLicenseStatus.Expired)
+                    .AsNoTracking()
+                    .ToListAsync();
+        }
+
+        public async Task<List<HardwareVault>> GetVaultsWithLicenseAsync()
+        {
+            return await _hardwareVaultRepository
+                    .Query()
+                     .Where(x => x.LicenseStatus != VaultLicenseStatus.None &&
+                            x.LicenseStatus != VaultLicenseStatus.Expired)
+                    .AsNoTracking()
+                    .ToListAsync();
+        }
+
         public async Task<List<HardwareVault>> GetVaultsAsync()
         {
             var count = await GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>());

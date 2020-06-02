@@ -12,13 +12,14 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class CreateOrder : ComponentBase
+    public partial class EditLicenseOrder : ComponentBase
     {
         [Inject] ILicenseService LicenseService { get; set; }
         [Inject] IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<CreateOrder> Logger { get; set; }
+        [Inject] ILogger<EditLicenseOrder> Logger { get; set; }
+        [Parameter] public LicenseOrder LicenseOrder { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
@@ -29,32 +30,35 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         protected override async Task OnInitializedAsync()
         {
-            _newLicenseOrder = new NewLicenseOrder()
+            if (!LicenseOrder.ProlongExistingLicenses)
             {
-                HardwareVaults = await HardwareVaultService
-                .VaultQuery()
-                .Where(x => x.LicenseStatus == VaultLicenseStatus.None ||
-                            x.LicenseStatus == VaultLicenseStatus.Expired)
-                .AsNoTracking()
-                .ToListAsync()
-            };
-
-            _renewLicenseOrder = new RenewLicenseOrder()
+                _newLicenseOrder = new NewLicenseOrder()
+                {
+                    ContactEmail = LicenseOrder.ContactEmail,
+                    Note = LicenseOrder.Note,
+                    StartDate = LicenseOrder.StartDate.Value,
+                    EndDate = LicenseOrder.EndDate,
+                    HardwareVaults = await HardwareVaultService.GetVaultsWithoutLicenseAsync()
+                };
+                _newLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
+            }
+            else
             {
-                HardwareVaults = await HardwareVaultService
-                .VaultQuery()
-                .Where(x => x.LicenseStatus != VaultLicenseStatus.None &&
-                            x.LicenseStatus != VaultLicenseStatus.Expired)
-                .AsNoTracking()
-                .ToListAsync()
-            };
+                _renewLicenseOrder = new RenewLicenseOrder()
+                {
+                    ContactEmail = LicenseOrder.ContactEmail,
+                    Note = LicenseOrder.Note,
+                    EndDate = LicenseOrder.EndDate,
+                    HardwareVaults = await HardwareVaultService.GetVaultsWithLicenseAsync()
+                };
+                _renewLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
+            }
 
             _initialized = true;
         }
 
-        private async Task CreateNewLicenseOrderAsync()
+        private async Task EditNewLicenseOrderAsync()
         {
-
             try
             {
                 if (_newLicenseOrder.StartDate < DateTime.Now.Date)
@@ -80,17 +84,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                 _isBusy = true;
 
-                var licenseOrder = new LicenseOrder()
-                {
-                    ContactEmail = _newLicenseOrder.ContactEmail,
-                    Note = _newLicenseOrder.Note,
-                    ProlongExistingLicenses = false,
-                    StartDate = _newLicenseOrder.StartDate.Date,
-                    EndDate = _newLicenseOrder.EndDate.Date
-                };
+                LicenseOrder.ContactEmail = _newLicenseOrder.ContactEmail;
+                LicenseOrder.Note = _newLicenseOrder.Note;
+                LicenseOrder.ProlongExistingLicenses = false;
+                LicenseOrder.StartDate = _newLicenseOrder.StartDate.Date;
+                LicenseOrder.EndDate = _newLicenseOrder.EndDate.Date;
 
                 var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
-                await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
+                await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
@@ -106,7 +107,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             }
         }
 
-        private async Task CreateRenewLicenseOrderAsync()
+        private async Task EditRenewLicenseOrderAsync()
         {
             try
             {
@@ -136,17 +137,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     return;
                 }
 
-                var licenseOrder = new LicenseOrder()
-                {
-                    ContactEmail = _renewLicenseOrder.ContactEmail,
-                    Note = _renewLicenseOrder.Note,
-                    ProlongExistingLicenses = true,
-                    StartDate = null,
-                    EndDate = _renewLicenseOrder.EndDate.Date
-                };
+                LicenseOrder.ContactEmail = _renewLicenseOrder.ContactEmail;
+                LicenseOrder.Note = _renewLicenseOrder.Note;
+                LicenseOrder.ProlongExistingLicenses = true;
+                LicenseOrder.StartDate = null;
+                LicenseOrder.EndDate = _renewLicenseOrder.EndDate.Date;
 
                 var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
-                await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
+                await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

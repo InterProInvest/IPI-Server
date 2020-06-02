@@ -31,22 +31,12 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         {
             _newLicenseOrder = new NewLicenseOrder()
             {
-                HardwareVaults = await HardwareVaultService
-                .VaultQuery()
-                .Where(x => x.LicenseStatus == VaultLicenseStatus.None ||
-                            x.LicenseStatus == VaultLicenseStatus.Expired)
-                .AsNoTracking()
-                .ToListAsync()
+                HardwareVaults = await HardwareVaultService.GetVaultsWithoutLicenseAsync()
             };
 
             _renewLicenseOrder = new RenewLicenseOrder()
             {
-                HardwareVaults = await HardwareVaultService
-                .VaultQuery()
-                .Where(x => x.LicenseStatus != VaultLicenseStatus.None &&
-                            x.LicenseStatus != VaultLicenseStatus.Expired)
-                .AsNoTracking()
-                .ToListAsync()
+                HardwareVaults = await HardwareVaultService.GetVaultsWithLicenseAsync()
             };
 
             _initialized = true;
@@ -54,7 +44,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         private async Task CreateNewLicenseOrderAsync()
         {
-
             try
             {
                 if (_newLicenseOrder.StartDate < DateTime.Now.Date)

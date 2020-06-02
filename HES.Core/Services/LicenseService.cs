@@ -264,11 +264,26 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 createdOrder = await _licenseOrderRepository.AddAsync(licenseOrder);
-                await AddHardwareVaultEmptyLicensesAsync(createdOrder.Id, hardwareVaults.Select(x => x.Id).ToList());
+                await AddOrUpdateHardwareVaultEmptyLicensesAsync(createdOrder.Id, hardwareVaults.Select(x => x.Id).ToList());
                 transactionScope.Complete();
             }
 
             return createdOrder;
+        }
+
+        public async Task<LicenseOrder> EditOrderAsync(LicenseOrder licenseOrder, List<HardwareVault> hardwareVaults)
+        {
+            if (licenseOrder == null)
+                throw new ArgumentNullException(nameof(licenseOrder));
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await _licenseOrderRepository.UpdateAsync(licenseOrder);
+                await AddOrUpdateHardwareVaultEmptyLicensesAsync(licenseOrder.Id, hardwareVaults.Select(x => x.Id).ToList());
+                transactionScope.Complete();
+            }
+
+            return licenseOrder;
         }
 
         public async Task<List<LicenseOrder>> AddOrderRangeAsync(List<LicenseOrder> licenseOrders)
@@ -409,10 +424,12 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<List<HardwareVaultLicense>> AddHardwareVaultEmptyLicensesAsync(string orderId, List<string> vaultIds)
+        public async Task<List<HardwareVaultLicense>> AddOrUpdateHardwareVaultEmptyLicensesAsync(string orderId, List<string> vaultIds)
         {
-            if (vaultIds == null)
-                throw new ArgumentNullException(nameof(vaultIds));
+            var existsHardwareVaultLicenses = await GetLicensesByOrderIdAsync(orderId);
+
+            if (existsHardwareVaultLicenses != null)
+                await _hardwareVaultLicenseRepository.DeleteRangeAsync(existsHardwareVaultLicenses);
 
             var hardwareVaultLicenses = new List<HardwareVaultLicense>();
 

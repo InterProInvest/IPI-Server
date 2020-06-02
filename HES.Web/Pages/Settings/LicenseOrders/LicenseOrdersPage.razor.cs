@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.AspNetCore.Components;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
@@ -15,7 +16,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, StateHasChanged, nameof(LicenseOrder.CreatedAt));
+            await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
             await BreadcrumbsService.SetLicenseOrders();
         }
 
@@ -56,7 +57,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         private async Task EditLicenseOrderAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditLicenseOrder));
+                builder.AddAttribute(1, nameof(EditLicenseOrder.LicenseOrder), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Edit License Order", body, ModalDialogSize.ExtraLarge);
         }
 
         private async Task DeleteLicenseOrderAsync()
