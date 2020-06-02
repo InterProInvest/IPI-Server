@@ -1,5 +1,6 @@
 ﻿using HES.Core.Enums;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -27,5 +28,7 @@ namespace HES.Core.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Display(Name = "Order Status")]
         public LicenseOrderStatus OrderStatus { get; set; } = LicenseOrderStatus.New;
+
+        public List<HardwareVaultLicense> HardwareVaultLicenses { get; set; }
     }
 }

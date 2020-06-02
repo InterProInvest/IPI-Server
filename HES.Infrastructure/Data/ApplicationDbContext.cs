@@ -28,6 +28,9 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Employee>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             // Set Unique 
             modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
+            // Cascade remove, when removing Employee
+            modelBuilder.Entity<LicenseOrder>().HasMany(x => x.HardwareVaultLicenses).WithOne(p => p.LicenseOrder).HasForeignKey(p => p.LicenseOrderId).OnDelete(DeleteBehavior.Cascade);
+
             base.OnModelCreating(modelBuilder);
         }
 

@@ -27,7 +27,7 @@
     <li class="list-group-item d-flex align-items-center">
         <span class="font-weight-bold">Employee</span>
         <span class="mx-1">-</span>
-        <span>@HardwareVault.Employee.FullName</span>
+        <span class="text-truncate">@HardwareVault.Employee.FullName</span>
     </li>
     <li class="list-group-item d-flex align-items-center">
         <span class="font-weight-bold">Last Synced</span>
@@ -42,7 +42,7 @@
     <li class="list-group-item d-flex align-items-center">
         <span class="font-weight-bold">Profile</span>
         <span class="mx-1">-</span>
-        <span>@HardwareVault.HardwareVaultProfile.Name</span>
+        <span class="text-truncate">@HardwareVault.HardwareVaultProfile.Name</span>
     </li>
     <li class="list-group-item d-flex align-items-center">
         <span class="font-weight-bold">Imported At</span>
@@ -95,5 +95,5 @@
     </li>
 </ul>
 <div class="text-right">
-    <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
+    <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Close</button>
 </div>

@@ -27,7 +27,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Create Order", body, ModalDialogSize.Large);
+            await MainTableService.ShowModalAsync("Create License Order", body, ModalDialogSize.Large);
         }
 
         private async Task SendLicenseOrderAsync()
@@ -39,12 +39,19 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Send license order", body);
+            await MainTableService.ShowModalAsync("Send License Order", body);
         }
 
         private async Task LicenseOrderDetailsAsync()
         {
-            await Task.CompletedTask;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DetailsLicenseOrder));
+                builder.AddAttribute(1, nameof(DetailsLicenseOrder.LicenseOrder), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("License Order Details", body, ModalDialogSize.ExtraLarge);
         }
 
         private async Task EditLicenseOrderAsync()
@@ -61,7 +68,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Delete license order", body);
+            await MainTableService.ShowModalAsync("Delete License Order", body);
         }
     }
 }

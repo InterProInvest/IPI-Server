@@ -96,7 +96,10 @@ namespace HES.Core.Services
 
         public async Task<List<LicenseOrder>> GetLicenseOrdersAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
         {
-            var query = _licenseOrderRepository.Query();
+            var query = _licenseOrderRepository
+                .Query()
+                .Include(x => x.HardwareVaultLicenses)
+                .AsQueryable();
 
             // Filter
             if (dataLoadingOptions.Filter != null)
@@ -182,7 +185,10 @@ namespace HES.Core.Services
         }
         public async Task<int> GetLicenseOrdersCountAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
         {
-            var query = _licenseOrderRepository.Query();
+            var query = _licenseOrderRepository
+                .Query()
+                .Include(x => x.HardwareVaultLicenses)
+                .AsQueryable();
 
             // Filter
             if (dataLoadingOptions.Filter != null)
@@ -278,17 +284,7 @@ namespace HES.Core.Services
             if (licenseOrder == null)
                 throw new Exception("Order does not exist.");
 
-            var deviceLicenses = await _hardwareVaultLicenseRepository
-                .Query()
-                .Where(d => d.LicenseOrderId == licenseOrder.Id)
-                .ToListAsync();
-
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                await _hardwareVaultLicenseRepository.DeleteRangeAsync(deviceLicenses);
-                await _licenseOrderRepository.DeleteAsync(licenseOrder);
-                transactionScope.Complete();
-            }
+            await _licenseOrderRepository.DeleteAsync(licenseOrder);
         }
 
         public async Task SendOrderAsync(LicenseOrder licenseOrder)
