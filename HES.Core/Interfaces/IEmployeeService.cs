@@ -13,14 +13,20 @@ namespace HES.Core.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<Employee> CreateEmployeeAsync(Employee employee);
         IQueryable<Employee> EmployeeQuery();
         Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<Employee> GetEmployeeByIdAsync(string id);
+        Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId);
+        Task<Employee> ImportEmployeeAsync(Employee employee);
+        Task<Employee> CreateEmployeeAsync(Employee employee);
         Task<bool> CheckEmployeeNameExistAsync(Employee employee);
         Task EditEmployeeAsync(Employee employee);
+        Task UnchangedEmployeeAsync(Employee employee);
         Task DeleteEmployeeAsync(string id);
+        Task UpdateLastSeenAsync(string vaultId);
+        Task AddHardwareVaultAsync(string employeeId, string vaultId);
+        Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);
         Task<Account> CreatePersonalAccountAsync(PersonalAccount personalAccount, bool isWorkstationAccount = false);
         Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount);
         Task<Account> CreateWorkstationAccountAsync(WorkstationDomain workstationAccount);
@@ -29,20 +35,11 @@ namespace HES.Core.Interfaces
         Task<List<Account>> GetAccountsByEmployeeIdAsync(string employeeId);
         Task SetAsWorkstationAccountAsync(string employeeId, string accountId);
         Task<Account> GetAccountByIdAsync(string accountId);
-        Task UnchangedPersonalAccountAsync(Account account);
         Task EditPersonalAccountAsync(Account account);
         Task EditPersonalAccountPwdAsync(Account account, AccountPassword accountPassword);
         Task EditPersonalAccountOtpAsync(Account account, AccountOtp accountOtp);
-        Task<Account> DeleteAccountAsync(string accountId);
-
-
-        //Not covered by tests
-        Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId);
-        Task UnchangedEmployeeAsync(Employee employee);
-        Task<Employee> ImportEmployeeAsync(Employee employee);
-        Task UpdateLastSeenAsync(string vaultId);
-        Task AddHardwareVaultAsync(string employeeId, string vaultId);
-        Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);
         Task<Account> AddSharedAccountAsync(string employeeId, string sharedAccountId);
+        Task UnchangedPersonalAccountAsync(Account account);
+        Task<Account> DeleteAccountAsync(string accountId);
     }
 }

@@ -54,8 +54,7 @@ namespace HES.Tests.Helpers
             softwareVaultRepository = new Repository<SoftwareVault>(dbContext);
             softwareVaultInvitationRepository = new Repository<SoftwareVaultInvitation>(dbContext);
             sharedAccountRepository = new Repository<SharedAccount>(dbContext);
-
-            
+                        
             AccountService = new AccountService(accountRepository);
             WorkstationService = new WorkstationService(workstationsRepository, workstationProximityVaultRepository);
             HardwareVaultTaskService = new HardwareVaultTaskService(hardwareVaultTaskRepository);
