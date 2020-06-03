@@ -9,39 +9,37 @@ else
         <div class="row">
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">License Start Date From</label>
-                <input type="datetime-local" class="form-control" @bind="Filter.LicenseStartDateStart" @bind:format="yyyy-MM-dd" />
+                <InputDate class="form-control" @bind-Value="Filter.LicenseStartDateStart" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">License Start Date To</label>
-                <input type="datetime-local" class="form-control" @bind="Filter.LicenseStartDateEnd" @bind:format="yyyy-MM-dd" />
+                <InputDate class="form-control" @bind-Value="Filter.LicenseStartDateEnd" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">License End Date From</label>
-                <input type="datetime-local" class="form-control" @bind="Filter.LicenseEndDateStart" @bind:format="yyyy-MM-dd" />
+                <InputDate class="form-control" @bind-Value="Filter.LicenseEndDateStart" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">License End Date To</label>
-                <input type="datetime-local" class="form-control" @bind="Filter.LicenseEndDateEnd" @bind:format="yyyy-MM-dd" />
+                <InputDate class="form-control" @bind-Value="Filter.LicenseEndDateEnd" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Order Created At From</label>
-                <input type="datetime-local" class="form-control" @bind="Filter.CreatedDateStart" @bind:format="yyyy-MM-ddTHH:mm" />
+                <DateTimePicker @bind-Value="Filter.CreatedDateStart" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Order Created At To</label>
-                <input type="datetime-local" class="form-control" @bind="Filter.CreatedDateEnd" @bind:format="yyyy-MM-ddTHH:mm" />
+                <DateTimePicker @bind-Value="Filter.CreatedDateEnd" />
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Contact Email</label>
                 <InputText class="form-control" @bind-Value="Filter.ContactEmail" />
             </div>
-
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Note</label>
                 <InputText class="form-control" @bind-Value="Filter.Note" />
             </div>
-
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Prolong License</label>
                 <select @onchange="OnChange_ProlongLicense" class="form-control">

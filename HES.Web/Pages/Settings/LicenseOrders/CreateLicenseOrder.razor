@@ -38,12 +38,12 @@ else
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label text-gray">Start Date</label>
-                                    <input type="date" class="form-control" @bind="_newLicenseOrder.StartDate" />
+                                    <InputDate class="form-control" @bind-Value="_newLicenseOrder.StartDate" />
                                     <ValidationMessage For="@(() => _newLicenseOrder.StartDate)" class="text-danger" />
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label text-gray">Start Date</label>
-                                    <input type="date" class="form-control" @bind="_newLicenseOrder.EndDate" />
+                                    <InputDate class="form-control" @bind-Value="_newLicenseOrder.EndDate" />
                                     <ValidationMessage For="@(() => _newLicenseOrder.EndDate)" class="text-danger" />
                                 </div>
                             </div>
@@ -122,7 +122,7 @@ else
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label text-gray">End Date</label>
-                                    <input type="date" class="form-control" @bind="_renewLicenseOrder.EndDate" />
+                                    <InputDate class="form-control" @bind-Value="_renewLicenseOrder.EndDate" />
                                     <ValidationMessage For="@(() => _renewLicenseOrder.EndDate)" class="text-danger" />
                                 </div>
                             </div>
