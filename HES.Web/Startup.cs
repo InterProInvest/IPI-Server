@@ -103,7 +103,10 @@ namespace HES.Web
             services.AddHostedService<LicenseHostedService>();
 
             services.AddHttpClient().RemoveAll<IHttpMessageHandlerBuilderFilter>();
-            services.AddSignalR();
+            services.AddSignalR(e =>
+            {
+                e.MaximumReceiveMessageSize = 102400000;
+            });
 
             // Cookie
             services.Configure<CookiePolicyOptions>(options =>
