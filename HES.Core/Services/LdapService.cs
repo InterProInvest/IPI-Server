@@ -31,7 +31,7 @@ namespace HES.Core.Services
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(ldapSettings.Host);
+                connection.Connect(ldapSettings.Host, 389);
                 await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
@@ -153,7 +153,7 @@ namespace HES.Core.Services
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(ldapSettings.Host);
+                connection.Connect(ldapSettings.Host, 389);
                 await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
