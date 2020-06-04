@@ -1,0 +1,77 @@
+﻿@if (HardwareVaultTaskList == null)
+{
+    <LoadingText />
+}
+else
+{
+    <table class="table table-hover border rounded w-100">
+        <thead>
+            <tr>
+                <th>
+                    Employee
+                </th>
+                <th>
+                    Hardware Vault
+                </th>
+                <th>
+                    Operation
+                </th>
+                <th>
+                    Created
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in HardwareVaultTaskList)
+            {
+                <tr>
+                    <td>
+                        @item.Account?.Employee?.FullName
+                    </td>
+                    <td>
+                        @item.HardwareVaultId
+                    </td>
+                    <td>
+                        @switch (item.Operation)
+                        {
+                            case TaskOperation.Create:
+                                <span class="badge badge-success">Create</span>
+                                break;
+                            case TaskOperation.Update:
+                                <span class="badge badge-primary">Update</span>
+                                break;
+                            case TaskOperation.Delete:
+                                <span class="badge badge-warning">Delete</span>
+                                break;
+                            case TaskOperation.Wipe:
+                                <span class="badge badge-danger">Wipe</span>
+                                break;
+                            case TaskOperation.Link:
+                                <span class="badge badge-info">Link</span>
+                                break;
+                            case TaskOperation.Primary:
+                                <span class="badge badge-primary">Primary</span>
+                                break;
+                            case TaskOperation.Profile:
+                                <span class="badge badge-secondary">Profile</span>
+                                break;
+                            case TaskOperation.Suspend:
+                                <span class="badge badge-warning">Suspend</span>
+                                break;
+                            default:
+                                @item.Operation
+                                break;
+                        }
+                    </td>
+                    <td class="d-flex align-items-center">
+                        @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
+                        @if (item.CreatedAt < DateTime.UtcNow.AddDays(-1))
+                        {
+                            <img src="/svg/notify-warning.svg" class="ml-2" title="Long Pending" />
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
