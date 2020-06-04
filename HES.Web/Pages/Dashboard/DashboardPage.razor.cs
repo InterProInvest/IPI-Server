@@ -13,9 +13,9 @@ namespace HES.Web.Pages.Dashboard
     {
         [Inject] public IDashboardService DashboardService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
-        [Inject] public ILogger<DashboardPage> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<DashboardPage> Logger { get; set; }
 
         public DashboardCard ServerdCard { get; set; }
         public DashboardCard EmployeesCard { get; set; }

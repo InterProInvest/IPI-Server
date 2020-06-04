@@ -17,6 +17,9 @@ namespace HES.Core.Entities
         public string HardwareVaultId { get; set; }
         public string AccountId { get; set; }
 
+        [ForeignKey("HardwareVaultId")]
+        public HardwareVault HardwareVault { get; set; }
+
         [ForeignKey("AccountId")]
         public Account Account { get; set; }
     }

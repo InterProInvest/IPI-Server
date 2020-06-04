@@ -32,6 +32,17 @@ namespace HES.Core.Services
                .FirstOrDefaultAsync(d => d.Id == taskId);
         }
 
+        public async Task<List<HardwareVaultTask>> GetHardwareVaultTasksAsync()
+        {
+            return await _hardwareVaultTaskRepository
+            .Query()
+            .Include(x => x.HardwareVault.Employee)
+            .Include(x => x.Account.Employee)
+            .OrderByDescending(x => x.CreatedAt)
+            .AsNoTracking()
+            .ToListAsync();
+        }
+
         public async Task AddTaskAsync(HardwareVaultTask vaultTask)
         {
             await _hardwareVaultTaskRepository.AddAsync(vaultTask);
