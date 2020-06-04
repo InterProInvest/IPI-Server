@@ -1,37 +1,57 @@
-﻿<input type="text" @bind-value="SearchText" @bind-value:event="oninput" class="form-control is-search m-2" placeholder="Search" />
-<table id="licensedDevices" class="display table table-hover inside-scrollbar w-100">
-    <thead>
-        <tr>
-            <th class="table-col-menu">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" onchange="checkAllLicensedDevices(this)" class="custom-control-input" id="checkbox_all_licensedDevices">
-                    <label class="custom-control-label" for="checkbox_all_licensedDevices"></label>
-                </div>
-            </th>
-            <th>
-                Serial Number
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var device in LicensedDevices.Where(x => x.Id.Contains(SearchText, StringComparison.OrdinalIgnoreCase)))
-        {
-            <tr @key="device.Id">
-                <td class="table-col-menu">
+﻿@using Microsoft.EntityFrameworkCore;
+
+@if (LicensedDevices == null)
+{
+    <LoadingText />
+}
+else
+{
+    <input type="text" @bind-value="SearchText" @bind-value:event="oninput" class="form-control is-search m-2" placeholder="Search" />
+    <table id="licensedDevices" class="display table table-hover inside-scrollbar w-100">
+        <thead>
+            <tr>
+                <th class="table-col-menu">
                     <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" name="licensedDevicesIds" id="licensedDevices_@device.Id" value="@device.Id">
-                        <label class="custom-control-label" for="licensedDevices_@device.Id"></label>
+                        <input type="checkbox" onchange="checkAllLicensedDevices(this)" class="custom-control-input" id="checkbox_all_licensedDevices">
+                        <label class="custom-control-label" for="checkbox_all_licensedDevices"></label>
                     </div>
-                </td>
-                <td>
-                    @device.Id
-                </td>
+                </th>
+                <th>
+                    Serial Number
+                </th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var device in LicensedDevices.Where(x => x.Id.Contains(SearchText, StringComparison.OrdinalIgnoreCase)))
+            {
+                <tr @key="device.Id">
+                    <td class="table-col-menu">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" name="licensedDevicesIds" id="licensedDevices_@device.Id" value="@device.Id">
+                            <label class="custom-control-label" for="licensedDevices_@device.Id"></label>
+                        </div>
+                    </td>
+                    <td>
+                        @device.Id
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
-    [Parameter] public List<Device> LicensedDevices { get; set; }
+    [Inject] public IDeviceService DeviceService { get; set; }
+    public List<Device> LicensedDevices { get; set; }
     public string SearchText { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LicensedDevices = await DeviceService
+        .DeviceQuery()
+        .Where(d => d.LicenseStatus != LicenseStatus.None)
+        .Where(d => d.LicenseStatus != LicenseStatus.Expired)
+        .AsNoTracking()
+        .ToListAsync();
+    }
 }

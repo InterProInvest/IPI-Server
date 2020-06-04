@@ -55,7 +55,7 @@ else
                             </div>
                         </div>
                         <div class="col-12 col-sm-8" style="max-height:390px; overflow-y:auto">
-                            <component type="typeof(LicenseOrderDeviceTable)" render-mode="ServerPrerendered" param-NonLicensedDevices="@Model.NonLicensedDevices" />
+                            <component type="typeof(LicenseOrderDeviceTable)" render-mode="Server" />
                         </div>
                         <div class="col">
                             <input type="submit" value="Create" class="btn btn-primary mr-2" asp-page-handler="CreateNewLicense" />
@@ -92,7 +92,7 @@ else
                             </div>
                         </div>
                         <div class="col-12 col-sm-8" style="max-height:390px; overflow-y:auto">
-                            <component type="typeof(RenewLicenseDeviceTable)" render-mode="ServerPrerendered" param-LicensedDevices="@Model.LicensedDevices" />        
+                            <component type="typeof(RenewLicenseDeviceTable)" render-mode="Server" />        
                         </div>
                         <div class="col">
                             <input type="submit" value="Create" class="btn btn-primary mr-2" asp-page-handler="CreateRenewLicense" />
