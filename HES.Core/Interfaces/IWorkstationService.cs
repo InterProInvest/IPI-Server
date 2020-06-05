@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Models;
+using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Workstation;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,6 @@ namespace HES.Core.Interfaces
         Task ApproveWorkstationAsync(Workstation workstation);
         Task UnapproveWorkstationAsync(string id);
         Task<bool> GetRfidStateAsync(string workstationId);
-        Task UpdateRfidStateAsync(string workstationId);
         Task<bool> CheckIsApprovedAsync(string workstationId);
         IQueryable<WorkstationProximityVault> ProximityVaultQuery();
         Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId);
@@ -33,6 +33,6 @@ namespace HES.Core.Interfaces
         Task DeleteProximityVaultAsync(string proximityVaultId);
         Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityVaults);
         Task DeleteProximityByVaultIdAsync(string vaultId);
-        Task UpdateProximitySettingsAsync(string workstationId);
+        Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId);
     }
 }

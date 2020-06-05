@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
+using Hideez.SDK.Communication.PasswordManager;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,16 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == accountId);
         }
 
+        public Task<Account> GetAccountByIdNoTrackingAsync(string accountId)
+        {
+            return _accountRepository
+                .Query()
+                .Include(x => x.Employee)
+                .Include(x => x.SharedAccount)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == accountId);
+        }
+
         public Task<Account> AddAsync(Account account)
         {
             return _accountRepository.AddAsync(account);
@@ -57,13 +68,19 @@ namespace HES.Core.Services
             await _accountRepository.UpdateOnlyPropAsync(accounts, properties);
         }
 
-        public async Task UpdateAfterAccountCreationAsync(Account account, uint storageId, uint timestamp)
+        public async Task UpdateAfterAccountCreateAsync(Account account, byte[] storageId, uint timestamp)
         {
             account.StorageId = storageId;
             account.Timestamp = timestamp;
             account.Password = null;
             account.OtpSecret = null;
             await _accountRepository.UpdateAsync(account);
+        }
+
+        public async Task UpdateAfterAccountModifyAsync(Account account, uint timestamp)
+        {
+            account.Timestamp = timestamp;
+            await _accountRepository.UpdateOnlyPropAsync(account, new string[] { nameof(Account.Timestamp) });
         }
 
         public Task DeleteAsync(Account account)
@@ -95,5 +112,12 @@ namespace HES.Core.Services
         {
             return await _accountRepository.ExistAsync(predicate);
         }
+
+        public async Task<StorageId> GetStorageIdAsync(string accountId)
+        {
+            var account = await _accountRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == accountId);
+            return new StorageId(account.StorageId);
+        }
+
     }
 }

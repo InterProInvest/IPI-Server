@@ -70,6 +70,16 @@ namespace HES.Core.Services
                 .Include(d => d.Employee.Department.Company)
                 .Include(d => d.HardwareVaultProfile)
                 .FirstOrDefaultAsync(m => m.Id == vaultId);
+        }  
+        
+        public async Task<HardwareVault> GetVaultByIdNoTrackingAsync(string vaultId)
+        {
+            return await _hardwareVaultRepository
+                .Query()
+                .Include(d => d.Employee.Department.Company)
+                .Include(d => d.HardwareVaultProfile)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == vaultId);
         }
 
         public async Task<List<HardwareVault>> GetVaultsByEmployeeIdAsync(string employeeId)
@@ -509,7 +519,7 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, properties);
         }
 
-        public async Task UpdateAfterWipe(string vaultId)
+        public async Task UpdateAfterWipeAsync(string vaultId)
         {
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
@@ -530,6 +540,21 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
+        }
+
+        public async Task UpdateAfterLinkAsync(string vaultId, string masterPassword)
+        {
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
+            var vault = await GetVaultByIdAsync(vaultId);
+
+            if (vault == null)
+                throw new Exception($"Vault {vault.Id} not found");
+
+            vault.MasterPassword = masterPassword;
+
+            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.MasterPassword) });
         }
 
         public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto)

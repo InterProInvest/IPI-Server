@@ -30,6 +30,6 @@ namespace HES.Core.Entities
         public Department Department { get; set; }
 
         [NotMapped]
-        public bool IsOnline => Id != null ? RemoteWorkstationConnectionsService.IsWorkstationConnectedToServer(Id) : false;
+        public bool IsOnline => Id != null ? RemoteWorkstationConnectionsService.IsWorkstationConnected(Id) : false;
     }
 }

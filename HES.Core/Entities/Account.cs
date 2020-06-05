@@ -43,7 +43,7 @@ namespace HES.Core.Entities
 
         public bool Deleted { get; set; }
 
-        public uint StorageId { get; set; }
+        public byte[] StorageId { get; set; }
 
         public uint Timestamp { get; set; }
 

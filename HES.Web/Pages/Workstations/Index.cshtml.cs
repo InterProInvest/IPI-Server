@@ -18,6 +18,7 @@ namespace HES.Web.Pages.Workstations
     {
         private readonly IWorkstationService _workstationService;
         private readonly IOrgStructureService _orgStructureService;
+        private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<IndexModel> _logger;
 
         public IList<Workstation> Workstations { get; set; }
@@ -33,10 +34,11 @@ namespace HES.Web.Pages.Workstations
         [ViewData]
         public SelectList DepartmentIdList { get; set; }
 
-        public IndexModel(IWorkstationService workstationService, IOrgStructureService orgStructureService, ILogger<IndexModel> logger)
+        public IndexModel(IWorkstationService workstationService, IOrgStructureService orgStructureService, IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService, ILogger<IndexModel> logger)
         {
             _workstationService = workstationService;
             _orgStructureService = orgStructureService;
+            _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
 
@@ -136,7 +138,7 @@ namespace HES.Web.Pages.Workstations
             try
             {
                 await _workstationService.EditWorkstationAsync(workstation);
-                await _workstationService.UpdateRfidStateAsync(workstation.Id);
+                await _remoteWorkstationConnectionsService.UpdateRfidStateAsync(workstation.Id, workstation.RFID);
                 SuccessMessage = $"Workstation updated.";
             }
             catch (Exception ex)
@@ -178,8 +180,9 @@ namespace HES.Web.Pages.Workstations
             }
             try
             {
-                await _workstationService.ApproveWorkstationAsync(workstation);
-                await _workstationService.UpdateRfidStateAsync(workstation.Id);
+                await _workstationService.ApproveWorkstationAsync(workstation);           
+                await _remoteWorkstationConnectionsService.UpdateRfidStateAsync(workstation.Id, workstation.RFID);
+                await _remoteWorkstationConnectionsService.UpdateWorkstationApprovedAsync(workstation.Id, isApproved: true);
                 SuccessMessage = $"Workstation approved.";
             }
             catch (Exception ex)
@@ -220,6 +223,7 @@ namespace HES.Web.Pages.Workstations
             try
             {
                 await _workstationService.UnapproveWorkstationAsync(workstationId);
+                await _remoteWorkstationConnectionsService.UpdateWorkstationApprovedAsync(workstationId, isApproved: false);
                 SuccessMessage = $"Workstation unapproved.";
             }
             catch (Exception ex)

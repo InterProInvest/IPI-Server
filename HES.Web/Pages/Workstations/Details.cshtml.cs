@@ -16,6 +16,7 @@ namespace HES.Web.Pages.Workstations
     {
         private readonly IWorkstationService _workstationService;
         private readonly IHardwareVaultService _deviceService;
+        private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<DetailsModel> _logger;
 
         public IList<WorkstationProximityVault> ProximityDevices { get; set; }
@@ -31,10 +32,12 @@ namespace HES.Web.Pages.Workstations
 
         public DetailsModel(IWorkstationService workstationService,
                             IHardwareVaultService deviceService,
+                            IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                             ILogger<DetailsModel> logger)
         {
             _workstationService = workstationService;
             _deviceService = deviceService;
+            _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
 
@@ -113,7 +116,7 @@ namespace HES.Web.Pages.Workstations
             try
             {
                 await _workstationService.AddProximityVaultsAsync(workstationId, devicesId);
-                await _workstationService.UpdateProximitySettingsAsync(workstationId);
+                await _remoteWorkstationConnectionsService.UpdateProximitySettingsAsync(workstationId, await _workstationService.GetProximitySettingsAsync(workstationId));
 
                 SuccessMessage = "Device(s) added.";
             }
@@ -160,8 +163,8 @@ namespace HES.Web.Pages.Workstations
 
             try
             {
-                await _workstationService.EditProximityVaultAsync(proximityDevice);
-                await _workstationService.UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
+                await _workstationService.EditProximityVaultAsync(proximityDevice);      
+                await _remoteWorkstationConnectionsService.UpdateProximitySettingsAsync(proximityDevice.WorkstationId, await _workstationService.GetProximitySettingsAsync(proximityDevice.WorkstationId));
 
                 SuccessMessage = $"Proximity settings updated.";
             }

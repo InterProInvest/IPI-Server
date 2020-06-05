@@ -19,11 +19,13 @@ namespace HES.Web.Controllers
     public class WorkstationsController : ControllerBase
     {
         private readonly IWorkstationService _workstationService;
+        private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<WorkstationsController> _logger;
 
-        public WorkstationsController(IWorkstationService workstationService, ILogger<WorkstationsController> logger)
+        public WorkstationsController(IWorkstationService workstationService, IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService, ILogger<WorkstationsController> logger)
         {
             _workstationService = workstationService;
+            _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
 
@@ -80,7 +82,7 @@ namespace HES.Web.Controllers
                 workstation.RFID = workstationDto.RfidEnabled;
 
                 await _workstationService.EditWorkstationAsync(workstation);
-                await _workstationService.UpdateRfidStateAsync(workstation.Id);
+                await _remoteWorkstationConnectionsService.UpdateRfidStateAsync(workstation.Id, workstation.RFID);
             }
             catch (Exception ex)
             {
@@ -104,13 +106,13 @@ namespace HES.Web.Controllers
             try
             {
                 var workstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
-                
+
                 workstation.DepartmentId = workstationDto.DepartmentId;
                 workstation.RFID = workstationDto.RfidEnabled;
                 workstation.Approved = true;
-     
+
                 await _workstationService.ApproveWorkstationAsync(workstation);
-                await _workstationService.UpdateRfidStateAsync(workstation.Id);
+                await _remoteWorkstationConnectionsService.UpdateRfidStateAsync(workstation.Id, workstation.RFID);
             }
             catch (Exception ex)
             {
@@ -172,7 +174,8 @@ namespace HES.Web.Controllers
             try
             {
                 proximityDevices = await _workstationService.AddProximityVaultsAsync(proximityVaultDto.WorkstationId, new string[] { proximityVaultDto.HardwareVaultId });
-                await _workstationService.UpdateProximitySettingsAsync(proximityVaultDto.WorkstationId);
+                await _remoteWorkstationConnectionsService.UpdateProximitySettingsAsync(proximityVaultDto.WorkstationId, await _workstationService.GetProximitySettingsAsync(proximityVaultDto.WorkstationId));
+
             }
             catch (Exception ex)
             {
