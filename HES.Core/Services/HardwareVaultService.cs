@@ -344,14 +344,6 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task<HardwareVault> AddVaultIfNotExistAsync(HardwareVault vault)
-        {
-            if (vault == null)
-                throw new ArgumentNullException(nameof(vault));
-
-            return await _hardwareVaultRepository.AddAsync(vault);
-        }
-
         public async Task ImportVaultsAsync()
         {
             var licensing = await _appSettingsService.GetLicensingSettingsAsync();

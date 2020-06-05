@@ -1,5 +1,4 @@
-﻿using HES.Core.Constants;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.Client;
@@ -167,7 +166,6 @@ namespace HES.Core.Hubs
 
             try
             {
-                await AddVaultIfNotExistAsync(dto);
                 await OnDevicePropertiesChanged(dto);
                 await CheckVaultStatusAsync(dto);
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
@@ -230,35 +228,6 @@ namespace HES.Core.Hubs
 
             if (vault.Status == Enums.VaultStatus.Deactivated || vault.Status == Enums.VaultStatus.Compromised)
                 await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
-        }
-
-        private async Task AddVaultIfNotExistAsync(BleDeviceDto dto)
-        {
-            if (dto.Mac == null)
-                return;
-
-            var exist = await _deviceService
-                .VaultQuery()
-                .AsNoTracking()
-                .AnyAsync(d => d.Id == dto.DeviceSerialNo);
-
-            if (!exist)
-            {
-                var vault = new HardwareVault()
-                {
-                    Id = dto.DeviceSerialNo,
-                    MAC = dto.Mac,
-                    Model = dto.DeviceSerialNo.Substring(0, 5),
-                    RFID = dto.Mac.Replace(":", "").Substring(0, 10),
-                    Battery = dto.Battery,
-                    Firmware = dto.FirmwareVersion,
-                    HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId,
-                    ImportedAt = DateTime.UtcNow,
-                    LastSynced = DateTime.UtcNow
-                };
-
-                await _deviceService.AddVaultIfNotExistAsync(vault);
-            }
         }
 
         // Incomming request
