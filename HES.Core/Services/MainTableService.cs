@@ -2,7 +2,6 @@
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +11,6 @@ namespace HES.Core.Services
 {
     public class MainTableService<TItem, TFilter> : IDisposable, IMainTableService<TItem, TFilter> where TItem : class where TFilter : class, new()
     {
-        private readonly IJSRuntime _jSRuntime;
         private readonly IModalDialogService _modalDialogService;
         private Func<DataLoadingOptions<TFilter>, Task<int>> _getEntitiesCount;
         private Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> _getEntities;
@@ -24,9 +22,8 @@ namespace HES.Core.Services
         public int TotalRecords { get; set; }
         public int CurrentPage { get; set; } = 1;
 
-        public MainTableService(IJSRuntime jSRuntime, IModalDialogService modalDialogService)
+        public MainTableService(IModalDialogService modalDialogService)
         {
-            _jSRuntime = jSRuntime;
             _modalDialogService = modalDialogService;
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
@@ -104,11 +101,6 @@ namespace HES.Core.Services
         public async Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default)
         {
             await _modalDialogService.ShowAsync(modalTitle, modalBody, modalSize);
-        }
-
-        public async Task InvokeJsAsync(string functionName, params object[] args)
-        {
-            await _jSRuntime.InvokeVoidAsync(functionName, args);
         }
 
         public void Dispose()

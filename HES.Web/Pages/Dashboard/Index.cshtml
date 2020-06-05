@@ -4,34 +4,5 @@
     ViewData["Title"] = "Dashboard";
     ViewData["ActivePage"] = MenuNavPages.Dashboard;
 }
-<partial name="_SuccessMessage" for="SuccessMessage" />
-<partial name="_ErrorMessage" for="ErrorMessage" />
 
-<div class="row">
-    <!-- HES -->
-    <div class="card-col">
-        <partial name="_ServerCard" />
-    </div>
-    <!-- Employee -->
-    <div class="card-col">
-        <partial name="_EmployeesCard" />
-    </div>
-    <!-- Devices -->
-    <div class="card-col">
-        <partial name="_DevicesCard" />
-    </div>
-    <!-- Workstations -->
-    <div class="card-col">
-        <partial name="_WorkstationsCard" />
-    </div>
-</div>
-
-@section scripts{
-    <script>
-        $(document).ready(function () {
-            // Breadcrumbs
-            $('#breadcrumb').toggleClass('d-none');
-            $('.breadcrumb').append('<li class="breadcrumb-item active">Dashboard</li>');
-        });
-    </script>
-}
+<component type="typeof(DashboardPage)" render-mode="Server" />

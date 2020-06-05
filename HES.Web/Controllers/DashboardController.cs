@@ -36,7 +36,7 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<int> GetDeviceTasksCount()
         {
-            return await _dashboardService.GetDeviceTasksCount();
+            return await _dashboardService.GetHardwareVaultTasksCount();
         }
 
         [HttpGet]

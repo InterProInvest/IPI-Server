@@ -3,6 +3,7 @@ using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Web.Dashboard;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace HES.Core.Services
             return ServerConstants.Version;
         }
 
-        public async Task<int> GetDeviceTasksCount()
+        public async Task<int> GetHardwareVaultTasksCount()
         {
             return await _hardwareVaultTaskService.TaskQuery().CountAsync();
         }
@@ -60,12 +61,27 @@ namespace HES.Core.Services
                 {
                     Message = "Long pending tasks",
                     Count = longPendingTasksCount,
-                    Page = "./DeviceTasks",
-                    Handler = "LongPending"
+                    Page = "long-pending-tasks"
                 });
             }
 
             return list;
+        }
+
+        public async Task<DashboardCard> GetServerCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Hideez Enterprise Server",
+                CardLogo = "/svg/dashboard/server.svg",
+                LeftText = "HES version",
+                LeftValue = $"{GetServerVersion()}",
+                LeftLink = "https://github.com/HideezGroup/HES",
+                RightText = "Hardware Vault Tasks",
+                RightValue = $"{await GetHardwareVaultTasksCount()}",
+                RightLink = "#",
+                Notifications = await GetServerNotifyAsync()
+            };
         }
 
         #endregion
@@ -100,8 +116,7 @@ namespace HES.Core.Services
                 {
                     Message = "Non-hideez unlock (24h)",
                     Count = nonHideezUnlock,
-                    Page = "/Audit/WorkstationSessions/Index",
-                    Handler = "NonHideezUnlock"
+                    Page = "/Audit/WorkstationSessions?handler=NonHideezUnlock"         
                 });
             }
 
@@ -116,12 +131,27 @@ namespace HES.Core.Services
                 {
                     Message = "Long open session (>12h)",
                     Count = longOpenSession,
-                    Page = "/Audit/WorkstationSessions/Index",
-                    Handler = "LongOpenSession"
+                    Page = "/Audit/WorkstationSessions?handler=LongOpenSession"              
                 });
             }
 
             return list;
+        }
+
+        public async Task<DashboardCard> GetEmployeesCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Employees",
+                CardLogo = "/svg/dashboard/employees.svg",
+                LeftText = "Registered",
+                LeftValue = $"{await GetEmployeesCountAsync()}",
+                LeftLink = "/Employees",
+                RightText = "Opened Sessions",
+                RightValue = $"{await GetEmployeesOpenedSessionsCountAsync()}",
+                RightLink = "/Audit/WorkstationSessions?handler=OpenedSessions",
+                Notifications = await GetEmployeesNotifyAsync()
+            };
         }
 
         #endregion
@@ -153,8 +183,7 @@ namespace HES.Core.Services
                 {
                     Message = "Low battery",
                     Count = lowBattery,
-                    Page = "/HardwareVaults/Index",
-                    Handler = "LowBattery"
+                    Page = "/HardwareVaults?handler=LowBattery"
                 });
             }
 
@@ -169,8 +198,7 @@ namespace HES.Core.Services
                 {
                     Message = "Vault locked",
                     Count = vaultLocked,
-                    Page = "/HardwareVaults/Index",
-                    Handler = "VaultLocked"
+                    Page = "/HardwareVaults?handler=VaultLocked"       
                 });
             }
 
@@ -186,8 +214,7 @@ namespace HES.Core.Services
                 {
                     Message = "License warning",
                     Count = licenseWarning,
-                    Page = "/HardwareVaults/Index",
-                    Handler = "LicenseWarning"
+                    Page = "/HardwareVaults?handler=LicenseWarning"
                 });
             }
 
@@ -203,8 +230,7 @@ namespace HES.Core.Services
                 {
                     Message = "License critical",
                     Count = licenseCritical,
-                    Page = "/HardwareVaults/Index",
-                    Handler = "LicenseCritical"
+                    Page = "/HardwareVaults?handler=LicenseCritical"          
                 });
             }
 
@@ -220,12 +246,27 @@ namespace HES.Core.Services
                 {
                     Message = "License expired",
                     Count = licenseExpired,
-                    Page = "/HardwareVaults/Index",
-                    Handler = "LicenseExpired"
+                    Page = "/HardwareVaults?handler=LicenseExpired"
                 });
             }
-            
+
             return list;
+        }
+
+        public async Task<DashboardCard> GetHardwareVaultsCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Hardware Vaults",
+                CardLogo = "/svg/dashboard/hardware-vaults.svg",
+                LeftText = "Registered",
+                LeftValue = $"{await GetHardwareVaultsCountAsync()}",
+                LeftLink = "/HardwareVaults",
+                RightText = "Ready",
+                RightValue = $"{await GetReadyHardwareVaultsCountAsync()}",
+                RightLink = "/HardwareVaults?handler=VaultReady",
+                Notifications = await GetHardwareVaultsNotifyAsync()
+            };
         }
 
         #endregion
@@ -257,12 +298,27 @@ namespace HES.Core.Services
                 {
                     Message = "Waiting for approval",
                     Count = notApproved,
-                    Page = "/Workstations/Index",
-                    Handler = "NotApproved"
+                    Page = "/Workstations?handler=NotApproved"             
                 });
             }
 
             return list;
+        }
+
+        public async Task<DashboardCard> GetWorkstationsCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Workstations",
+                CardLogo = "/svg/dashboard/workstations.svg",
+                LeftText = "Registered",
+                LeftValue = $"{await GetWorkstationsCountAsync()}",
+                LeftLink = "/Workstations",
+                RightText = "Online",
+                RightValue = $"{await GetWorkstationsOnlineCountAsync()}",
+                RightLink = "/Workstations?handler=Online",
+                Notifications = await GetWorkstationsNotifyAsync()
+            };
         }
 
         #endregion

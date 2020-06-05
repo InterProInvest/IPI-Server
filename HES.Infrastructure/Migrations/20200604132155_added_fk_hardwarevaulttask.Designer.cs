@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200604132155_added_fk_hardwarevaulttask")]
+    partial class added_fk_hardwarevaulttask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,8 +63,8 @@ namespace HES.Infrastructure.Migrations
                     b.Property<string>("SharedAccountId")
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<byte[]>("StorageId")
-                        .HasColumnType("longblob");
+                    b.Property<uint>("StorageId")
+                        .HasColumnType("int unsigned");
 
                     b.Property<uint>("Timestamp")
                         .HasColumnType("int unsigned");
