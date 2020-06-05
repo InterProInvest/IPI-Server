@@ -61,10 +61,12 @@ namespace HES.Infrastructure
             return entity;
         }
 
-        public Task Unchanged(T entity)
+        public async Task<IList<T>> UpdatRangeAsync(IList<T> entity)
         {
-            _context.Entry(entity).State = EntityState.Unchanged;
-            return Task.CompletedTask;
+            _context.Set<T>().UpdateRange(entity);
+            await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         public async Task UpdateOnlyPropAsync(T entity, string[] properties)
@@ -88,6 +90,12 @@ namespace HES.Infrastructure
 
             _context.UpdateRange(entity);
             await _context.SaveChangesAsync();
+        }
+
+        public Task Unchanged(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Unchanged;
+            return Task.CompletedTask;
         }
 
         public async Task<T> DeleteAsync(T entity)

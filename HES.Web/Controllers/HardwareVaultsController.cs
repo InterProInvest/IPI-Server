@@ -68,13 +68,6 @@ namespace HES.Web.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<HardwareVault>>> GetHardwareVaultsByEmployeeId(string id)
-        {
-            return await _hardwareVaultService.GetVaultsByEmployeeIdAsync(id);
-        }
-
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<HardwareVault>> GetHardwareVaultById(string id)
         {
@@ -98,13 +91,13 @@ namespace HES.Web.Controllers
 
             try
             {
-                var device = new HardwareVault()
+                var vault = new HardwareVault()
                 {
                     Id = vaultDto.Id,
                     RFID = vaultDto.RFID
                 };
 
-                await _hardwareVaultService.EditRfidAsync(device);
+                await _hardwareVaultService.UpdateVaultAsync(vault);
             }
             catch (Exception ex)
             {
@@ -219,7 +212,7 @@ namespace HES.Web.Controllers
                     PinTryCount = profileDto.PinTryCount
                 };
                 await _hardwareVaultService.EditProfileAsync(profile);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _hardwareVaultService.GetVaultIdsByProfileTaskAsync(profile.Id));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _hardwareVaultService.GetVaultIdsByProfileTaskAsync());
             }
             catch (Exception ex)
             {

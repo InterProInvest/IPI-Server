@@ -44,7 +44,7 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
-                await HardwareVaultService.EditRfidAsync(HardwareVault);
+                await HardwareVaultService.UpdateVaultAsync(HardwareVault);
                 ToastService.ShowToast("RFID updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

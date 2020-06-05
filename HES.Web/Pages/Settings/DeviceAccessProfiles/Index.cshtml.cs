@@ -3,11 +3,9 @@ using HES.Core.Interfaces;
 using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.DeviceAccessProfiles
@@ -100,7 +98,7 @@ namespace HES.Web.Pages.Settings.DeviceAccessProfiles
             try
             {
                 await _deviceService.EditProfileAsync(DeviceAccessProfile);               
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _deviceService.GetVaultIdsByProfileTaskAsync(DeviceAccessProfile.Id));
+                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _deviceService.GetVaultIdsByProfileTaskAsync());
                 SuccessMessage = $"Device access profile updated.";
             }
             catch (Exception ex)

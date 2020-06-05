@@ -70,26 +70,16 @@ namespace HES.Core.Services
                 .Include(d => d.Employee.Department.Company)
                 .Include(d => d.HardwareVaultProfile)
                 .FirstOrDefaultAsync(m => m.Id == vaultId);
-        }  
-        
+        }
+
         public async Task<HardwareVault> GetVaultByIdNoTrackingAsync(string vaultId)
         {
             return await _hardwareVaultRepository
                 .Query()
-                .Include(d => d.Employee.Department.Company)
-                .Include(d => d.HardwareVaultProfile)
+                .Include(x => x.Employee.Department.Company)
+                .Include(x => x.HardwareVaultProfile)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Id == vaultId);
-        }
-
-        public async Task<List<HardwareVault>> GetVaultsByEmployeeIdAsync(string employeeId)
-        {
-            return await _hardwareVaultRepository
-                .Query()
-                .Include(d => d.Employee.Department.Company)
-                .Include(d => d.HardwareVaultProfile)
-                .Where(d => d.EmployeeId == employeeId)
-                .ToListAsync();
+                .FirstOrDefaultAsync(x => x.Id == vaultId);
         }
 
         public async Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync()
@@ -110,20 +100,6 @@ namespace HES.Core.Services
                             x.LicenseStatus != VaultLicenseStatus.Expired)
                     .AsNoTracking()
                     .ToListAsync();
-        }
-
-        public async Task<List<HardwareVault>> GetVaultsAsync()
-        {
-            var count = await GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>());
-            return await GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>()
-            {
-                Skip = 0,
-                Take = count,
-                SortedColumn = nameof(HardwareVault.Id),
-                SortDirection = ListSortDirection.Ascending,
-                SearchText = string.Empty,
-                Filter = null
-            });
         }
 
         public async Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
@@ -499,24 +475,22 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task EditRfidAsync(HardwareVault vault)
+        public async Task<HardwareVault> UpdateVaultAsync(HardwareVault vault)
         {
             if (vault == null)
-            {
                 throw new ArgumentNullException(nameof(vault));
-            }
 
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { "RFID" });
+            return await _hardwareVaultRepository.UpdateAsync(vault);
+        }
+
+        public async Task<List<HardwareVault>> UpdateRangeVaultsAsync(IList<HardwareVault> vaults)
+        {
+            return await _hardwareVaultRepository.UpdatRangeAsync(vaults) as List<HardwareVault>;
         }
 
         public Task UnchangedVaultAsync(HardwareVault vault)
         {
             return _hardwareVaultRepository.Unchanged(vault);
-        }
-
-        public async Task UpdateOnlyPropAsync(HardwareVault vault, string[] properties)
-        {
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, properties);
         }
 
         public async Task UpdateAfterWipeAsync(string vaultId)
@@ -557,15 +531,15 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.MasterPassword) });
         }
 
-        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto)
+        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto device)
         {
-            var vault = await _hardwareVaultRepository.GetByIdAsync(dto.DeviceSerialNo);
+            var vault = await _hardwareVaultRepository.GetByIdAsync(device.DeviceSerialNo);
             if (vault == null)
-                throw new Exception($"Vault {dto.DeviceSerialNo} not found");
+                throw new Exception($"Vault {device.DeviceSerialNo} not found");
 
-            if (dto.IsLocked)
+            if (device.IsLocked)
             {
-                if (!dto.IsCanUnlock && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
+                if (!device.IsCanUnlock && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
                 {
                     vault.Status = VaultStatus.Locked;
                 }
@@ -578,26 +552,11 @@ namespace HES.Core.Services
                 }
             }
 
-            vault.Battery = dto.Battery;
-            vault.Firmware = dto.FirmwareVersion;
+            vault.Battery = device.Battery;
+            vault.Firmware = device.FirmwareVersion;
             vault.LastSynced = DateTime.UtcNow;
 
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Battery), nameof(HardwareVault.Firmware), nameof(HardwareVault.Status), nameof(HardwareVault.LastSynced) });
-        }
-
-        public async Task UpdateNeedSyncAsync(HardwareVault vault, bool needSync)
-        {
-            vault.NeedSync = needSync;
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.NeedSync) });
-        }
-
-        public async Task UpdateNeedSyncAsync(IList<HardwareVault> vaults, bool needSync)
-        {
-            foreach (var vault in vaults)
-            {
-                vault.NeedSync = needSync;
-            }
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vaults, new string[] { nameof(HardwareVault.NeedSync) });
         }
 
         public async Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId)
@@ -664,7 +623,7 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await GenerateVaultActivationAsync(vaultId);
-                await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Status), nameof(HardwareVault.StatusReason), nameof(HardwareVault.StatusDescription) });
+                await _hardwareVaultRepository.UpdateAsync(vault);
                 await _hardwareVaultTaskService.AddSuspendAsync(vaultId);
 
                 transactionScope.Complete();
@@ -690,7 +649,7 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await GenerateVaultActivationAsync(vaultId);
-                await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Status), nameof(HardwareVault.StatusReason), nameof(HardwareVault.StatusDescription) });
+                await _hardwareVaultRepository.UpdateAsync(vault);
                 await _hardwareVaultTaskService.AddSuspendAsync(vaultId);
 
                 transactionScope.Complete();
@@ -719,7 +678,7 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.EmployeeId), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.NeedSync), nameof(HardwareVault.Status), nameof(HardwareVault.StatusReason), nameof(HardwareVault.StatusDescription) });
+                await _hardwareVaultRepository.UpdateAsync(vault);
                 await ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
                 await _hardwareVaultTaskService.DeleteTasksByVaultIdAsync(vaultId);
 
@@ -749,7 +708,7 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(m => m.Id == profileId);
         }
 
-        public async Task<List<string>> GetVaultIdsByProfileTaskAsync(string profileId)
+        public async Task<List<string>> GetVaultIdsByProfileTaskAsync()
         {
             return await _hardwareVaultTaskService
                 .TaskQuery()
@@ -769,9 +728,7 @@ namespace HES.Core.Services
         public async Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile profile)
         {
             if (profile == null)
-            {
                 throw new ArgumentNullException(nameof(profile));
-            }
 
             var exist = await _hardwareVaultProfileRepository
                 .Query()
@@ -779,9 +736,7 @@ namespace HES.Core.Services
                 .AnyAsync();
 
             if (exist)
-            {
-                throw new Exception($"Name {profile.Name} is already taken.");
-            }
+                throw new AlreadyExistException($"Name {profile.Name} is already taken.");
 
             profile.CreatedAt = DateTime.UtcNow;
             return await _hardwareVaultProfileRepository.AddAsync(profile);

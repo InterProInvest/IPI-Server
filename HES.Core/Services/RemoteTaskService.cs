@@ -127,7 +127,8 @@ namespace HES.Core.Services
                 tasks = await query.ToListAsync();
             }
 
-            await _hardwareVaultService.UpdateNeedSyncAsync(vault, false);
+            vault.NeedSync = false;
+            await _hardwareVaultService.UpdateVaultAsync(vault);
         }
 
         private async Task<byte[]> ExecuteRemoteTask(RemoteDevice remoteDevice, HardwareVaultTask task)

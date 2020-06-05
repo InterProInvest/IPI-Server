@@ -61,7 +61,7 @@ namespace HES.Tests.Services
             var hardwareVault = _testingOptions.HardwareVault;
             hardwareVault.RFID = _testingOptions.NewHardwareVaultRFID;
 
-            await _hardwareVaultService.EditRfidAsync(hardwareVault);
+            await _hardwareVaultService.UpdateVaultAsync(hardwareVault);
 
             var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
 
@@ -85,7 +85,7 @@ namespace HES.Tests.Services
         [Fact, Order(6)]
         public async Task UpdateAfterWipe()
         {
-            await _hardwareVaultService.UpdateAfterWipe(_testingOptions.HardwareVaultId);
+            await _hardwareVaultService.UpdateAfterWipeAsync(_testingOptions.HardwareVaultId);
 
             var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
 
@@ -113,18 +113,18 @@ namespace HES.Tests.Services
             Assert.False(string.IsNullOrWhiteSpace(result));
         }
 
-        [Fact, Order(9)]
-        public async Task UpdateOnlyPropAsync()
-        {
-            var hardwareVault = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
-            hardwareVault.Status = VaultStatus.Locked;
+        //[Fact, Order(9)]
+        //public async Task UpdateOnlyPropAsync()
+        //{
+            //var hardwareVault = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+            //hardwareVault.Status = VaultStatus.Locked;
 
-            await _hardwareVaultService.UpdateOnlyPropAsync(hardwareVault, new string[] { nameof(HardwareVault.Status) });
+            //await _hardwareVaultService.UpdateOnlyPropAsync(hardwareVault, new string[] { nameof(HardwareVault.Status) });
 
-            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+            //var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
 
-            Assert.Equal(VaultStatus.Locked, result.Status);
-        }
+            //Assert.Equal(VaultStatus.Locked, result.Status);
+        //}
 
         [Fact, Order(10)]
         public async Task ActivateVaultAsync()
