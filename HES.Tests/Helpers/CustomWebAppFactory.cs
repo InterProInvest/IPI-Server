@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using HES.Core.Interfaces;
+using HES.Core.Entities;
 
 namespace HES.Tests.Helpers
 {
@@ -45,6 +46,24 @@ namespace HES.Tests.Helpers
         {
             var scope = Services.CreateScope();
             return scope.ServiceProvider.GetRequiredService<IEmployeeService>();
+        }
+
+        public IHardwareVaultService GetHardwareVaultService()
+        {
+            var scope = Services.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<IHardwareVaultService>();
+        }
+
+        public IAsyncRepository<HardwareVaultProfile> GetHardwareVaultProfileRepository()
+        {
+            var scope = Services.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultProfile>>();
+        }
+
+        public IAsyncRepository<HardwareVault> GetHardwareVaultRepository()
+        {
+            var scope = Services.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
         }
     }
 }

@@ -3,10 +3,8 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
 using HES.Core.Models.Web.Account;
-using HES.Tests.Builders;
 using HES.Tests.Helpers;
 using HES.Web;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.Linq;
@@ -19,6 +17,7 @@ using Xunit.Extensions.Ordering;
 [assembly: TestCollectionOrderer("Xunit.Extensions.Ordering.CollectionOrderer", "Xunit.Extensions.Ordering")]
 namespace HES.Tests.Services
 {
+    [Order(1)]
     public class EmployeeServiceTests : IClassFixture<CustomWebAppFactory<Startup>>
     {
         private readonly IEmployeeService _employeeService;
