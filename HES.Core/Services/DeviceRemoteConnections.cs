@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Hideez.SDK.Communication;
+﻿using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
+using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
@@ -136,10 +135,10 @@ namespace HES.Core.Services
                     _appConnections.TryGetValue(workstationId, out descr);
                     if (descr != null)
                     {
-                        var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, SdkConfig.DefaultRemoteCommandTimeout, null); //new SdkLogger<RemoteDeviceConnectionsService>(_logger)
+                        var remoteDevice = new RemoteDevice(_deviceId, channelNo, caller, null, SdkConfig.DefaultRemoteCommandTimeout, null);
                         descr.Device = remoteDevice;
 
-                        await remoteDevice.VerifyAndInitialize();
+                        await remoteDevice.VerifyAndInitialize(new System.Threading.CancellationToken());
 
                         // Inform clients about connection ready
                         descr.Tcs.TrySetResult(remoteDevice);

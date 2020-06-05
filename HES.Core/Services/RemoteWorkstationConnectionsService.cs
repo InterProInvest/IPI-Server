@@ -33,7 +33,6 @@ namespace HES.Core.Services
         private readonly IAccountService _accountService;
         private readonly IWorkstationService _workstationService;
         private readonly IHardwareVaultService _hardwareVaultService;
-        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly ILogger<RemoteWorkstationConnectionsService> _logger;
@@ -45,7 +44,6 @@ namespace HES.Core.Services
                       IAccountService accountService,
                       IWorkstationService workstationService,
                       IHardwareVaultService hardwareVaultService,
-                      IHardwareVaultTaskService hardwareVaultTaskService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger)
@@ -57,7 +55,6 @@ namespace HES.Core.Services
             _accountService = accountService;
             _workstationService = workstationService;
             _hardwareVaultService = hardwareVaultService;
-            _hardwareVaultTaskService = hardwareVaultTaskService;
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
             _logger = logger;
@@ -174,7 +171,7 @@ namespace HES.Core.Services
                 case VaultStatus.Deactivated:
                     await CheckIsNeedBackupAsync(remoteDevice, vault);
                     await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(vault.MasterPassword));
-                    await _hardwareVaultService.UpdateAfterWipe(vault.Id);
+                    await _hardwareVaultService.UpdateAfterWipeAsync(vault.Id);
                     throw new HideezException(HideezErrorCode.DeviceHasBeenWiped);
                 case VaultStatus.Compromised:
                     throw new HideezException(HideezErrorCode.HesDeviceCompromised);
@@ -182,11 +179,6 @@ namespace HES.Core.Services
                     _logger.LogCritical($"Unhandled vault status ({vault.Status})");
                     throw new Exception("Unhandled vault status.");
             }
-
-            //await CheckLockedAsync(remoteDevice, vault);
-            //await CheckLinkedAsync(remoteDevice, vault);
-            //await CheckPassphraseAsync(remoteDevice, vaultId);
-            //await CheckTaskAsync(remoteDevice, deviceId, primaryAccountOnly);
 
             return true;
         }
@@ -199,10 +191,9 @@ namespace HES.Core.Services
                 var pm = new DevicePasswordManager(remoteDevice, null);
                 await pm.Load();
 
-                var vaultAccounts = pm.Accounts.Select(x => x.Value);
-                foreach (var vaultAccount in vaultAccounts)
+                foreach (var vaultAccount in pm.Accounts)
                 {
-                    var account = serverAccounts.First(x => x.StorageId == vaultAccount.StorageId);
+                    var account = serverAccounts.First(x => vaultAccount.StorageId.Equals(x.StorageId));
                     account.Password = _dataProtectionService.Encrypt(vaultAccount.Password);
                     account.OtpSecret = _dataProtectionService.Encrypt(vaultAccount.OtpSecret);
                 }
@@ -210,59 +201,59 @@ namespace HES.Core.Services
             }
         }
 
-        private async Task CheckLockedAsync(RemoteDevice remoteDevice, HardwareVault vault)
-        {
-            if (remoteDevice.AccessLevel.IsLocked)
-            {
-                await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Suspend);
-                throw new Exception($"Vault {vault.Id} is locked");
-            }
-        }
+        //private async Task CheckLockedAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        //{
+        //    if (remoteDevice.AccessLevel.IsLocked)
+        //    {
+        //        await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Suspend);
+        //        throw new Exception($"Vault {vault.Id} is locked");
+        //    }
+        //}
 
-        private async Task CheckLinkedAsync(RemoteDevice remoteDevice, HardwareVault vault)
-        {
-            if (!remoteDevice.AccessLevel.IsLinkRequired)
-            {
-                if (vault.MasterPassword != null)
-                {
-                    return;
-                }
-                else
-                {
-                    throw new HideezException(HideezErrorCode.HesDeviceLinkedToAnotherServer);
-                }
-            }
-            else
-            {
-                if (vault.MasterPassword != null)
-                {
-                    throw new HideezException(HideezErrorCode.HesDeviceWipedOnAnotherServer);
-                }
-                else
-                {
-                    var existLinkTask = await _hardwareVaultTaskService
-                        .TaskQuery()
-                        .Where(d => d.HardwareVaultId == vault.Id && d.Operation == TaskOperation.Link)
-                        .AsNoTracking()
-                        .AnyAsync();
+        //private async Task CheckLinkedAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        //{
+        //    if (!remoteDevice.AccessLevel.IsLinkRequired)
+        //    {
+        //        if (vault.MasterPassword != null)
+        //        {
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            throw new HideezException(HideezErrorCode.HesDeviceLinkedToAnotherServer);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (vault.MasterPassword != null)
+        //        {
+        //            throw new HideezException(HideezErrorCode.HesDeviceWipedOnAnotherServer);
+        //        }
+        //        else
+        //        {
+        //            var existLinkTask = await _hardwareVaultTaskService
+        //                .TaskQuery()
+        //                .Where(d => d.HardwareVaultId == vault.Id && d.Operation == TaskOperation.Link)
+        //                .AsNoTracking()
+        //                .AnyAsync();
 
-                    if (existLinkTask)
-                    {
-                        await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
-                        await remoteDevice.RefreshDeviceInfo();
+        //            if (existLinkTask)
+        //            {
+        //                await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
+        //                await remoteDevice.RefreshDeviceInfo();
 
-                        if (remoteDevice.AccessLevel.IsLinkRequired)
-                        {
-                            throw new Exception($"Can't link the vault {vault.Id}, after executing the link task.");
-                        }
-                    }
-                    else
-                    {
-                        throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
-                    }
-                }
-            }
-        }
+        //                if (remoteDevice.AccessLevel.IsLinkRequired)
+        //                {
+        //                    throw new Exception($"Can't link the vault {vault.Id}, after executing the link task.");
+        //                }
+        //            }
+        //            else
+        //            {
+        //                throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
+        //            }
+        //        }
+        //    }
+        //}
 
         private async Task CheckPassphraseAsync(RemoteDevice remoteDevice, string vaultId)
         {
@@ -294,7 +285,7 @@ namespace HES.Core.Services
             }
         }
 
-        #endregion Device
+        #endregion
 
         #region Workstation
 
@@ -320,8 +311,8 @@ namespace HES.Core.Services
                 _logger.LogInformation($"New workstation {workstationInfo.MachineName} was added");
             }
 
-            await _workstationService.UpdateProximitySettingsAsync(workstationInfo.Id);
-            await _workstationService.UpdateRfidStateAsync(workstationInfo.Id);
+            await UpdateProximitySettingsAsync(workstationInfo.Id, await _workstationService.GetProximitySettingsAsync(workstationInfo.Id));
+            await UpdateRfidStateAsync(workstationInfo.Id, await _workstationService.GetRfidStateAsync(workstationInfo.Id));
         }
 
         public async Task OnAppHubDisconnectedAsync(string workstationId)
@@ -337,7 +328,7 @@ namespace HES.Core.Services
             return workstation;
         }
 
-        public static bool IsWorkstationConnectedToServer(string workstationId)
+        public static bool IsWorkstationConnected(string workstationId)
         {
             return _workstationConnections.ContainsKey(workstationId);
         }
@@ -347,21 +338,37 @@ namespace HES.Core.Services
             return _workstationConnections.Count;
         }
 
-        public static async Task UpdateProximitySettingsAsync(string workstationId, IReadOnlyList<DeviceProximitySettingsDto> deviceProximitySettings)
+        public async Task UpdateProximitySettingsAsync(string workstationId, IReadOnlyList<DeviceProximitySettingsDto> proximitySettings)
         {
-            var workstation = FindWorkstationConnection(workstationId);
-            if (workstation != null)
-            {
-                await workstation.UpdateProximitySettings(deviceProximitySettings);
-            }
+            var remoteAppConnection = FindWorkstationConnection(workstationId);
+            if (remoteAppConnection == null)
+                return;
+
+            await remoteAppConnection.UpdateProximitySettings(proximitySettings);
         }
 
-        public static async Task UpdateRfidIndicatorStateAsync(string workstationId, bool isEnabled)
+        public async Task UpdateRfidStateAsync(string workstationId, bool isEnabled)
         {
-            var workstation = FindWorkstationConnection(workstationId);
-            if (workstation != null)
+            var remoteAppConnection = FindWorkstationConnection(workstationId);
+            if (remoteAppConnection == null)
+                return;
+
+            await remoteAppConnection.UpdateRFIDIndicatorState(isEnabled);
+        }
+
+        public async Task UpdateWorkstationApprovedAsync(string workstationId, bool isApproved)
+        {
+            var remoteAppConnection = FindWorkstationConnection(workstationId);
+            if (remoteAppConnection == null)
+                return;
+
+            if (isApproved)
             {
-                await workstation.UpdateRFIDIndicatorState(isEnabled);
+                await remoteAppConnection.WorkstationApproved();
+            }
+            else
+            {
+                await remoteAppConnection.WorkstationUnapproved();
             }
         }
 

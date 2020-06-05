@@ -61,32 +61,32 @@ namespace HES.Tests.Services
         [Fact, Order(4)]
         public async Task GetEmployeeByIdAsync()
         {
-            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CrudEmployeeId);
 
             Assert.NotNull(result);
-            Assert.Equal(_testingOptions.CRUDEmployeeId, result.Id);
-            Assert.Equal(_testingOptions.CRUDEmployee.FullName, result.FullName);
+            Assert.Equal(_testingOptions.CrudEmployeeId, result.Id);
+            Assert.Equal(_testingOptions.CrudEmployee.FullName, result.FullName);
         }
 
         [Fact, Order(5)]
         public async Task CheckEmployeeNameExistAsync()
         {
-            var result = await _employeeService.CheckEmployeeNameExistAsync(_testingOptions.CRUDEmployee);
-            var employeeResult = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+            var result = await _employeeService.CheckEmployeeNameExistAsync(_testingOptions.CrudEmployee);
+            var employeeResult = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CrudEmployeeId);
 
             Assert.True(result);
-            Assert.Equal(_testingOptions.CRUDEmployee.FullName, employeeResult.FullName);
+            Assert.Equal(_testingOptions.CrudEmployee.FullName, employeeResult.FullName);
         }
 
         [Fact, Order(6)]
         public async Task EditEmployeeAsync()
         {
-            var employee = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+            var employee = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CrudEmployeeId);
             employee.FirstName = "Test00";
             employee.LastName = "Hideez00";
 
             await _employeeService.EditEmployeeAsync(employee);
-            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CrudEmployeeId);
 
             Assert.NotNull(result);
             Assert.Equal(employee, result);
@@ -95,8 +95,8 @@ namespace HES.Tests.Services
         [Fact, Order(7)]
         public async Task DeleteEmployeeAsync()
         {
-            await _employeeService.DeleteEmployeeAsync(_testingOptions.CRUDEmployeeId);
-            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CRUDEmployeeId);
+            await _employeeService.DeleteEmployeeAsync(_testingOptions.CrudEmployeeId);
+            var result = await _employeeService.GetEmployeeByIdAsync(_testingOptions.CrudEmployeeId);
 
             Assert.Null(result);
         }

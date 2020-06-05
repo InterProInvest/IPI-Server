@@ -12,8 +12,8 @@ namespace HES.Tests.Helpers
     {
         public int AccountsCount { get; private set; }
         public int EmployeesCount { get; private set; }
-        public string CRUDEmployeeId { get; private set; }
-        public Employee CRUDEmployee { get; private set; }
+        public string CrudEmployeeId { get; private set; }
+        public Employee CrudEmployee { get; private set; }
         public string NewAccountName { get; private set; }
         public string AccountsEmployeeId { get; private set; }
         public Employee AccountsEmployee { get; private set; }
@@ -28,7 +28,7 @@ namespace HES.Tests.Helpers
         public EmployeeServiceTestingOptions(int employeeCount, int crudEmployeeId, int accountsEmployeeId)
         {
             EmployeesCount = employeeCount;
-            CRUDEmployeeId = $"{crudEmployeeId}";
+            CrudEmployeeId = $"{crudEmployeeId}";
             AccountsEmployeeId = $"{accountsEmployeeId}";
 
             NewAccountName = "New name";
@@ -114,8 +114,8 @@ namespace HES.Tests.Helpers
 
                 employees.Add(employee);
 
-                if (employee.Id == CRUDEmployeeId)
-                    CRUDEmployee = employee;
+                if (employee.Id == CrudEmployeeId)
+                    CrudEmployee = employee;
                 else if (employee.Id == AccountsEmployeeId)
                     AccountsEmployee = employee;
             }

@@ -13,6 +13,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<HardwareVault> VaultQuery();
         Task<HardwareVault> GetVaultByIdAsync(string id);
+        Task<HardwareVault> GetVaultByIdNoTrackingAsync(string vaultId);
         Task<List<HardwareVault>> GetVaultsByEmployeeIdAsync(string id);
         Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync();
         Task<List<HardwareVault>> GetVaultsWithLicenseAsync();
@@ -23,7 +24,8 @@ namespace HES.Core.Interfaces
         Task EditRfidAsync(HardwareVault vault);
         Task UnchangedVaultAsync(HardwareVault vault);
         Task UpdateOnlyPropAsync(HardwareVault vault, string[] properties);
-        Task UpdateAfterWipe(string vaultId);
+        Task UpdateAfterWipeAsync(string vaultId);
+        Task UpdateAfterLinkAsync(string vaultId, string masterPassword);
         Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto);
         Task UpdateNeedSyncAsync(HardwareVault vault, bool needSync);
         Task UpdateNeedSyncAsync(IList<HardwareVault> vaults, bool needSync);

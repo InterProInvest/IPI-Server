@@ -20,7 +20,7 @@ else
                 <InputText id="filterRfid" @bind-Value="Filter.RFID" class="form-control" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
-                <label class="mb-0 text-gray">Battery</label> 
+                <label class="mb-0 text-gray">Battery</label>
                 <select id="filterBattery" @bind="Filter.Battery" class="form-control">
                     <option selected></option>
                     <option value="low">Low</option>
@@ -33,11 +33,11 @@ else
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Last Synced Start Date</label>
-                <input type="datetime-local" id="filterLastSyncedStartDate" @bind:format="yyyy-MM-ddTHH:mm" @bind="Filter.LastSyncedStartDate" class="form-control" />
+                <DateTimePicker @bind-Value="Filter.LastSyncedStartDate" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Last Synced End Date</label>
-                <input type="datetime-local" id="filterLastSyncedEndDate" @bind:format="yyyy-MM-ddTHH:mm" @bind="Filter.LastSyncedEndDate" class="form-control" />
+                <DateTimePicker @bind-Value="Filter.LastSyncedEndDate" />
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">Employee</label>
@@ -73,7 +73,7 @@ else
             </div>
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
                 <label class="mb-0 text-gray">License End Date</label>
-                <input type="date" id="filterLicenseEndDate" @bind="Filter.LicenseEndDate" class="form-control" />
+                <InputDate id="filterLicenseEndDate" @bind-Value="Filter.LicenseEndDate" class="form-control" />
             </div>
             <div class="col align-self-end text-right form-group">
                 <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>

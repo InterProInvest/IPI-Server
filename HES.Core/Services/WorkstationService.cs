@@ -1,8 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models;
-using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.HES.Client;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Workstation;
 using Microsoft.EntityFrameworkCore;
@@ -11,19 +9,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Core.Services
 {
     public class WorkstationService : IWorkstationService
     {
         private readonly IAsyncRepository<Workstation> _workstationRepository;
-        private readonly IAsyncRepository<WorkstationProximityVault> _proximityDeviceRepository;
+        private readonly IAsyncRepository<WorkstationProximityVault> _workstationProximityVaultRepository;
 
         public WorkstationService(IAsyncRepository<Workstation> workstationRepository,
-                                  IAsyncRepository<WorkstationProximityVault> proximityDeviceRepository)
+                                  IAsyncRepository<WorkstationProximityVault> workstationProximityVaultRepository)
         {
             _workstationRepository = workstationRepository;
-            _proximityDeviceRepository = proximityDeviceRepository;
+            _workstationProximityVaultRepository = workstationProximityVaultRepository;
         }
 
         #region Workstation
@@ -176,12 +175,9 @@ namespace HES.Core.Services
         public async Task ApproveWorkstationAsync(Workstation workstation)
         {
             if (workstation == null)
-            {
                 throw new ArgumentNullException(nameof(workstation));
-            }
 
-            string[] properties = { "DepartmentId", "Approved", "RFID" };
-            await _workstationRepository.UpdateOnlyPropAsync(workstation, properties);
+            await _workstationRepository.UpdateOnlyPropAsync(workstation, new string[] { nameof(Workstation.Approved), nameof(Workstation.RFID) });
         }
 
         public async Task UnapproveWorkstationAsync(string workstationId)
@@ -198,28 +194,19 @@ namespace HES.Core.Services
             }
 
             workstation.Approved = false;
-            workstation.DepartmentId = null;
             workstation.RFID = false;
 
-            string[] properties = { "Approved", "DepartmentId", "RFID" };
-            await _workstationRepository.UpdateOnlyPropAsync(workstation, properties);
+            await _workstationRepository.UpdateOnlyPropAsync(workstation, new string[] { nameof(Workstation.Approved), nameof(Workstation.RFID) });
         }
 
         public async Task<bool> GetRfidStateAsync(string workstationId)
         {
-            return await _workstationRepository
+            var workstation = await _workstationRepository
                         .Query()
-                        .Where(w => w.Id == workstationId)
                         .AsNoTracking()
-                        .Select(s => s.RFID)
-                        .FirstOrDefaultAsync();
-        }
+                        .FirstOrDefaultAsync(w => w.Id == workstationId);
 
-        public async Task UpdateRfidStateAsync(string workstationId)
-        {
-            var isEnabled = await GetRfidStateAsync(workstationId);
-
-            await RemoteWorkstationConnectionsService.UpdateRfidIndicatorStateAsync(workstationId, isEnabled);
+            return workstation.RFID;
         }
 
         public async Task<bool> CheckIsApprovedAsync(string workstationId)
@@ -241,12 +228,12 @@ namespace HES.Core.Services
 
         public IQueryable<WorkstationProximityVault> ProximityVaultQuery()
         {
-            return _proximityDeviceRepository.Query();
+            return _workstationProximityVaultRepository.Query();
         }
 
         public async Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId)
         {
-            return await _proximityDeviceRepository
+            return await _workstationProximityVaultRepository
                 .Query()
                 .Include(d => d.HardwareVault.Employee.Department.Company)
                 .Where(d => d.WorkstationId == workstationId)
@@ -255,7 +242,7 @@ namespace HES.Core.Services
 
         public async Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id)
         {
-            return await _proximityDeviceRepository
+            return await _workstationProximityVaultRepository
                 .Query()
                 .Include(d => d.HardwareVault.Employee.Department.Company)
                 .Include(d => d.Workstation.Department)
@@ -277,7 +264,7 @@ namespace HES.Core.Services
 
             foreach (var vault in vaultsIds)
             {
-                var exists = await _proximityDeviceRepository
+                var exists = await _workstationProximityVaultRepository
                 .Query()
                 .Where(d => d.HardwareVaultId == vault)
                 .Where(d => d.WorkstationId == workstationId)
@@ -296,10 +283,8 @@ namespace HES.Core.Services
                 }
             }
 
-            var addedVaults = await _proximityDeviceRepository.AddRangeAsync(proximityVaults);
-            await UpdateProximitySettingsAsync(workstationId);
-
-            return addedVaults;
+            var addedVaults = await _workstationProximityVaultRepository.AddRangeAsync(proximityVaults);
+             return addedVaults;
         }
 
         public async Task AddMultipleProximityVaultsAsync(string[] workstationsIds, string[] vaultsIds)
@@ -327,8 +312,7 @@ namespace HES.Core.Services
             }
 
             string[] properties = { "LockProximity", "UnlockProximity", "LockTimeout" };
-            await _proximityDeviceRepository.UpdateOnlyPropAsync(proximityVault, properties);
-            await UpdateProximitySettingsAsync(proximityVault.WorkstationId);
+            await _workstationProximityVaultRepository.UpdateOnlyPropAsync(proximityVault, properties); 
         }
 
         public async Task DeleteProximityVaultAsync(string proximityVaultId)
@@ -338,14 +322,13 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(proximityVaultId));
             }
 
-            var proximityDevice = await _proximityDeviceRepository.GetByIdAsync(proximityVaultId);
-            if (proximityDevice == null)
+            var proximityVault = await _workstationProximityVaultRepository.GetByIdAsync(proximityVaultId);
+            if (proximityVault == null)
             {
                 throw new Exception("Binding not found.");
             }
 
-            await _proximityDeviceRepository.DeleteAsync(proximityDevice);
-            await UpdateProximitySettingsAsync(proximityDevice.WorkstationId);
+            await _workstationProximityVaultRepository.DeleteAsync(proximityVault);
         }
 
         public async Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityVaults)
@@ -355,27 +338,17 @@ namespace HES.Core.Services
                 throw new ArgumentNullException(nameof(proximityVaults));
             }
 
-            await _proximityDeviceRepository.DeleteRangeAsync(proximityVaults);
-
-            foreach (var item in proximityVaults)
-            {
-                await UpdateProximitySettingsAsync(item.WorkstationId);
-            }
+            await _workstationProximityVaultRepository.DeleteRangeAsync(proximityVaults);
         }
 
         public async Task DeleteProximityByVaultIdAsync(string vaultsId)
         {
-            var allProximity = await _proximityDeviceRepository
+            var allProximity = await _workstationProximityVaultRepository
              .Query()
              .Where(w => w.HardwareVaultId == vaultsId)
              .ToListAsync();
 
-            await _proximityDeviceRepository.DeleteRangeAsync(allProximity);
-
-            foreach (var item in allProximity)
-            {
-                await UpdateProximitySettingsAsync(item.WorkstationId);
-            }
+            await _workstationProximityVaultRepository.DeleteRangeAsync(allProximity);
         }
 
         public async Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId)
@@ -389,7 +362,7 @@ namespace HES.Core.Services
 
             var deviceProximitySettings = new List<DeviceProximitySettingsDto>();
 
-            var proximityDevices = await _proximityDeviceRepository
+            var proximityDevices = await _workstationProximityVaultRepository
                 .Query()
                 .Include(d => d.HardwareVault)
                 .Where(d => d.WorkstationId == workstationId)
@@ -412,13 +385,6 @@ namespace HES.Core.Services
             }
 
             return deviceProximitySettings;
-        }
-
-        public async Task UpdateProximitySettingsAsync(string workstationId)
-        {
-            var deviceProximitySettings = await GetProximitySettingsAsync(workstationId);
-
-            await RemoteWorkstationConnectionsService.UpdateProximitySettingsAsync(workstationId, deviceProximitySettings);
         }
 
         #endregion

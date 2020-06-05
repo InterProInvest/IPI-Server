@@ -66,40 +66,47 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public async Task<IActionResult> OnPostInviteAdminAsync()
         {
-            if (ModelState.IsValid)
+            try
             {
-                // Create new user
-                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
-                var password = Guid.NewGuid().ToString();
-                var result = await _userManager.CreateAsync(user, password);
-                if (!result.Succeeded)
+                if (ModelState.IsValid)
                 {
-                    string errors = string.Empty;
-                    foreach (var item in result.Errors)
+                    // Create new user
+                    var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
+                    var password = Guid.NewGuid().ToString();
+                    var result = await _userManager.CreateAsync(user, password);
+                    if (!result.Succeeded)
                     {
-                        errors += $"Code: {item.Code} Description: {item.Description} {Environment.NewLine}";
+                        string errors = string.Empty;
+                        foreach (var item in result.Errors)
+                        {
+                            errors += $"Code: {item.Code} Description: {item.Description} {Environment.NewLine}";
+                        }
+                        _logger.LogError(errors);
+                        ErrorMessage = errors;
+                        return RedirectToPage("./Index");
                     }
-                    _logger.LogError(errors);
-                    ErrorMessage = errors;
-                    return RedirectToPage("./Index");
+
+                    await _userManager.AddToRoleAsync(user, ApplicationRoles.AdminRole);
+
+                    // Create invite link
+                    var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var email = Input.Email;
+                    var callbackUrl = Url.Page(
+                       "/Account/Invite",
+                        pageHandler: null,
+                        values: new { area = "Identity", code, email },
+                        protocol: Request.Scheme);
+
+                    await _emailSender.SendUserInvitationAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+                    SuccessMessage = $"The invitation has been sent to {Input.Email}.";
                 }
-
-                await _userManager.AddToRoleAsync(user, ApplicationRoles.AdminRole);
-
-                // Create invite link
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var email = Input.Email;
-                var callbackUrl = Url.Page(
-                   "/Account/Invite",
-                    pageHandler: null,
-                    values: new { area = "Identity", code, email },
-                    protocol: Request.Scheme);
-
-                await _emailSender.SendUserInvitationAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
-                SuccessMessage = $"The invitation has been sent to {Input.Email}.";
+                return RedirectToPage("./Index");
             }
-
-            return RedirectToPage("./Index");
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+                return RedirectToPage("./Index");
+            }
         }
 
         #endregion
