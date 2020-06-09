@@ -113,18 +113,18 @@ namespace HES.Tests.Services
             Assert.False(string.IsNullOrWhiteSpace(result));
         }
 
-        //[Fact, Order(9)]
-        //public async Task UpdateOnlyPropAsync()
-        //{
-            //var hardwareVault = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
-            //hardwareVault.Status = VaultStatus.Locked;
+        [Fact, Order(9)]
+        public async Task UpdateVaultAsync()
+        {
+            var hardwareVault = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+            hardwareVault.Status = VaultStatus.Locked;
 
-            //await _hardwareVaultService.UpdateOnlyPropAsync(hardwareVault, new string[] { nameof(HardwareVault.Status) });
+            await _hardwareVaultService.UpdateVaultAsync(hardwareVault);
 
-            //var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
 
-            //Assert.Equal(VaultStatus.Locked, result.Status);
-        //}
+            Assert.Equal(VaultStatus.Locked, result.Status);
+        }
 
         [Fact, Order(10)]
         public async Task ActivateVaultAsync()
@@ -135,6 +135,20 @@ namespace HES.Tests.Services
 
             Assert.Equal(VaultStatus.Suspended, result.Status);
             Assert.Equal(VaultStatusReason.None, result.StatusReason);
+        }
+
+        
+
+        [Fact, Order(11)]
+        public async Task SuspendVaultAsync()
+        {
+            await _hardwareVaultService.SuspendVaultAsync(_testingOptions.HardwareVaultId, "TestDescription");
+
+            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+
+            Assert.Equal(VaultStatus.Suspended, result.Status);
+            Assert.Equal(VaultStatusReason.None, result.StatusReason);
+            Assert.Equal("TestDescription", result.StatusDescription);
         }
     }
 }
