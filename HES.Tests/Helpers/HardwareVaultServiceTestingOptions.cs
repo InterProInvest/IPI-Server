@@ -14,6 +14,7 @@ namespace HES.Tests.Helpers
     {
         public int ActivationCodeLenght { get; private set; }
         public string HardwareVaultId{ get; private set; }
+        public string EmployeetId { get; private set; }
         public string NewHardwareVaultRFID { get; private set; }
         public HardwareVault HardwareVault { get; private set; }
         public int HardwareVaultsCount { get; private set; }
@@ -21,12 +22,13 @@ namespace HES.Tests.Helpers
         public List<HardwareVault> TestingHardwareVaults { get; private set; }
 
         private readonly IAsyncRepository<HardwareVault> _hardwareVaultRepository;
-        public HardwareVaultServiceTestingOptions(int hardwareVaultsCount, int hardwareVaultId, string newHardwareVaultRFID, IAsyncRepository<HardwareVault> hardwareVaultRepository, IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository)
+        public HardwareVaultServiceTestingOptions(int hardwareVaultsCount, int hardwareVaultId, string newHardwareVaultRFID, int employeeId ,IAsyncRepository<HardwareVault> hardwareVaultRepository, IAsyncRepository<HardwareVaultProfile> hardwareVaultProfileRepository)
         {
             NewHardwareVaultRFID = newHardwareVaultRFID;
             HardwareVaultId = hardwareVaultId.ToString();
             HardwareVaultsCount = hardwareVaultsCount;
             _hardwareVaultRepository = hardwareVaultRepository;
+            EmployeetId = $"{employeeId}";
 
             hardwareVaultProfileRepository.AddAsync(new HardwareVaultProfile
             {
@@ -68,7 +70,10 @@ namespace HES.Tests.Helpers
                 TestingHardwareVaults.Add(hardwareVault);
 
                 if (hardwareVault.Id == HardwareVaultId)
+                {
                     HardwareVault = hardwareVault;
+                    hardwareVault.EmployeeId = EmployeetId;
+                }
             }
 
             _hardwareVaultRepository.AddRangeAsync(TestingHardwareVaults);

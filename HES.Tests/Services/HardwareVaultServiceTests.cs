@@ -21,7 +21,7 @@ namespace HES.Tests.Services
         public HardwareVaultServiceTests(CustomWebAppFactory<Startup> factory)
         {
             _hardwareVaultService = factory.GetHardwareVaultService();
-            _testingOptions = new HardwareVaultServiceTestingOptions(100, 30, "1234567", factory.GetHardwareVaultRepository(), factory.GetHardwareVaultProfileRepository());
+            _testingOptions = new HardwareVaultServiceTestingOptions(100, 30, "1234567", 20, factory.GetHardwareVaultRepository(), factory.GetHardwareVaultProfileRepository());
         }
 
 
@@ -137,9 +137,21 @@ namespace HES.Tests.Services
             Assert.Equal(VaultStatusReason.None, result.StatusReason);
         }
 
-        
 
         [Fact, Order(11)]
+        public async Task UpdateRangeVaultsAsync()
+        {
+            var hardwareVault = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+            hardwareVault.Status = VaultStatus.Active;
+
+            await _hardwareVaultService.UpdateRangeVaultsAsync(new HardwareVault[] { hardwareVault });
+
+            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+
+            Assert.Equal(VaultStatus.Active, result.Status);
+        }
+
+        [Fact, Order(12)]
         public async Task SuspendVaultAsync()
         {
             await _hardwareVaultService.SuspendVaultAsync(_testingOptions.HardwareVaultId, "TestDescription");
@@ -149,6 +161,41 @@ namespace HES.Tests.Services
             Assert.Equal(VaultStatus.Suspended, result.Status);
             Assert.Equal(VaultStatusReason.None, result.StatusReason);
             Assert.Equal("TestDescription", result.StatusDescription);
+        }
+
+        [Fact, Order(13)]
+        public async Task VaultCompromisedAsync()
+        {
+            await _hardwareVaultService.VaultCompromisedAsync(_testingOptions.HardwareVaultId, VaultStatusReason.Broken, "TestDescription");
+
+            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+
+            Assert.Null(result.EmployeeId);
+            Assert.Equal(VaultStatus.Compromised, result.Status);
+            Assert.Equal(VaultStatusReason.Broken, result.StatusReason);
+            Assert.Equal("TestDescription", result.StatusDescription);
+        }
+
+        [Fact, Order(14)]
+        public async Task UpdateAfterWipeAsync()
+        {
+            await _hardwareVaultService.UpdateAfterWipeAsync(_testingOptions.HardwareVaultId);
+
+            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+
+            Assert.Null(result.MasterPassword);
+            Assert.Equal(VaultStatus.Ready, result.Status);
+            Assert.True(result.HasNewLicense);
+        }
+
+        [Fact, Order(15)]
+        public async Task UpdateAfterLinkAsync()
+        {
+            await _hardwareVaultService.UpdateAfterLinkAsync(_testingOptions.HardwareVaultId, "TestMasterPassword");
+
+            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
+
+            Assert.Equal("TestMasterPassword", result.MasterPassword);
         }
     }
 }
