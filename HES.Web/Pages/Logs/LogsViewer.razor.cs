@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Logs
         public LogModel LogModel { get; set; }
 
         private bool isBusy;
-        public string searchText = string.Empty;
+        private string searchText = string.Empty;
 
         protected override void OnInitialized()
         {
@@ -28,9 +28,7 @@ namespace HES.Web.Pages.Logs
         private async Task ShowLogAsync(string name)
         {
             if (isBusy)
-            {
                 return;
-            }
 
             isBusy = true;
 

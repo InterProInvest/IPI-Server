@@ -33,7 +33,7 @@ namespace HES.Core.Services
             {
                 if (item != "")
                 {
-                    list.Add(new LogModel { Date = separator + " " + item.Split("|")[0], Level = item.Split("|")[1], Logger = item.Split("|")[2], Message = item.Split("|")[3], Method = item.Split("|")[4], Url = item.Split("|")[5] });
+                    list.Add(new LogModel { Name = name, Date = separator + " " + item.Split("|")[0], Level = item.Split("|")[1], Logger = item.Split("|")[2], Message = item.Split("|")[3], Method = item.Split("|")[4], Url = item.Split("|")[5] });
                 }
             }
 
@@ -54,6 +54,7 @@ namespace HES.Core.Services
 
     public class LogModel
     {
+        public string Name { get; set; }
         public string Date { get; set; }
         public string Level { get; set; }
         public string Logger { get; set; }

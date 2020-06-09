@@ -1,0 +1,25 @@
+﻿@if (ServerdCard == null)
+{
+    <LoadingPage />
+}
+else
+{
+    <div class="row">
+        <!-- HES -->
+        <div class="card-col">
+            <Card DashboardCard="ServerdCard" />
+        </div>
+        <!-- Employees -->
+        <div class="card-col">
+            <Card DashboardCard="EmployeesCard" />
+        </div>
+        <!-- Hardware Vaults -->
+        <div class="card-col">
+            <Card DashboardCard="HardwareVaultsCard" />
+        </div>
+        <!-- Workstations -->
+        <div class="card-col">
+            <Card DashboardCard="WorkstationsCard" />
+        </div>
+    </div>
+}

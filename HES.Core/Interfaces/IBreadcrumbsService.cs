@@ -7,6 +7,7 @@ namespace HES.Core.Interfaces
     public interface IBreadcrumbsService
     {
         Task GetBreadcrumbs(out List<Breadcrumb> items);
+        Task SetDashboard();
         Task SetEmployees();
         Task SetEmployeeDetails(string name);
         Task SetHardwareVaults();

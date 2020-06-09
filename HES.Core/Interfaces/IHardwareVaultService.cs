@@ -18,7 +18,6 @@ namespace HES.Core.Interfaces
         Task<List<HardwareVault>> GetVaultsWithLicenseAsync();
         Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> options);
         Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> options);
-        Task<HardwareVault> AddVaultIfNotExistAsync(HardwareVault vault);
         Task ImportVaultsAsync();
         Task<HardwareVault> UpdateVaultAsync(HardwareVault vault);
         Task<List<HardwareVault>> UpdateRangeVaultsAsync(IList<HardwareVault> vaults);

@@ -9,6 +9,7 @@ namespace HES.Core.Interfaces
     {
         IQueryable<HardwareVaultTask> TaskQuery();
         Task<HardwareVaultTask> GetTaskByIdAsync(string id);
+        Task<List<HardwareVaultTask>> GetHardwareVaultTasksAsync();
         Task AddTaskAsync(HardwareVaultTask vaultTask);
         Task AddRangeTasksAsync(IList<HardwareVaultTask> vaultTasks);
         Task AddPrimaryAsync(string vaultId, string accountId);
