@@ -48,6 +48,8 @@ namespace HES.Core.Entities
 
         public DateTime ImportedAt { get; set; }
 
+        public uint Timestamp { get; set; }
+
         public bool HasNewLicense { get; set; }
 
 

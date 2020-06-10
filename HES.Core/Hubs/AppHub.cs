@@ -141,7 +141,7 @@ namespace HES.Core.Hubs
 
             return HesResponse.Ok;
         }
-             
+
         private string GetWorkstationId()
         {
             if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
@@ -166,7 +166,7 @@ namespace HES.Core.Hubs
 
             try
             {
-                _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
+                await _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
                 await OnDevicePropertiesChanged(dto);
                 await CheckVaultStatusAsync(dto);
                 return HesResponse.Ok;

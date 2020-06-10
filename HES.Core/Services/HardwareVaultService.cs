@@ -524,6 +524,7 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {bleDevice.DeviceSerialNo} not found");
 
+            vault.Timestamp = bleDevice.Timestamp;
             vault.Battery = bleDevice.Battery;
             vault.Firmware = bleDevice.FirmwareVersion;
             vault.LastSynced = DateTime.UtcNow;

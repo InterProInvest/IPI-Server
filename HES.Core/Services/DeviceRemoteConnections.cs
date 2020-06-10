@@ -167,5 +167,13 @@ namespace HES.Core.Services
             _appConnections.TryGetValue(workstationId, out RemoteDeviceDescription descr);
             return descr?.Device;
         }
+
+        internal RemoteDevice GetDefaultRemoteDevice()
+        {
+            var kvp = _appConnections.FirstOrDefault();
+            if (kvp.Value == null)
+                return null;
+            return kvp.Value.Device;
+        }
     }
 }
