@@ -36,8 +36,8 @@ namespace HES.Core.Interfaces
         Task<List<HardwareVaultProfile>> GetProfilesAsync();
         Task<HardwareVaultProfile> GetProfileByIdAsync(string profileId);
         Task<List<string>> GetVaultIdsByProfileTaskAsync();
-        Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile deviceAccessProfile);
-        Task EditProfileAsync(HardwareVaultProfile deviceAccessProfile);
+        Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile hardwareVaultProfile);
+        Task EditProfileAsync(HardwareVaultProfile hardwareVaultProfile);
         Task DeleteProfileAsync(string id);
         Task ChangeVaultProfileAsync(string vaultId, string profileId);
     }

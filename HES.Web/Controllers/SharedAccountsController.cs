@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 
 namespace HES.Web.Controllers
 {
@@ -72,6 +73,10 @@ namespace HES.Web.Controllers
                 };
 
                 createdAccount = await _sharedAccountService.CreateSharedAccountAsync(sharedAccount);
+            }
+            catch (AlreadyExistException ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {

@@ -195,7 +195,7 @@ namespace HES.Web.Controllers
 
         [HttpDelete()]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> RemoveDevice(RemoveHardwareVaultDto vaultDto)
+        public async Task<IActionResult> RemoveHardwareVault(RemoveHardwareVaultDto vaultDto)
         {
             try
             {

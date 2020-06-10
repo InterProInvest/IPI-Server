@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.SharedAccounts;
 using HES.Core.Utilities;
@@ -78,7 +79,7 @@ namespace HES.Core.Services
 
             if (exist)
             {
-                throw new Exception("An account with the same name and login exists.");
+                throw new AlreadyExistException("An account with the same name and login exists.");
             }
 
             // Validate url

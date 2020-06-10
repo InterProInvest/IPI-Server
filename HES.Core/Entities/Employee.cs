@@ -45,7 +45,7 @@ namespace HES.Core.Entities
         [Display(Name = "Name")]
         public string FullName => $"{FirstName} {LastName}";
         [NotMapped]
-        public int VaultsCount => HardwareVaults.Count + SoftwareVaults.Count;
+        public int VaultsCount => (HardwareVaults == null ? 0 : HardwareVaults.Count) + (SoftwareVaults == null ? 0 : SoftwareVaults.Count);
 
         [NotMapped]
         [Display(Name = "Company")]

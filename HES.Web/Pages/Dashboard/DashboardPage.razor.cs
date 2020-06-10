@@ -28,7 +28,8 @@ namespace HES.Web.Pages.Dashboard
             {
                 ServerdCard = await DashboardService.GetServerCardAsync();
                 ServerdCard.RightAction = ShowHardwareVaultTaskAsync;
-                ServerdCard.Notifications.First(x => x.Page == "long-pending-tasks").Action = ShowHardwareVaultTaskAsync;
+                if (ServerdCard.Notifications.FirstOrDefault(x => x.Page == "long-pending-tasks") != null)
+                    ServerdCard.Notifications.FirstOrDefault(x => x.Page == "long-pending-tasks").Action = ShowHardwareVaultTaskAsync;
                 EmployeesCard = await DashboardService.GetEmployeesCardAsync();
                 HardwareVaultsCard = await DashboardService.GetHardwareVaultsCardAsync();
                 WorkstationsCard = await DashboardService.GetWorkstationsCardAsync();
