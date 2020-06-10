@@ -145,10 +145,12 @@ namespace HES.Core.Services
             if (remoteDevice == null)
                 throw new HideezException(HideezErrorCode.HesFailedEstablishRemoteDeviceConnection);
 
-            var vault = await _hardwareVaultService.VaultQuery().AsNoTracking().FirstOrDefaultAsync(d => d.Id == vaultId);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
             if (vault == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
+
+            await _hardwareVaultService.UpdateVaultStatusAsync(remoteDevice, vault);
 
             switch (vault.Status)
             {
@@ -156,8 +158,6 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
                 case VaultStatus.Reserved:
                     await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
-                    await CheckPassphraseAsync(remoteDevice, vault.Id);
-                    await CheckTaskAsync(remoteDevice, vault.Id, primaryAccountOnly);
                     break;
                 case VaultStatus.Active:
                     await CheckPassphraseAsync(remoteDevice, vault.Id);
@@ -170,7 +170,7 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Deactivated:
                     await CheckIsNeedBackupAsync(remoteDevice, vault);
-                    await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(vault.MasterPassword));
+                    await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword)));
                     await _hardwareVaultService.UpdateAfterWipeAsync(vault.Id);
                     throw new HideezException(HideezErrorCode.DeviceHasBeenWiped);
                 case VaultStatus.Compromised:
@@ -200,60 +200,6 @@ namespace HES.Core.Services
                 await _accountService.UpdateOnlyPropAsync(serverAccounts, new string[] { nameof(Account.Password), nameof(Account.OtpSecret) });
             }
         }
-
-        //private async Task CheckLockedAsync(RemoteDevice remoteDevice, HardwareVault vault)
-        //{
-        //    if (remoteDevice.AccessLevel.IsLocked)
-        //    {
-        //        await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Suspend);
-        //        throw new Exception($"Vault {vault.Id} is locked");
-        //    }
-        //}
-
-        //private async Task CheckLinkedAsync(RemoteDevice remoteDevice, HardwareVault vault)
-        //{
-        //    if (!remoteDevice.AccessLevel.IsLinkRequired)
-        //    {
-        //        if (vault.MasterPassword != null)
-        //        {
-        //            return;
-        //        }
-        //        else
-        //        {
-        //            throw new HideezException(HideezErrorCode.HesDeviceLinkedToAnotherServer);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (vault.MasterPassword != null)
-        //        {
-        //            throw new HideezException(HideezErrorCode.HesDeviceWipedOnAnotherServer);
-        //        }
-        //        else
-        //        {
-        //            var existLinkTask = await _hardwareVaultTaskService
-        //                .TaskQuery()
-        //                .Where(d => d.HardwareVaultId == vault.Id && d.Operation == TaskOperation.Link)
-        //                .AsNoTracking()
-        //                .AnyAsync();
-
-        //            if (existLinkTask)
-        //            {
-        //                await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
-        //                await remoteDevice.RefreshDeviceInfo();
-
-        //                if (remoteDevice.AccessLevel.IsLinkRequired)
-        //                {
-        //                    throw new Exception($"Can't link the vault {vault.Id}, after executing the link task.");
-        //                }
-        //            }
-        //            else
-        //            {
-        //                throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
-        //            }
-        //        }
-        //    }
-        //}
 
         private async Task CheckPassphraseAsync(RemoteDevice remoteDevice, string vaultId)
         {

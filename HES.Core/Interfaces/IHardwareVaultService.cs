@@ -2,7 +2,9 @@
 using HES.Core.Enums;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVaults;
+using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
+using Hideez.SDK.Communication.Remote;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +15,6 @@ namespace HES.Core.Interfaces
     {
         IQueryable<HardwareVault> VaultQuery();
         Task<HardwareVault> GetVaultByIdAsync(string id);
-        Task<HardwareVault> GetVaultByIdNoTrackingAsync(string vaultId);
         Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync();
         Task<List<HardwareVault>> GetVaultsWithLicenseAsync();
         Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> options);
@@ -25,6 +26,7 @@ namespace HES.Core.Interfaces
         Task UpdateAfterWipeAsync(string vaultId);
         Task UpdateAfterLinkAsync(string vaultId, string masterPassword);
         Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto);
+        Task UpdateVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault);
         Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);
         Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
@@ -40,5 +42,6 @@ namespace HES.Core.Interfaces
         Task EditProfileAsync(HardwareVaultProfile hardwareVaultProfile);
         Task DeleteProfileAsync(string id);
         Task ChangeVaultProfileAsync(string vaultId, string profileId);
+        Task<AccessParams> GetAccessParamsAsync(string vaultId);
     }
 }

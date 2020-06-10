@@ -6,7 +6,10 @@ using HES.Core.Interfaces;
 using HES.Core.Models.API.HardwareVault;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVaults;
+using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
+using Hideez.SDK.Communication.Remote;
+using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -70,16 +73,6 @@ namespace HES.Core.Services
                 .Include(d => d.Employee.Department.Company)
                 .Include(d => d.HardwareVaultProfile)
                 .FirstOrDefaultAsync(m => m.Id == vaultId);
-        }
-
-        public async Task<HardwareVault> GetVaultByIdNoTrackingAsync(string vaultId)
-        {
-            return await _hardwareVaultRepository
-                .Query()
-                .Include(x => x.Employee.Department.Company)
-                .Include(x => x.HardwareVaultProfile)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == vaultId);
         }
 
         public async Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync()
@@ -496,12 +489,14 @@ namespace HES.Core.Services
                 throw new Exception($"Vault {vault.Id} not found");
 
             vault.Status = VaultStatus.Ready;
+            vault.StatusReason = VaultStatusReason.None;
+            vault.StatusDescription = null;
             vault.MasterPassword = null;
             vault.HasNewLicense = true;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Status), nameof(HardwareVault.MasterPassword), nameof(HardwareVault.HasNewLicense) });
+                await _hardwareVaultRepository.UpdateAsync(vault);
                 await _licenseService.ChangeLicenseNotAppliedAsync(vaultId);
 
                 transactionScope.Complete();
@@ -523,32 +518,40 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.MasterPassword) });
         }
 
-        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto device)
+        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto bleDevice)
         {
-            var vault = await _hardwareVaultRepository.GetByIdAsync(device.DeviceSerialNo);
+            var vault = await _hardwareVaultRepository.GetByIdAsync(bleDevice.DeviceSerialNo);
             if (vault == null)
-                throw new Exception($"Vault {device.DeviceSerialNo} not found");
+                throw new Exception($"Vault {bleDevice.DeviceSerialNo} not found");
 
-            if (device.IsLocked)
+            vault.Battery = bleDevice.Battery;
+            vault.Firmware = bleDevice.FirmwareVersion;
+            vault.LastSynced = DateTime.UtcNow;
+
+            await _hardwareVaultRepository.UpdateAsync(vault);
+        }
+
+        public async Task UpdateVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        {
+            if (remoteDevice.IsLocked)
             {
-                if (!device.IsCanUnlock && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
+                if (!remoteDevice.IsCanUnlock && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
                 {
                     vault.Status = VaultStatus.Locked;
                 }
             }
-            else
+
+            if (!remoteDevice.IsLocked && !remoteDevice.IsCanUnlock && !remoteDevice.AccessLevel.IsLinkRequired && (vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved))
             {
-                if (vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved)
-                {
-                    vault.Status = VaultStatus.Active;
-                }
+                vault.Status = VaultStatus.Active;
+
+                var accessParams = await GetAccessParamsAsync(vault.Id);
+                var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+
+                await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
             }
 
-            vault.Battery = device.Battery;
-            vault.Firmware = device.FirmwareVersion;
-            vault.LastSynced = DateTime.UtcNow;
-
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.Battery), nameof(HardwareVault.Firmware), nameof(HardwareVault.Status), nameof(HardwareVault.LastSynced) });
+            await _hardwareVaultRepository.UpdateAsync(vault);
         }
 
         public async Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId)
@@ -816,6 +819,32 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
+        }
+
+        public async Task<AccessParams> GetAccessParamsAsync(string vaultId)
+        {
+            var vault = await GetVaultByIdAsync(vaultId);
+
+            return new AccessParams()
+            {
+                MasterKey_Bond = vault.HardwareVaultProfile.MasterKeyBonding,
+                MasterKey_Connect = vault.HardwareVaultProfile.MasterKeyConnection,
+                MasterKey_Channel = vault.HardwareVaultProfile.MasterKeyNewChannel,
+
+                Button_Bond = vault.HardwareVaultProfile.ButtonBonding,
+                Button_Connect = vault.HardwareVaultProfile.ButtonConnection,
+                Button_Channel = vault.HardwareVaultProfile.ButtonNewChannel,
+
+                Pin_Bond = vault.HardwareVaultProfile.PinBonding,
+                Pin_Connect = vault.HardwareVaultProfile.PinConnection,
+                Pin_Channel = vault.HardwareVaultProfile.PinNewChannel,
+
+                PinMinLength = vault.HardwareVaultProfile.PinLength,
+                PinMaxTries = vault.HardwareVaultProfile.PinTryCount,
+                PinExpirationPeriod = vault.HardwareVaultProfile.PinExpiration,
+                ButtonExpirationPeriod = 0,
+                MasterKeyExpirationPeriod = 0
+            };
         }
 
         #endregion

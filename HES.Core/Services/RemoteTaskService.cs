@@ -3,7 +3,6 @@ using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
-using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
@@ -229,34 +228,11 @@ namespace HES.Core.Services
             var key = ConvertUtils.HexStringToBytes(task.Password);
 
             await remoteDevice.Link(key, code, 3);
-            await ProfileVaultAsync(remoteDevice, task);
         }
 
         private async Task ProfileVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
         {
-            var vault = await _hardwareVaultService.GetVaultByIdNoTrackingAsync(task.HardwareVaultId);
-
-            var accessParams = new AccessParams()
-            {
-                MasterKey_Bond = vault.HardwareVaultProfile.MasterKeyBonding,
-                MasterKey_Connect = vault.HardwareVaultProfile.MasterKeyConnection,
-                MasterKey_Channel = vault.HardwareVaultProfile.MasterKeyNewChannel,
-
-                Button_Bond = vault.HardwareVaultProfile.ButtonBonding,
-                Button_Connect = vault.HardwareVaultProfile.ButtonConnection,
-                Button_Channel = vault.HardwareVaultProfile.ButtonNewChannel,
-
-                Pin_Bond = vault.HardwareVaultProfile.PinBonding,
-                Pin_Connect = vault.HardwareVaultProfile.PinConnection,
-                Pin_Channel = vault.HardwareVaultProfile.PinNewChannel,
-
-                PinMinLength = vault.HardwareVaultProfile.PinLength,
-                PinMaxTries = vault.HardwareVaultProfile.PinTryCount,
-                PinExpirationPeriod = vault.HardwareVaultProfile.PinExpiration,
-                ButtonExpirationPeriod = 0,
-                MasterKeyExpirationPeriod = 0
-            };
-
+            var accessParams = await _hardwareVaultService.GetAccessParamsAsync(task.HardwareVaultId);
             var key = ConvertUtils.HexStringToBytes(task.Password);
             await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
         }
@@ -264,8 +240,8 @@ namespace HES.Core.Services
         private async Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
         {
             var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(task.HardwareVaultId));
-            var vault = await _hardwareVaultService.GetVaultByIdNoTrackingAsync(task.HardwareVaultId);
-            var key = ConvertUtils.HexStringToBytes(vault.MasterPassword);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(task.HardwareVaultId);
+            var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
             await remoteDevice.LockDeviceCode(key, code, 3);
         }
     }
