@@ -1,7 +1,9 @@
-﻿using HES.Core.Interfaces;
+﻿using HES.Core.Enums;
+using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
+using Hideez.SDK.Communication.Utils;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,10 +15,12 @@ namespace HES.Core.Services
         static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
         private readonly IHardwareVaultService _hardwareVaultService;
+        private readonly IEmployeeService _employeeService;
 
-        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService)
+        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService, IEmployeeService employeeService)
         {
             _hardwareVaultService = hardwareVaultService;
+            _employeeService = employeeService;
         }
 
         static DeviceRemoteConnections GetDeviceRemoteConnections(string deviceId)
@@ -28,10 +32,9 @@ namespace HES.Core.Services
         }
 
         // Device connected to the host (called by AppHub)
-        public async Task OnDeviceConnected(string deviceId, string workstationId, IRemoteAppConnection appConnection)
+        public void OnDeviceConnected(string deviceId, string workstationId, IRemoteAppConnection appConnection)
         {
             GetDeviceRemoteConnections(deviceId).OnDeviceConnected(workstationId, appConnection);
-            await SyncHardwareVaults(deviceId);
         }
 
         // Device disconnected from the host (called by AppHub)
@@ -85,16 +88,31 @@ namespace HES.Core.Services
             return GetDeviceRemoteConnections(deviceId).GetRemoteDevice(workstationId);
         }
 
-        private async Task SyncHardwareVaults(string vaultId)
+        public async Task SyncHardwareVaults(string vaultId)
         {
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
-            var employeeVaults = vault.Employee.HardwareVaults.Where(x => x.Id != vaultId && x.IsOnline && x.Timestamp != vault.Timestamp).ToList();
+
+            if (vault.Status != VaultStatus.Active)
+                return;
+
+            var employee = await _employeeService.GetEmployeeByIdAsync(vault.EmployeeId);
+
+            var employeeVaults = employee.HardwareVaults.Where(x => x.Id != vaultId && x.IsOnline && x.Timestamp != vault.Timestamp && x.Status == VaultStatus.Active).ToList();
             foreach (var employeeVault in employeeVaults)
             {
-                var firstRemoteDevice = GetDeviceRemoteConnections(vault.Id).GetDefaultRemoteDevice();
-                var secondRemoteDevice = GetDeviceRemoteConnections(employeeVault.Id).GetDefaultRemoteDevice();
+                var firstWorkstationId = GetDeviceRemoteConnections(vault.Id).GetFirstOrDefaultWorkstation();
+                var secondWorkstationId = GetDeviceRemoteConnections(employeeVault.Id).GetFirstOrDefaultWorkstation();
 
-                await new DeviceStorageReplicator(firstRemoteDevice, secondRemoteDevice, null).Start();
+                var firstRemoteDeviceTask = ConnectDevice(vault.Id, firstWorkstationId).TimeoutAfter(30_000);
+                var secondRemoteDeviceTask = ConnectDevice(employeeVault.Id, secondWorkstationId).TimeoutAfter(30_000);
+
+                await Task.WhenAll(firstRemoteDeviceTask, secondRemoteDeviceTask);
+
+                await new DeviceStorageReplicator(firstRemoteDeviceTask.Result, secondRemoteDeviceTask.Result, null).Start();
+
+                var timestamp = employee.HardwareVaults.Max(x => x.Timestamp);
+                employee.HardwareVaults.ForEach(x => x.Timestamp = timestamp);
+                await _hardwareVaultService.UpdateRangeVaultsAsync(employee.HardwareVaults);
             }
         }
     }

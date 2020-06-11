@@ -13,11 +13,12 @@ namespace HES.Core.Interfaces
         void OnAppHubDisconnected(string workstationId);
 
         // Received via AppHub
-        Task OnDeviceConnected(string deviceId, string workstationId, IRemoteAppConnection appConnection);
+        void OnDeviceConnected(string deviceId, string workstationId, IRemoteAppConnection appConnection);
         void OnDeviceDisconnected(string deviceId, string workstationId);
 
         Task<RemoteDevice> ConnectDevice(string deviceId, string workstationId);
         RemoteDevice FindRemoteDevice(string deviceId, string workstationId);
 
+        Task SyncHardwareVaults(string vaultId);
     }
 }

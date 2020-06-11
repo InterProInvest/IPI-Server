@@ -168,12 +168,20 @@ namespace HES.Core.Services
             return descr?.Device;
         }
 
-        internal RemoteDevice GetDefaultRemoteDevice()
+        internal RemoteDevice GetFirstOrDefaultRemoteDevice()
         {
             var kvp = _appConnections.FirstOrDefault();
             if (kvp.Value == null)
                 return null;
             return kvp.Value.Device;
+        }
+
+        internal string GetFirstOrDefaultWorkstation()
+        {
+            var kvp = _appConnections.FirstOrDefault();
+            if (kvp.Key == null)
+                return null;
+            return kvp.Key;
         }
     }
 }

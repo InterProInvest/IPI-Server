@@ -166,9 +166,10 @@ namespace HES.Core.Hubs
 
             try
             {
-                await _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
+                _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
                 await OnDevicePropertiesChanged(dto);
                 await CheckVaultStatusAsync(dto);
+                await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
                 return HesResponse.Ok;
             }
             catch (Exception ex)
