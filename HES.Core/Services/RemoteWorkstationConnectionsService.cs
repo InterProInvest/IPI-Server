@@ -158,6 +158,8 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
                 case VaultStatus.Reserved:
                     await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
+                    // TEMP
+                    await remoteDevice.UnlockDeviceCode(System.Text.Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id)));
                     break;
                 case VaultStatus.Active:
                     await CheckPassphraseAsync(remoteDevice, vault.Id);

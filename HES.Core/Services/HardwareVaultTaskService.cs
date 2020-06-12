@@ -28,6 +28,7 @@ namespace HES.Core.Services
         {
             return await _hardwareVaultTaskRepository
                .Query()
+               .Include(x => x.HardwareVault)
                .Include(d => d.Account.Employee.HardwareVaults)
                .FirstOrDefaultAsync(d => d.Id == taskId);
         }

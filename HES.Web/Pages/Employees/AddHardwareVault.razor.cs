@@ -89,7 +89,7 @@ namespace HES.Web.Pages.Employees
                 await EmployeeService.AddHardwareVaultAsync(EmployeeId, SelectedHardwareVault.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Vault added successfully", ToastLevel.Success);      
+                ToastService.ShowToast("Vault added", ToastLevel.Success);      
                 await HubContext.Clients.All.SendAsync("UpdatePage", EmployeeId, string.Empty);
                 await ModalDialogService.CloseAsync();
             }

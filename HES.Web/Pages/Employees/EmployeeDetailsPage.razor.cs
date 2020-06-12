@@ -289,15 +289,15 @@ namespace HES.Web.Pages.Employees
             .Build();
 
             hubConnection.On<string, string>("UpdatePage", async (employeeId, connectionId) =>
-             {
-                 var id = hubConnection.ConnectionId;
-                 if (id != connectionId && employeeId == EmployeeId)
-                 {
-                     await GetEmployeeAsync();
-                     await LoadTableDataAsync();
-                     //NavigationManager.NavigateTo(NavigationManager.Uri, true);
-                 }
-             });
+            {
+                var id = hubConnection.ConnectionId;
+                if (id != connectionId && employeeId == EmployeeId)
+                {
+                    await GetEmployeeAsync();
+                    await LoadTableDataAsync();
+                    //NavigationManager.NavigateTo(NavigationManager.Uri, true);
+                }
+            });
 
             await hubConnection.StartAsync();
         }

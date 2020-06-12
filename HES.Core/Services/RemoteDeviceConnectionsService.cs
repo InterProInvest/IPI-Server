@@ -98,7 +98,7 @@ namespace HES.Core.Services
             {
                 var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
-                if (vault.Status != VaultStatus.Active && !vault.NeedSync)
+                if (vault.Status != VaultStatus.Active || !vault.NeedSync || vault.EmployeeId == null)
                     return;
 
                 var employee = await _employeeService.GetEmployeeByIdAsync(vault.EmployeeId);

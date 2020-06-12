@@ -71,6 +71,10 @@ namespace HES.Core.Services
                     break;
             }
 
+            if (task.HardwareVaultId != null)
+            {                
+                await _hubContext.Clients.All.SendAsync("UpdatePage", task.HardwareVault.EmployeeId, string.Empty);
+            }
             // Delete task
             await _hardwareVaultTaskService.DeleteTaskAsync(task);
         }
