@@ -4,6 +4,8 @@ using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,11 +18,13 @@ namespace HES.Core.Services
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IEmployeeService _employeeService;
+        private readonly ILogger<RemoteDeviceConnectionsService> _logger;
 
-        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService, IEmployeeService employeeService)
+        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService, IEmployeeService employeeService, ILogger<RemoteDeviceConnectionsService> logger)
         {
             _hardwareVaultService = hardwareVaultService;
             _employeeService = employeeService;
+            _logger = logger;
         }
 
         static DeviceRemoteConnections GetDeviceRemoteConnections(string deviceId)
@@ -90,29 +94,48 @@ namespace HES.Core.Services
 
         public async Task SyncHardwareVaults(string vaultId)
         {
-            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
-
-            if (vault.Status != VaultStatus.Active)
-                return;
-
-            var employee = await _employeeService.GetEmployeeByIdAsync(vault.EmployeeId);
-
-            var employeeVaults = employee.HardwareVaults.Where(x => x.Id != vaultId && x.IsOnline && x.Timestamp != vault.Timestamp && x.Status == VaultStatus.Active).ToList();
-            foreach (var employeeVault in employeeVaults)
+            try
             {
-                var firstWorkstationId = GetDeviceRemoteConnections(vault.Id).GetFirstOrDefaultWorkstation();
-                var secondWorkstationId = GetDeviceRemoteConnections(employeeVault.Id).GetFirstOrDefaultWorkstation();
+                var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
-                var firstRemoteDeviceTask = ConnectDevice(vault.Id, firstWorkstationId).TimeoutAfter(30_000);
-                var secondRemoteDeviceTask = ConnectDevice(employeeVault.Id, secondWorkstationId).TimeoutAfter(30_000);
+                if (vault.Status != VaultStatus.Active && !vault.NeedSync)
+                    return;
 
-                await Task.WhenAll(firstRemoteDeviceTask, secondRemoteDeviceTask);
+                var employee = await _employeeService.GetEmployeeByIdAsync(vault.EmployeeId);
 
-                await new DeviceStorageReplicator(firstRemoteDeviceTask.Result, secondRemoteDeviceTask.Result, null).Start();
+                var employeeVaults = employee.HardwareVaults.Where(x => x.Id != vaultId && x.IsOnline && x.Timestamp != vault.Timestamp && x.Status == VaultStatus.Active && !x.NeedSync).ToList();
+                foreach (var employeeVault in employeeVaults)
+                {
+                    var firstWorkstationId = GetDeviceRemoteConnections(vault.Id).GetFirstOrDefaultWorkstation();
+                    var secondWorkstationId = GetDeviceRemoteConnections(employeeVault.Id).GetFirstOrDefaultWorkstation();
 
-                var timestamp = employee.HardwareVaults.Max(x => x.Timestamp);
-                employee.HardwareVaults.ForEach(x => x.Timestamp = timestamp);
-                await _hardwareVaultService.UpdateRangeVaultsAsync(employee.HardwareVaults);
+                    if (firstWorkstationId == null || secondWorkstationId == null)
+                        return;
+
+                    var firstRemoteDeviceTask = ConnectDevice(vault.Id, firstWorkstationId).TimeoutAfter(30_000);
+                    var secondRemoteDeviceTask = ConnectDevice(employeeVault.Id, secondWorkstationId).TimeoutAfter(30_000);
+                    await Task.WhenAll(firstRemoteDeviceTask, secondRemoteDeviceTask);
+
+                    if (firstRemoteDeviceTask.Result == null || secondRemoteDeviceTask.Result == null)
+                        return;
+
+                    await new DeviceStorageReplicator(firstRemoteDeviceTask.Result, secondRemoteDeviceTask.Result, null).Start();
+
+                    if (vault.Timestamp > employeeVault.Timestamp)
+                    {
+                        employeeVault.Timestamp = vault.Timestamp;
+                        await _hardwareVaultService.UpdateVaultAsync(employeeVault);
+                    }
+                    else
+                    {
+                        vault.Timestamp = employeeVault.Timestamp;
+                        await _hardwareVaultService.UpdateVaultAsync(vault);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug($"Sync Hardware Vaults - {ex.Message}");
             }
         }
     }
