@@ -75,7 +75,7 @@
         <span>
             @if (HardwareVault.LicenseEndDate != null)
             {
-                @HardwareVault.LicenseEndDate
+                @HardwareVault.LicenseEndDate.Value.ToShortDateString();
             }
         </span>
     </li>

@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -15,19 +17,23 @@ namespace HES.Web.Pages.Employees
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<DeleteHardwareVault> Logger { get; set; }
+        [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public HardwareVault HardwareVault { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
-        public VaultStatusReason DeletedReason { get; set; } = VaultStatusReason.Withdrawal;
+        public VaultStatusReason Reason { get; set; } = VaultStatusReason.Withdrawal;
+        public bool IsNeedBackup { get; set; }
 
         public async Task DeleteVaultAsync()
         {
             try
             {
-                await EmployeeService.RemoveHardwareVaultAsync(HardwareVault.Id, DeletedReason);
+                var employeeId = HardwareVault.EmployeeId;
+                await EmployeeService.RemoveHardwareVaultAsync(HardwareVault.Id, Reason, IsNeedBackup);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVault.Id);
-                await ModalDialogService.CloseAsync();
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault removed.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("UpdatePage", employeeId, string.Empty);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {

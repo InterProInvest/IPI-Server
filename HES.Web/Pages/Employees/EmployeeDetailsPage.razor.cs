@@ -2,31 +2,35 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeeDetailsPage : ComponentBase
+    public partial class EmployeeDetailsPage : ComponentBase, IDisposable
     {
         [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] public IJSRuntime JSRuntime { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
         public List<Account> Accounts { get; set; }
         public Account SelectedAccount { get; set; }
+        private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
             await GetEmployeeAsync();
             await LoadTableDataAsync();
             await BreadcrumbsService.SetEmployeeDetails(Employee.FullName);
+            await InitializeHubAsync();
         }
 
         private async Task GetEmployeeAsync()
@@ -52,7 +56,7 @@ namespace HES.Web.Pages.Employees
                 CurrentPage = 1;
 
             Accounts = await EmployeeService.GetAccountsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, EmployeeId);
-            SelectedAccount = null;
+            SelectedAccount = Accounts.Contains(SelectedAccount) ? SelectedAccount : null;
 
             StateHasChanged();
         }
@@ -276,6 +280,31 @@ namespace HES.Web.Pages.Employees
             };
 
             await ModalDialogService.ShowAsync("Hardware vault details", body);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/employeeDetailsHub"))
+            .Build();
+
+            hubConnection.On<string, string>("UpdatePage", async (employeeId, connectionId) =>
+             {
+                 var id = hubConnection.ConnectionId;
+                 if (id != connectionId && employeeId == EmployeeId)
+                 {
+                     await GetEmployeeAsync();
+                     await LoadTableDataAsync();
+                     //NavigationManager.NavigateTo(NavigationManager.Uri, true);
+                 }
+             });
+
+            await hubConnection.StartAsync();
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }

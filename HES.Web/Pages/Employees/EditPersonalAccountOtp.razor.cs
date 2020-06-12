@@ -1,10 +1,12 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Account;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -20,6 +22,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditPersonalAccountOtp> Logger { get; set; }
+        [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
 
@@ -41,6 +44,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
                 ToastService.ShowToast("Account OTP updated.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
+                await HubContext.Clients.All.SendAsync("UpdatePage", Account.EmployeeId, string.Empty);
                 await ModalDialogService.CloseAsync();
             }
             catch (IncorrectOtpException ex)

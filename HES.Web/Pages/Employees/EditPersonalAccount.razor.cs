@@ -1,9 +1,11 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -17,6 +19,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditPersonalAccount> Logger { get; set; }
+        [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
@@ -25,7 +28,7 @@ namespace HES.Web.Pages.Employees
 
         protected override void OnInitialized()
         {
-            ModalDialogService.OnClose += ModalDialogService_OnClose;
+            ModalDialogService.OnCancel += OnCancelAsync;
         }
 
         private async Task EditAccountAsync()
@@ -39,8 +42,9 @@ namespace HES.Web.Pages.Employees
 
                 await EmployeeService.EditPersonalAccountAsync(Account);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
-                ToastService.ShowToast("Account updated.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
+                ToastService.ShowToast("Account updated.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("UpdatePage", Account.EmployeeId, string.Empty);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -55,24 +59,18 @@ namespace HES.Web.Pages.Employees
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
             finally
             {
                 _isBusy = false;
             }
         }
-
-        private async Task CloseAsync()
+             
+        private async Task OnCancelAsync()
         {
             await EmployeeService.UnchangedPersonalAccountAsync(Account);
-            await ModalDialogService.CloseAsync();
-        }
-
-        private async Task ModalDialogService_OnClose()
-        {
-            await EmployeeService.UnchangedPersonalAccountAsync(Account);
-            ModalDialogService.OnClose -= ModalDialogService_OnClose;
+            ModalDialogService.OnClose -= OnCancelAsync;
         }
     }
 }

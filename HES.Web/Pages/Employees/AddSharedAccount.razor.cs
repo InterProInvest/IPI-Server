@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,7 @@ namespace HES.Web.Pages.Employees
         [Inject] IToastService ToastService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] ILogger<AddSharedAccount> Logger { get; set; }
+        [Inject] IHubContext<EmployeeDetailsHub> HubContext { get; set; }
 
         public List<SharedAccount> SharedAccounts { get; set; }
         public SharedAccount SelectedSharedAccount { get; set; }
@@ -38,9 +41,10 @@ namespace HES.Web.Pages.Employees
                 var account = await EmployeeService.AddSharedAccountAsync(EmployeeId, SelectedSharedAccount.Id);
                 var employee = await EmployeeService.GetEmployeeByIdAsync(account.EmployeeId);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
-                await ModalDialogService.CloseAsync();
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account added and will be recorded when the device is connected to the server.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("UpdatePage", EmployeeId, string.Empty);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {

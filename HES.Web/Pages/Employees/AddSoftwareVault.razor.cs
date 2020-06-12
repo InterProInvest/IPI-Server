@@ -1,8 +1,10 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -15,7 +17,8 @@ namespace HES.Web.Pages.Employees
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<AddSoftwareVault> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public Employee Employee { get; set; }
 
         public ServerSettings ServerSettings { get; set; }
@@ -35,6 +38,7 @@ namespace HES.Web.Pages.Employees
             {
                 await SoftwareVaultService.CreateAndSendInvitationAsync(Employee, ServerSettings, ValidTo);         
                 ToastService.ShowToast("Invitation sent.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("UpdatePage", Employee.Id, string.Empty);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

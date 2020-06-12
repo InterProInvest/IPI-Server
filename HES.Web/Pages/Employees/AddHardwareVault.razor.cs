@@ -1,15 +1,15 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVaults;
-using HES.Core.Utilities;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -22,17 +22,13 @@ namespace HES.Web.Pages.Employees
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<AddHardwareVault> Logger { get; set; }
-
-
+        [Inject] IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string EmployeeId { get; set; }
-
-
 
         public List<HardwareVault> HardwareVaults { get; set; }
         public HardwareVault SelectedHardwareVault { get; set; }
         public string WarningMessage { get; set; }
-
 
         protected override async Task OnInitializedAsync()
         {
@@ -92,9 +88,10 @@ namespace HES.Web.Pages.Employees
 
                 await EmployeeService.AddHardwareVaultAsync(EmployeeId, SelectedHardwareVault.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
-                await ModalDialogService.CloseAsync();
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Vault added successfully", ToastLevel.Success);
+                ToastService.ShowToast("Vault added successfully", ToastLevel.Success);      
+                await HubContext.Clients.All.SendAsync("UpdatePage", EmployeeId, string.Empty);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
