@@ -25,6 +25,8 @@ namespace HES.Core.Entities
 
         [Display(Name = "Vaults")]
         public List<WorkstationProximityVault> WorkstationProximityVaults { get; set; }
+        public List<WorkstationEvent> WorkstationEvents { get; set; }
+        public List<WorkstationSession> WorkstationSessions { get; set; }
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }

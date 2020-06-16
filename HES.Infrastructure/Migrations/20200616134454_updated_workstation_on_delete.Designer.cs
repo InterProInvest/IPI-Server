@@ -3,14 +3,16 @@ using System;
 using HES.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HES.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200616134454_updated_workstation_on_delete")]
+    partial class updated_workstation_on_delete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1184,9 +1186,8 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Employee", b =>
                 {
                     b.HasOne("HES.Core.Entities.Department", "Department")
-                        .WithMany("Employees")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
 
                     b.HasOne("HES.Core.Entities.Position", "Position")
                         .WithMany()
@@ -1270,9 +1271,8 @@ namespace HES.Infrastructure.Migrations
             modelBuilder.Entity("HES.Core.Entities.Workstation", b =>
                 {
                     b.HasOne("HES.Core.Entities.Department", "Department")
-                        .WithMany("Workstations")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
                 });
 
             modelBuilder.Entity("HES.Core.Entities.WorkstationEvent", b =>
@@ -1283,9 +1283,8 @@ namespace HES.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("HES.Core.Entities.Department", "Department")
-                        .WithMany("WorkstationEvents")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
 
                     b.HasOne("HES.Core.Entities.Employee", "Employee")
                         .WithMany("WorkstationEvents")
@@ -1322,9 +1321,8 @@ namespace HES.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("HES.Core.Entities.Department", "Department")
-                        .WithMany("WorkstationSessions")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
 
                     b.HasOne("HES.Core.Entities.Employee", "Employee")
                         .WithMany("WorkstationSessions")
