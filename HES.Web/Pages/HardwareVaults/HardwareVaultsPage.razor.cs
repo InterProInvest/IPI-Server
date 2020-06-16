@@ -57,7 +57,7 @@ namespace HES.Web.Pages.HardwareVaults
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast("Somethings went wrong.", ToastLevel.Error);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
         }
 

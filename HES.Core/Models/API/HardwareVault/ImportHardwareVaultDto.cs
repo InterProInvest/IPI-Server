@@ -34,7 +34,7 @@ namespace HES.Core.Models.API.HardwareVault
 
         [JsonProperty("DeviceId")]
         public string HardwareVaultId { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public string Data { get; set; }
     } 
     

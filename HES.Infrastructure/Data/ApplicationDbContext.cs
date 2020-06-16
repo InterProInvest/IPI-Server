@@ -17,7 +17,7 @@ namespace HES.Infrastructure
             modelBuilder.Entity<HardwareVault>().HasIndex(x => x.MAC).IsUnique();
             modelBuilder.Entity<HardwareVault>().HasIndex(x => x.RFID).IsUnique();
             modelBuilder.Entity<Group>().HasIndex(x => x.Name).IsUnique();
-            // Cascade remove all Group Memberships when removing Group
+            // Cascade remove, when removing Group
             modelBuilder.Entity<Group>().HasMany(x => x.GroupMemberships).WithOne(p => p.Group).HasForeignKey(p => p.GroupId).OnDelete(DeleteBehavior.Cascade);
             // Cascade remove, when removing Employee
             modelBuilder.Entity<Employee>().HasMany(x => x.GroupMemberships).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
@@ -28,7 +28,7 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Employee>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             // Set Unique 
             modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
-            // Cascade remove, when removing Employee
+            // Cascade remove, when removing LicenseOrder
             modelBuilder.Entity<LicenseOrder>().HasMany(x => x.HardwareVaultLicenses).WithOne(p => p.LicenseOrder).HasForeignKey(p => p.LicenseOrderId).OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
