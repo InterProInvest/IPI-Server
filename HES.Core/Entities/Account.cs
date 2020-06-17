@@ -1,5 +1,6 @@
 ﻿using HES.Core.Enums;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -51,6 +52,8 @@ namespace HES.Core.Entities
 
         public string SharedAccountId { get; set; }
 
+        public List<WorkstationEvent> WorkstationEvents { get; set; }
+        public List<WorkstationSession> WorkstationSessions { get; set; }
 
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }

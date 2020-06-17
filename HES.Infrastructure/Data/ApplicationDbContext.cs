@@ -14,22 +14,34 @@ namespace HES.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // HardwareVault
             modelBuilder.Entity<HardwareVault>().HasIndex(x => x.MAC).IsUnique();
             modelBuilder.Entity<HardwareVault>().HasIndex(x => x.RFID).IsUnique();
             modelBuilder.Entity<Group>().HasIndex(x => x.Name).IsUnique();
-            // Cascade remove, when removing Group
+            // Group           
             modelBuilder.Entity<Group>().HasMany(x => x.GroupMemberships).WithOne(p => p.Group).HasForeignKey(p => p.GroupId).OnDelete(DeleteBehavior.Cascade);
-            // Cascade remove, when removing Employee
+            // Employee
+            modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
             modelBuilder.Entity<Employee>().HasMany(x => x.GroupMemberships).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.SoftwareVaults).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.SoftwareVaultInvitations).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.Accounts).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.WorkstationEvents).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Employee>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId).OnDelete(DeleteBehavior.Cascade);
-            // Set Unique 
-            modelBuilder.Entity<Employee>().HasIndex(x => new { x.FirstName, x.LastName }).IsUnique();
-            // Cascade remove, when removing LicenseOrder
+            // LicenseOrder
             modelBuilder.Entity<LicenseOrder>().HasMany(x => x.HardwareVaultLicenses).WithOne(p => p.LicenseOrder).HasForeignKey(p => p.LicenseOrderId).OnDelete(DeleteBehavior.Cascade);
+            // Account
+            modelBuilder.Entity<Account>().HasMany(x => x.WorkstationEvents).WithOne(p => p.Account).HasForeignKey(p => p.AccountId).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Account>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Account).HasForeignKey(p => p.AccountId).OnDelete(DeleteBehavior.SetNull);
+            // Workstation
+            modelBuilder.Entity<Workstation>().HasMany(x => x.WorkstationEvents).WithOne(p => p.Workstation).HasForeignKey(p => p.WorkstationId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Workstation>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Workstation).HasForeignKey(p => p.WorkstationId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Workstation>().HasMany(x => x.WorkstationProximityVaults).WithOne(p => p.Workstation).HasForeignKey(p => p.WorkstationId).OnDelete(DeleteBehavior.Cascade);
+            // Department
+            modelBuilder.Entity<Department>().HasMany(x => x.Employees).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Department>().HasMany(x => x.Workstations).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Department>().HasMany(x => x.WorkstationEvents).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Department>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
 
             base.OnModelCreating(modelBuilder);
         }
