@@ -26,13 +26,13 @@
         {
             <div class="content-header">
                 <nav class="navbar navbar-light bg-light border-bottom shadow-sm">
-                    <div class="invisible">
-                        <button id="download_btn" class="btn btn-secondary" title="Download file">
+                    <div>
+                        <button id="download_btn" class="btn btn-secondary" title="Download file" @onclick="DownloadFile">
                             <img src="/svg/logs/download.svg" />
                         </button>
-                        <button id="delete_btn" class="btn btn-secondary" title="Delete file">
+                        @*<button id="delete_btn" class="btn btn-secondary" title="Delete file">
                             <img src="/svg/logs/delete.svg" />
-                        </button>
+                        </button>*@
                     </div>
                     <div>
                         <span class="badge badge-success">INFO</span> <span id="infoLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "INFO").Count()</span>

@@ -134,6 +134,16 @@
     </style>
     <component type="typeof(LogsViewer)" render-mode="Server" />
     <script src="_framework/blazor.server.js"></script>
+    <script>
+        function downloadLog(filename, content) {
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(content)
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
 </body>

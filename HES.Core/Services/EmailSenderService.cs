@@ -1,9 +1,11 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using QRCoder;
 using System;
 using System.Collections.Generic;
@@ -23,14 +25,17 @@ namespace HES.Core.Services
         private readonly IApplicationUserService _applicationUserService;
         private readonly IAppSettingsService _appSettingsService;
         private readonly IHostingEnvironment _env;
+        private readonly ILogger<EmailSenderService> _logger;
 
         public EmailSenderService(IApplicationUserService applicationUserService,
                                   IAppSettingsService appSettingsService,
-                                  IHostingEnvironment env)
+                                  IHostingEnvironment env,
+                                  ILogger<EmailSenderService> logger)
         {
             _applicationUserService = applicationUserService;
             _appSettingsService = appSettingsService;
             _env = env;
+            _logger = logger;
         }
 
         private async Task SendAsync(MailMessage mailMessage, EmailSettings settings)
@@ -46,8 +51,20 @@ namespace HES.Core.Services
 
         public async Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status)
         {
-            var emailSettings = await GetEmailSettingsAsync();
-            var serverSettings = await GetServerSettingsAsync();
+            EmailSettings emailSettings;
+            ServerSettings serverSettings;
+
+            try
+            {
+                emailSettings = await GetEmailSettingsAsync();
+                serverSettings = await GetServerSettingsAsync();
+            }
+            catch (SettingsNotSetException ex)
+            {
+                _logger.LogError(ex.Message);
+                return;
+            }
+
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
             var htmlMessage = GetTemplate("mail-license-order-status");
@@ -69,8 +86,20 @@ namespace HES.Core.Services
 
         public async Task SendHardwareVaultLicenseStatus(List<HardwareVault> vaults)
         {
-            var emailSettings = await GetEmailSettingsAsync();
-            var serverSettings = await GetServerSettingsAsync();
+            EmailSettings emailSettings;
+            ServerSettings serverSettings;
+
+            try
+            {
+                emailSettings = await GetEmailSettingsAsync();
+                serverSettings = await GetServerSettingsAsync();
+            }
+            catch (SettingsNotSetException ex)
+            {
+                _logger.LogError(ex.Message);
+                return;
+            }
+
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
             var htmlMessage = GetTemplate("mail-vault-license-status");
@@ -118,8 +147,20 @@ namespace HES.Core.Services
 
         public async Task SendActivateDataProtectionAsync()
         {
-            var emailSettings = await GetEmailSettingsAsync();
-            var serverSettings = await GetServerSettingsAsync();
+            EmailSettings emailSettings;
+            ServerSettings serverSettings;
+
+            try
+            {
+                emailSettings = await GetEmailSettingsAsync();
+                serverSettings = await GetServerSettingsAsync();
+            }
+            catch (SettingsNotSetException ex)
+            {
+                _logger.LogError(ex.Message);
+                return;
+            }
+
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
             var htmlMessage = GetTemplate("mail-user-confirm-email");
@@ -197,9 +238,7 @@ namespace HES.Core.Services
             if (employee.Email == null)
                 throw new ArgumentNullException(nameof(employee.Email));
 
-            var settings = await _appSettingsService.GetEmailSettingsAsync();
-            if (settings == null)
-                throw new Exception("Email settings not set.");
+            var emailSettings = await GetEmailSettingsAsync();
 
             var htmlMessage = GetTemplate("mail-software-vault-invitation");
             htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FirstName)
@@ -226,12 +265,12 @@ namespace HES.Core.Services
 
             htmlView.LinkedResources.Add(img);
 
-            MailMessage mailMessage = new MailMessage(settings.UserName, employee.Email);
+            MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
             mailMessage.Subject = "Hideez Software Vault application";
 
-            await SendAsync(mailMessage, settings);
+            await SendAsync(mailMessage, emailSettings);
         }
 
         public async Task SendHardwareVaultActivationCodeAsync(Employee employee, string code)
@@ -258,7 +297,7 @@ namespace HES.Core.Services
             var settings = await _appSettingsService.GetEmailSettingsAsync();
 
             if (settings == null)
-                throw new Exception("Email settings not set.");
+                throw new SettingsNotSetException("Email settings not set.");
 
             return settings;
         }
@@ -268,7 +307,7 @@ namespace HES.Core.Services
             var settings = await _appSettingsService.GetServerSettingsAsync();
 
             if (settings == null)
-                throw new Exception("Server settings not set.");
+                throw new SettingsNotSetException("Server settings not set.");
 
             return settings;
         }

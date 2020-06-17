@@ -8,6 +8,7 @@ namespace HES.Core.Interfaces
     {
         List<string> GetFiles();
         Task<List<LogModel>> GetLogAsync(string name);
+        Task DownloadLogAsync(string name);
         string GetFilePath(string name);
         void DeleteFile(string name);
     }
