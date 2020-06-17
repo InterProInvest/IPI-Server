@@ -1,9 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,25 +17,28 @@ namespace HES.Web.Pages.Employees
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
         public List<Account> Accounts { get; set; }
         public Account SelectedAccount { get; set; }
+
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            await GetEmployeeAsync();
+            await LoadEmployeeAsync();
             await LoadTableDataAsync();
             await BreadcrumbsService.SetEmployeeDetails(Employee.FullName);
             await InitializeHubAsync();
         }
 
-        private async Task GetEmployeeAsync()
+        private async Task LoadEmployeeAsync()
         {
             Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+            StateHasChanged();
         }
 
         #region Main Table
@@ -108,12 +111,27 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddHardwareVault));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, StateHasChanged));
                 builder.AddAttribute(2, "EmployeeId", EmployeeId);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
             await ModalDialogService.ShowAsync("Add hardware vault", body);
+        }
+
+        private async Task OpenDialogRemoveHardwareVaultAsync(HardwareVault hardwareVault)
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteHardwareVault));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, StateHasChanged));
+                builder.AddAttribute(2, "HardwareVault", hardwareVault);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete hardware vault", body);
         }
 
         public async Task OpenModalAddSoftwareVaultAsync()
@@ -122,6 +140,7 @@ namespace HES.Web.Pages.Employees
             {
                 builder.OpenComponent(0, typeof(AddSoftwareVault));
                 builder.AddAttribute(1, "Employee", Employee);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -135,6 +154,7 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(CreatePersonalAccount));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "EmployeeId", EmployeeId);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -148,6 +168,7 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(AddSharedAccount));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "EmployeeId", EmployeeId);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -161,6 +182,7 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(SetAsWorkstationAccount));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -174,6 +196,7 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(EditPersonalAccount));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -187,6 +210,7 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(EditPersonalAccountPwd));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -200,6 +224,7 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(EditPersonalAccountOtp));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -213,23 +238,11 @@ namespace HES.Web.Pages.Employees
                 builder.OpenComponent(0, typeof(DeleteAccount));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "Account", SelectedAccount);
+                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
             await ModalDialogService.ShowAsync("Delete Account", body);
-        }
-
-        private async Task OpenDialogRemoveHardwareVaultAsync(HardwareVault hardwareVault)
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(DeleteHardwareVault));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "HardwareVault", hardwareVault);
-                builder.CloseComponent();
-            };
-
-            await ModalDialogService.ShowAsync("Delete hardware vault", body);
         }
 
         private async Task OpenDialogResendInvitationAsync(SoftwareVaultInvitation softwareVaultInvitation)
@@ -237,7 +250,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(SoftwareVaults.ResendSoftwareVaultInvitation));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, GetEmployeeAsync));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadEmployeeAsync));
                 builder.AddAttribute(2, "SoftwareVaultInvitation", softwareVaultInvitation);
                 builder.CloseComponent();
             };
@@ -250,7 +263,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(SoftwareVaults.DeleteSoftwareVaultInvitation));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, GetEmployeeAsync));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadEmployeeAsync));
                 builder.AddAttribute(2, "SoftwareVaultInvitation", softwareVaultInvitation);
                 builder.CloseComponent();
             };
@@ -288,14 +301,30 @@ namespace HES.Web.Pages.Employees
             .WithUrl(NavigationManager.ToAbsoluteUri("/employeeDetailsHub"))
             .Build();
 
-            hubConnection.On<string, string>("UpdatePage", async (employeeId, connectionId) =>
+            hubConnection.On<string, string>("PageUpdated", async (employeeId, connectionId) =>
             {
                 var id = hubConnection.ConnectionId;
                 if (id != connectionId && employeeId == EmployeeId)
                 {
-                    await GetEmployeeAsync();
+                    await EmployeeService.ReloadEmployeeAsync(Employee);
+
+                    await LoadEmployeeAsync();
                     await LoadTableDataAsync();
-                    //NavigationManager.NavigateTo(NavigationManager.Uri, true);
+
+                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                }
+            });
+
+            hubConnection.On<string>("VaultSynced", async (employeeId) =>
+            {              
+                if (employeeId == EmployeeId)
+                {
+                    await EmployeeService.ReloadEmployeeAsync(Employee);
+
+                    await LoadEmployeeAsync();
+                    await LoadTableDataAsync();
+
+                    ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
                 }
             });
 

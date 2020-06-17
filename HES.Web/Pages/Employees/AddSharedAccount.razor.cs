@@ -27,6 +27,7 @@ namespace HES.Web.Pages.Employees
 
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string EmployeeId { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -43,7 +44,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account added and will be recorded when the device is connected to the server.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", EmployeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", EmployeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

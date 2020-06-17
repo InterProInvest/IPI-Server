@@ -3,6 +3,7 @@
     public enum ToastLevel
     {
         Success,
+        Notify,
         Error
     }
 }

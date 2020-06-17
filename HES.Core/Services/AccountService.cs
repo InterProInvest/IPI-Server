@@ -24,6 +24,12 @@ namespace HES.Core.Services
             return _accountRepository.Query();
         }
 
+        public async Task ReloadAccountsAsync(List<Account> accounts)
+        {
+            await _accountRepository.ReloadAsync(accounts);
+        }
+
+
         public Task<Account> GetAccountByIdAsync(string accountId)
         {
             return _accountRepository

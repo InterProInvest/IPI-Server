@@ -15,7 +15,7 @@ namespace HES.Core.Services
         {
             OnShow?.Invoke(message, level);
 
-            if (level == ToastLevel.Success)
+            if (level == ToastLevel.Success || level == ToastLevel.Notify)
                 StartCountdown();
         }
 
@@ -43,7 +43,7 @@ namespace HES.Core.Services
         {
             if (_timer == null)
             {
-                _timer = new Timer(3000);
+                _timer = new Timer(3500);
                 _timer.Elapsed += HideToast;
                 _timer.AutoReset = false;
             }

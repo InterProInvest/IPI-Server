@@ -45,6 +45,10 @@ namespace HES.Web.Components
                 case ToastLevel.Success:
                     LevelClass = "alert-success custom-success-alert";
                     Header = "Success";
+                    break;     
+                case ToastLevel.Notify:
+                    LevelClass = "alert-secondary custom-success-alert";
+                    Header = "Notification";
                     break;
                 case ToastLevel.Error:
                     LevelClass = "alert-danger custom-error-alert";

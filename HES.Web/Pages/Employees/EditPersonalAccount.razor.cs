@@ -22,6 +22,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         private bool _isBusy;
@@ -44,7 +45,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account updated.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", Account.EmployeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", Account.EmployeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

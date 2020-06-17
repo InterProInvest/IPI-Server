@@ -29,6 +29,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string EmployeeId { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public PersonalAccount PersonalAccount { get; set; }
         public List<Template> Templates { get; set; }
@@ -63,7 +64,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", EmployeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", EmployeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -109,7 +110,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", EmployeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", EmployeeId, string.Empty);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

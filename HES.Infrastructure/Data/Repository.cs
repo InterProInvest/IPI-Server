@@ -37,6 +37,32 @@ namespace HES.Infrastructure
             return await _context.Set<T>().FindAsync(obj);
         }
 
+        public async Task ReloadAsync(T entity)
+        {
+            await _context.Entry(entity).ReloadAsync();
+
+            foreach (var collectionEntry in _context.Entry(entity).Collections)
+            {
+                if (collectionEntry.CurrentValue != null)
+                {
+                    foreach (var current in collectionEntry.CurrentValue)
+                        collectionEntry.EntityEntry.Context.Entry(current).State = EntityState.Detached;
+
+                    collectionEntry.CurrentValue = null;
+                }
+                collectionEntry.IsLoaded = false;
+                collectionEntry.Load();
+            }
+        }
+
+        public async Task ReloadAsync(IList<T> entities)
+        {
+            foreach (var entity in entities)
+            {
+                await ReloadAsync(entity);
+            }
+        }
+
         public async Task<T> AddAsync(T entity)
         {
             _context.Set<T>().Add(entity);

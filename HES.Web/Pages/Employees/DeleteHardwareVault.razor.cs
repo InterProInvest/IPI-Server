@@ -19,6 +19,7 @@ namespace HES.Web.Pages.Employees
         [Inject] ILogger<DeleteHardwareVault> Logger { get; set; }
         [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public HardwareVault HardwareVault { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         public VaultStatusReason Reason { get; set; } = VaultStatusReason.Withdrawal;
         public bool IsNeedBackup { get; set; }
@@ -32,7 +33,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVault.Id);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault removed.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", employeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", employeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

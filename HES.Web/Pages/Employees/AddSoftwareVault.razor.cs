@@ -20,6 +20,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public Employee Employee { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public ServerSettings ServerSettings { get; set; }
         public DateTime ValidTo { get; set; } = DateTime.Now;
@@ -38,7 +39,7 @@ namespace HES.Web.Pages.Employees
             {
                 await SoftwareVaultService.CreateAndSendInvitationAsync(Employee, ServerSettings, ValidTo);         
                 ToastService.ShowToast("Invitation sent.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", Employee.Id, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", Employee.Id, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

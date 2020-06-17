@@ -11,6 +11,7 @@ namespace HES.Core.Interfaces
     public interface IAccountService
     {
         IQueryable<Account> Query();
+        Task ReloadAccountsAsync(List<Account> accounts);
         Task<Account> GetAccountByIdAsync(string accountId);
         Task<Account> GetAccountByIdNoTrackingAsync(string accountId);
         Task<Account> AddAsync(Account account);

@@ -25,6 +25,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public LdapSettings LdapSettings { get; set; }
 
@@ -60,7 +61,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
                 ToastService.ShowToast("Account password updated.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.All.SendAsync("UpdatePage", Account.EmployeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", Account.EmployeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

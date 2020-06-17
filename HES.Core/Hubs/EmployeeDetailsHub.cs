@@ -5,9 +5,14 @@ namespace HES.Core.Hubs
 {
     public class EmployeeDetailsHub : Hub
     {
-        public async Task RefreshPage(string employeeId, string connectionId)
+        public async Task UpdatePage(string employeeId, string connectionId)
         {
-            await Clients.All.SendAsync("UpdatePage", employeeId, connectionId);
+            await Clients.All.SendAsync("PageUpdated", employeeId, connectionId);
+        }
+
+        public async Task SyncVault(string employeeId)
+        {
+            await Clients.All.SendAsync("VaultSynced", employeeId);
         }
     }
 }

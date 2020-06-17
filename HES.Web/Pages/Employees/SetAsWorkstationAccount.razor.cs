@@ -20,6 +20,7 @@ namespace HES.Web.Pages.Employees
         [Inject] IHubContext<EmployeeDetailsHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         private async Task SetAsWorkstationAccountAsync()
         {
@@ -30,7 +31,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(employee.Id));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Workstation account changed.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("UpdatePage", Account.EmployeeId, string.Empty);
+                await HubContext.Clients.All.SendAsync("PageUpdated", Account.EmployeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

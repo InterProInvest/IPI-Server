@@ -14,6 +14,7 @@ namespace HES.Core.Interfaces
     public interface IEmployeeService
     {
         IQueryable<Employee> EmployeeQuery();
+        Task ReloadEmployeeAsync(Employee employee);
         Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<Employee> GetEmployeeByIdAsync(string id);
@@ -27,6 +28,7 @@ namespace HES.Core.Interfaces
         Task UpdateLastSeenAsync(string vaultId);
         Task AddHardwareVaultAsync(string employeeId, string vaultId);
         Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);
+        Task ReloadAccountsAsync(List<Account> accounts);
         Task<Account> CreatePersonalAccountAsync(PersonalAccount personalAccount, bool isWorkstationAccount = false);
         Task<Account> CreateWorkstationAccountAsync(WorkstationAccount workstationAccount);
         Task<Account> CreateWorkstationAccountAsync(WorkstationDomain workstationAccount);
