@@ -357,12 +357,8 @@ namespace HES.Core.Services
 
                 order.OrderStatus = status;
 
-                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-                {
-                    await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
-                    await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
-                    transactionScope.Complete();
-                }
+                await _licenseOrderRepository.UpdateOnlyPropAsync(order, new string[] { "OrderStatus" });
+                await _emailSenderService.SendLicenseChangedAsync(order.CreatedAt, status);
             }
         }
 
@@ -500,12 +496,8 @@ namespace HES.Core.Services
 
             if (hardwareVaultsChangedStatus.Count > 0)
             {
-                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-                {
-                    await _hardwareVaultRepository.UpdateOnlyPropAsync(hardwareVaults, new string[] { nameof(HardwareVault.LicenseStatus) });
-                    await _emailSenderService.SendHardwareVaultLicenseStatus(hardwareVaultsChangedStatus);
-                    transactionScope.Complete();
-                }
+                await _hardwareVaultRepository.UpdateOnlyPropAsync(hardwareVaults, new string[] { nameof(HardwareVault.LicenseStatus) });
+                await _emailSenderService.SendHardwareVaultLicenseStatus(hardwareVaultsChangedStatus);
             }
         }
 
