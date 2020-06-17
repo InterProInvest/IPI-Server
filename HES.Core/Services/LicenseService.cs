@@ -342,11 +342,16 @@ namespace HES.Core.Services
 
             foreach (var order in orders)
             {
-                var status = await GetLicenseOrderStatusAsync(order.Id);
+                var response = await HttpClientGetLicenseOrderStatusAsync(order.Id);
 
-                // Http transport error
-                if (status == LicenseOrderStatus.Undefined)
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning($"Response code: {response.StatusCode} Response message: {response.Content.ReadAsStringAsync()}");
                     continue;
+                }
+
+                var data = await response.Content.ReadAsStringAsync();
+                var status = JsonConvert.DeserializeObject<LicenseOrderStatus>(data);
 
                 // Status has not changed
                 if (status == order.OrderStatus)
@@ -370,27 +375,6 @@ namespace HES.Core.Services
                             x.OrderStatus == LicenseOrderStatus.Processing ||
                             x.OrderStatus == LicenseOrderStatus.WaitingForPayment)
                 .ToListAsync();
-        }
-
-        private async Task<LicenseOrderStatus> GetLicenseOrderStatusAsync(string orderId)
-        {
-            try
-            {
-                var response = await HttpClientGetLicenseOrderStatusAsync(orderId);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var data = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<LicenseOrderStatus>(data);
-                }
-
-                _logger.LogCritical($"{response.StatusCode.ToString()} {response.Content.ReadAsStringAsync()}");
-                return LicenseOrderStatus.Error;
-            }
-            catch (Exception)
-            {
-                return LicenseOrderStatus.Undefined;
-            }
         }
 
         #endregion
