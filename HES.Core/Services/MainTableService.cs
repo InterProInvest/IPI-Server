@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -21,6 +23,7 @@ namespace HES.Core.Services
         public List<TItem> Entities { get; set; }
         public int TotalRecords { get; set; }
         public int CurrentPage { get; set; } = 1;
+        public string SyncPropName { get; set; }
 
         public MainTableService(IModalDialogService modalDialogService)
         {
@@ -28,7 +31,7 @@ namespace HES.Core.Services
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
-        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending)
+        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id")
         {
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
@@ -36,6 +39,7 @@ namespace HES.Core.Services
             _modalDialogService.OnClose += LoadTableDataAsync;
             DataLoadingOptions.SortedColumn = sortedColumn;
             DataLoadingOptions.SortDirection = sortDirection;
+            SyncPropName = syncPropName;
             await LoadTableDataAsync();
         }
 
@@ -49,7 +53,12 @@ namespace HES.Core.Services
 
             DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
             Entities = await _getEntities.Invoke(DataLoadingOptions);
-            SelectedEntity = Entities.Contains(SelectedEntity) ? SelectedEntity : null;
+
+            foreach (var entity in Entities)
+            {
+                if (entity.GetType().GetProperty(SyncPropName).GetValue(entity).ToString().Equals(SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString()))
+                    SelectedEntity = entity;
+            }
 
             _stateHasChanged?.Invoke();
         }
