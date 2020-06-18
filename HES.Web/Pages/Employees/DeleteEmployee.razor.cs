@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -10,11 +12,13 @@ namespace HES.Web.Pages.Employees
 {
     public partial class DeleteEmployee : ComponentBase
     {
-        [Inject] IEmployeeService EmployeeService { get; set; }
-        [Inject] IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<DeleteEmployee> Logger { get; set; }
+        [Inject] public IEmployeeService EmployeeService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<DeleteEmployee> Logger { get; set; }
+        [Inject] public IHubContext<EmployeesHub> HubContext { get; set; }
         [Parameter] public Employee Employee { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public bool EmployeeHasVault { get; set; }
 
@@ -29,8 +33,9 @@ namespace HES.Web.Pages.Employees
             try
             {
                 await EmployeeService.DeleteEmployeeAsync(Employee.Id);
-                await ModalDialogService.CloseAsync();
+                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 ToastService.ShowToast("Employee removed.", ToastLevel.Success);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {

@@ -1,7 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
@@ -14,7 +13,6 @@ namespace HES.Web.Pages.Employees
     public partial class EmployeeDetailsPage : ComponentBase, IDisposable
     {
         [Inject] public IEmployeeService EmployeeService { get; set; }
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -306,11 +304,10 @@ namespace HES.Web.Pages.Employees
                 var id = hubConnection.ConnectionId;
                 if (id != connectionId && employeeId == EmployeeId)
                 {
-                    await EmployeeService.ReloadEmployeeAsync(Employee);
-
+                    await EmployeeService.DetachEmployeeAsync(Employee);
                     await LoadEmployeeAsync();
+                    await EmployeeService.DetachdAccountAsync(Accounts);
                     await LoadTableDataAsync();
-
                     ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
                 }
             });
@@ -319,11 +316,10 @@ namespace HES.Web.Pages.Employees
             {              
                 if (employeeId == EmployeeId)
                 {
-                    await EmployeeService.ReloadEmployeeAsync(Employee);
-
+                    await EmployeeService.DetachEmployeeAsync(Employee);
                     await LoadEmployeeAsync();
+                    await EmployeeService.DetachdAccountAsync(Accounts);
                     await LoadTableDataAsync();
-
                     ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
                 }
             });

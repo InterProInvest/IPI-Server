@@ -1,12 +1,15 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
@@ -18,7 +21,9 @@ namespace HES.Web.Pages.Employees
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditEmployee> Logger { get; set; }
+        [Inject] public IHubContext<EmployeesHub> HubContext { get; set; }
         [Parameter] public Employee Employee { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public List<Company> Companies { get; set; }
@@ -52,6 +57,7 @@ namespace HES.Web.Pages.Employees
                 Employee.DepartmentId = null;
 
             Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(companyId);
+            Employee.DepartmentId = Departments.FirstOrDefault()?.Id;
         }
 
         private async Task EditAsync()
@@ -60,6 +66,7 @@ namespace HES.Web.Pages.Employees
             {
                 await EmployeeService.EditEmployeeAsync(Employee);
                 ToastService.ShowToast("Employee updated.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

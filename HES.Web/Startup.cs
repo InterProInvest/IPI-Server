@@ -256,6 +256,7 @@ namespace HES.Web
             {
                 endpoints.MapHub<DeviceHub>("/deviceHub");
                 endpoints.MapHub<AppHub>("/appHub");
+                endpoints.MapHub<EmployeesHub>("/employeesHub");
                 endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();

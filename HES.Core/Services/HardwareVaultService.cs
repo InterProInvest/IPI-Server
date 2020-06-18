@@ -467,7 +467,7 @@ namespace HES.Core.Services
 
         public Task UnchangedVaultAsync(HardwareVault vault)
         {
-            return _hardwareVaultRepository.Unchanged(vault);
+            return _hardwareVaultRepository.UnchangedAsync(vault);
         }
 
         public async Task UpdateAfterWipeAsync(string vaultId)
