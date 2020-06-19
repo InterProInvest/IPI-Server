@@ -408,6 +408,8 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vault} not found");
 
+            await _hardwareVaultService.ReloadHardwareVault(vault);
+
             if (vault.Status != VaultStatus.Ready)
                 throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
 
@@ -467,6 +469,7 @@ namespace HES.Core.Services
                 throw new Exception($"Vault {vaultId} not found");
 
             var employeeId = vault.EmployeeId;
+            var deleteAccounts = vault.Employee.HardwareVaults.Count() == 1 ? true : false;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -485,7 +488,7 @@ namespace HES.Core.Services
                     vault.Status = VaultStatus.Deactivated;
                     vault.StatusReason = reason;
 
-                    if (!isNeedBackup)
+                    if (!isNeedBackup && deleteAccounts)
                         await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
                 }
 
@@ -493,6 +496,11 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
+        }
+
+        public async Task ReloadHardwareVaultsAsync(List<HardwareVault> hardwareVaults)
+        {
+            await _hardwareVaultService.ReloadHardwareVaults(hardwareVaults);
         }
 
         #endregion

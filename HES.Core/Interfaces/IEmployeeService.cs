@@ -29,6 +29,7 @@ namespace HES.Core.Interfaces
         Task UpdateLastSeenAsync(string vaultId);
         Task AddHardwareVaultAsync(string employeeId, string vaultId);
         Task RemoveHardwareVaultAsync(string vaultId, VaultStatusReason reason, bool isNeedBackup = false);
+        Task ReloadHardwareVaultsAsync(List<HardwareVault> hardwareVaults);
         Task DetachdAccountAsync(Account account);
         Task DetachdAccountAsync(List<Account> accounts);
         Task<Account> CreatePersonalAccountAsync(PersonalAccount personalAccount, bool isWorkstationAccount = false);

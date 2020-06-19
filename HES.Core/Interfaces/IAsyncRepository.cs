@@ -23,5 +23,6 @@ namespace HES.Core.Interfaces
         Task<bool> ExistAsync(Expression<Func<T, bool>> predicate);
         Task UnchangedAsync(T entity);
         Task DetachedAsync(T entity);
+        Task ReloadAsync(T entity);
     }
 }

@@ -37,7 +37,7 @@ namespace HES.Infrastructure
         {
             return await _context.Set<T>().FindAsync(obj);
         }
-      
+
         public async Task<T> AddAsync(T entity)
         {
             _context.Set<T>().Add(entity);
@@ -92,7 +92,7 @@ namespace HES.Infrastructure
             _context.UpdateRange(entity);
             await _context.SaveChangesAsync();
         }
-            
+
         public async Task<T> DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
@@ -127,11 +127,16 @@ namespace HES.Infrastructure
                 if (collectionEntry.CurrentValue != null)
                 {
                     foreach (var current in collectionEntry.CurrentValue)
-                        collectionEntry.EntityEntry.Context.Entry(current).State = EntityState.Detached;       
-                }      
+                        collectionEntry.EntityEntry.Context.Entry(current).State = EntityState.Detached;
+                }
             }
 
             return Task.CompletedTask;
+        }
+
+        public async Task ReloadAsync(T entity)
+        {
+            await _context.Entry(entity).ReloadAsync();
         }
     }
 }

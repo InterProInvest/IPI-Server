@@ -71,6 +71,8 @@ namespace HES.Core.Services
             return await _hardwareVaultRepository
                 .Query()
                 .Include(d => d.Employee.Department.Company)
+                .Include(d => d.Employee.HardwareVaults)
+                .Include(d => d.Employee.SoftwareVaults)
                 .Include(d => d.HardwareVaultProfile)
                 .FirstOrDefaultAsync(m => m.Id == vaultId);
         }
@@ -676,6 +678,19 @@ namespace HES.Core.Services
                 await _workstationService.DeleteProximityByVaultIdAsync(vaultId);
 
                 transactionScope.Complete();
+            }
+        }
+
+        public async Task ReloadHardwareVault(HardwareVault hardwareVault)
+        {
+            await _hardwareVaultRepository.ReloadAsync(hardwareVault);
+        }
+
+        public async Task ReloadHardwareVaults(List<HardwareVault> hardwareVaults)
+        {
+            foreach (var item in hardwareVaults)
+            {
+                await _hardwareVaultRepository.ReloadAsync(item);
             }
         }
 

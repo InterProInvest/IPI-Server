@@ -123,7 +123,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteHardwareVault));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, StateHasChanged));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
                 builder.AddAttribute(2, "HardwareVault", hardwareVault);
                 builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
@@ -313,13 +313,12 @@ namespace HES.Web.Pages.Employees
             });
 
             hubConnection.On<string>("VaultSynced", async (employeeId) =>
-            {              
+            {
                 if (employeeId == EmployeeId)
                 {
+                    await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
                     await EmployeeService.DetachEmployeeAsync(Employee);
-                    await LoadEmployeeAsync();
-                    await EmployeeService.DetachdAccountAsync(Accounts);
-                    await LoadTableDataAsync();
+                    await LoadEmployeeAsync();        
                     ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
                 }
             });

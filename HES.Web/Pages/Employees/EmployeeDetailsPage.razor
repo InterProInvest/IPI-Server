@@ -66,6 +66,7 @@ else
                         <div class="d-flex align-items-center">
                             <img class="mr-1" src="/svg/icon-hardware-vault.svg" />
                             <span class="font-weight-bold mr-1">@hardwareVault.Id</span>
+                            <span class="mr-1">- @(hardwareVault.Status)</span>
                             <span class="mr-2">- @(hardwareVault.LicenseEndDate != null ? $"License till {hardwareVault.LicenseEndDate.Value.ToShortDateString()}" : "License status None")</span>
                             @if (hardwareVault.NeedSync)
                             {
