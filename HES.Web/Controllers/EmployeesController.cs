@@ -423,7 +423,7 @@ namespace HES.Web.Controllers
             Account createdAccount;
             try
             {
-                var workstationAccount = new Core.Models.Web.Account.WorkstationAccount()
+                var workstationAccount = new WorkstationAccount()
                 {
                     Name = accountDto.Name,
                     UserName = accountDto.UserName,
