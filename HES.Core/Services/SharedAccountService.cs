@@ -451,5 +451,18 @@ namespace HES.Core.Services
 
             return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
+
+        public async Task DetachSharedAccountAsync(SharedAccount sharedAccount)
+        {
+            await _sharedAccountRepository.DetachedAsync(sharedAccount);
+        }
+
+        public async Task DetachSharedAccountAsync(List<SharedAccount> sharedAccounts)
+        {
+            foreach (var item in sharedAccounts)
+            {
+                await DetachSharedAccountAsync(item);
+            }
+        }
     }
 }

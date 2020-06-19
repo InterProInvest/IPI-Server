@@ -2,8 +2,8 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.SharedAccounts;
-using HES.Web.Pages.Employees;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -15,12 +15,17 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IMainTableService<SharedAccount, SharedAccountsFilter> MainTableService { get; set; }
         [Inject] public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<SharedAccountsPage> Logger { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
+
+        private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
             await MainTableService.InitializeAsync(SharedAccountService.GetSharedAccountsAsync, SharedAccountService.GetSharedAccountsCountAsync, StateHasChanged, nameof(SharedAccount.Name), ListSortDirection.Ascending);
             await BreadcrumbsService.SetSharedAccounts();
+            await InitializeHubAsync();
         }
 
 
@@ -45,6 +50,32 @@ namespace HES.Web.Pages.SharedAccounts
             };
 
             await MainTableService.ShowModalAsync("Delete Shared Account", body, ModalDialogSize.Default);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/sharedAccountsHub"))
+            .Build();
+
+            hubConnection.On<string>("PageUpdated", async (connectionId) =>
+            {
+                var id = hubConnection.ConnectionId;
+                if (id != connectionId)
+                {
+                    await SharedAccountService.DetachSharedAccountAsync(MainTableService.Entities);
+                    await MainTableService.LoadTableDataAsync();
+                    StateHasChanged();
+                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                }
+            });
+
+            await hubConnection.StartAsync();
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }
