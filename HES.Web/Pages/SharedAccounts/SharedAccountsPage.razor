@@ -1,0 +1,132 @@
+﻿@if (MainTableService.Entities == null)
+{
+    <LoadingPage />
+}
+else
+{
+    <TableAction>
+        <FilterForm>
+            @*<LicenseOrderFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />*@
+        </FilterForm>
+        <ActionButtons>
+            <button type="button" @onclick="CreateSharedAccountAsync" class="btn btn-primary mx-1" title="Create shared account">
+                Create shared account
+            </button>
+            @*@if (MainTableService.SelectedEntity != null)
+            {
+                if (MainTableService.SelectedEntity.OrderStatus == LicenseOrderStatus.New)
+                {
+                    <button type="button" @onclick="SendLicenseOrderAsync" class="btn btn-light border mx-1" title="Send license order">
+                        <img class="icon-btn" src="/svg/action/send.svg" />
+                        Send
+                    </button>
+                    <button type="button" @onclick="EditLicenseOrderAsync" class="btn btn-light border mx-1" title="Edit license order">
+                        <img class="icon-btn" src="/svg/action/edit.svg" />
+                        Edit
+                    </button>
+                    <button type="button" @onclick="DeleteLicenseOrderAsync" class="btn btn-light border mx-1" title="Delete license order">
+                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        Delete
+                    </button>
+                }
+                <button type="button" @onclick="LicenseOrderDetailsAsync" class="btn btn-light border mx-1" title="License order details">
+                    <img class="icon-btn" src="/svg/action/details.svg" />
+                    Details
+                </button>
+            }*@
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+        <TableHeader>
+            <MainTableHeader Title="@nameof(SharedAccount.Name)"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SharedAccount.Name)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(SharedAccount.Urls)"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SharedAccount.Urls)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(SharedAccount.Apps)"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SharedAccount.Apps)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="@nameof(SharedAccount.Login)"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SharedAccount.Login)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Password updated"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SharedAccount.PasswordChangedAt)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="OTP updated"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SharedAccount.OtpSecretChangedAt)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.Name
+            </td>
+            <td>
+                @if (!string.IsNullOrWhiteSpace(context.Urls))
+                    {
+                    @foreach (var url in context.Urls.Split(';'))
+                        {
+                        <span style="white-space: pre-line">@url</span>
+                        }
+                    }
+            </td>
+            <td>
+                @if (!string.IsNullOrWhiteSpace(context.Apps))
+                    {
+                    @foreach (var app in context.Apps.Split(';'))
+                        {
+                        <span style="white-space: pre-line">@app</span>
+                        }
+                    }
+            </td>
+            <td>
+                @context.Login
+            </td>
+            <td>
+                @if (context.PasswordChangedAt != null)
+                    {
+                    <span>@context.GetPasswordUpdated.Days day(s)</span>
+                    }
+            </td>
+            <td>
+                @if (context.OtpSecretChangedAt != null)
+                    {
+                    <span>@context.GetOtpUpdated.Days day(s)</span>
+                    }
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
+                DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
+                TotalRecords="MainTableService.TotalRecords"
+                CurrentPage="MainTableService.CurrentPage"
+                DisplayRows="MainTableService.DataLoadingOptions.Take"
+                DisplayRecords="MainTableService.Entities.Count" />
+}

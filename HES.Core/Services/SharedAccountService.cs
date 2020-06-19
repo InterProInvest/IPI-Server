@@ -3,10 +3,13 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.SharedAccounts;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.SharedAccounts;
 using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -35,6 +38,65 @@ namespace HES.Core.Services
         public IQueryable<SharedAccount> Query()
         {
             return _sharedAccountRepository.Query();
+        }
+
+        public async Task<List<SharedAccount>> GetSharedAccountsAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions)
+        {
+            var query = _sharedAccountRepository.Query();
+
+            // Filter
+
+            //Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Urls.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Apps.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Login.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            //Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(SharedAccount.Name):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    break;
+                case nameof(SharedAccount.Urls):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Urls) : query.OrderByDescending(x => x.Urls);
+                    break;
+                case nameof(SharedAccount.Apps):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Apps) : query.OrderByDescending(x => x.Apps);
+                    break;
+                case nameof(SharedAccount.Login):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Login) : query.OrderByDescending(x => x.Login);
+                    break;
+                case nameof(SharedAccount.PasswordChangedAt):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.PasswordChangedAt) : query.OrderByDescending(x => x.PasswordChangedAt);
+                    break;
+                case nameof(SharedAccount.OtpSecretChangedAt):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OtpSecretChangedAt) : query.OrderByDescending(x => x.OtpSecretChangedAt);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+        public async Task<int> GetSharedAccountsCountAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions)
+        {
+            var query = _sharedAccountRepository.Query();
+
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Urls.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Apps.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Login.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<SharedAccount> GetByIdAsync(dynamic id)

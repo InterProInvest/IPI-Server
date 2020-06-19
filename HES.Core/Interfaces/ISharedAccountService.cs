@@ -1,5 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Models.SharedAccounts;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.SharedAccounts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,8 @@ namespace HES.Core.Interfaces
     {
         IQueryable<SharedAccount> Query();
         Task<SharedAccount> GetByIdAsync(dynamic id);
+        Task<List<SharedAccount>> GetSharedAccountsAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions);
+        Task<int> GetSharedAccountsCountAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions);
         Task<List<SharedAccount>> GetSharedAccountsAsync();
         Task<List<SharedAccount>> GetWorkstationSharedAccountsAsync();
         Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount);
