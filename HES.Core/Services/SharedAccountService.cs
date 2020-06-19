@@ -40,6 +40,11 @@ namespace HES.Core.Services
             return _sharedAccountRepository.Query();
         }
 
+        public async Task UnchangedAsync(SharedAccount account)
+        {
+            await _sharedAccountRepository.UnchangedAsync(account);
+        }
+
         public async Task<List<SharedAccount>> GetSharedAccountsAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions)
         {
             var query = _sharedAccountRepository.Query();

@@ -13,6 +13,7 @@ namespace HES.Core.Interfaces
     public interface ISharedAccountService
     {
         IQueryable<SharedAccount> Query();
+        Task UnchangedAsync(SharedAccount account);
         Task<SharedAccount> GetByIdAsync(dynamic id);
         Task<List<SharedAccount>> GetSharedAccountsAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions);
         Task<int> GetSharedAccountsCountAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions);

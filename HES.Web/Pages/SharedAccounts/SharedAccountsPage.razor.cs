@@ -46,5 +46,17 @@ namespace HES.Web.Pages.SharedAccounts
 
             await MainTableService.ShowModalAsync("Delete Shared Account", body, ModalDialogSize.Default);
         }
+
+        private async Task EditSharedAccountOTPAsync()
+        { 
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditSharedAccountOtp));
+                builder.AddAttribute(1, nameof(EditSharedAccountOtp.Account), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Edit Shared Account OTP", body, ModalDialogSize.Default);
+        }
     }
 }

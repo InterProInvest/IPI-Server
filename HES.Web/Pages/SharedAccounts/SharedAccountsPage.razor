@@ -18,6 +18,14 @@ else
                     <img class="icon-btn" src="/svg/action/delete.svg" />
                     Delete
                 </button>
+
+                @if (MainTableService.SelectedEntity.Kind != AccountKind.Workstation)
+                {
+                    <button type="button" @onclick="EditSharedAccountOTPAsync" class="btn btn-light border mx-1" title="Edit shared account OTP">
+                        <img class="icon-btn" src="/svg/action/otp.svg" />
+                        Edit OTP
+                    </button>
+                }
             }
         </ActionButtons>
         <FilterButtons>
