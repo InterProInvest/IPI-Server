@@ -2,7 +2,6 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
-using HES.Core.Models.SharedAccounts;
 using HES.Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -25,7 +24,7 @@ namespace HES.Web.Pages.SharedAccounts
         public IList<SharedAccount> SharedAccounts { get; set; }
         public SharedAccount SharedAccount { get; set; }
         public AccountPassword AccountPassword { get; set; }
-        public WorkstationAccount WorkstationAccount { get; set; }
+        //public WorkstationAccount WorkstationAccount { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
@@ -45,7 +44,8 @@ namespace HES.Web.Pages.SharedAccounts
 
         public async Task OnGetAsync()
         {
-            SharedAccounts = await _sharedAccountService.GetSharedAccountsAsync();
+            //SharedAccounts = await _sharedAccountService.GetSharedAccountsAsync();
+            SharedAccounts = new List<SharedAccount>();
         }
 
         #region Shared Account
@@ -81,7 +81,7 @@ namespace HES.Web.Pages.SharedAccounts
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostCreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount)
+        public async Task<IActionResult> OnPostCreateWorkstationSharedAccountAsync()
         {
             if (!ModelState.IsValid)
             {
@@ -92,7 +92,7 @@ namespace HES.Web.Pages.SharedAccounts
 
             try
             {
-                await _sharedAccountService.CreateWorkstationSharedAccountAsync(workstationAccount);
+                //await _sharedAccountService.CreateWorkstationSharedAccountAsync(workstationAccount);
                 SuccessMessage = $"Shared account created.";
             }
             catch (Exception ex)
@@ -181,8 +181,8 @@ namespace HES.Web.Pages.SharedAccounts
             try
             {
                 sharedAccount.Password = accountPassword.Password;
-                var devices = await _sharedAccountService.EditSharedAccountPwdAsync(sharedAccount);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
+                //var devices = await _sharedAccountService.EditSharedAccountPwdAsync(sharedAccount);
+                //_remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
                 SuccessMessage = $"Shared account updated.";
             }
             catch (Exception ex)
@@ -220,8 +220,8 @@ namespace HES.Web.Pages.SharedAccounts
             try
             {
                 sharedAccount.OtpSecret = accountPassword.OtpSecret;
-                var devices = await _sharedAccountService.EditSharedAccountOtpAsync(sharedAccount);
-                _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
+                //var devices = await _sharedAccountService.EditSharedAccountOtpAsync(sharedAccount);
+                //_remoteWorkstationConnectionsService.StartUpdateRemoteDevice(devices);
                 SuccessMessage = $"Shared account updated.";
             }
             catch (Exception ex)

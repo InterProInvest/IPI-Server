@@ -2,8 +2,9 @@
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models.SharedAccounts;
+using HES.Core.Models;
 using HES.Core.Models.Web;
+using HES.Core.Models.Web.Account;
 using HES.Core.Models.Web.SharedAccounts;
 using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -45,11 +45,37 @@ namespace HES.Core.Services
             await _sharedAccountRepository.UnchangedAsync(account);
         }
 
+        public async Task<SharedAccount> GetSharedAccountByIdAsync(string id)
+        {
+            return await _sharedAccountRepository.GetByIdAsync(id);
+        }
+
         public async Task<List<SharedAccount>> GetSharedAccountsAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions)
         {
-            var query = _sharedAccountRepository.Query();
+            var query = _sharedAccountRepository
+                .Query()
+                .Where(d => d.Deleted == false);
 
             // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Name != null)
+                {
+                    query = query.Where(w => w.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Urls != null)
+                {
+                    query = query.Where(w => w.Urls.Contains(dataLoadingOptions.Filter.Urls, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Apps != null)
+                {
+                    query = query.Where(w => w.Apps.Contains(dataLoadingOptions.Filter.Apps, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Login != null)
+                {
+                    query = query.Where(w => w.Login.Contains(dataLoadingOptions.Filter.Login, StringComparison.OrdinalIgnoreCase));
+                }
+            }
 
             //Search
             if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
@@ -87,10 +113,35 @@ namespace HES.Core.Services
 
             return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
+
         public async Task<int> GetSharedAccountsCountAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions)
         {
-            var query = _sharedAccountRepository.Query();
+            var query = _sharedAccountRepository
+                .Query()
+                .Where(d => d.Deleted == false);
 
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Name != null)
+                {
+                    query = query.Where(w => w.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Urls != null)
+                {
+                    query = query.Where(w => w.Urls.Contains(dataLoadingOptions.Filter.Urls, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Apps != null)
+                {
+                    query = query.Where(w => w.Apps.Contains(dataLoadingOptions.Filter.Apps, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Login != null)
+                {
+                    query = query.Where(w => w.Login.Contains(dataLoadingOptions.Filter.Login, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            //Search
             if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
                 dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
@@ -104,19 +155,6 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task<SharedAccount> GetByIdAsync(dynamic id)
-        {
-            return await _sharedAccountRepository.GetByIdAsync(id);
-        }
-
-        public async Task<List<SharedAccount>> GetSharedAccountsAsync()
-        {
-            return await _sharedAccountRepository
-                .Query()
-                .Where(d => d.Deleted == false)
-                .ToListAsync();
-        }
-
         public async Task<List<SharedAccount>> GetWorkstationSharedAccountsAsync()
         {
             return await _sharedAccountRepository
@@ -127,38 +165,27 @@ namespace HES.Core.Services
 
         public async Task<SharedAccount> CreateSharedAccountAsync(SharedAccount sharedAccount)
         {
+            if (sharedAccount == null)
+                throw new ArgumentNullException(nameof(sharedAccount));
+
             _dataProtectionService.Validate();
 
-            if (sharedAccount == null)
-            {
-                throw new ArgumentNullException(nameof(sharedAccount));
-            }
-
-            Validation.VerifyOtpSecret(sharedAccount.OtpSecret);
-
-            var exist = await _sharedAccountRepository
+            var accountExist = await _sharedAccountRepository
                 .Query()
-                .Where(s => s.Name == sharedAccount.Name &&
-                            s.Login == sharedAccount.Login &&
-                            s.Deleted == false)
+                .Where(x => x.Name == sharedAccount.Name && x.Login == sharedAccount.Login && x.Deleted == false)
                 .AsNoTracking()
                 .AnyAsync();
 
-            if (exist)
-            {
-                throw new AlreadyExistException("An account with the same name and login exists.");
-            }
+            if (accountExist)
+                throw new AlreadyExistException("Name and login is already in use.");
 
-            // Validate url
             sharedAccount.Urls = Validation.VerifyUrls(sharedAccount.Urls);
-
-            // Set password
             sharedAccount.Password = _dataProtectionService.Encrypt(sharedAccount.Password);
-            // Set password date change
             sharedAccount.PasswordChangedAt = DateTime.UtcNow;
-            // Set otp date change
+
             if (!string.IsNullOrWhiteSpace(sharedAccount.OtpSecret))
             {
+                Validation.VerifyOtpSecret(sharedAccount.OtpSecret);
                 sharedAccount.OtpSecret = _dataProtectionService.Encrypt(sharedAccount.OtpSecret);
                 sharedAccount.OtpSecretChangedAt = DateTime.UtcNow;
             }
@@ -166,35 +193,50 @@ namespace HES.Core.Services
             return await _sharedAccountRepository.AddAsync(sharedAccount);
         }
 
-        public async Task<SharedAccount> CreateWorkstationSharedAccountAsync(WorkstationAccount workstationAccount)
+        public async Task<SharedAccount> CreateWorkstationSharedAccountAsync(WorkstationSharedAccount workstationAccount)
         {
             if (workstationAccount == null)
-            {
                 throw new ArgumentNullException(nameof(workstationAccount));
+
+            switch (workstationAccount.Type)
+            {
+                case WorkstationAccountType.Local:
+                    workstationAccount.UserName = $".\\{workstationAccount.UserName}";
+                    break;
+                case WorkstationAccountType.AzureAD:
+                    workstationAccount.UserName = $"AzureAD\\{workstationAccount.UserName}";
+                    break;
+                case WorkstationAccountType.Microsoft:
+                    workstationAccount.UserName = $"@\\{workstationAccount.UserName}";
+                    break;
             }
 
             var sharedAccount = new SharedAccount()
             {
                 Name = workstationAccount.Name,
-                Kind = AccountKind.Workstation,
-                Password = workstationAccount.Password
+                Login = workstationAccount.UserName,
+                Password = workstationAccount.Password,
+                PasswordChangedAt = DateTime.UtcNow,
+                Kind = AccountKind.Workstation
             };
 
-            switch (workstationAccount.AccountType)
+            return await CreateSharedAccountAsync(sharedAccount);
+        }
+
+        public async Task<SharedAccount> CreateWorkstationSharedAccountAsync(WorkstationDomainSharedAccount workstationAccount)
+        {
+            if (workstationAccount == null)
+                throw new ArgumentNullException(nameof(workstationAccount));
+
+            var sharedAccount = new SharedAccount()
             {
-                case WorkstationAccountType.Local:
-                    sharedAccount.Login = $".\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.Domain:
-                    sharedAccount.Login = $"{workstationAccount.Domain}\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.Microsoft:
-                    sharedAccount.Login = $"@\\{workstationAccount.Login}";
-                    break;
-                case WorkstationAccountType.AzureAD:
-                    sharedAccount.Login = $"AzureAD\\{workstationAccount.Login}";
-                    break;
-            }
+                Name = workstationAccount.Name,
+                Login = $"{workstationAccount.Domain}\\{workstationAccount.UserName}",
+                Password = workstationAccount.Password,
+                PasswordChangedAt = DateTime.UtcNow,
+                Kind = AccountKind.Workstation
+
+            };
 
             return await CreateSharedAccountAsync(sharedAccount);
         }
@@ -202,28 +244,27 @@ namespace HES.Core.Services
         public async Task<List<string>> EditSharedAccountAsync(SharedAccount sharedAccount)
         {
             if (sharedAccount == null)
-                throw new Exception("The parameter must not be null.");
+                throw new ArgumentNullException(nameof(sharedAccount));
 
             _dataProtectionService.Validate();
 
-            var exist = await _sharedAccountRepository
+            var accountExist = await _sharedAccountRepository
                 .Query()
-                .Where(s => s.Name == sharedAccount.Name)
-                .Where(s => s.Login == sharedAccount.Login)
-                .Where(s => s.Deleted == false)
-                .Where(s => s.Id != sharedAccount.Id)
+                .Where(x => x.Name == sharedAccount.Name && x.Login == sharedAccount.Login && x.Deleted == false && x.Id != sharedAccount.Id)
+                .AsNoTracking()
                 .AnyAsync();
 
-            if (exist)
-                throw new Exception("An account with the same name and login exists.");
+            if (accountExist)
+                throw new AlreadyExistException("Name and login is already in use.");
 
             sharedAccount.Urls = Validation.VerifyUrls(sharedAccount.Urls);
 
-            // Get all device accounts where equals this shared account
+            // Get all accounts where used this shared account
             var accounts = await _accountService
                 .Query()
-                .Include(d => d.Employee.HardwareVaults)
-                .Where(d => d.Deleted == false && d.SharedAccountId == sharedAccount.Id)
+                .Include(x => x.Employee.HardwareVaults)
+                .Where(x => x.SharedAccountId == sharedAccount.Id && x.Deleted == false)
+                .AsNoTracking()
                 .ToListAsync();
 
             List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
@@ -236,51 +277,48 @@ namespace HES.Core.Services
                 account.Login = sharedAccount.Login;
                 account.UpdatedAt = DateTime.UtcNow;
 
-                foreach (var device in account.Employee.HardwareVaults)
+                foreach (var hardwareVault in account.Employee.HardwareVaults)
                 {
                     tasks.Add(new HardwareVaultTask
                     {
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
-                        HardwareVaultId = device.Id
+                        HardwareVaultId = hardwareVault.Id
                     });
                 }
             }
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Update Shared Account        
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Name), nameof(SharedAccount.Urls), nameof(SharedAccount.Apps), nameof(SharedAccount.Login) });
-                // Update accounts
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Name), nameof(Account.Urls), nameof(Account.Apps), nameof(Account.Login), nameof(Account.UpdatedAt) });
-                // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
-
                 transactionScope.Complete();
             }
 
-            List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
-            return deviceIds;
+            return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
 
-        public async Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount)
+        public async Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount, AccountPassword accountPassword)
         {
             if (sharedAccount == null)
                 throw new ArgumentNullException(nameof(sharedAccount));
+            if (accountPassword == null)
+                throw new ArgumentNullException(nameof(accountPassword));
 
             _dataProtectionService.Validate();
 
             // Update Shared Account
-            sharedAccount.Password = _dataProtectionService.Encrypt(sharedAccount.Password);
+            sharedAccount.Password = _dataProtectionService.Encrypt(accountPassword.Password);
             sharedAccount.PasswordChangedAt = DateTime.UtcNow;
 
-            // Get all device accounts where equals this shared account
+            // Get all accounts where used this shared account
             var accounts = await _accountService
                 .Query()
-                .Where(d => d.Deleted == false)
-                .Where(d => d.SharedAccountId == sharedAccount.Id)
+                .Include(x => x.Employee.HardwareVaults)
+                .Where(x => x.SharedAccountId == sharedAccount.Id && x.Deleted == false)
+                .AsNoTracking()
                 .ToListAsync();
 
             List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
@@ -290,7 +328,7 @@ namespace HES.Core.Services
                 account.UpdatedAt = DateTime.UtcNow;
                 account.PasswordUpdatedAt = DateTime.UtcNow;
 
-                foreach (var device in account.Employee.HardwareVaults)
+                foreach (var hardwareVault in account.Employee.HardwareVaults)
                 {
                     tasks.Add(new HardwareVaultTask
                     {
@@ -298,32 +336,28 @@ namespace HES.Core.Services
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
                         Operation = TaskOperation.Update,
-                        HardwareVaultId = device.Id
+                        HardwareVaultId = hardwareVault.Id
                     });
                 }
             }
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Update Shared Account
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Password), nameof(SharedAccount.PasswordChangedAt) });
-                // Update accounts
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.UpdatedAt), nameof(Account.PasswordUpdatedAt) });
-                // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
-
                 transactionScope.Complete();
             }
 
-            List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
-            return deviceIds;
+            return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
 
-        public async Task<List<string>> EditSharedAccountOtpAsync(SharedAccount sharedAccount)
+        public async Task<List<string>> EditSharedAccountOtpAsync(SharedAccount sharedAccount, AccountOtp accountOtp)
         {
             if (sharedAccount == null)
                 throw new ArgumentNullException(nameof(sharedAccount));
+            if (accountOtp == null)
+                throw new ArgumentNullException(nameof(accountOtp));
 
             _dataProtectionService.Validate();
 
@@ -333,11 +367,12 @@ namespace HES.Core.Services
             sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? _dataProtectionService.Encrypt(sharedAccount.OtpSecret) : null;
             sharedAccount.OtpSecretChangedAt = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? new DateTime?(DateTime.UtcNow) : null;
 
-            // Get all device accounts where equals this shared account
+            // Get all accounts where used this shared account
             var accounts = await _accountService
                 .Query()
-                .Where(d => d.Deleted == false)
-                .Where(d => d.SharedAccountId == sharedAccount.Id)
+                .Include(x => x.Employee.HardwareVaults)
+                .Where(x => x.SharedAccountId == sharedAccount.Id && x.Deleted == false)
+                .AsNoTracking()
                 .ToListAsync();
 
             List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
@@ -362,19 +397,13 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Update Shared Account
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.OtpSecret), nameof(SharedAccount.OtpSecretChangedAt) });
-                // Update accounts
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.UpdatedAt), nameof(Account.OtpUpdatedAt) });
-                // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
-
                 transactionScope.Complete();
             }
 
-            List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
-            return deviceIds;
+            return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
 
         public async Task<List<string>> DeleteSharedAccountAsync(string id)
@@ -389,13 +418,13 @@ namespace HES.Core.Services
                 throw new Exception("Shared Account not found");
 
             sharedAccount.Deleted = true;
-            await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Name) });
 
-            // Get all device accounts where equals this shared account
+            // Get all accounts where used this shared account
             var accounts = await _accountService
                 .Query()
-                .Where(d => d.Deleted == false)
-                .Where(d => d.SharedAccountId == sharedAccount.Id)
+                .Include(x => x.Employee.HardwareVaults)
+                .Where(x => x.SharedAccountId == sharedAccount.Id && x.Deleted == false)
+                .AsNoTracking()
                 .ToListAsync();
 
             List<HardwareVaultTask> tasks = new List<HardwareVaultTask>();
@@ -405,36 +434,40 @@ namespace HES.Core.Services
                 account.Deleted = true;
                 account.UpdatedAt = DateTime.UtcNow;
 
-                foreach (var device in account.Employee.HardwareVaults)
+                foreach (var hardwareVault in account.Employee.HardwareVaults)
                 {
                     tasks.Add(new HardwareVaultTask
                     {
                         AccountId = account.Id,
                         CreatedAt = DateTime.UtcNow,
-                        Operation = TaskOperation.Update,
-                        HardwareVaultId = device.Id
+                        Operation = TaskOperation.Delete,
+                        HardwareVaultId = hardwareVault.Id
                     });
                 }
             }
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                // Update accounts
+                await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Deleted) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted), nameof(Account.UpdatedAt) });
-                // Create Tasks
                 await _deviceTaskService.AddRangeTasksAsync(tasks);
-
                 transactionScope.Complete();
             }
 
-            List<string> deviceIds = new List<string>();
-            accounts.ForEach(x => deviceIds.AddRange(x.Employee.HardwareVaults.Select(s => s.Id)));
-            return deviceIds;
+            return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
 
-        public async Task<bool> ExistAync(Expression<Func<SharedAccount, bool>> predicate)
+        public async Task DetachSharedAccountAsync(SharedAccount sharedAccount)
         {
-            return await _sharedAccountRepository.ExistAsync(predicate);
+            await _sharedAccountRepository.DetachedAsync(sharedAccount);
+        }
+
+        public async Task DetachSharedAccountAsync(List<SharedAccount> sharedAccounts)
+        {
+            foreach (var item in sharedAccounts)
+            {
+                await DetachSharedAccountAsync(item);
+            }
         }
     }
 }

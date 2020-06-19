@@ -924,7 +924,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var sharedAccount = await _sharedAccountService.GetByIdAsync(sharedAccountId);
+            var sharedAccount = await _sharedAccountService.GetSharedAccountByIdAsync(sharedAccountId);
             if (sharedAccount == null)
                 throw new Exception("Shared Account not found");
 
