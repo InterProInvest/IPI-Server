@@ -53,8 +53,8 @@ else
                     </div>
                     <div class="form-group col">
                         <label class="control-label text-gray">Password</label>
-                        <InputText @bind-Value="AccountPassword.Password" type="password" class="form-control text-navyblue" tabindex="5" />
-                        <ValidationMessage For="@(() => AccountPassword.Password)" class="text-danger" />
+                        <InputText @bind-Value="SharedAccount.Password" type="password" class="form-control text-navyblue" tabindex="5" />
+                        <ValidationMessage For="@(() => SharedAccount.Password)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
@@ -65,15 +65,15 @@ else
                     </div>
                     <div class="form-group col">
                         <label class="control-label text-gray">Confirm Password</label>
-                        <InputText @bind-Value="AccountPassword.ConfirmPassword" type="password" class="form-control text-navyblue" tabindex="6" />
-                        <ValidationMessage For="@(() => AccountPassword.ConfirmPassword)" class="text-danger" />
+                        <InputText @bind-Value="SharedAccount.ConfirmPassword" type="password" class="form-control text-navyblue" tabindex="6" />
+                        <ValidationMessage For="@(() => SharedAccount.ConfirmPassword)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
                         <label class="control-label text-gray">Otp Secret</label>
-                        <InputText @bind-Value="AccountPassword.OtpSecret" class="form-control text-navyblue" tabindex="7" />
-                        <ValidationMessage For="@(() => AccountPassword.OtpSecret)" class="text-danger" />
+                        <InputText @bind-Value="SharedAccount.OtpSecret" class="form-control text-navyblue" tabindex="7" />
+                        <ValidationMessage For="@(() => SharedAccount.OtpSecret)" class="text-danger" />
                     </div>
                 </div>
                 <div class="text-right">
@@ -84,6 +84,100 @@ else
                     </button>
                 </div>
             </EditForm>
+        </div>
+        <div class="tab-pane fade" id="pills-workstation" role="tabpanel" aria-labelledby="pills-workstation-tab">
+            <div class="row">
+                <div class="col col-sm-6 offset-md-3">
+                    <div class="form-group">
+                        <label class="control-label text-gray">Select workstation account type</label>
+                        <select class="form-control" @bind="WorkstationType">
+                            <option selected value="@Core.Enums.WorkstationAccountType.Local">Local</option>
+                            <option value="@Core.Enums.WorkstationAccountType.Domain">Domain</option>
+                            <option value="@Core.Enums.WorkstationAccountType.AzureAD">AzureAD</option>
+                            <option value="@Core.Enums.WorkstationAccountType.Microsoft">Microsoft</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            @switch (WorkstationType)
+            {
+                case Core.Enums.WorkstationAccountType.Local:
+                case Core.Enums.WorkstationAccountType.Microsoft:
+                case Core.Enums.WorkstationAccountType.AzureAD:
+                    <EditForm Model="WorkstationSharedAccount" OnValidSubmit="CreateWorkstationAccountAsync">
+                        <DataAnnotationsValidator />
+                        <div class="row">
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Account Name</label>
+                                <InputText @bind-Value="WorkstationSharedAccount.Name" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationSharedAccount.Name)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">User Logon Name</label>
+                                <InputText @bind-Value="WorkstationSharedAccount.UserName" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationSharedAccount.UserName)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Password</label>
+                                <InputText @bind-Value="WorkstationSharedAccount.Password" type="password" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationSharedAccount.Password)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Confirm Password</label>
+                                <InputText @bind-Value="WorkstationSharedAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationSharedAccount.ConfirmPassword)" class="text-danger" />
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <button type="button" class="btn btn-secondary" @onclick="@(async () => await CloseAsync())">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+                                <span>Create</span>
+                            </button>
+                        </div>
+                    </EditForm>
+                    break;
+                case Core.Enums.WorkstationAccountType.Domain:
+                    <EditForm Model="WorkstationDomainSharedAccount" OnValidSubmit="CreateWorkstationAccountAsync">
+                        <DataAnnotationsValidator />
+                        <div class="row">
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Account Name</label>
+                                <InputText @bind-Value="WorkstationDomainSharedAccount.Name" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationDomainSharedAccount.Name)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Domain</label>
+                                <InputText @bind-Value="WorkstationDomainSharedAccount.Domain" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationDomainSharedAccount.Domain)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">User Logon Name</label>
+                                <InputText @bind-Value="WorkstationDomainSharedAccount.UserName" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationDomainSharedAccount.UserName)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Password</label>
+                                <InputText @bind-Value="WorkstationDomainSharedAccount.Password" type="password" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationDomainSharedAccount.Password)" class="text-danger" />
+                            </div>
+                            <div class="form-group col col-sm-6 offset-md-3">
+                                <label class="control-label text-gray">Confirm Password</label>
+                                <InputText @bind-Value="WorkstationDomainSharedAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
+                                <ValidationMessage For="@(() => WorkstationDomainSharedAccount.ConfirmPassword)" class="text-danger" />
+                            </div>
+                        </div>
+                        
+                        <div class="text-right">
+                            <button type="button" class="btn btn-secondary" @onclick="@(async () => await CloseAsync())">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+                                <span>Create</span>
+                            </button>
+                        </div>
+                    </EditForm>
+                    break;
+            }
         </div>
     </div>
 }
