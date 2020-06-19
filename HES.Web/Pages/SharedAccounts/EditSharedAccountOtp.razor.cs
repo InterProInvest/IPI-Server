@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Account;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,11 +17,13 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
         [Parameter] public SharedAccount Account { get; set; }
 
+        public AccountOtp AccountOtp { get; set; } = new AccountOtp();
+
         private async Task EditAccoountOtpAsync()
         {
             try
             {
-                var account = await SharedAccountService.EditSharedAccountOtpAsync(Account);
+                var account = await SharedAccountService.EditSharedAccountOtpAsync(Account, AccountOtp);
                 ToastService.ShowToast("Account otp updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
