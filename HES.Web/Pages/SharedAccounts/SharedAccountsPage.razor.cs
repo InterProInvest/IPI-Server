@@ -64,6 +64,18 @@ namespace HES.Web.Pages.SharedAccounts
             await MainTableService.ShowModalAsync("Edit Shared Account OTP", body, ModalDialogSize.Default);
         }
 
+        private async Task EditSharedAccountPasswordAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditSharedAccountPassword));
+                builder.AddAttribute(1, nameof(EditSharedAccountPassword.Account), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Edit Shared Account Password", body, ModalDialogSize.Default);
+        }
+
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()

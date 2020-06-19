@@ -14,11 +14,6 @@ else
             </button>
             @if (MainTableService.SelectedEntity != null)
             {
-                <button type="button" @onclick="DeleteSharedAccountAsync" class="btn btn-light border mx-1" title="Delete shared account">
-                    <img class="icon-btn" src="/svg/action/delete.svg" />
-                    Delete
-                </button>
-
                 @if (MainTableService.SelectedEntity.Kind != AccountKind.Workstation)
                 {
                     <button type="button" @onclick="EditSharedAccountOTPAsync" class="btn btn-light border mx-1" title="Edit shared account OTP">
@@ -26,6 +21,16 @@ else
                         Edit OTP
                     </button>
                 }
+
+                <button type="button" @onclick="EditSharedAccountPasswordAsync" class="btn btn-light border mx-1" title="Edit shared account password">
+                    <img class="icon-btn" src="/svg/action/password.svg" />
+                    Edit Password
+                </button>
+
+                <button type="button" @onclick="DeleteSharedAccountAsync" class="btn btn-light border mx-1" title="Delete shared account">
+                    <img class="icon-btn" src="/svg/action/delete.svg" />
+                    Delete
+                </button>
             }
         </ActionButtons>
         <FilterButtons>
