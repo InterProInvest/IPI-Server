@@ -1,4 +1,5 @@
-﻿using HES.Core.Interfaces;
+﻿using Dasync.Collections;
+using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -36,33 +37,7 @@ namespace HES.Infrastructure
         {
             return await _context.Set<T>().FindAsync(obj);
         }
-
-        public async Task ReloadAsync(T entity)
-        {
-            await _context.Entry(entity).ReloadAsync();
-
-            foreach (var collectionEntry in _context.Entry(entity).Collections)
-            {
-                if (collectionEntry.CurrentValue != null)
-                {
-                    foreach (var current in collectionEntry.CurrentValue)
-                        collectionEntry.EntityEntry.Context.Entry(current).State = EntityState.Detached;
-
-                    collectionEntry.CurrentValue = null;
-                }
-                collectionEntry.IsLoaded = false;
-                collectionEntry.Load();
-            }
-        }
-
-        public async Task ReloadAsync(IList<T> entities)
-        {
-            foreach (var entity in entities)
-            {
-                await ReloadAsync(entity);
-            }
-        }
-
+      
         public async Task<T> AddAsync(T entity)
         {
             _context.Set<T>().Add(entity);
@@ -117,13 +92,7 @@ namespace HES.Infrastructure
             _context.UpdateRange(entity);
             await _context.SaveChangesAsync();
         }
-
-        public Task Unchanged(T entity)
-        {
-            _context.Entry(entity).State = EntityState.Unchanged;
-            return Task.CompletedTask;
-        }
-
+            
         public async Task<T> DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
@@ -141,6 +110,28 @@ namespace HES.Infrastructure
         public async Task<bool> ExistAsync(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().Where(predicate).AnyAsync();
+        }
+
+        public Task UnchangedAsync(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Unchanged;
+            return Task.CompletedTask;
+        }
+
+        public Task DetachedAsync(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Detached;
+
+            foreach (var collectionEntry in _context.Entry(entity).Collections)
+            {
+                if (collectionEntry.CurrentValue != null)
+                {
+                    foreach (var current in collectionEntry.CurrentValue)
+                        collectionEntry.EntityEntry.Context.Entry(current).State = EntityState.Detached;       
+                }      
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

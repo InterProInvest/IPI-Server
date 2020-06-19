@@ -56,9 +56,17 @@ namespace HES.Core.Services
             return _employeeRepository.Query();
         }
 
-        public async Task ReloadEmployeeAsync(Employee employee)
+        public async Task DetachEmployeeAsync(Employee employee)
         {
-            await _employeeRepository.ReloadAsync(employee);
+            await _employeeRepository.DetachedAsync(employee);
+        }
+
+        public async Task DetachEmployeeAsync(List<Employee> employee)
+        {
+            foreach (var item in employee)
+            {
+                await DetachEmployeeAsync(item);
+            }
         }
 
         public async Task<Employee> GetEmployeeByIdAsync(string id)
@@ -76,7 +84,7 @@ namespace HES.Core.Services
 
         public Task UnchangedEmployeeAsync(Employee employee)
         {
-            return _employeeRepository.Unchanged(employee);
+            return _employeeRepository.UnchangedAsync(employee);
         }
 
         public async Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions)
@@ -491,9 +499,17 @@ namespace HES.Core.Services
 
         #region Account
 
-        public async Task ReloadAccountsAsync(List<Account> accounts)
+        public async Task DetachdAccountAsync(Account account)
         {
-            await _accountService.ReloadAccountsAsync(accounts);
+            await _accountService.DetachdAccountAsync(account);
+        }
+
+        public async Task DetachdAccountAsync(List<Account> accounts)
+        {
+            foreach (var item in accounts)
+            {
+                await DetachdAccountAsync(item);
+            }
         }
 
         public async Task<Account> GetAccountByIdAsync(string accountId)

@@ -163,7 +163,7 @@ namespace HES.Core.Services
 
         public Task UnchangedGroupAsync(Group group)
         {
-            return _groupRepository.Unchanged(group);
+            return _groupRepository.UnchangedAsync(group);
         }
 
         public async Task<Group> DeleteGroupAsync(string groupId)

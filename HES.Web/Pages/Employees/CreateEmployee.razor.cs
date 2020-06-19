@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Account;
@@ -7,6 +8,7 @@ using HES.Core.Models.Web.HardwareVaults;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -27,6 +29,8 @@ namespace HES.Web.Pages.Employees
         [Inject] public ILogger<CreateEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IHubContext<EmployeesHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public List<HardwareVault> HardwareVaults { get; set; }
         public List<Company> Companies { get; set; }
@@ -226,6 +230,7 @@ namespace HES.Web.Pages.Employees
                     RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(hardwareVaultId);
 
                 ToastService.ShowToast("Employee created.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
