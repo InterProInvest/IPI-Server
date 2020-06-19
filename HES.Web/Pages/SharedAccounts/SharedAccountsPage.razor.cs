@@ -34,5 +34,17 @@ namespace HES.Web.Pages.SharedAccounts
 
             await MainTableService.ShowModalAsync("Create Shared Account", body, ModalDialogSize.Large);
         }
+
+        private async Task DeleteSharedAccountAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteSharedAccount));
+                builder.AddAttribute(1, nameof(DeleteSharedAccount.Account), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Delete Shared Account", body, ModalDialogSize.Default);
+        }
     }
 }
