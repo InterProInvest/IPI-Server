@@ -1,3 +1,4 @@
+using HES.Core.Constants;
 using HES.Core.Entities;
 using HES.Core.HostedServices;
 using HES.Core.Hubs;
@@ -258,6 +259,7 @@ namespace HES.Web
                 endpoints.MapHub<AppHub>("/appHub");
                 endpoints.MapHub<EmployeesHub>("/employeesHub");
                 endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
+                endpoints.MapHub<SharedAccountsHub>("/sharedAccountsHub");
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
@@ -267,7 +269,7 @@ namespace HES.Web
 
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
-            logger.LogInformation("Server started");
+            logger.LogInformation($"Server started {ServerConstants.Version}");
         }
     }
 }

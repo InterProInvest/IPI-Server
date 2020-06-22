@@ -30,7 +30,7 @@
                     <img src="~/svg/action/menu.svg" />
                 </button>
                 <!-- breadcrumbs -->
-                <component type="typeof(Breadcrumbs)" render-mode="ServerPrerendered" />
+                <component type="typeof(Breadcrumbs)" render-mode="Server" />
                 <nav id="breadcrumb" aria-label="breadcrumb" class="d-none">
                     <ol class="breadcrumb"></ol>
                 </nav>
@@ -60,8 +60,8 @@
             </nav>
             <!-- Main -->
             <div class="custom-content p-4">
-                <component type="typeof(ModalDialog)" render-mode="ServerPrerendered" />
-                <component type="typeof(Toast)" render-mode="ServerPrerendered" />
+                <component type="typeof(ModalDialog)" render-mode="Server" />
+                <component type="typeof(Toast)" render-mode="Server" />
                 <partial name="_SpinnerPartial" />
                 @RenderBody()
             </div>

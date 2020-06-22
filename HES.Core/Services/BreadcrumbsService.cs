@@ -99,6 +99,16 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetSharedAccounts()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Shared Accounts" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetParameters()
         {
             Breadcrumbs = new List<Breadcrumb>()
