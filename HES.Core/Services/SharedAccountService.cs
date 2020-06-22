@@ -364,8 +364,8 @@ namespace HES.Core.Services
             Validation.VerifyOtpSecret(sharedAccount.OtpSecret);
 
             // Update Shared Account
-            sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? _dataProtectionService.Encrypt(sharedAccount.OtpSecret) : null;
-            sharedAccount.OtpSecretChangedAt = !string.IsNullOrWhiteSpace(sharedAccount.OtpSecret) ? new DateTime?(DateTime.UtcNow) : null;
+            sharedAccount.OtpSecret = !string.IsNullOrWhiteSpace(accountOtp.OtpSecret) ? _dataProtectionService.Encrypt(accountOtp.OtpSecret) : null;
+            sharedAccount.OtpSecretChangedAt = !string.IsNullOrWhiteSpace(accountOtp.OtpSecret) ? new DateTime?(DateTime.UtcNow) : null;
 
             // Get all accounts where used this shared account
             var accounts = await _accountService

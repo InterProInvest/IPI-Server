@@ -1,7 +1,11 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -15,8 +19,11 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
-
+        [Inject] public IHubContext<SharedAccountsHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
         [Parameter] public SharedAccount Account { get; set; }
+
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         protected override void OnInitialized()
         {
@@ -31,8 +38,17 @@ namespace HES.Web.Pages.SharedAccounts
                 var vaults = await SharedAccountService.EditSharedAccountAsync(Account);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
                 ToastService.ShowToast("Shared account updated.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(SharedAccount.Name), ex.Message);
+            }
+            catch (IncorrectUrlException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(SharedAccount.Urls), ex.Message);
+            }  
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);

@@ -6,6 +6,7 @@ else
 {
     <EditForm Model="Account" OnValidSubmit="EditAccountAsync">
         <DataAnnotationsValidator />
+        <ValidationErrorMessage @ref="ValidationErrorMessage" />
         <div class="form-group">
             <label class="control-label text-gray">Name</label>
             <InputText class="form-control" @bind-Value="Account.Name" />
@@ -29,7 +30,7 @@ else
             <InputText class="form-control" @bind-Value="Account.Login" />
             <ValidationMessage For="@(() => Account.Login)" class="text-danger" />
         </div>
-        <div class="col align-self-end text-right form-group">
+        <div class="text-right">
             <button type="button" class="btn btn-secondary" @onclick="async () => await ModalDialogService.CancelAsync()">Cancel</button>
             <input type="submit" value="Save" class="btn btn-primary" />
         </div>

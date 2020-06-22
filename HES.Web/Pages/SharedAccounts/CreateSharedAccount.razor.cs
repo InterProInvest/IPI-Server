@@ -1,10 +1,12 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.SharedAccounts;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -21,6 +23,8 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<CreateSharedAccount> Logger { get; set; }
+        [Inject] public IHubContext<SharedAccountsHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public SharedAccount SharedAccount { get; set; }
         public WorkstationSharedAccount WorkstationSharedAccount { get; set; }
@@ -51,11 +55,20 @@ namespace HES.Web.Pages.SharedAccounts
 
                 await SharedAccountService.CreateSharedAccountAsync(SharedAccount);
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
             {
                 ValidationErrorMessage.DisplayError(nameof(SharedAccount.Name), ex.Message);
+            }
+            catch (IncorrectUrlException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(SharedAccount.Urls), ex.Message);
+            }
+            catch (IncorrectOtpException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(SharedAccount.OtpSecret), ex.Message);
             }
             catch (Exception ex)
             {
@@ -92,6 +105,7 @@ namespace HES.Web.Pages.SharedAccounts
                 }
 
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -102,7 +116,7 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
             finally
             {
@@ -119,6 +133,6 @@ namespace HES.Web.Pages.SharedAccounts
                 SharedAccount.Urls = template.Urls;
                 SharedAccount.Apps = template.Apps;
             }
-        }      
+        }
     }
 }

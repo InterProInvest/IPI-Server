@@ -34,6 +34,7 @@ namespace HES.Web.Pages.SharedAccounts
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(CreateSharedAccount));
+                builder.AddAttribute(1, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -46,6 +47,7 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 builder.OpenComponent(0, typeof(DeleteSharedAccount));
                 builder.AddAttribute(1, nameof(DeleteSharedAccount.Account), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -58,6 +60,7 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 builder.OpenComponent(0, typeof(EditSharedAccountOtp));
                 builder.AddAttribute(1, nameof(EditSharedAccountOtp.Account), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -70,6 +73,7 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 builder.OpenComponent(0, typeof(EditSharedAccount));
                 builder.AddAttribute(1, nameof(EditSharedAccount.Account), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -82,6 +86,7 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 builder.OpenComponent(0, typeof(EditSharedAccountPassword));
                 builder.AddAttribute(1, nameof(EditSharedAccountPassword.Account), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 

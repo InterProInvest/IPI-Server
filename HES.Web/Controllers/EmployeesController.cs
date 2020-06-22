@@ -356,12 +356,12 @@ namespace HES.Web.Controllers
                     EmployeeId = accountDto.EmployeeId,
                     Kind = AccountKind.WebApp,
                 };
-                var accountPassword = new AccountPassword()
+                var accountOtp = new AccountOtp()
                 {
                     OtpSecret = accountDto.OtpSercret
                 };
 
-                await _employeeService.EditPersonalAccountPwdAsync(account, accountPassword);
+                await _employeeService.EditPersonalAccountOtpAsync(account, accountOtp);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(await _employeeService.GetEmployeeVaultIdsAsync(account.EmployeeId));
             }
             catch (Exception ex)
