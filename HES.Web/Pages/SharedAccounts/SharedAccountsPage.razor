@@ -6,7 +6,7 @@ else
 {
     <TableAction>
         <FilterForm>
-            @*<LicenseOrderFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />*@
+            <SharedAccountFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
             <button type="button" @onclick="CreateSharedAccountAsync" class="btn btn-primary mx-1" title="Create shared account">
