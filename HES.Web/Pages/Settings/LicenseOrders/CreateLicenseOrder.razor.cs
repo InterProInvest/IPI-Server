@@ -4,7 +4,6 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.LicenseOrders;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -116,8 +115,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                 _isBusy = true;
 
-                //var hardwareVaults = await HardwareVaultService.VaultQuery().Where(x => _renewLicenseOrder.HardwareVaults.Select(d => d.Id).Contains(x.Id)).ToListAsync();
-                //var maxEndDate = hardwareVaults.Select(x => x.LicenseEndDate).Max();
                 var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                 var maxEndDate = checkedHardwareVaults.Select(x => x.LicenseEndDate).Max();
 

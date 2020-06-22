@@ -126,7 +126,7 @@ namespace HES.Core.Hubs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[AddEventDtoAsync] {ex.Message}");
+                    _logger.LogError($"[Add Event] {ex.Message}");
                 }
 
                 try
@@ -135,7 +135,7 @@ namespace HES.Core.Hubs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[AddOrUpdateWorkstationSession] {ex.Message}");
+                    _logger.LogError($"[Add/Update Session] {ex.Message}");
                 }
             }
 
