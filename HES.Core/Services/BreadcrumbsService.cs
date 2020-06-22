@@ -37,6 +37,16 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetTemplates()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Templates" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetEmployeeDetails(string name)
         {
             Breadcrumbs = new List<Breadcrumb>()

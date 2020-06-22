@@ -9,8 +9,10 @@
 <partial name="_SuccessMessage" for="SuccessMessage" />
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
+<component type="typeof(TemplatesPage)" render-mode="Server" />
+
 @* Top table items *@
-<div class="row align-items-center mr-0">
+@*<div class="row align-items-center mr-0">
     <div class="col">
         <h1 class="text-navyblue">Templates</h1>
     </div>
@@ -95,20 +97,20 @@
             </tr>
         }
     </tbody>
-</table>
+</table>*@
 
 @* Bottom table items *@
-<div class="row mt-2">
+@*<div class="row mt-2">
     <div class="col d-flex justify-content-center justify-content-lg-start align-items-center mb-1 text-nowrap">
         <span class="d-flex align-items-center mr-1 text-navyblue">Show entries</span>
         <div id="entries_place"></div>
     </div>
     <div id="showing_place" class="col d-flex justify-content-center align-items-center mb-1 text-navyblue text-nowrap"></div>
     <div id="pagination_place" class="col d-flex justify-content-center justify-content-lg-end align-items-center mb-1"></div>
-</div>
+</div>*@
 
 @* Modal *@
-<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+@*<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -126,9 +128,9 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
-@section Scripts{
+@*@section Scripts{
     <script>
         // Init DataTables
         var table_name = '#templates';
@@ -191,4 +193,4 @@
         });
     </script>
     <partial name="_ValidationScriptsPartial" />
-}
+}*@
