@@ -21,6 +21,7 @@ namespace HES.Core.Entities
         [Required]
         public string Login { get; set; }
 
+        [Required]
         public string Password { get; set; }
 
         public DateTime? PasswordChangedAt { get; set; }
@@ -34,7 +35,7 @@ namespace HES.Core.Entities
         public bool Deleted { get; set; }
 
         [NotMapped]
-        [Required] 
+        [Required]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
         [NotMapped]
