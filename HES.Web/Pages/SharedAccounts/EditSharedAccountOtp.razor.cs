@@ -14,6 +14,7 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
         [Parameter] public SharedAccount Account { get; set; }
 
@@ -23,22 +24,23 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
-                var account = await SharedAccountService.EditSharedAccountOtpAsync(Account, AccountOtp);
+                var vaults = await SharedAccountService.EditSharedAccountOtpAsync(Account, AccountOtp);
+                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
                 ToastService.ShowToast("Account otp updated.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                await ModalDialogService.CloseAsync();
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CloseAsync();
             }
         }
 
-        private async Task CloseAsync()
+        private async Task CancelAsync()
         {
-            await ModalDialogService.CloseAsync();
             await SharedAccountService.UnchangedAsync(Account);
+            await ModalDialogService.CancelAsync();
         }
     }
 }

@@ -13,6 +13,7 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public ILogger<DeleteSharedAccount> Logger { get; set; }
         [Parameter] public SharedAccount Account { get; set; }
 
@@ -20,21 +21,17 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
-                var account = await SharedAccountService.DeleteSharedAccountAsync(Account.Id);
+                var vaults = await SharedAccountService.DeleteSharedAccountAsync(Account.Id);
+                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
                 ToastService.ShowToast("Account deleted.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                await ModalDialogService.CloseAsync();
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CloseAsync();
             }
-        }
-
-        private async Task CloseAsync()
-        {
-            await ModalDialogService.CloseAsync();
         }
     }
 }

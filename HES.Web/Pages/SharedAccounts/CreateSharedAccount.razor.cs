@@ -2,7 +2,6 @@
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.Web.SharedAccounts;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -18,20 +17,16 @@ namespace HES.Web.Pages.SharedAccounts
     {
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public ISharedAccountService SharedAccountService { get; set; }
-
+        [Inject] public ITemplateService TemplateService { get; set; }
+        [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<CreateSharedAccount> Logger { get; set; }
-        [Inject] public ITemplateService TemplateService { get; set; }
 
         public SharedAccount SharedAccount { get; set; }
         public WorkstationSharedAccount WorkstationSharedAccount { get; set; }
         public WorkstationDomainSharedAccount WorkstationDomainSharedAccount { get; set; }
-
-
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
-
         public WorkstationAccountType WorkstationType { get; set; }
-
         public List<Template> Templates { get; set; }
 
         private bool _isBusy;
@@ -40,9 +35,9 @@ namespace HES.Web.Pages.SharedAccounts
         {
             Templates = await TemplateService.GetTemplatesAsync();
             WorkstationType = WorkstationAccountType.Local;
-            SharedAccount = new SharedAccount();
             WorkstationSharedAccount = new WorkstationSharedAccount();
             WorkstationDomainSharedAccount = new WorkstationDomainSharedAccount();
+            SharedAccount = new SharedAccount();
         }
 
         private async Task CreateAccountAsync()
@@ -124,11 +119,6 @@ namespace HES.Web.Pages.SharedAccounts
                 SharedAccount.Urls = template.Urls;
                 SharedAccount.Apps = template.Apps;
             }
-        }
-
-        private async Task CloseAsync()
-        {
-            await ModalDialogService.CloseAsync();
-        }
+        }      
     }
 }
