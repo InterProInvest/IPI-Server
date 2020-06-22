@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
         Task SetEmployeeDetails(string name);
         Task SetHardwareVaults();
         Task SetGroups();
+        public Task SetSharedAccounts();
         Task SetGroupDetails(string name);
         Task SetLicenseOrders();
         Task SetParameters();
