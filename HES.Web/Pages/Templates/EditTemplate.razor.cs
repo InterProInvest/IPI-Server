@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Templates
@@ -35,7 +34,7 @@ namespace HES.Web.Pages.Templates
             try
             {
                 await TemplateService.EditTemplateAsync(Template);
-                ToastService.ShowToast("Accounts template updated.", ToastLevel.Success);
+                ToastService.ShowToast("Template updated.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }

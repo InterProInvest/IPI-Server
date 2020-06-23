@@ -25,7 +25,7 @@ namespace HES.Web.Pages.Templates
             try
             {
                 await TemplateService.DeleteTemplateAsync(Template.Id);
-                ToastService.ShowToast("Accounts template deleted.", ToastLevel.Success);
+                ToastService.ShowToast("Template deleted.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }

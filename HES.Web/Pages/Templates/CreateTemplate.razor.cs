@@ -27,7 +27,7 @@ namespace HES.Web.Pages.Templates
             try
             {
                 await TemplateService.CreateTmplateAsync(Template);
-                ToastService.ShowToast("Employee updated.", ToastLevel.Success);
+                ToastService.ShowToast("Template created.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
@@ -35,7 +35,7 @@ namespace HES.Web.Pages.Templates
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
     }

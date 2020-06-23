@@ -1,9 +1,6 @@
-﻿using HES.Core.Interfaces;
-using HES.Core.Models.Web.Accounts;
+﻿using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Templates
@@ -13,7 +10,6 @@ namespace HES.Web.Pages.Templates
         [Parameter] public Func<TemplateFilter, Task> FilterChanged { get; set; }
 
         public TemplateFilter Filter { get; set; } = new TemplateFilter();
-
 
         private async Task FilteredAsync()
         {

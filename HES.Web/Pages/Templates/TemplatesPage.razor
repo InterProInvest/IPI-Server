@@ -12,14 +12,12 @@ else
             <button type="button" @onclick="CreateTemplateAsync" class="btn btn-primary mr-1" title="Create template">
                 Create template
             </button>
-
             @if (MainTableService.SelectedEntity != null)
             {
                 <button type="button" @onclick="EditTemplateAsync" class="btn btn-light border" title="Edit template">
                     <img class="icon-btn" src="/svg/action/edit.svg" />
                     Edit
                 </button>
-
                 <button type="button" @onclick="DeleteTemplateAsync" class="btn btn-light border mx-1" title="Delete template">
                     <img class="icon-btn" src="/svg/action/delete.svg" />
                     Delete
