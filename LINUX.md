@@ -13,6 +13,7 @@ The second part describes the installation already for a specific site, there ma
 * Option 1: Clean installation of CentOS Linux x86_64 7.6, select "minimal install" option during installation
 * Option 2: Clean installation of CentOS Linux x86_64 8.1, select "minimal install" option during installation
 * Option 3: Clean installation of Ubuntu Server LTS 18.04
+* Option 4: Clean installation of Ubuntu Server LTS 20.04
 
 # 1. Preparation (Run once)
   
@@ -49,7 +50,6 @@ The second part describes the installation already for a specific site, there ma
 ```shell
   $ sudo apt install git -y
  ```
-
 ## 1.4 Download HES repository from GitHub
 
 ```shell
@@ -65,21 +65,28 @@ The second part describes the installation already for a specific site, there ma
 ```
 *CentOS 8*
 ```shell
-  $ sudo dnf install dotnet-sdk-3.1
+  $ sudo dnf install dotnet-sdk-3.1 -y
 ```
-*Ubuntu*
+*Ubuntu 18.04*
 ```shell
   $ wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
   $ sudo dpkg -i packages-microsoft-prod.deb
   $ sudo apt update
   $ sudo apt install dotnet-sdk-3.1 -y
 ```
+*Ubuntu 20.04*
+```shell
+ $ wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+ $ sudo dpkg -i packages-microsoft-prod.deb
+ $ sudo apt-get update
+ $ sudo apt install dotnet-sdk-3.1 -y
+```
 
 If the installation was successful, the output of the *dotnet* command will look something like this:
 
 ```shell
   $ dotnet --version
-3.1.200
+3.1.301
 ```
 
 ## 1.6 Install MySQL version 8:
@@ -93,8 +100,7 @@ If the installation was successful, the output of the *dotnet* command will look
 ```shell
   $ sudo dnf install mysql-server -y
 ```
-
-*Ubuntu*
+*Ubuntu 18.04*
 ```shell
   $ wget -c https://dev.mysql.com/get/mysql-apt-config_0.8.14-1_all.deb
   $ sudo dpkg -i mysql-apt-config_0.8.14-1_all.deb
@@ -102,17 +108,17 @@ If the installation was successful, the output of the *dotnet* command will look
   $ sudo apt install mysql-server -y
 ```
 
-Enable and start MySQL service:
+*Ubuntu 20.04*
+```shell
+  $ sudo apt install mysql-server -y
+```
+
+Enable and start MySQL service (CentOS only):
 
 *CentOS*
 ```shell
   $ sudo systemctl restart mysqld.service
   $ sudo systemctl enable mysqld.service
-```
-*Ubuntu*
-```shell
-  $ sudo systemctl restart mysql.service
-  $ sudo systemctl enable mysql.service
 ```
 
 After installing MySQL, if everything went well, you can check the version of the program
@@ -127,7 +133,7 @@ mysql  Ver 8.0.17 for Linux on x86_64 (Source Distribution)
 MySQL expects that your new password should consist of at least 8 characters, contain uppercase and lowercase letters, numbers and special characters (do not forget the password you set, it will come in handy later). After a successful password change, the following questions are recommended to answer "Y":
 
 [Note] In CentOS 7, the default root password can be found using `sudo grep "A temporary password" /var/log/mysqld.log`. 
-In CentOS 8, the root password is empty by default. In Ubuntu the password was entered during installation of MySQL.
+In CentOS 8, the root password is empty by default. In Ubuntu 18.04 the password was entered during installation of MySQL. In ubuntu 20.04 the password is empty after installation
 
 ```shell
   $ sudo mysql_secure_installation
@@ -196,7 +202,6 @@ To exit from mySql console, press Ctrl+D.
 *Ubuntu*
 ```shell
   $ sudo apt install nginx -y
-  $ sudo systemctl enable nginx
 ```
 
 add to **http** section in /etc/nginx/nginx.conf
@@ -243,7 +248,7 @@ Now the preparation is complete.
 
 ## 2.1 Creating a MySQL user and database for Hideez Enterprise Server
 
-** Starting the MySQL Server Console **
+**Starting the MySQL Server Console**
 
 ```shell
   mysql -h localhost -u root -p
@@ -477,7 +482,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 Otherwise, you should carefully review the settings and correct the errors.
 
-** Restarting Nginx and checking its status **
+**Restarting Nginx and checking its status**
 
 ```shell
   $ sudo systemctl restart nginx
@@ -497,7 +502,13 @@ Otherwise, you should carefully review the settings and correct the errors.
 ## 2.6 Firewall Configuration
 
 To access the server from the network, ports 22, 80, and 443 should be opened:
-
+*CentOS*
+```shell
+$ sudo firewall-cmd --zone=public --permanent --add-port=22/tcp
+$ sudo firewall-cmd --zone=public --permanent --add-port=80/tcp
+$ sudo firewall-cmd --zone=public --permanent --add-port=443/tcp
+$ sudo firewall-cmd --reload
+```
 *Ubuntu*
 ```shell
 $ sudo ufw allow 22
