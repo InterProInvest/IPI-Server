@@ -26,17 +26,6 @@ namespace HES.Web.Pages.Templates
             await InitializeHubAsync();
         }
 
-        private async Task CreateTemplateAsync()
-        {
-            RenderFragment body = (builder) =>
-            {
-                builder.OpenComponent(0, typeof(CreateTemplate));
-                builder.CloseComponent();
-            };
-
-            await MainTableService.ShowModalAsync("Create Template", body, ModalDialogSize.Default);
-        }
-
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
@@ -58,6 +47,18 @@ namespace HES.Web.Pages.Templates
             await hubConnection.StartAsync();
         }
 
+        private async Task CreateTemplateAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(CreateTemplate));
+                builder.AddAttribute(1, nameof(CreateTemplate.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Create Template", body, ModalDialogSize.Default);
+        }
+
         private async Task EditTemplateAsync()
         {
             RenderFragment body = (builder) =>
@@ -73,7 +74,15 @@ namespace HES.Web.Pages.Templates
 
         private async Task DeleteTemplateAsync()
         {
-            return;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteTemplate));
+                builder.AddAttribute(1, nameof(DeleteTemplate.Template), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, nameof(DeleteTemplate.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Delete Template", body, ModalDialogSize.Default);
         }
     }
 }

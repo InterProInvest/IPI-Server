@@ -10,32 +10,30 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Templates
 {
-    public partial class CreateTemplate : ComponentBase
+    public partial class DeleteTemplate : ComponentBase
     {
-        [Inject] ITemplateService TemplateService { get; set; }
-        [Inject] IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<CreateTemplate> Logger { get; set; }
+        [Inject] public ITemplateService TemplateService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<DeleteTemplate> Logger { get; set; }
         [Inject] public IHubContext<TemplatesHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+        [Parameter] public Template Template { get; set; }
 
-        public Template Template { get; set; } = new Template();
-
-
-        private async Task CreateTemplateAsync()
+        private async Task DeleteTemplateAsync()
         {
             try
             {
-                await TemplateService.CreateTmplateAsync(Template);
-                ToastService.ShowToast("Employee updated.", ToastLevel.Success);
+                await TemplateService.DeleteTemplateAsync(Template.Id);
+                ToastService.ShowToast("Accounts template deleted.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex.Message);
+                Logger.LogError(ex.Message, ex);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
     }
