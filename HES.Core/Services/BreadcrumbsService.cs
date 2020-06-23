@@ -109,5 +109,26 @@ namespace HES.Core.Services
 
             return Task.CompletedTask;
         }
+
+        public Task SetWorkstations()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Workstations" }
+            };
+
+            return Task.CompletedTask;
+        }
+
+        public Task SetWorkstationDetails(string name)
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = false, Link= "/Workstations", Content = "Workstations" },
+                new Breadcrumb () { Active = true, Content = name}
+            };
+
+            return Task.CompletedTask;
+        }
     }
 }

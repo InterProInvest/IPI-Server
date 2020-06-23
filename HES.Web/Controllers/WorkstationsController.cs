@@ -1,7 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.API;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.Workstations;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
@@ -35,14 +37,31 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Workstation>>> GetWorkstations()
         {
-            return await _workstationService.GetWorkstationsAsync();
+            var count = await _workstationService.GetWorkstationsCountAsync(new DataLoadingOptions<WorkstationFilter>());
+            return await _workstationService.GetWorkstationsAsync(new DataLoadingOptions<WorkstationFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Employee.FullName),
+                SortDirection = ListSortDirection.Ascending
+            });
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Workstation>>> GetFilteredWorkstations(WorkstationFilter workstationFilter)
         {
-            return await _workstationService.GetFilteredWorkstationsAsync(workstationFilter);
+            var count = await _workstationService.GetWorkstationsCountAsync(new DataLoadingOptions<WorkstationFilter>
+            {
+                Filter = workstationFilter
+            });
+
+            return await _workstationService.GetWorkstationsAsync(new DataLoadingOptions<WorkstationFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Workstation.Name),
+                SortDirection = ListSortDirection.Ascending,
+                Filter = workstationFilter
+            });        
         }
 
         [HttpGet("{id}")]

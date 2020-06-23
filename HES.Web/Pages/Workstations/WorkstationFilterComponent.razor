@@ -1,0 +1,68 @@
+﻿@if (Filter == null)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Name</label>
+                <InputText @bind-Value="Filter.Name" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Name</label>
+                <InputText @bind-Value="Filter.Domain" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Client Version</label>
+                <InputText @bind-Value="Filter.ClientVersion" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Company</label>
+                <InputText @bind-Value="Filter.Company" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Department</label>
+                <InputText @bind-Value="Filter.Department" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">OS</label>
+                <InputText @bind-Value="Filter.OS" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">IP</label>
+                <InputText @bind-Value="Filter.IP" class="form-control" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Last Seen Start Date</label>
+                <DateTimePicker @bind-Value="Filter.LastSeenStartDate" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Last Seen End Date</label>
+                <DateTimePicker @bind-value="Filter.LastSeenEndDate" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">RFID</label>
+                <select @onchange="OnChangeRfid" class="form-control">
+                    <option selected></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Approved</label>
+                <select @onchange="OnChangeApproved" class="form-control">
+                    <option selected></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            <div class="col align-self-end text-right form-group">
+                <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                <input type="submit" value="Filter" class="btn btn-primary" />
+            </div>
+        </div>
+    </EditForm>
+}

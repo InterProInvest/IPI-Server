@@ -1,15 +1,16 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Core.Models;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.Workstations;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Workstation;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace HES.Core.Services
 {
@@ -40,76 +41,185 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<List<Workstation>> GetWorkstationsAsync()
+        public async Task<List<Workstation>> GetWorkstationsAsync(DataLoadingOptions<WorkstationFilter> dataLoadingOptions)
         {
-            return await _workstationRepository
+            var query = _workstationRepository
                 .Query()
-                .Include(w => w.WorkstationProximityVaults)
-                .Include(c => c.Department.Company)
-                .ToListAsync();
-        }
-
-        public async Task<List<Workstation>> GetFilteredWorkstationsAsync(WorkstationFilter workstationFilter)
-        {
-            var filter = _workstationRepository
-                .Query()
-                .Include(w => w.WorkstationProximityVaults)
-                .Include(c => c.Department.Company)
+                .Include(x => x.Department.Company)
                 .AsQueryable();
 
-            if (workstationFilter.Name != null)
+            // Filter
+            if (dataLoadingOptions.Filter != null)
             {
-                filter = filter.Where(w => w.Name.Contains(workstationFilter.Name));
-            }
-            if (workstationFilter.Domain != null)
-            {
-                filter = filter.Where(w => w.Domain.Contains(workstationFilter.Domain));
-            }
-            if (workstationFilter.ClientVersion != null)
-            {
-                filter = filter.Where(w => w.ClientVersion.Contains(workstationFilter.ClientVersion));
-            }
-            if (workstationFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == workstationFilter.CompanyId);
-            }
-            if (workstationFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == workstationFilter.DepartmentId);
-            }
-            if (workstationFilter.OS != null)
-            {
-                filter = filter.Where(w => w.OS.Contains(workstationFilter.OS));
-            }
-            if (workstationFilter.IP != null)
-            {
-                filter = filter.Where(w => w.IP.Contains(workstationFilter.IP));
-            }
-            if (workstationFilter.StartDate != null)
-            {
-                filter = filter.Where(w => w.LastSeen >= workstationFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
-            }
-            if (workstationFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.LastSeen <= workstationFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-            if (workstationFilter.RFID != null)
-            {
-                filter = filter.Where(w => w.RFID == workstationFilter.RFID);
-            }
-            if (workstationFilter.ProximityDevicesCount != null)
-            {
-                filter = filter.Where(w => w.WorkstationProximityVaults.Count() == workstationFilter.ProximityDevicesCount);
-            }
-            if (workstationFilter.Approved != null)
-            {
-                filter = filter.Where(w => w.Approved == workstationFilter.Approved);
+                if (dataLoadingOptions.Filter.Name != null)
+                {
+                    query = query.Where(w => w.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Domain != null)
+                {
+                    query = query.Where(w => w.Domain.Contains(dataLoadingOptions.Filter.Domain, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.ClientVersion != null)
+                {
+                    query = query.Where(w => w.ClientVersion.Contains(dataLoadingOptions.Filter.ClientVersion, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(x => x.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(x => x.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.OS != null)
+                {
+                    query = query.Where(w => w.OS.Contains(dataLoadingOptions.Filter.OS, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.IP != null)
+                {
+                    query = query.Where(w => w.IP.Contains(dataLoadingOptions.Filter.IP, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.LastSeenStartDate != null)
+                {
+                    query = query.Where(w => w.LastSeen >= dataLoadingOptions.Filter.LastSeenStartDate);
+                }
+                if (dataLoadingOptions.Filter.LastSeenEndDate != null)
+                {
+                    query = query.Where(x => x.LastSeen <= dataLoadingOptions.Filter.LastSeenEndDate);
+                }
+                if (dataLoadingOptions.Filter.RFID != null)
+                {
+                    query = query.Where(x => x.RFID == dataLoadingOptions.Filter.RFID);
+                }
+                if (dataLoadingOptions.Filter.Approved != null)
+                {
+                    query = query.Where(x => x.Approved == dataLoadingOptions.Filter.Approved);
+                }
             }
 
-            return await filter
-                .OrderBy(w => w.Name)
-                .Take(workstationFilter.Records)
-                .ToListAsync();
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Domain.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.ClientVersion.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.OS.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.IP.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(Workstation.Name):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    break;
+                case nameof(Workstation.Domain):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Domain) : query.OrderByDescending(x => x.Domain);
+                    break;
+                case nameof(Workstation.ClientVersion):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.ClientVersion) : query.OrderByDescending(x => x.ClientVersion);
+                    break;
+                case nameof(Workstation.Department.Company):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Company.Name) : query.OrderByDescending(x => x.Department.Company.Name);
+                    break;
+                case nameof(Workstation.Department):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Name) : query.OrderByDescending(x => x.Department.Name);
+                    break;
+                case nameof(Workstation.OS):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OS) : query.OrderByDescending(x => x.OS);
+                    break;
+                case nameof(Workstation.IP):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.IP) : query.OrderByDescending(x => x.IP);
+                    break;
+                case nameof(Workstation.LastSeen):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.LastSeen) : query.OrderByDescending(x => x.LastSeen);
+                    break;
+                case nameof(Workstation.RFID):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.RFID) : query.OrderByDescending(x => x.RFID);
+                    break;
+                case nameof(Workstation.Approved):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Approved) : query.OrderByDescending(x => x.Approved);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+
+        public async Task<int> GetWorkstationsCountAsync(DataLoadingOptions<WorkstationFilter> dataLoadingOptions)
+        {
+            var query = _workstationRepository
+               .Query()
+               .Include(x => x.Department.Company)
+               .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Name != null)
+                {
+                    query = query.Where(w => w.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Domain != null)
+                {
+                    query = query.Where(w => w.Domain.Contains(dataLoadingOptions.Filter.Domain, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.ClientVersion != null)
+                {
+                    query = query.Where(w => w.ClientVersion.Contains(dataLoadingOptions.Filter.ClientVersion, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(x => x.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(x => x.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.OS != null)
+                {
+                    query = query.Where(w => w.OS.Contains(dataLoadingOptions.Filter.OS, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.IP != null)
+                {
+                    query = query.Where(w => w.IP.Contains(dataLoadingOptions.Filter.IP, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.LastSeenStartDate != null)
+                {
+                    query = query.Where(w => w.LastSeen >= dataLoadingOptions.Filter.LastSeenStartDate);
+                }
+                if (dataLoadingOptions.Filter.LastSeenEndDate != null)
+                {
+                    query = query.Where(x => x.LastSeen <= dataLoadingOptions.Filter.LastSeenEndDate);
+                }
+                if (dataLoadingOptions.Filter.RFID != null)
+                {
+                    query = query.Where(x => x.RFID == dataLoadingOptions.Filter.RFID);
+                }
+                if (dataLoadingOptions.Filter.Approved != null)
+                {
+                    query = query.Where(x => x.Approved == dataLoadingOptions.Filter.Approved);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Domain.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.ClientVersion.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.OS.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.IP.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<bool> ExistAsync(Expression<Func<Workstation, bool>> predicate)
@@ -177,26 +287,25 @@ namespace HES.Core.Services
             if (workstation == null)
                 throw new ArgumentNullException(nameof(workstation));
 
-            await _workstationRepository.UpdateOnlyPropAsync(workstation, new string[] { nameof(Workstation.Approved), nameof(Workstation.RFID) });
+            workstation.Approved = true;
+
+            await _workstationRepository.UpdateAsync(workstation);
         }
 
         public async Task UnapproveWorkstationAsync(string workstationId)
         {
             if (workstationId == null)
-            {
                 throw new ArgumentNullException(nameof(workstationId));
-            }
 
             var workstation = await GetWorkstationByIdAsync(workstationId);
             if (workstation == null)
-            {
                 throw new Exception("Workstation not found.");
-            }
 
             workstation.Approved = false;
             workstation.RFID = false;
+            workstation.DepartmentId = null;
 
-            await _workstationRepository.UpdateOnlyPropAsync(workstation, new string[] { nameof(Workstation.Approved), nameof(Workstation.RFID) });
+            await _workstationRepository.UpdateAsync(workstation);
         }
 
         public async Task<bool> GetRfidStateAsync(string workstationId)
@@ -221,6 +330,20 @@ namespace HES.Core.Services
 
             return true;
         }
+
+        public async Task DetachWorkstationsAsync(List<Workstation> workstations)
+        {
+            foreach (var item in workstations)
+            {
+                await _workstationRepository.DetachedAsync(item);
+            }
+        }
+
+        public async Task UnchangedWorkstationAsync(Workstation workstation)
+        {
+            await _workstationRepository.UnchangedAsync(workstation);
+        }
+
 
         #endregion
 
@@ -284,7 +407,7 @@ namespace HES.Core.Services
             }
 
             var addedVaults = await _workstationProximityVaultRepository.AddRangeAsync(proximityVaults);
-             return addedVaults;
+            return addedVaults;
         }
 
         public async Task AddMultipleProximityVaultsAsync(string[] workstationsIds, string[] vaultsIds)
@@ -312,7 +435,7 @@ namespace HES.Core.Services
             }
 
             string[] properties = { "LockProximity", "UnlockProximity", "LockTimeout" };
-            await _workstationProximityVaultRepository.UpdateOnlyPropAsync(proximityVault, properties); 
+            await _workstationProximityVaultRepository.UpdateOnlyPropAsync(proximityVault, properties);
         }
 
         public async Task DeleteProximityVaultAsync(string proximityVaultId)
