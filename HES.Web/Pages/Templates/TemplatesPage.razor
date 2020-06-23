@@ -6,35 +6,25 @@ else
 {
     <TableAction>
         <FilterForm>
-            @*<LicenseOrderFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />*@
+            <TemplateFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <button type="button" @onclick="CreateTemplateAsync" class="btn btn-primary mx-1" title="Create template">
+            <button type="button" @onclick="CreateTemplateAsync" class="btn btn-primary mr-1" title="Create template">
                 Create template
             </button>
-            @*
-        @if (MainTableService.SelectedEntity != null)
-        {
-            if (MainTableService.SelectedEntity.OrderStatus == LicenseOrderStatus.New)
+
+            @if (MainTableService.SelectedEntity != null)
             {
-                <button type="button" @onclick="SendLicenseOrderAsync" class="btn btn-light border mx-1" title="Send license order">
-                    <img class="icon-btn" src="/svg/action/send.svg" />
-                    Send
-                </button>
-                <button type="button" @onclick="EditLicenseOrderAsync" class="btn btn-light border mx-1" title="Edit license order">
+                <button type="button" @onclick="EditTemplateAsync" class="btn btn-light border" title="Edit template">
                     <img class="icon-btn" src="/svg/action/edit.svg" />
                     Edit
                 </button>
-                <button type="button" @onclick="DeleteLicenseOrderAsync" class="btn btn-light border mx-1" title="Delete license order">
+
+                <button type="button" @onclick="DeleteTemplateAsync" class="btn btn-light border mx-1" title="Delete template">
                     <img class="icon-btn" src="/svg/action/delete.svg" />
                     Delete
                 </button>
             }
-            <button type="button" @onclick="LicenseOrderDetailsAsync" class="btn btn-light border mx-1" title="License order details">
-                <img class="icon-btn" src="/svg/action/details.svg" />
-                Details
-            </button>
-        }*@
         </ActionButtons>
         <FilterButtons>
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />

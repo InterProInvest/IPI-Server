@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Accounts;
@@ -113,6 +114,19 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
+        public async Task DetachTemplateAsync(Template template)
+        {
+            await _templateRepository.DetachedAsync(template);
+        }
+
+        public async Task DetachTemplatesAsync(List<Template> templates)
+        {
+            foreach (var item in templates)
+            {
+                await DetachTemplateAsync(item);
+            }
+        }
+
         public async Task<List<Template>> GetTemplatesAsync()
         {
             return await _templateRepository.Query().ToListAsync();
@@ -130,12 +144,24 @@ namespace HES.Core.Services
             return await _templateRepository.AddAsync(template);
         }
 
+        public async Task UnchangedTemplateAsync(Template template)
+        {
+            await _templateRepository.UnchangedAsync(template);
+        }
+
         public async Task EditTemplateAsync(Template template)
         {
             if (template == null)
-            {
                 throw new ArgumentNullException(nameof(template));
-            }
+
+
+            var accountExist = await _templateRepository
+               .Query()
+               .Where(x => x.Name == template.Name && x.Id != template.Id)
+               .AnyAsync();
+
+            if (accountExist)
+                throw new AlreadyExistException("Template with current name already exists.");
 
             template.Urls = Validation.VerifyUrls(template.Urls);
 
