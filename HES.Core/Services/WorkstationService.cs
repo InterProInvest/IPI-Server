@@ -37,8 +37,8 @@ namespace HES.Core.Services
         {
             return await _workstationRepository
                 .Query()
-                .Include(c => c.Department.Company)
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .Include(x => x.Department.Company)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<List<Workstation>> GetWorkstationsAsync(DataLoadingOptions<WorkstationFilter> dataLoadingOptions)
@@ -46,6 +46,7 @@ namespace HES.Core.Services
             var query = _workstationRepository
                 .Query()
                 .Include(x => x.Department.Company)
+                .Include(x => x.WorkstationProximityVaults)
                 .AsQueryable();
 
             // Filter
@@ -154,6 +155,7 @@ namespace HES.Core.Services
             var query = _workstationRepository
                .Query()
                .Include(x => x.Department.Company)
+               .Include(x => x.WorkstationProximityVaults)
                .AsQueryable();
 
             // Filter
@@ -354,114 +356,115 @@ namespace HES.Core.Services
             return _workstationProximityVaultRepository.Query();
         }
 
-        public async Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId)
-        {
-            return await _workstationProximityVaultRepository
-                .Query()
-                .Include(d => d.HardwareVault.Employee.Department.Company)
-                .Where(d => d.WorkstationId == workstationId)
-                .ToListAsync();
-        }
-
         public async Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id)
         {
             return await _workstationProximityVaultRepository
                 .Query()
                 .Include(d => d.HardwareVault.Employee.Department.Company)
-                .Include(d => d.Workstation.Department)
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .Include(d => d.Workstation.Department.Company)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<IList<WorkstationProximityVault>> AddProximityVaultsAsync(string workstationId, string[] vaultsIds)
+        public async Task<List<WorkstationProximityVault>> GetProximityVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string workstationId)
+        {
+            var query = _workstationProximityVaultRepository
+                .Query()
+                .Include(d => d.HardwareVault.Employee.Department.Company)
+                .Where(d => d.WorkstationId == workstationId)
+                .AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.Trim();
+
+                query = query.Where(x => x.HardwareVaultId.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (sortColumn)
+            {
+                case nameof(WorkstationProximityVault.HardwareVault):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultId) : query.OrderByDescending(x => x.HardwareVaultId);
+                    break;
+                case nameof(WorkstationProximityVault.HardwareVault.Employee):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.FirstName).ThenBy(x => x.HardwareVault.Employee.LastName) : query.OrderByDescending(x => x.HardwareVault.Employee.FirstName).ThenByDescending(x => x.HardwareVault.Employee.LastName);
+                    break;
+                case nameof(WorkstationProximityVault.HardwareVault.Employee.Department.Company):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Company.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Company.Name);
+                    break;
+                case nameof(WorkstationProximityVault.HardwareVault.Employee.Department):
+                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Name);
+                    break;
+            }
+
+            return await query.Skip(skip).Take(take).ToListAsync();
+        }
+
+        public async Task<int> GetProximityVaultsCountAsync(string searchText, string workstationId)
+        {
+            var query = _workstationProximityVaultRepository
+                            .Query()
+                            .Include(d => d.HardwareVault.Employee.Department.Company)
+                            .Where(d => d.WorkstationId == workstationId)
+                            .AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                searchText = searchText.Trim();
+
+                query = query.Where(x => x.HardwareVaultId.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
+        }
+
+        public async Task<WorkstationProximityVault> AddProximityVaultAsync(string workstationId, string vaultId)
         {
             if (workstationId == null)
-            {
                 throw new ArgumentNullException(nameof(workstationId));
-            }
-            if (vaultsIds == null)
+
+            if (vaultId == null)
+                throw new ArgumentNullException(nameof(vaultId));
+
+            var exists = await _workstationProximityVaultRepository
+            .Query()
+            .Where(d => d.HardwareVaultId == vaultId)
+            .Where(d => d.WorkstationId == workstationId)
+            .AnyAsync();
+
+            if (exists)
+                throw new Exception("Vault already added to workstation.");
+
+            var proximityVault = new WorkstationProximityVault
             {
-                throw new ArgumentNullException(nameof(vaultsIds));
-            }
+                WorkstationId = workstationId,
+                HardwareVaultId = vaultId,
+                LockProximity = 30,
+                UnlockProximity = 70,
+                LockTimeout = 5
+            };
 
-            List<WorkstationProximityVault> proximityVaults = new List<WorkstationProximityVault>();
-
-            foreach (var vault in vaultsIds)
-            {
-                var exists = await _workstationProximityVaultRepository
-                .Query()
-                .Where(d => d.HardwareVaultId == vault)
-                .Where(d => d.WorkstationId == workstationId)
-                .FirstOrDefaultAsync();
-
-                if (exists == null)
-                {
-                    proximityVaults.Add(new WorkstationProximityVault
-                    {
-                        WorkstationId = workstationId,
-                        HardwareVaultId = vault,
-                        LockProximity = 30,
-                        UnlockProximity = 70,
-                        LockTimeout = 5
-                    });
-                }
-            }
-
-            var addedVaults = await _workstationProximityVaultRepository.AddRangeAsync(proximityVaults);
-            return addedVaults;
-        }
-
-        public async Task AddMultipleProximityVaultsAsync(string[] workstationsIds, string[] vaultsIds)
-        {
-            if (workstationsIds == null)
-            {
-                throw new ArgumentNullException(nameof(workstationsIds));
-            }
-            if (vaultsIds == null)
-            {
-                throw new ArgumentNullException(nameof(vaultsIds));
-            }
-
-            foreach (var workstation in workstationsIds)
-            {
-                await AddProximityVaultsAsync(workstation, vaultsIds);
-            }
-        }
-
-        public async Task EditProximityVaultAsync(WorkstationProximityVault proximityVault)
-        {
-            if (proximityVault == null)
-            {
-                throw new ArgumentNullException(nameof(proximityVault));
-            }
-
-            string[] properties = { "LockProximity", "UnlockProximity", "LockTimeout" };
-            await _workstationProximityVaultRepository.UpdateOnlyPropAsync(proximityVault, properties);
+            return await _workstationProximityVaultRepository.AddAsync(proximityVault);
         }
 
         public async Task DeleteProximityVaultAsync(string proximityVaultId)
         {
             if (proximityVaultId == null)
-            {
                 throw new ArgumentNullException(nameof(proximityVaultId));
-            }
 
             var proximityVault = await _workstationProximityVaultRepository.GetByIdAsync(proximityVaultId);
             if (proximityVault == null)
-            {
-                throw new Exception("Binding not found.");
-            }
+                throw new Exception("Proximity vault not found.");
 
             await _workstationProximityVaultRepository.DeleteAsync(proximityVault);
-        }
-
-        public async Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityVaults)
-        {
-            if (proximityVaults == null)
-            {
-                throw new ArgumentNullException(nameof(proximityVaults));
-            }
-
-            await _workstationProximityVaultRepository.DeleteRangeAsync(proximityVaults);
         }
 
         public async Task DeleteProximityByVaultIdAsync(string vaultsId)
@@ -479,9 +482,7 @@ namespace HES.Core.Services
             var workstation = await GetWorkstationByIdAsync(workstationId);
 
             if (workstation == null)
-            {
                 throw new Exception("Workstation not found");
-            }
 
             var deviceProximitySettings = new List<DeviceProximitySettingsDto>();
 

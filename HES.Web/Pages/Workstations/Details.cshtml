@@ -5,10 +5,12 @@
     ViewData["ActivePage"] = MenuNavPages.Workstations;
 }
 
-<partial name="_SuccessMessage" for="SuccessMessage" />
+<component type="typeof(WorkstationDetailsPage)" render-mode="Server" param-WorkstationId="@Model.WorkstationId" />
+
+@*<partial name="_SuccessMessage" for="SuccessMessage" />
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
-@* Workstation items *@
+
 <div class="row align-items-center details-card">
     <div class="col-auto">
         <h1 class="text-navyblue m-0">@Model.Workstation.Name</h1>
@@ -23,7 +25,7 @@
 
 @if (Model.ProximityDevices != null)
 {
-    @*Proximity Devices title*@
+   
     <div class="row align-items-center m-1">
         <div class="col-auto p-1">
             <h4 class="text-navyblue m-0">Proximity unlock devices</h4>
@@ -38,7 +40,7 @@
             </div>
         </div>
     </div>
-    @*Proximity Devices table*@
+
     <table id="proximityDevices" class="table display table table-hover border rounded w-100">
         <thead>
             <tr>
@@ -80,13 +82,7 @@
                             <a class="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <img src="~/svg/action/more.svg" />
                             </a>
-                            <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">
-                                @*
-                                     <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="EditProximitySettings" data-title="Edit proximity settings">
-                                        <img src="~/svg/action/edit.svg" />
-                                        Edit
-                                    </a>
-                                *@
+                            <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="dropdownMenuLink">                
                                 <a class="dropdown-item open-modal-dialog" data-id="@item.Id" data-action="DeleteProximityDevice" data-title="Delete proximity device">
                                     <img src="~/svg/action/delete.svg" />
                                     Delete
@@ -106,85 +102,4 @@
         <div id="showing_place" class="col d-flex justify-content-center align-items-center mb-1 text-navyblue text-nowrap"></div>
         <div id="pagination_place" class="col d-flex justify-content-center justify-content-lg-end align-items-center mb-1"></div>
     </div>
-}
-
-@* Modal *@
-<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-navyblue" id="modalDialogTitle">Dialog</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div id="modalBody" class="modal-body">
-                <div class="d-flex justify-content-center align-items-center">
-                    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
-                        <span class="sr-only"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts{
-    <script>
-        // Initialize proximity devices table
-        var table_name = '#proximityDevices';
-        $(table_name).DataTable({
-            responsive: true,
-            "order": [[1, "asc"]],
-            "columnDefs": [
-                { "orderable": false, "targets": [0,5]}
-            ]
-        });
-        var dataTable = $(table_name).dataTable();
-        // Search box
-        $('#searchbox').keyup(function () {
-            dataTable.fnFilter(this.value);
-        });
-        $('.dataTables_filter').addClass('d-none');
-        // Length
-        $('#entries_place').html($('.dataTables_length select').removeClass('custom-select-sm form-control-sm'));
-        $('.dataTables_length').addClass('d-none');
-        // Info
-        $('#showing_place').html($('.dataTables_info'));
-        // Paginate
-        $('#pagination_place').html($('.dataTables_paginate'));
-
-        // Open modal dialog
-        $(document).on('click', '.open-modal-dialog', function () {
-            var btn = $(this);
-            var id = btn.data("id");
-            var action = btn.data("action");
-            var title = btn.data("title");
-
-            $('#modalDialogTitle').html(title);
-            $('#modalDialog').modal('toggle');
-
-            $.ajax({
-                url: "/Workstations/Details?handler=" + action,
-                type: "Get",
-                data: { id: id },
-                async: true,
-                success: function (response) {
-                    $("#modalBody").html(response);
-                }
-            });
-        });
-
-        // Clear content on modal hide
-        $('#modalDialog').on('hidden.bs.modal', function (e) {
-            $("#modalBody").html("<div class='d-flex justify-content-center align-items-center'><div class='spinner-grow text-primary' style='width: 3rem; height: 3rem;' role='status'><span class='sr-only'></span></div></div>");
-        })
-
-         $(document).ready(function () {
-            // Breadcrumb
-            $('#breadcrumb').toggleClass('d-none');
-            $('.breadcrumb').append('<li class="breadcrumb-item"><a href="/Workstations">Workstations</a></li>');
-            $('.breadcrumb').append('<li class="breadcrumb-item active">@Model.Workstation.Name</li>');
-        });
-    </script>
-}
+}*@

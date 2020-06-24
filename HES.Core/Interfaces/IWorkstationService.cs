@@ -5,6 +5,7 @@ using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Workstation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -28,13 +29,11 @@ namespace HES.Core.Interfaces
         Task DetachWorkstationsAsync(List<Workstation> workstations);
         Task UnchangedWorkstationAsync(Workstation workstation);
         IQueryable<WorkstationProximityVault> ProximityVaultQuery();
-        Task<List<WorkstationProximityVault>> GetProximityVaultsByWorkstationIdAsync(string workstationId);
         Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id);
-        Task<IList<WorkstationProximityVault>> AddProximityVaultsAsync(string workstationId, string[] vaultsIds);
-        Task AddMultipleProximityVaultsAsync(string[] workstationsIds, string[] vaultsIds);
-        Task EditProximityVaultAsync(WorkstationProximityVault proximityVault);
+        Task<List<WorkstationProximityVault>> GetProximityVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string workstationId);
+        Task<int> GetProximityVaultsCountAsync(string searchText, string workstationId);
+        Task<WorkstationProximityVault> AddProximityVaultAsync(string workstationId, string vaultId);
         Task DeleteProximityVaultAsync(string proximityVaultId);
-        Task DeleteRangeProximityVaultsAsync(List<WorkstationProximityVault> proximityVaults);
         Task DeleteProximityByVaultIdAsync(string vaultId);
         Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId);
     }

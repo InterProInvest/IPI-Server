@@ -15,9 +15,8 @@ namespace HES.Web.Pages.Workstations
     public class DetailsModel : PageModel
     {
         private readonly IWorkstationService _workstationService;
-        private readonly IHardwareVaultService _deviceService;
-        private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
-        private readonly ILogger<DetailsModel> _logger;
+
+        public string WorkstationId { get; set; }
 
         public IList<WorkstationProximityVault> ProximityDevices { get; set; }
         public IList<HardwareVault> Devices { get; set; }
@@ -25,27 +24,16 @@ namespace HES.Web.Pages.Workstations
         public WorkstationProximityVault ProximityDevice { get; set; }
         public bool WarningMessage { get; set; }
 
-        [TempData]
-        public string SuccessMessage { get; set; }
-        [TempData]
-        public string ErrorMessage { get; set; }
 
-        public DetailsModel(IWorkstationService workstationService,
-                            IHardwareVaultService deviceService,
-                            IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
-                            ILogger<DetailsModel> logger)
+        public DetailsModel(IWorkstationService workstationService)
         {
             _workstationService = workstationService;
-            _deviceService = deviceService;
-            _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
-            _logger = logger;
         }
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
             if (id == null)
             {
-                _logger.LogWarning($"{nameof(id)} is null");
                 return NotFound();
             }
 
@@ -53,172 +41,56 @@ namespace HES.Web.Pages.Workstations
 
             if (Workstation == null)
             {
-                _logger.LogWarning($"{nameof(Workstation)} is null");
                 return NotFound();
             }
 
-            ProximityDevices = await _workstationService.GetProximityVaultsByWorkstationIdAsync(id);
-
-            if (ProximityDevices == null)
-            {
-                _logger.LogWarning($"{nameof(ProximityDevices)} is null");
-                return NotFound();
-            }
+            WorkstationId = id;
 
             return Page();
         }
+      
+        //public async Task<IActionResult> OnGetDeleteProximityDeviceAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-        public async Task<IActionResult> OnGetAddProximityDeviceAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //    ProximityDevice = await _workstationService
+        //        .ProximityVaultQuery()
+        //        .FirstOrDefaultAsync(m => m.Id == id);
 
-            Workstation = await _workstationService.GetWorkstationByIdAsync(id);
+        //    if (ProximityDevice == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(ProximityDevice)} is null");
+        //        return NotFound();
+        //    }
 
-            if (Workstation == null)
-            {
-                _logger.LogWarning($"{nameof(Workstation)} is null");
-                return NotFound();
-            }
+        //    return Partial("_DeleteProximityDevice", this);
+        //}
 
-            ProximityDevices = await _workstationService.GetProximityVaultsByWorkstationIdAsync(id);
+        //public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(WorkstationProximityVault proximityDevice)
+        //{
+        //    if (proximityDevice == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(proximityDevice)} is null");
+        //        return NotFound();
+        //    }
 
-            if (ProximityDevices.Count >= 1)
-            {
-                WarningMessage = true;
-            }
+        //    try
+        //    {
+        //        await _workstationService.DeleteProximityVaultAsync(proximityDevice.Id);
+        //        SuccessMessage = $"Proximity device removed.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            var deviceQuery = _deviceService.VaultQuery();
-
-            foreach (var proximityDevice in ProximityDevices)
-            {
-                deviceQuery = deviceQuery.Where(d => d.Id != proximityDevice.HardwareVaultId);
-            }
-
-            Devices = await deviceQuery
-                .Include(d => d.Employee)
-                .ToListAsync();
-
-            return Partial("_AddProximityDevice", this);
-        }
-
-        public async Task<IActionResult> OnPostAddProximityDeviceAsync(string workstationId, string[] devicesId)
-        {
-            if (workstationId == null)
-            {
-                _logger.LogWarning($"{nameof(workstationId)} is null");
-                return NotFound();
-            }
-
-            try
-            {
-                await _workstationService.AddProximityVaultsAsync(workstationId, devicesId);
-                await _remoteWorkstationConnectionsService.UpdateProximitySettingsAsync(workstationId, await _workstationService.GetProximitySettingsAsync(workstationId));
-
-                SuccessMessage = "Device(s) added.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
-
-            var id = workstationId;
-            return RedirectToPage("./Details", new { id });
-        }
-
-        public async Task<IActionResult> OnGetEditProximitySettingsAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
-
-            ProximityDevice = await _workstationService
-                .ProximityVaultQuery()
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (ProximityDevice == null)
-            {
-                _logger.LogWarning($"{nameof(ProximityDevice)} is null");
-                return NotFound();
-            }
-
-            return Partial("_EditProximitySettings", this);
-        }
-
-        public async Task<IActionResult> OnPostEditProximitySettingsAsync(WorkstationProximityVault proximityDevice)
-        {
-            var id = proximityDevice.WorkstationId;
-            if (!ModelState.IsValid)
-            {
-                ErrorMessage = Validation.GetModelStateErrors(ModelState);
-                _logger.LogError(ErrorMessage);
-                return RedirectToPage("./Details", new { id });
-            }
-
-            try
-            {
-                await _workstationService.EditProximityVaultAsync(proximityDevice);      
-                await _remoteWorkstationConnectionsService.UpdateProximitySettingsAsync(proximityDevice.WorkstationId, await _workstationService.GetProximitySettingsAsync(proximityDevice.WorkstationId));
-
-                SuccessMessage = $"Proximity settings updated.";
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-                _logger.LogError(ex.Message);
-            }
-
-            return RedirectToPage("./Details", new { id });
-        }
-
-        public async Task<IActionResult> OnGetDeleteProximityDeviceAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
-
-            ProximityDevice = await _workstationService
-                .ProximityVaultQuery()
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (ProximityDevice == null)
-            {
-                _logger.LogWarning($"{nameof(ProximityDevice)} is null");
-                return NotFound();
-            }
-
-            return Partial("_DeleteProximityDevice", this);
-        }
-
-        public async Task<IActionResult> OnPostDeleteProximityDeviceAsync(WorkstationProximityVault proximityDevice)
-        {
-            if (proximityDevice == null)
-            {
-                _logger.LogWarning($"{nameof(proximityDevice)} is null");
-                return NotFound();
-            }
-
-            try
-            {
-                await _workstationService.DeleteProximityVaultAsync(proximityDevice.Id);
-                SuccessMessage = $"Proximity device removed.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
-
-            var id = proximityDevice.WorkstationId;
-            return RedirectToPage("./Details", new { id });
-        }
+        //    var id = proximityDevice.WorkstationId;
+        //    return RedirectToPage("./Details", new { id });
+        //}
     }
 }
