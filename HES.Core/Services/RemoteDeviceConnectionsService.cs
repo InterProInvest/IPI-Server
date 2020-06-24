@@ -106,6 +106,8 @@ namespace HES.Core.Services
                 var employeeVaults = employee.HardwareVaults.Where(x => x.Id != vaultId && x.IsOnline && x.Timestamp != vault.Timestamp && x.Status == VaultStatus.Active && !x.NeedSync).ToList();
                 foreach (var employeeVault in employeeVaults)
                 {
+                    var currentVaultSync = vault.Timestamp < employeeVault.Timestamp ? true : false;
+
                     var firstWorkstationId = GetDeviceRemoteConnections(vault.Id).GetFirstOrDefaultWorkstation();
                     var secondWorkstationId = GetDeviceRemoteConnections(employeeVault.Id).GetFirstOrDefaultWorkstation();
 
@@ -119,7 +121,37 @@ namespace HES.Core.Services
                     if (firstRemoteDeviceTask.Result == null || secondRemoteDeviceTask.Result == null)
                         return;
 
-                    await new DeviceStorageReplicator(firstRemoteDeviceTask.Result, secondRemoteDeviceTask.Result, null).Start();
+                    IRemoteAppConnection appConnection;
+                    string lockedVaultStorage;
+
+                    if (currentVaultSync)
+                    {
+                        appConnection = RemoteWorkstationConnectionsService.FindWorkstationConnection(firstWorkstationId);
+
+                        if (appConnection == null)
+                            return;
+
+                        lockedVaultStorage = vault.Id;                      
+                    }
+                    else
+                    {
+                        appConnection = RemoteWorkstationConnectionsService.FindWorkstationConnection(secondWorkstationId);
+
+                        if (appConnection == null)
+                            return;
+
+                        lockedVaultStorage = employeeVault.Id;
+                    }
+
+                    await appConnection.LockDeviceStorage(lockedVaultStorage);
+                    try
+                    {
+                        await new DeviceStorageReplicator(firstRemoteDeviceTask.Result, secondRemoteDeviceTask.Result, null).Start();
+                    }
+                    finally
+                    {
+                        await appConnection.LiftDeviceStorageLock(lockedVaultStorage);
+                    }
 
                     if (vault.Timestamp > employeeVault.Timestamp)
                     {

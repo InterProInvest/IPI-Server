@@ -269,7 +269,7 @@ namespace HES.Core.Services
             await _workstationAuditService.CloseSessionAsync(workstationId);
         }
 
-        private static IRemoteAppConnection FindWorkstationConnection(string workstationId)
+        public static IRemoteAppConnection FindWorkstationConnection(string workstationId)
         {
             _workstationConnections.TryGetValue(workstationId, out IRemoteAppConnection workstation);
             return workstation;
