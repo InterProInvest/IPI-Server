@@ -38,6 +38,8 @@ namespace HES.Core.Interfaces
 
         IQueryable<HardwareVaultProfile> ProfileQuery();
         Task<List<HardwareVaultProfile>> GetProfilesAsync();
+        Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
+        Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
         Task<HardwareVaultProfile> GetProfileByIdAsync(string profileId);
         Task<List<string>> GetVaultIdsByProfileTaskAsync();
         Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile hardwareVaultProfile);

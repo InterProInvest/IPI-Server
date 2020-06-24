@@ -711,6 +711,121 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(m => m.Id == profileId);
         }
 
+        
+
+        public async Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions)
+        {
+            var query = _hardwareVaultProfileRepository
+                .Query()
+                .Include(x => x.HardwareVaults)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Name != null)
+                {
+                    query = query.Where(w => w.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.CreatedAtFrom != null)
+                {
+                    query = query.Where(x => x.CreatedAt >= dataLoadingOptions.Filter.CreatedAtFrom.Value.Date.ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.CreateddAtTo != null)
+                {
+                    query = query.Where(x => x.CreatedAt <= dataLoadingOptions.Filter.CreateddAtTo.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.UpdatedAtFrom != null)
+                {
+                    query = query.Where(x => x.UpdatedAt >= dataLoadingOptions.Filter.UpdatedAtFrom.Value.Date.ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.UpdatedAtTo != null)
+                {
+                    query = query.Where(x => x.UpdatedAt <= dataLoadingOptions.Filter.UpdatedAtTo.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.HardwareVaultsCount != null)
+                {
+                    query = query.Where(w => w.HardwareVaults.Count == dataLoadingOptions.Filter.HardwareVaultsCount);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVaults.Count.ToString().Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(HardwareVaultProfile.Name):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    break;
+                case nameof(HardwareVaultProfile.CreatedAt):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt);
+                    break;
+                case nameof(HardwareVaultProfile.UpdatedAt):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UpdatedAt) : query.OrderByDescending(x => x.UpdatedAt);
+                    break;
+                case nameof(HardwareVaultProfile.HardwareVaults):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaults) : query.OrderByDescending(x => x.HardwareVaults);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+
+        public async Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions)
+        {
+            var query = _hardwareVaultProfileRepository
+                .Query()
+                .Include(x => x.HardwareVaults)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.Name != null)
+                {
+                    query = query.Where(w => w.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.CreatedAtFrom != null)
+                {
+                    query = query.Where(x => x.CreatedAt >= dataLoadingOptions.Filter.CreatedAtFrom.Value.Date.ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.CreateddAtTo != null)
+                {
+                    query = query.Where(x => x.CreatedAt <= dataLoadingOptions.Filter.CreateddAtTo.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.UpdatedAtFrom != null)
+                {
+                    query = query.Where(x => x.UpdatedAt >= dataLoadingOptions.Filter.UpdatedAtFrom.Value.Date.ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.UpdatedAtTo != null)
+                {
+                    query = query.Where(x => x.UpdatedAt <= dataLoadingOptions.Filter.UpdatedAtTo.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59).ToUniversalTime());
+                }
+                if (dataLoadingOptions.Filter.HardwareVaultsCount != null)
+                {
+                    query = query.Where(w => w.HardwareVaults.Count == dataLoadingOptions.Filter.HardwareVaultsCount);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVaults.Count.ToString().Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
+        }
+
         public async Task<List<string>> GetVaultIdsByProfileTaskAsync()
         {
             return await _hardwareVaultTaskService

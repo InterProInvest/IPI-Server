@@ -1,12 +1,13 @@
-﻿@model HES.Web.Pages.Settings.DeviceAccessProfiles.IndexModel
+﻿@model HES.Web.Pages.Settings.HardwareVaultAccessProfile.IndexModel
 
 <form method="post">
+    <input type="hidden" asp-for="DeviceAccessProfile.Id" />
+    <input type="hidden" asp-for="DeviceAccessProfile.CreatedAt" />
     <div class="form-group">
         <label asp-for="DeviceAccessProfile.Name" class="control-label text-gray"></label>
         <input asp-for="DeviceAccessProfile.Name" class="form-control text-navyblue" />
         <span asp-validation-for="DeviceAccessProfile.Name" class="text-danger"></span>
     </div>
-
     <label class="text-gray">Authorization parameters</label>
     <table class="table border rounded w-100 disable-selection">
         <thead>
@@ -35,7 +36,7 @@
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox " title="Request the device button confirmation for connecting the device to the computer that is already bonded with the computer. ">
+                    <div class="custom-control custom-checkbox" title="Request the device button confirmation for connecting the device to the computer that is already bonded with the computer. ">
                         <input type="checkbox" class="custom-control-input" id="ButtonConnection" asp-for="DeviceAccessProfile.ButtonConnection">
                         <label class="custom-control-label" for="ButtonConnection"></label>
                     </div>
@@ -106,7 +107,7 @@
                     PIN expiration
                 </td>
                 <td class="text-center pl-1 pr-1" title="After PIN code is expired, the device storage will be locked until the user enters the PIN again.">
-                    <input id="pin_expiration" type="range" class="custom-range" min="1" max="107" step="1" value="1" asp-for="DeviceAccessProfile.PinExpirationConverted">
+                    <input id="pin_expiration" type="range" class="custom-range" min="1" max="107" step="1" value="@Model.DeviceAccessProfile.PinExpirationConverted" asp-for="DeviceAccessProfile.PinExpirationConverted">
                 </td>
                 <td class="text-center pin-settings-value">
                     <h6 id="pin_expiration_value"></h6>
@@ -117,7 +118,7 @@
                     PIN length
                 </td>
                 <td class="text-center pl-1 pr-1">
-                    <input id="pin_length" type="range" class="custom-range" min="4" max="8" step="1" value="4" asp-for="DeviceAccessProfile.PinLength">
+                    <input id="pin_length" type="range" class="custom-range" min="4" max="8" step="1" value="@Model.DeviceAccessProfile.PinLength" asp-for="DeviceAccessProfile.PinLength">
                 </td>
                 <td class="text-center pin-settings-value">
                     <h6 id="pin_length_value"></h6>
@@ -128,7 +129,7 @@
                     PIN incorrect entry
                 </td>
                 <td class="text-center pl-1 pr-1" title="Maximum number of incorrect PIN code entering. After the number of entries is exceeded, the device is locked.">
-                    <input id="pin_try_count" type="range" class="custom-range" min="3" max="10" step="1" value="1" asp-for="DeviceAccessProfile.PinTryCount">
+                    <input id="pin_try_count" type="range" class="custom-range" min="3" max="10" step="1" value="@Model.DeviceAccessProfile.PinTryCount" asp-for="DeviceAccessProfile.PinTryCount">
                 </td>
                 <td class="text-center pin-settings-value">
                     <h6 id="pin_try_count_value"></h6>
@@ -139,7 +140,7 @@
 
     <div class="form-group m-0 text-right">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <input type="submit" value="Create" class="btn btn-primary" asp-page-handler="CreateProfile" />
+        <input type="submit" value="Save" class="btn btn-primary" asp-page-handler="EditProfile" />
     </div>
 </form>
 

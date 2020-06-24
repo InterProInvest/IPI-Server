@@ -1,5 +1,5 @@
 ﻿@page
-@model HES.Web.Pages.Settings.DeviceAccessProfiles.IndexModel
+@model HES.Web.Pages.Settings.HardwareVaultAccessProfile.IndexModel
 
 @{
     ViewData["Title"] = "Vault Access Profiles";
@@ -7,15 +7,14 @@
     ViewData["SettingsPage"] = SettingsNavPages.DeviceAccessProfiles;
 }
 
-<partial name="_SuccessMessage" for="SuccessMessage" />
-<partial name="_ErrorMessage" for="ErrorMessage" />
+<component type="typeof(HardwareVaultAccessProfilePage)" render-mode="Server" />
 
-<div id="content">
+@*<div id="content">
     <partial name="_DeviceAccessProfilesTable" />
-</div>
+</div>*@
 
 @* Modal *@
-<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
+@*<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalDialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content" style="width:600px;">
             <div class="modal-header">
@@ -33,9 +32,9 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
-@section Scripts{
+@*@section Scripts{
     <script>
         InitDeviceAccessProfileDT();
         DeviceAccessProfileSetBreadcrumbs();
@@ -80,4 +79,4 @@
         });
     </script>
     <partial name="_ValidationScriptsPartial" />
-}
+}*@

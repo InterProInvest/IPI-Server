@@ -9,7 +9,7 @@ namespace HES.Web.Pages
 
         public static string DataProtection => "./DataProtection/Index";
 
-        public static string DeviceAccessProfiles => "./DeviceAccessProfiles/Index";
+        public static string DeviceAccessProfiles => "./HardwareVaultAccessProfile/Index";
 
         public static string OrgStructure => "./OrgStructure/Index";
 
