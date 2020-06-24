@@ -13,6 +13,7 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public ILogger<ChangeStatus> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
+        [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Parameter] public string HardwareVaultId { get; set; }
         [Parameter] public VaultStatus VaultStatus { get; set; }
 
@@ -29,31 +30,29 @@ namespace HES.Web.Pages.HardwareVaults
                 {
                     case VaultStatus.Active:
                         await HardwareVaultService.ActivateVaultAsync(HardwareVaultId);
+                        ToastService.ShowToast("Vault pending activate.", ToastLevel.Success);
                         break;
                     case VaultStatus.Suspended:
                         await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
+                        ToastService.ShowToast("Vault pending suspend.", ToastLevel.Success);
                         break;
                     case VaultStatus.Compromised:
                         if (CompromisedIsDisabled)
                             return;
                         await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId, StatusReason, StatusDescription);
+                        ToastService.ShowToast("Vault compromised.", ToastLevel.Success);
                         break;
                 }
 
-                ToastService.ShowToast("Vault suspended", ToastLevel.Success);
-                await CloseAsync();
+                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVaultId);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
-        }
-
-        private async Task CloseAsync()
-        {
-            await ModalDialogService.CloseAsync();
         }
 
         private void CompromisedConfirm()
