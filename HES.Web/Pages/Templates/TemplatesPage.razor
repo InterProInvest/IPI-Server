@@ -9,12 +9,12 @@ else
             <TemplateFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <button type="button" @onclick="CreateTemplateAsync" class="btn btn-primary mr-1" title="Create template">
+            <button type="button" @onclick="CreateTemplateAsync" class="btn btn-primary mx-1" title="Create template">
                 Create template
             </button>
             @if (MainTableService.SelectedEntity != null)
             {
-                <button type="button" @onclick="EditTemplateAsync" class="btn btn-light border" title="Edit template">
+                <button type="button" @onclick="EditTemplateAsync" class="btn btn-light border mx-1" title="Edit template">
                     <img class="icon-btn" src="/svg/action/edit.svg" />
                     Edit
                 </button>
