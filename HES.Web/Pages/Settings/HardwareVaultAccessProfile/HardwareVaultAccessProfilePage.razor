@@ -9,20 +9,23 @@ else
             @*<TemplateFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />*@
         </FilterForm>
         <ActionButtons>
-            @*<button type="button" @onclick="CreateTemplateAsync" class="btn btn-primary mr-1" title="Create template">
-                    Create template
+            <button type="button" @onclick="CreateProfileAsync" class="btn btn-primary mr-1" title="Create profile">
+                Create Profile
+            </button>
+            @if (MainTableService.SelectedEntity != null)
+            {
+                <button type="button" @onclick="EditProfileAsync" class="btn btn-light border" title="Edit profile">
+                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                    Edit
                 </button>
-                @if (MainTableService.SelectedEntity != null)
+                @if (MainTableService.SelectedEntity.Id != "default")
                 {
-                    <button type="button" @onclick="EditTemplateAsync" class="btn btn-light border" title="Edit template">
-                        <img class="icon-btn" src="/svg/action/edit.svg" />
-                        Edit
-                    </button>
-                    <button type="button" @onclick="DeleteTemplateAsync" class="btn btn-light border mx-1" title="Delete template">
+                    <button type="button" @onclick="DeleteProfileAsync" class="btn btn-light border mx-1" title="Delete profile">
                         <img class="icon-btn" src="/svg/action/delete.svg" />
                         Delete
                     </button>
-                }*@
+                }
+            }
         </ActionButtons>
         <FilterButtons>
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />

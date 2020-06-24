@@ -29,10 +29,10 @@ namespace HES.Web.Pages.Templates
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/templatesHub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>("PageUpdated", async (connectionId) =>
+            hubConnection.On<string>(RefreshPage.Templates, async (connectionId) =>
             {
                 var id = hubConnection.ConnectionId;
                 if (id != connectionId)

@@ -711,7 +711,19 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(m => m.Id == profileId);
         }
 
-        
+
+        public async Task DetachProfileAsync(HardwareVaultProfile profile)
+        {
+            await _hardwareVaultProfileRepository.DetachedAsync(profile);
+        }
+
+        public async Task DetachProfilesAsync(List<HardwareVaultProfile> profiles)
+        {
+            foreach (var item in profiles)
+            {
+                await DetachProfileAsync(item);
+            }
+        }
 
         public async Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions)
         {
@@ -771,7 +783,7 @@ namespace HES.Core.Services
                     query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UpdatedAt) : query.OrderByDescending(x => x.UpdatedAt);
                     break;
                 case nameof(HardwareVaultProfile.HardwareVaults):
-                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaults) : query.OrderByDescending(x => x.HardwareVaults);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaults.Count) : query.OrderByDescending(x => x.HardwareVaults.Count);
                     break;
             }
 

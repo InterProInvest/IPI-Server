@@ -1,24 +1,28 @@
-﻿@model HES.Web.Pages.Settings.HardwareVaultAccessProfile.IndexModel
-
-<form method="post">
+﻿@if (AccessProfile == null)
+{
+    <LoadingText />
+}
+else
+{
+<EditForm Model="AccessProfile" OnValidSubmit="CreateProfileAsync">
+    <DataAnnotationsValidator />
     <div class="form-group">
-        <label asp-for="DeviceAccessProfile.Name" class="control-label text-gray"></label>
-        <input asp-for="DeviceAccessProfile.Name" class="form-control text-navyblue" />
-        <span asp-validation-for="DeviceAccessProfile.Name" class="text-danger"></span>
+        <label class="control-label text-gray">Name</label>
+        <InputText class="form-control" @bind-Value="AccessProfile.Name" />
+        <ValidationMessage For="@(() => AccessProfile.Name)" class="text-danger" />
     </div>
-
     <label class="text-gray">Authorization parameters</label>
     <table class="table border rounded w-100 disable-selection">
         <thead>
             <tr>
                 <th></th>
-                <th class="text-center align-middle">
+                <th class="text-center align-middle px-1">
                     Bonding
                 </th>
-                <th class="text-center align-middle">
+                <th class="text-center align-middle px-1">
                     Connection
                 </th>
-                <th class="text-center align-middle">
+                <th class="text-center align-middle px-1">
                     New Channel
                 </th>
             </tr>
@@ -30,20 +34,20 @@
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Request the device button confirmation for connecting the device to the computer for the first time.">
-                        <input type="checkbox" class="custom-control-input" id="ButtonBonding" asp-for="DeviceAccessProfile.ButtonBonding">
-                        <label class="custom-control-label" for="ButtonBonding"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.ButtonBonding" disabled>
+                        <label class="custom-control-label cursor-default"></label>
                     </div>
                 </td>
                 <td class="text-center">
-                    <div class="custom-control custom-checkbox " title="Request the device button confirmation for connecting the device to the computer that is already bonded with the computer. ">
-                        <input type="checkbox" class="custom-control-input" id="ButtonConnection" asp-for="DeviceAccessProfile.ButtonConnection">
-                        <label class="custom-control-label" for="ButtonConnection"></label>
+                    <div class="custom-control custom-checkbox" title="Request the device button confirmation for connecting the device to the computer that is already bonded with the computer. ">
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.ButtonConnection">
+                        <label class="custom-control-label" @onclick="@(() => AccessProfile.ButtonConnection = !AccessProfile.ButtonConnection)"></label>
                     </div>
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Request the device button confirmation when an application is getting access to the device’s storage.">
-                        <input type="checkbox" class="custom-control-input" id="ButtonNewChannel" asp-for="DeviceAccessProfile.ButtonNewChannel">
-                        <label class="custom-control-label" for="ButtonNewChannel"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.ButtonNewChannel">
+                        <label class="custom-control-label" @onclick="@(() => AccessProfile.ButtonNewChannel = !AccessProfile.ButtonNewChannel)"></label>
                     </div>
                 </td>
             </tr>
@@ -53,20 +57,20 @@
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Request the PIN-code for connecting the device to the computer for the first time.">
-                        <input type="checkbox" class="custom-control-input" id="PinBonding" asp-for="DeviceAccessProfile.PinBonding">
-                        <label class="custom-control-label" for="PinBonding"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.PinBonding">
+                        <label class="custom-control-label" @onclick="@(() => AccessProfile.PinBonding = !AccessProfile.PinBonding)"></label>
                     </div>
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Request the PIN-code for connecting the device to the computer that is already bonded with the computer.">
-                        <input type="checkbox" class="custom-control-input" id="PinConnection" asp-for="DeviceAccessProfile.PinConnection">
-                        <label class="custom-control-label" for="PinConnection"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.PinConnection">
+                        <label class="custom-control-label" @onclick="@(() => AccessProfile.PinConnection = !AccessProfile.PinConnection)"></label>
                     </div>
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Request the PIN-code when an application is getting access to the device’s storage.">
-                        <input type="checkbox" class="custom-control-input" id="PinNewChannel" asp-for="DeviceAccessProfile.PinNewChannel">
-                        <label class="custom-control-label" for="PinNewChannel"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.PinNewChannel">
+                        <label class="custom-control-label" @onclick="@(() => AccessProfile.PinNewChannel = !AccessProfile.PinNewChannel)"></label>
                     </div>
                 </td>
             </tr>
@@ -76,40 +80,38 @@
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Require the server confirmation for connecting the device to the computer for the first time.">
-                        <input type="checkbox" class="custom-control-input" id="MasterKeyBonding" checked="checked" disabled>
-                        <label class="custom-control-label" for="MasterKeyBonding"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.MasterKeyBonding" disabled>
+                        <label class="custom-control-label cursor-default" @onclick="@(() => AccessProfile.MasterKeyBonding = !AccessProfile.MasterKeyBonding)"></label>
                     </div>
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Require the server confirmation for connecting the device to the computer that is already bonded with the computer.">
-                        <input type="checkbox" class="custom-control-input" id="MasterKeyConnection" asp-for="DeviceAccessProfile.MasterKeyConnection">
-                        <label class="custom-control-label" for="MasterKeyConnection"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.MasterKeyConnection">
+                        <label class="custom-control-label" @onclick="@(() => AccessProfile.MasterKeyConnection = !AccessProfile.MasterKeyConnection)"></label>
                     </div>
                 </td>
                 <td class="text-center">
                     <div class="custom-control custom-checkbox" title="Require the server confirmation when an application is getting access to the device’s storage.">
-                        <input type="checkbox" class="custom-control-input" id="MasterKeyNewChannel" asp-for="DeviceAccessProfile.MasterKeyNewChannel" value="false" disabled>
-                        <label class="custom-control-label" for="MasterKeyNewChannel"></label>
+                        <input type="checkbox" class="custom-control-input" @bind="AccessProfile.MasterKeyNewChannel" disabled>
+                        <label class="custom-control-label cursor-default"></label>
                     </div>
                 </td>
             </tr>
         </tbody>
     </table>
-
     <label class="text-gray">PIN settings</label>
     <table class="table border rounded w-100 disable-selection">
-        <thead>
-        </thead>
+        <thead></thead>
         <tbody>
             <tr>
                 <td>
                     PIN expiration
                 </td>
                 <td class="text-center pl-1 pr-1" title="After PIN code is expired, the device storage will be locked until the user enters the PIN again.">
-                    <input id="pin_expiration" type="range" class="custom-range" min="1" max="107" step="1" value="1" asp-for="DeviceAccessProfile.PinExpirationConverted">
+                    <input type="range" class="custom-range" min="1" max="107" step="1" value="1" @oninput="OnInputPinExpiration">
                 </td>
                 <td class="text-center pin-settings-value">
-                    <h6 id="pin_expiration_value"></h6>
+                    <h6>@AccessProfile.PinExpirationString</h6>
                 </td>
             </tr>
             <tr>
@@ -117,10 +119,10 @@
                     PIN length
                 </td>
                 <td class="text-center pl-1 pr-1">
-                    <input id="pin_length" type="range" class="custom-range" min="4" max="8" step="1" value="4" asp-for="DeviceAccessProfile.PinLength">
+                    <input type="range" class="custom-range" min="4" max="8" step="1" value="4" @oninput="OnInputPinLength">
                 </td>
                 <td class="text-center pin-settings-value">
-                    <h6 id="pin_length_value"></h6>
+                    <h6>@AccessProfile.PinLength</h6>
                 </td>
             </tr>
             <tr>
@@ -128,21 +130,17 @@
                     PIN incorrect entry
                 </td>
                 <td class="text-center pl-1 pr-1" title="Maximum number of incorrect PIN code entering. After the number of entries is exceeded, the device is locked.">
-                    <input id="pin_try_count" type="range" class="custom-range" min="3" max="10" step="1" value="1" asp-for="DeviceAccessProfile.PinTryCount">
+                    <input type="range" class="custom-range" min="3" max="10" step="1" value="3" @oninput="OnInputPinTryCount">
                 </td>
                 <td class="text-center pin-settings-value">
-                    <h6 id="pin_try_count_value"></h6>
+                    <h6>@AccessProfile.PinTryCount</h6>
                 </td>
             </tr>
         </tbody>
     </table>
-
-    <div class="form-group m-0 text-right">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <input type="submit" value="Create" class="btn btn-primary" asp-page-handler="CreateProfile" />
+    <div class="text-right">
+        <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+        <input type="submit" value="Create" class="btn btn-primary" />
     </div>
-</form>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+</EditForm>
 }

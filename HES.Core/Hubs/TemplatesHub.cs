@@ -5,9 +5,9 @@ namespace HES.Core.Hubs
 {
     public class TemplatesHub : Hub
     {
-        public async Task UpdatePage(string connectionId)
-        {
-            await Clients.All.SendAsync("PageUpdated", connectionId);
-        }
+        //public async Task UpdatePage(string connectionId)
+        //{
+        //    await Clients.All.SendAsync("PageUpdated", connectionId);
+        //}
     }
 }
