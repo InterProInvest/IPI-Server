@@ -99,6 +99,16 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetHardwareVaultProfiles()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Hardware Vault Access Profiles" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetSharedAccounts()
         {
             Breadcrumbs = new List<Breadcrumb>()

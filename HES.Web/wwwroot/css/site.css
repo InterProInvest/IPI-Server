@@ -26,6 +26,10 @@
 }
 /*#endregion*/
 
+.cursor-default {
+    cursor: default !important;
+}
+
 /* #region Override colors */
 .dropdown-item:hover, .dropdown-item:focus {
     color: #16181b;

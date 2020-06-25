@@ -263,6 +263,7 @@ namespace HES.Web
                 endpoints.MapHub<TemplatesHub>("/templatesHub");
                 endpoints.MapHub<WorkstationsHub>("/workstationsHub");
                 endpoints.MapHub<WorkstationDetailsHub>("/workstationDetailsHub");
+                endpoints.MapHub<RefreshHub>("/refreshHub");
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();

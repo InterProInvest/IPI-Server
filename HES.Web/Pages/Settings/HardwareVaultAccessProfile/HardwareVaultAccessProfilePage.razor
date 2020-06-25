@@ -1,0 +1,96 @@
+﻿@if (MainTableService.Entities == null)
+{
+    <LoadingPage />
+}
+else
+{
+    <TableAction>
+        <FilterForm>
+            <ProfileFilter FilterChanged="MainTableService.FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+            <button type="button" @onclick="CreateProfileAsync" class="btn btn-primary mr-1" title="Create profile">
+                Create Profile
+            </button>
+            @if (MainTableService.SelectedEntity != null)
+            {
+                <button type="button" @onclick="EditProfileAsync" class="btn btn-light border" title="Edit profile">
+                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                    Edit
+                </button>
+                <button type="button" @onclick="DetailsProfileAsync" class="btn btn-light border ml-1" title="Details profile">
+                    <img class="icon-btn" src="/svg/action/details.svg" />
+                    Details
+                </button>
+                @if (MainTableService.SelectedEntity.Id != "default")
+                {
+                    <button type="button" @onclick="DeleteProfileAsync" class="btn btn-light border ml-1" title="Delete profile">
+                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        Delete
+                    </button>
+                }
+            }
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+        <TableHeader>
+            <MainTableHeader Title="Name"
+                             TitleWidth="16"
+                             SortColumn="@nameof(HardwareVaultProfile.Name)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Creaated"
+                             TitleWidth="16"
+                             SortColumn="@nameof(HardwareVaultProfile.CreatedAt)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Updated"
+                             TitleWidth="16"
+                             SortColumn="@nameof(HardwareVaultProfile.UpdatedAt)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="HardwareVaults"
+                             TitleWidth="16"
+                             SortColumn="@nameof(HardwareVaultProfile.HardwareVaults)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.Name
+            </td>
+            <td>
+                @if (context.CreatedAt != null)
+                    {
+                    @context.CreatedAt
+                    }
+            </td>
+            <td>
+                @if (context.UpdatedAt != null)
+                    {
+                    @context.UpdatedAt.Value
+                    }
+            </td>
+            <td>
+                @context.HardwareVaults?.Count.ToString()
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
+                DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
+                TotalRecords="MainTableService.TotalRecords"
+                CurrentPage="MainTableService.CurrentPage"
+                DisplayRows="MainTableService.DataLoadingOptions.Take"
+                DisplayRecords="MainTableService.Entities.Count" />
+}

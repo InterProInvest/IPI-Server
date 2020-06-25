@@ -8,24 +8,24 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace HES.Web.Pages.Templates
+namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 {
-    public partial class DeleteTemplate : ComponentBase
+    public partial class DeleteProfile : ComponentBase
     {
-        [Inject] public ITemplateService TemplateService { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public ILogger<DeleteTemplate> Logger { get; set; }
+        [Inject] public ILogger<DeleteProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public Template Template { get; set; }
+        [Parameter] public HardwareVaultProfile AccessProfile { get; set; }
 
-        private async Task DeleteTemplateAsync()
+        private async Task DeleteProfileAsync()
         {
             try
             {
-                await TemplateService.DeleteTemplateAsync(Template.Id);
-                ToastService.ShowToast("Template deleted.", ToastLevel.Success);
+                await HardwareVaultService.DeleteProfileAsync(AccessProfile.Id);
+                ToastService.ShowToast("Hardware vault profile deleted.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync(RefreshPage.Templates, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
