@@ -13,6 +13,7 @@ namespace HES.Core.Interfaces
         Task SetHardwareVaults();
         Task SetTemplates();
         Task SetGroups();
+        Task SetHardwareVaultProfiles();
         public Task SetSharedAccounts();
         Task SetGroupDetails(string name);
         Task SetLicenseOrders();

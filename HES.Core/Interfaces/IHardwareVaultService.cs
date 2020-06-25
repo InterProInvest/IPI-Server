@@ -35,9 +35,13 @@ namespace HES.Core.Interfaces
         Task VaultCompromisedAsync(string vaultId, VaultStatusReason reason, string description);
         Task ReloadHardwareVault(HardwareVault hardwareVault);
         Task ReloadHardwareVaults(List<HardwareVault> hardwareVaults);
-
+        Task DetachProfileAsync(HardwareVaultProfile profile);
+        Task DetachProfilesAsync(List<HardwareVaultProfile> profiles);
         IQueryable<HardwareVaultProfile> ProfileQuery();
         Task<List<HardwareVaultProfile>> GetProfilesAsync();
+        Task UnchangedProfileAsync(HardwareVaultProfile profile);
+        Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
+        Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
         Task<HardwareVaultProfile> GetProfileByIdAsync(string profileId);
         Task<List<string>> GetVaultIdsByProfileTaskAsync();
         Task<HardwareVaultProfile> CreateProfileAsync(HardwareVaultProfile hardwareVaultProfile);

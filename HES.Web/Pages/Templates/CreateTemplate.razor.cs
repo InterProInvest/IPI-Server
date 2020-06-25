@@ -16,7 +16,7 @@ namespace HES.Web.Pages.Templates
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<CreateTemplate> Logger { get; set; }
-        [Inject] public IHubContext<TemplatesHub> HubContext { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
         public Template Template { get; set; } = new Template();
@@ -28,7 +28,7 @@ namespace HES.Web.Pages.Templates
             {
                 await TemplateService.CreateTmplateAsync(Template);
                 ToastService.ShowToast("Template created.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.All.SendAsync(RefreshPage.Templates, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
