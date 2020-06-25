@@ -21,7 +21,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Descending);
+            await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
             await BreadcrumbsService.SetHardwareVaultProfiles();
             await InitializeHubAsync();
         }
@@ -62,12 +62,40 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         private async Task EditProfileAsync()
         {
-            return;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditProfile));
+                builder.AddAttribute(1, nameof(EditProfile.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(2, nameof(EditProfile.AccessProfile), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Edit Profile", body, ModalDialogSize.Default);
         }
 
         private async Task DeleteProfileAsync()
         {
-            return;
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteProfile));
+                builder.AddAttribute(1, nameof(DeleteProfile.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(2, nameof(DeleteProfile.AccessProfile), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Delete Profile", body, ModalDialogSize.Default);
+        }
+
+        private async Task DetailsProfileAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DetailsProfile));
+                builder.AddAttribute(1, nameof(DetailsProfile.AccessProfile), MainTableService.SelectedEntity);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Details Profile", body, ModalDialogSize.Default);
         }
     }
 }

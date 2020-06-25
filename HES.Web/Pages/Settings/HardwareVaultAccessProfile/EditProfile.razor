@@ -4,7 +4,7 @@
 }
 else
 {
-    <EditForm Model="AccessProfile" OnValidSubmit="CreateProfileAsync">
+    <EditForm Model="AccessProfile" OnValidSubmit="EditProfileAsync">
         <DataAnnotationsValidator />
         <div class="form-group">
             <label class="control-label text-gray">Name</label>
@@ -140,7 +140,7 @@ else
         </table>
         <div class="text-right">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
-            <input type="submit" value="Create" class="btn btn-primary" />
+            <input type="submit" value="Save" class="btn btn-primary" />
         </div>
     </EditForm>
 }

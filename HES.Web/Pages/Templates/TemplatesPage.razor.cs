@@ -21,7 +21,7 @@ namespace HES.Web.Pages.Templates
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, StateHasChanged, nameof(Template.Name), ListSortDirection.Descending);
+            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
             await BreadcrumbsService.SetTemplates();
             await InitializeHubAsync();
         }

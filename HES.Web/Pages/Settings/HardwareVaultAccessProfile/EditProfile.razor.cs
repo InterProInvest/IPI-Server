@@ -4,47 +4,43 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 {
-    public partial class CreateAccessProfile : ComponentBase
+    public partial class EditProfile : ComponentBase
     {
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public ILogger<CreateAccessProfile> Logger { get; set; }
+        [Inject] public ILogger<EditProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
-        
-        [Parameter] public string ConnectionId { get; set; }
 
-        public HardwareVaultProfile AccessProfile { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
+        [Parameter] public HardwareVaultProfile AccessProfile { get; set; }
 
         public int InitPinExpirationValue { get; set; }
         public int InitPinLengthValue { get; set; }
         public int InitPinTryCountValue { get; set; }
 
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
-            AccessProfile = await HardwareVaultService.ProfileQuery().AsNoTracking().FirstOrDefaultAsync(x => x.Id == "default");
-            AccessProfile.Id = null;
-            AccessProfile.Name = null;
+            ModalDialogService.OnCancel += CancelAsync;
 
             InitPinExpirationValue = AccessProfile.PinExpirationConverted;
             InitPinLengthValue = AccessProfile.PinLength;
             InitPinTryCountValue = AccessProfile.PinTryCount;
         }
 
-        private async Task CreateProfileAsync()
+        private async Task EditProfileAsync()
         {
             try
             {
-                await HardwareVaultService.CreateProfileAsync(AccessProfile);
-                ToastService.ShowToast("Hardware vault profile created.", ToastLevel.Success);
+                await HardwareVaultService.EditProfileAsync(AccessProfile);
+                ToastService.ShowToast("Hardware vault profile updated.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultProfiles, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
@@ -52,13 +48,19 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CancelAsync();
+                await CancelAsync();
             }
+        }
+
+        private async Task CancelAsync()
+        {
+            await HardwareVaultService.UnchangedProfileAsync(AccessProfile);
+            ModalDialogService.OnCancel -= CancelAsync;
         }
 
         private void OnInputPinExpiration(ChangeEventArgs args)
         {
-            AccessProfile.PinExpirationConverted = Convert.ToInt32((string)args.Value); 
+            AccessProfile.PinExpirationConverted = Convert.ToInt32((string)args.Value);
         }
 
         private void OnInputPinLength(ChangeEventArgs args)

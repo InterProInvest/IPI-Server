@@ -711,6 +711,10 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(m => m.Id == profileId);
         }
 
+        public async Task UnchangedProfileAsync(HardwareVaultProfile profile)
+        {
+            await _hardwareVaultProfileRepository.UnchangedAsync(profile);
+        }
 
         public async Task DetachProfileAsync(HardwareVaultProfile profile)
         {

@@ -39,6 +39,7 @@ namespace HES.Core.Interfaces
         Task DetachProfilesAsync(List<HardwareVaultProfile> profiles);
         IQueryable<HardwareVaultProfile> ProfileQuery();
         Task<List<HardwareVaultProfile>> GetProfilesAsync();
+        Task UnchangedProfileAsync(HardwareVaultProfile profile);
         Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
         Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
         Task<HardwareVaultProfile> GetProfileByIdAsync(string profileId);
