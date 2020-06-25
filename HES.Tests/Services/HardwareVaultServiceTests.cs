@@ -97,7 +97,7 @@ namespace HES.Tests.Services
         [Fact, Order(7)]
         public async Task GenerateVaultActivationAsync()
         {
-            var result = await _hardwareVaultService.GenerateVaultActivationAsync(_testingOptions.HardwareVaultId);
+            var result = await _hardwareVaultService.CreateVaultActivationAsync(_testingOptions.HardwareVaultId);
 
             Assert.NotNull(result.Id);
             Assert.Equal(_testingOptions.HardwareVaultId, result.VaultId);

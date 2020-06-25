@@ -26,8 +26,8 @@ namespace HES.Core.Interfaces
         Task UpdateAfterWipeAsync(string vaultId);
         Task UpdateAfterLinkAsync(string vaultId, string masterPassword);
         Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto);
-        Task UpdateVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault);
-        Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId);
+        Task UpdateHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault);
+        Task<HardwareVaultActivation> CreateVaultActivationAsync(string vaultId);
         Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);

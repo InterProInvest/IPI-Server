@@ -415,7 +415,6 @@ namespace HES.Core.Services
 
             vault.EmployeeId = employeeId;
             vault.Status = VaultStatus.Reserved;
-            vault.NeedSync = true;
 
             // Create a link before creating an account
             var linkTask = new HardwareVaultTask()
@@ -447,7 +446,7 @@ namespace HES.Core.Services
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await _hardwareVaultService.UpdateVaultAsync(vault);
-                await _hardwareVaultService.GenerateVaultActivationAsync(vaultId);
+                await _hardwareVaultService.CreateVaultActivationAsync(vaultId);
                 await _hardwareVaultTaskService.AddTaskAsync(linkTask);
 
                 if (tasks.Count > 0)
@@ -489,7 +488,12 @@ namespace HES.Core.Services
                     vault.StatusReason = reason;
 
                     if (!isNeedBackup && deleteAccounts)
+                    {
+                        var employee = await GetEmployeeByIdAsync(employeeId);
+                        employee.PrimaryAccountId = null;
+                        await _employeeRepository.UpdateAsync(employee);
                         await _accountService.DeleteAccountsByEmployeeIdAsync(employeeId);
+                    }
                 }
 
                 await _hardwareVaultService.UpdateVaultAsync(vault);

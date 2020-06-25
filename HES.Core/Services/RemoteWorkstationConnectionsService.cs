@@ -142,6 +142,8 @@ namespace HES.Core.Services
                .ConnectDevice(vaultId, workstationId)
                .TimeoutAfter(30_000);
 
+            await remoteDevice.RefreshDeviceInfo();
+
             if (remoteDevice == null)
                 throw new HideezException(HideezErrorCode.HesFailedEstablishRemoteDeviceConnection);
 
@@ -150,7 +152,7 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
 
-            await _hardwareVaultService.UpdateVaultStatusAsync(remoteDevice, vault);
+            await _hardwareVaultService.UpdateHardwareVaultStatusAsync(remoteDevice, vault);
 
             switch (vault.Status)
             {

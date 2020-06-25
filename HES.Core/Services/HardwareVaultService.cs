@@ -526,13 +526,16 @@ namespace HES.Core.Services
             await _hardwareVaultRepository.UpdateAsync(vault);
         }
 
-        public async Task UpdateVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        public async Task UpdateHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
+            var update = false;
+
             if (remoteDevice.IsLocked)
             {
                 if (!remoteDevice.IsCanUnlock && (vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Suspended))
                 {
                     vault.Status = VaultStatus.Locked;
+                    update = true;
                 }
             }
 
@@ -544,15 +547,30 @@ namespace HES.Core.Services
                 var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
 
                 await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
+
+                await ChangeVaultActivationStatusAsync(vault.Id, HardwareVaultActivationStatus.Activated);
+
+                update = true;
             }
 
-            await _hardwareVaultRepository.UpdateAsync(vault);
+            if (update)
+                await _hardwareVaultRepository.UpdateAsync(vault);
         }
 
-        public async Task<HardwareVaultActivation> GenerateVaultActivationAsync(string vaultId)
+        public async Task<HardwareVaultActivation> CreateVaultActivationAsync(string vaultId)
         {
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
+
+            var existActivation = await _hardwareVaultActivationRepository
+                .Query()
+                .FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
+
+            if (existActivation != null)
+            {
+                existActivation.Status = HardwareVaultActivationStatus.Canceled;
+                await _hardwareVaultActivationRepository.UpdateAsync(existActivation);
+            }
 
             var vaultActivation = new HardwareVaultActivation()
             {
@@ -570,8 +588,6 @@ namespace HES.Core.Services
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
 
-            _dataProtectionService.Validate();
-
             var vaultActivation = await _hardwareVaultActivationRepository
                 .Query()
                 .FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
@@ -579,7 +595,7 @@ namespace HES.Core.Services
             if (vaultActivation != null)
             {
                 vaultActivation.Status = status;
-                await _hardwareVaultActivationRepository.UpdateOnlyPropAsync(vaultActivation, new string[] { nameof(HardwareVaultActivation.Status) });
+                await _hardwareVaultActivationRepository.UpdateAsync(vaultActivation);
             }
         }
 
@@ -588,9 +604,11 @@ namespace HES.Core.Services
             if (vaultId == null)
                 throw new ArgumentNullException(nameof(vaultId));
 
-            _dataProtectionService.Validate();
-
-            var vaultActivation = await _hardwareVaultActivationRepository.Query().FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
+            var vaultActivation = await _hardwareVaultActivationRepository
+                .Query()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.VaultId == vaultId && x.Status == HardwareVaultActivationStatus.Pending);
+            
             return _dataProtectionService.Decrypt(vaultActivation.AcivationCode);
         }
 
@@ -612,7 +630,7 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await GenerateVaultActivationAsync(vaultId);
+                await CreateVaultActivationAsync(vaultId);
                 await _hardwareVaultRepository.UpdateAsync(vault);
                 await _hardwareVaultTaskService.AddSuspendAsync(vaultId);
 
@@ -638,7 +656,7 @@ namespace HES.Core.Services
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await GenerateVaultActivationAsync(vaultId);
+                await CreateVaultActivationAsync(vaultId);
                 await _hardwareVaultRepository.UpdateAsync(vault);
                 await _hardwareVaultTaskService.AddSuspendAsync(vaultId);
 
