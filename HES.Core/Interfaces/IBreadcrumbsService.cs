@@ -17,5 +17,7 @@ namespace HES.Core.Interfaces
         Task SetGroupDetails(string name);
         Task SetLicenseOrders();
         Task SetParameters();
+        Task SetWorkstations();
+        Task SetWorkstationDetails(string name);
     }
 }
