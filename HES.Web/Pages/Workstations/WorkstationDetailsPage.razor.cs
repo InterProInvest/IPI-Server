@@ -121,7 +121,17 @@ namespace HES.Web.Pages.Workstations
 
         private async Task OpenDialogDeleteHardwareVaultAsync()
         {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteProximityVault));
+                builder.AddAttribute(1, "WorkstationProximityVault", SelectedEntity);
+                builder.AddAttribute(2, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(3, "WorkstationId", WorkstationId);
+                builder.AddAttribute(4, "ConnectionId", hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
 
+            await ModalDialogService.ShowAsync("Delete Proximity Vault", body);
         }
 
         private async Task InitializeHubAsync()
@@ -135,10 +145,8 @@ namespace HES.Web.Pages.Workstations
                 var id = hubConnection.ConnectionId;
                 if (id != connectionId && workstationId == WorkstationId)
                 {
-                    //await EmployeeService.DetachEmployeeAsync(Employee);
-                    //await LoadEmployeeAsync();
-                    //await EmployeeService.DetachdAccountAsync(Accounts);
-                    //await LoadTableDataAsync();
+                    await WorkstationService.DetachdProximityVaultsAsync(WorkstationProximityVaults);
+                    await LoadTableDataAsync();
                     ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
                 }
             });

@@ -31,6 +31,7 @@ namespace HES.Web.Pages.Workstations
         public List<HardwareVault> HardwareVaults { get; set; }
         public HardwareVault SelectedHardwareVault { get; set; }
         public string WarningMessage { get; set; }
+        public bool AlreadyAdded { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -61,6 +62,7 @@ namespace HES.Web.Pages.Workstations
 
             var count = await WorkstationService.GetProximityVaultsCountAsync(string.Empty, WorkstationId);
             var proximityVaults = await WorkstationService.GetProximityVaultsAsync(0, count, nameof(WorkstationProximityVault.HardwareVaultId), ListSortDirection.Ascending, string.Empty, WorkstationId);
+            AlreadyAdded = proximityVaults.Count > 0;
 
             HardwareVaults = HardwareVaults.Where(x => !proximityVaults.Select(s => s.HardwareVaultId).Contains(x.Id)).ToList();
             SelectedHardwareVault = null;

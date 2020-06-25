@@ -261,7 +261,7 @@ namespace HES.Web
                 endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
                 endpoints.MapHub<SharedAccountsHub>("/sharedAccountsHub");
                 endpoints.MapHub<WorkstationsHub>("/workstationsHub");
-                endpoints.MapHub<WorkstationsHub>("/workstationDetailsHub");
+                endpoints.MapHub<WorkstationDetailsHub>("/workstationDetailsHub");
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
