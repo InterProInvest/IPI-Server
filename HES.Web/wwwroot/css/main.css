@@ -64,6 +64,32 @@
     }
 }
 
+.table-fixed-header {
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+    .table-fixed-header td:first-child,
+    .table-fixed-header th:first-child {
+        max-width: 1%;
+    }
+
+    .table-fixed-header td:not(:first-child),
+    .table-fixed-header th:not(:first-child) {
+        width: 100%;
+    }
+
+    .table-fixed-header thead tr {
+        display: block;
+        position: relative;
+    }
+
+    .table-fixed-header tbody {
+        display: block;
+        overflow: auto;
+        width: 100%;
+    }
+
 .table-scrollable {
     overflow-y: auto;
     max-height: 60vh;
@@ -99,31 +125,6 @@
     content: url("/svg/action/table-arrow-sort.svg");
     transform: rotate(180deg);
 }
-
-.table-fixed {
-    width: 100%;
-}
-
-    .table-fixed tbody {
-        overflow-y: auto;
-        width: 100%;
-    }
-
-    .table-fixed thead,
-    .table-fixed tbody,
-    .table-fixed tr,
-    .table-fixed td,
-    .table-fixed th {
-        display: block;
-    }
-
-        .table-fixed tbody td {
-            float: left;
-        }
-
-        .table-fixed thead tr th {
-            float: left;
-        }
 
 .btn-min-w {
     min-width: 74px;

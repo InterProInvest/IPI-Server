@@ -574,11 +574,6 @@ a.navbar-brand {
 .readonly-white {
     background-color: #fff !important;
 }
-
-.green-checkbox .custom-control-input:checked ~ .custom-control-label::before {
-    border-color: #28a745 !important;
-    background-color: #28a745 !important;
-}
 /*#endregion*/
 
 /*#region Table */

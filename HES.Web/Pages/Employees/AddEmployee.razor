@@ -21,17 +21,19 @@ else
             <input type="text" class="form-control" placeholder="Search" @bind="_searchText" @bind:event="oninput" />
         </div>
         <div class="table-responsive mb-3">
-            <table class="table table-fixed table-hover border rounded mb-0 disable-selection">
+            <table class="table table-fixed-header table-hover border rounded mb-0 disable-selection">
                 <thead>
                     <tr class="cursor-pointer">
-                        <th class="col-1">
+                        <th>
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="checkAll" @onchange="@((e) => { Users.ForEach(x => x.Checked = (bool)e.Value); })" />
                                 <label class="custom-control-label" for="checkAll"></label>
                             </div>
                         </th>
-                        <th class="col-11" @onclick="@(() => SortTable(nameof(Employee.FullName)))">
-                            @nameof(Group.Name)
+                        <th @onclick="@(() => SortTable(nameof(Employee.FullName)))">
+                            <span class="w-100">
+                                @nameof(Group.Name)
+                            </span>
                             <img class="table-sort-arrow @GetSortIcon(nameof(Employee.FullName))" />
                         </th>
                     </tr>
@@ -40,13 +42,13 @@ else
                     @foreach (var user in Users.Where(x => x.Employee.FullName.Contains(_searchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
                     {
                         <tr @key="user.Employee.Id" @onclick="@(() => { user.Checked = !user.Checked; })">
-                            <td class="col-1">
+                            <td>
                                 <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
                                     <input type="checkbox" class="custom-control-input" id="@user.Employee.Id" @bind="user.Checked" />
                                     <label class="custom-control-label" for="@user.Employee.Id"></label>
                                 </div>
                             </td>
-                            <td class="col-11">
+                            <td>
                                 @user.Employee.FullName
                             </td>
                         </tr>
