@@ -19,7 +19,7 @@ else
                         <span>Resend invite</span>
                     </button>
                 }
-                if (MainTableService.Entities.Count != 1)
+                if (MainTableService.Entities.Count != 1 && AuthenticationState.User.Identity.Name != MainTableService.SelectedEntity.Email)
                 {
                     <button type="button" @onclick="DeleteAdminAsync" class="btn btn-light border ml-1" title="Delete admin">
                         <img class="icon-btn" src="/svg/action/delete.svg" />

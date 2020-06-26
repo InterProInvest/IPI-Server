@@ -1,8 +1,7 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -47,8 +46,6 @@ namespace HES.Core.Services
             }
         }
 
-        
-
         public async Task<List<ApplicationUser>> GetAdministratorsAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions)
         {
             var query = _applicationUserRepository.Query();
@@ -79,6 +76,7 @@ namespace HES.Core.Services
 
             return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
+
         public async Task<int> GetAdministratorsCountAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions)
         {
             var query = _applicationUserRepository.Query();
@@ -99,7 +97,7 @@ namespace HES.Core.Services
             var userExist = await _userManager.FindByEmailAsync(email);
 
             if (userExist != null)
-                throw new Exception($"User named {email} already exists");
+                throw new AlreadyExistException($"User {email} already exists");
 
             var user = new ApplicationUser { UserName = email, Email = email };
             var password = Guid.NewGuid().ToString();
@@ -159,11 +157,6 @@ namespace HES.Core.Services
 
             if (applicationUser == null)
                 throw new Exception("User not found");
-
-
-            //var currentUserId = _userManager.GetUserId(User);
-            //if (id == currentUserId)
-            //    await _signInManager.SignOutAsync();
 
             return await _applicationUserRepository.DeleteAsync(applicationUser);
         }

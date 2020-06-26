@@ -3,32 +3,34 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Users;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Administrators
 {
     public partial class AdministratorsPage : ComponentBase
     {
+        [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
         [Inject] public IApplicationUserService ApplicationUserService { get; set; }
         [Inject] public IMainTableService<ApplicationUser, ApplicationUserFilter> MainTableService { get; set; }
         [Inject] public IEmailSenderService EmailSenderService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<AdministratorsPage> Logger { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
-
-
         [Inject] public NavigationManager NavigationManager { get; set; }
+
+        public AuthenticationState AuthenticationState { get; set; }
+
         private bool IsBusy;
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
+            AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
             await BreadcrumbsService.SetAdministrators();
             await InitializeHubAsync();
@@ -56,7 +58,7 @@ namespace HES.Web.Pages.Settings.Administrators
         }
 
         private async Task InviteAdminAsync()
-        {            
+        {
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(InviteAdmin));
@@ -92,7 +94,7 @@ namespace HES.Web.Pages.Settings.Administrators
 
         private async Task DeleteAdminAsync()
         {
-            if(MainTableService.Entities.Count == 1)
+            if (MainTableService.Entities.Count == 1)
                 return;
 
             RenderFragment body = (builder) =>

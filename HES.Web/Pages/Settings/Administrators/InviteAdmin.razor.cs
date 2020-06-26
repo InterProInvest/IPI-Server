@@ -1,6 +1,9 @@
 ﻿using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppUsers;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -18,26 +21,29 @@ namespace HES.Web.Pages.Settings.Administrators
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<InviteAdmin> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-
         [Parameter] public string ConnectionId { get; set; }
 
-        public string InvitedEmail { get; set; } = string.Empty;
+        public Invitation Invitation = new Invitation();
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         private async Task InviteAdminAsync()
         {
             try
             {
-                var callBakcUrl = await ApplicationUserService.InviteAdministratorAsync(InvitedEmail, NavigationManager.BaseUri);
-                await EmailSenderService.SendUserInvitationAsync(InvitedEmail, callBakcUrl);
+                var callBakcUrl = await ApplicationUserService.InviteAdministratorAsync(Invitation.Email, NavigationManager.BaseUri);
+                await EmailSenderService.SendUserInvitationAsync(Invitation.Email, callBakcUrl);
                 ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
+                await HubContext.Clients.All.SendAsync(RefreshPage.Administrators, ConnectionId);
+                await ModalDialogService.CloseAsync();
+            }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(Invitation.Email), ex.Message);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
                 await HubContext.Clients.All.SendAsync(RefreshPage.Administrators, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
