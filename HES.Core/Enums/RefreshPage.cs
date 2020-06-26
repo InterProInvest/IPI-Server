@@ -4,6 +4,7 @@
     {
         public const string HardwareVaultProfiles = "HardwareVaultProfile";
         public const string Templates = "Templates";
+        public const string Administrators = "Administrators";
         public const string EmployeeDetailsVaultSynced = "EmployeeDetailsVaultsynced";
         public const string EmployeeDetails = "EmployeeDetails";
     }
