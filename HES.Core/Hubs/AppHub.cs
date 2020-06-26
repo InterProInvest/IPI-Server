@@ -381,6 +381,38 @@ namespace HES.Core.Hubs
             }
         }
 
+        // Incoming request
+        public async Task<HesResponse<IList<DeviceLicenseDTO>>> GetDeviceLicenses(string deviceId)
+        {
+            try
+            {
+                var licenses = await _licenseService.GetActiveLicensesAsync(deviceId);
+
+                var deviceLicenseDto = new List<DeviceLicenseDTO>();
+
+                foreach (var license in licenses)
+                {
+                    deviceLicenseDto.Add(new DeviceLicenseDTO
+                    {
+                        Id = license.Id,
+                        DeviceId = license.HardwareVaultId,
+                        ImportedAt = license.ImportedAt,
+                        AppliedAt = license.AppliedAt,
+                        EndDate = license.EndDate,
+                        LicenseOrderId = license.LicenseOrderId,
+                        Data = license.Data,
+                    });
+                }
+
+                return new HesResponse<IList<DeviceLicenseDTO>>(deviceLicenseDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[{deviceId}] {ex.Message}");
+                return new HesResponse<IList<DeviceLicenseDTO>>(ex);
+            }
+        }
+
         #endregion
     }
 }

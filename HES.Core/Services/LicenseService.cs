@@ -388,6 +388,14 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task<List<HardwareVaultLicense>> GetActiveLicensesAsync(string vaultId)
+        {
+            return await _hardwareVaultLicenseRepository
+                .Query()
+                .Where(x => x.EndDate >= DateTime.UtcNow.Date && x.HardwareVaultId == vaultId)
+                .ToListAsync();
+        }
+
         public async Task<List<HardwareVaultLicense>> GetNotAppliedLicensesByHardwareVaultIdAsync(string vaultId)
         {
             return await _hardwareVaultLicenseRepository
