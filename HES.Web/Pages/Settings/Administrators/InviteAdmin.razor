@@ -1,0 +1,8 @@
+﻿<div class="form-group">
+    <label class="control-label text-gray">Email</label>
+    <input type="text" class="form-control" @bind="InvitedEmail" />
+</div>
+<div class="text-right">
+    <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+    <ButtonSpinner Class="btn btn-primary" Callback="@(async () => await  InviteAdminAsync())" Text="Invite" />
+</div>

@@ -81,6 +81,8 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 var login_result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: true);
                 if (login_result.Succeeded)
                 {
+                    user.EmailConfirmed = true;
+                    await _userManager.UpdateAsync(user);
                     _logger.LogInformation($"User {user} accepted the invitation.");         
                     return LocalRedirect("/");
                 }
