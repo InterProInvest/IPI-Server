@@ -5,6 +5,7 @@
         Profile,
         HardwareVault,
         WorkstationAccount,
-        Overview
+        Overview,
+        Activation
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,10 +26,12 @@ namespace HES.Web.Pages.Employees
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public ISharedAccountService SheredAccountSevice { get; set; }
+        [Inject] public IEmailSenderService EmailSenderService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public ILogger<CreateEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IJSRuntime JsRuntime { get; set; }
         [Inject] public IHubContext<EmployeesHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -41,148 +44,182 @@ namespace HES.Web.Pages.Employees
         public WorkstationAccountType WorkstationType { get; set; }
         public AccountType AccountType { get; set; }
 
-        private bool initialized = false;
-        private WizardStep wizardStep = WizardStep.Profile;
-        private string cssProfile = "wizard-item-process";
-        private string cssHardwareVault = "wizard-item-wait";
-        private string cssWorkstationAccount = "wizard-item-wait";
-        private string cssOverview = "wizard-item-wait";
-        private Employee employee;
-        private EditContext employeeContext;
-        private string hardwareVaultId;
-        private WorkstationAccount workstationAccount;
-        private EditContext workstationAccountContext;
-        private WorkstationDomain workstationDomain;
-        private EditContext workstationDomainContext;
-        private bool accountSkiped;
-        private string sharedAccountId;
+        public string WarningMessage { get; set; }
+        public bool Initialized { get; set; }
+        public WizardStep WizardStep { get; set; }
+        public Employee Employee { get; set; }
+        public EditContext EmployeeContext { get; set; }
+        public HardwareVault SelectedHardwareVault { get; set; }
+        public WorkstationAccount WorkstationAccount { get; set; }
+        public EditContext WorkstationAccountContext { get; set; }
+        public WorkstationDomain WorkstationDomain { get; set; }
+        public EditContext WorkstationDomainContext { get; set; }
+        public bool AccountSkiped { get; set; }
+        public string SharedAccountId { get; set; }
+        public string Code { get; set; }
+        public string InputType { get; private set; } = "Password";
+        public string Email { get; private set; }
 
         protected override async Task OnInitializedAsync()
-        {
-            await InitializeCollections();
-            await InitializeModels();
-            initialized = true;
-        }
-
-        private async Task InitializeCollections()
         {
             Companies = await OrgStructureService.GetCompaniesAsync();
             Departments = new List<Department>();
             Positions = await OrgStructureService.GetPositionsAsync();
             SharedAccounts = await SheredAccountSevice.GetWorkstationSharedAccountsAsync();
-            sharedAccountId = SharedAccounts.FirstOrDefault()?.Id;
-            var hardwareVaultsCount = await HardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>() { Filter = new HardwareVaultFilter() { Status = VaultStatus.Ready } });
-            HardwareVaults = await HardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>()
-            {
-                Skip = 0,
-                Take = hardwareVaultsCount,
-                SortedColumn = nameof(HardwareVault.Id),
-                SortDirection = ListSortDirection.Ascending,
-                SearchText = string.Empty,
-                Filter = new HardwareVaultFilter() { Status = VaultStatus.Ready }
-            });
-            hardwareVaultId = HardwareVaults.FirstOrDefault()?.Id;
-        }
+            SharedAccountId = SharedAccounts.FirstOrDefault()?.Id;
+            await LoadHardwareVaultsAsync();
 
-        private Task InitializeModels()
-        {
-            employee = new Employee() { Id = Guid.NewGuid().ToString() };
-            employeeContext = new EditContext(employee);
-            workstationAccount = new WorkstationAccount() { EmployeeId = employee.Id };
-            workstationAccountContext = new EditContext(workstationAccount);
-            workstationDomain = new WorkstationDomain() { EmployeeId = employee.Id };
-            workstationDomainContext = new EditContext(workstationDomain);
-            return Task.CompletedTask;
+            Employee = new Employee() { Id = Guid.NewGuid().ToString() };
+            EmployeeContext = new EditContext(Employee);
+            WorkstationAccount = new WorkstationAccount() { EmployeeId = Employee.Id };
+            WorkstationAccountContext = new EditContext(WorkstationAccount);
+            WorkstationDomain = new WorkstationDomain() { EmployeeId = Employee.Id };
+            WorkstationDomainContext = new EditContext(WorkstationDomain);
+
+            Initialized = true;
         }
 
         private async Task Next()
         {
-            switch (wizardStep)
+            switch (WizardStep)
             {
                 case WizardStep.Profile:
-                    var employeeNameExist = await EmployeeService.CheckEmployeeNameExistAsync(employee);
+                    var employeeNameExist = await EmployeeService.CheckEmployeeNameExistAsync(Employee);
                     if (employeeNameExist)
                     {
-                        EmployeeValidationErrorMessage.DisplayError(nameof(Employee.FirstName), $"{employee.FirstName} {employee.LastName} already exists.");
+                        EmployeeValidationErrorMessage.DisplayError(nameof(Core.Entities.Employee.FirstName), $"{Employee.FirstName} {Employee.LastName} already exists.");
                         return;
                     }
-                    var employeeIsValid = employeeContext.Validate();
+                    var employeeIsValid = EmployeeContext.Validate();
                     if (!employeeIsValid)
                         return;
-                    cssProfile = "wizard-item-finish";
-                    cssHardwareVault = "wizard-item-process";
-                    wizardStep = WizardStep.HardwareVault;
+                    WizardStep = WizardStep.HardwareVault;
                     break;
                 case WizardStep.HardwareVault:
-                    cssHardwareVault = "wizard-item-finish";
-                    cssWorkstationAccount = "wizard-item-process";
-                    wizardStep = WizardStep.WorkstationAccount;
+                    if (SelectedHardwareVault == null)
+                    {
+                        WarningMessage = "Please, select a vault.";
+                        break;
+                    }
+                    WizardStep = WizardStep.WorkstationAccount;
                     break;
                 case WizardStep.WorkstationAccount:
-                    cssWorkstationAccount = "wizard-item-finish";
-                    cssOverview = "wizard-item-process";
                     if (AccountType == AccountType.Personal)
                     {
                         if (WorkstationType == WorkstationAccountType.Domain)
                         {
-                            var workstationDomainIsValid = workstationDomainContext.Validate();
+                            var workstationDomainIsValid = WorkstationDomainContext.Validate();
                             if (!workstationDomainIsValid)
                                 return;
-                            workstationAccount.Type = WorkstationType;
+                            WorkstationAccount.Type = WorkstationType;
                         }
                         else
                         {
-                            var workstationAccountIsValid = workstationAccountContext.Validate();
+                            var workstationAccountIsValid = WorkstationAccountContext.Validate();
                             if (!workstationAccountIsValid)
                                 return;
-                            workstationDomain.Type = WorkstationType;
+                            WorkstationDomain.Type = WorkstationType;
                         }
                     }
-                    wizardStep = WizardStep.Overview;
+                    WizardStep = WizardStep.Overview;
                     break;
                 case WizardStep.Overview:
                     await CreateAsync();
+                    if (SelectedHardwareVault == null)
+                    {
+                        ToastService.ShowToast("Employee created.", ToastLevel.Success);
+                        await ModalDialogService.CloseAsync();
+                        break;
+                    }
+                    Code = await HardwareVaultService.GetVaultActivationCodeAsync(SelectedHardwareVault.Id);
+                    Email = Employee.Email;
+                    WizardStep = WizardStep.Activation;
+                    break;
+                case WizardStep.Activation:
+                    await ModalDialogService.CloseAsync();
                     break;
             }
         }
 
         private void Back()
         {
-            switch (wizardStep)
+            switch (WizardStep)
             {
                 case WizardStep.Profile:
                     break;
                 case WizardStep.HardwareVault:
-                    cssProfile = "wizard-item-process";
-                    cssHardwareVault = "wizard-item-wait";
-                    wizardStep = WizardStep.Profile;
+                    WizardStep = WizardStep.Profile;
                     break;
                 case WizardStep.WorkstationAccount:
-                    cssHardwareVault = "wizard-item-process";
-                    cssWorkstationAccount = "wizard-item-wait";
-                    wizardStep = WizardStep.HardwareVault;
+                    WizardStep = WizardStep.HardwareVault;
                     break;
                 case WizardStep.Overview:
-                    accountSkiped = false;
-                    cssWorkstationAccount = "wizard-item-process";
-                    cssOverview = "wizard-item-wait";
-                    wizardStep = WizardStep.WorkstationAccount;
+                    AccountSkiped = false;
+                    WizardStep = WizardStep.WorkstationAccount;
                     break;
             }
         }
 
+        #region Hardware Vault
+
+        public int TotalRecords { get; set; }
+        public string SearchText { get; set; } = string.Empty;
+
+        private async Task LoadHardwareVaultsAsync()
+        {
+            var filter = new HardwareVaultFilter() { Status = VaultStatus.Ready };
+            TotalRecords = await HardwareVaultService.GetVaultsCountAsync(new DataLoadingOptions<HardwareVaultFilter>
+            {
+                SearchText = SearchText,
+                Filter = filter
+            });
+
+            HardwareVaults = await HardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>
+            {
+                Take = TotalRecords,
+                SortedColumn = nameof(HardwareVault.Id),
+                SortDirection = ListSortDirection.Ascending,
+                SearchText = SearchText,
+                Filter = filter
+            });
+
+            SelectedHardwareVault = null;
+            StateHasChanged();
+        }
+
+        private async Task SelectedItemChangedAsync(HardwareVault hardwareVault)
+        {
+            await InvokeAsync(() =>
+            {
+                SelectedHardwareVault = hardwareVault;
+                StateHasChanged();
+            });
+        }
+
+        private async Task SearchTextChangedAsync(string searchText)
+        {
+            SearchText = searchText;
+            await LoadHardwareVaultsAsync();
+        }
+
+        #endregion
+
         private void SkipAccount()
         {
-            cssWorkstationAccount = "wizard-item-finish";
-            cssOverview = "wizard-item-process";
-            accountSkiped = true;
-            wizardStep = WizardStep.Overview;
+            AccountSkiped = true;
+            WizardStep = WizardStep.Overview;
+        }
+
+        private void SkipVault()
+        {
+            SelectedHardwareVault = null;
+            WizardStep = WizardStep.WorkstationAccount;
         }
 
         private async Task CompanyChangedAsync(ChangeEventArgs args)
         {
             Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(args.Value.ToString());
-            employee.DepartmentId = Departments.FirstOrDefault()?.Id;
+            Employee.DepartmentId = Departments.FirstOrDefault()?.Id;
         }
 
         private void AccountTypeChanged(AccountType accountType)
@@ -196,12 +233,12 @@ namespace HES.Web.Pages.Employees
             {
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    await EmployeeService.CreateEmployeeAsync(employee);
+                    await EmployeeService.CreateEmployeeAsync(Employee);
 
-                    if (hardwareVaultId != null)
-                        await EmployeeService.AddHardwareVaultAsync(employee.Id, hardwareVaultId);
+                    if (SelectedHardwareVault != null)
+                        await EmployeeService.AddHardwareVaultAsync(Employee.Id, SelectedHardwareVault.Id);
 
-                    if (!accountSkiped)
+                    if (!AccountSkiped)
                     {
                         if (AccountType == AccountType.Personal)
                         {
@@ -210,28 +247,26 @@ namespace HES.Web.Pages.Employees
                                 case WorkstationAccountType.Local:
                                 case WorkstationAccountType.AzureAD:
                                 case WorkstationAccountType.Microsoft:
-                                    await EmployeeService.CreateWorkstationAccountAsync(workstationAccount);
+                                    await EmployeeService.CreateWorkstationAccountAsync(WorkstationAccount);
                                     break;
                                 case WorkstationAccountType.Domain:
-                                    await EmployeeService.CreateWorkstationAccountAsync(workstationDomain);
+                                    await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
                                     break;
                             }
                         }
                         else
                         {
-                            await EmployeeService.AddSharedAccountAsync(employee.Id, sharedAccountId);
+                            await EmployeeService.AddSharedAccountAsync(Employee.Id, SharedAccountId);
                         }
                     }
 
                     transactionScope.Complete();
                 }
 
-                if (hardwareVaultId != null)
-                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(hardwareVaultId);
+                if (SelectedHardwareVault != null)
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
 
-                ToastService.ShowToast("Employee created.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
-                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
@@ -239,6 +274,19 @@ namespace HES.Web.Pages.Employees
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
             }
+        }
+
+        private async Task SendEmailAsync()
+        {
+            if (string.IsNullOrWhiteSpace(Email))
+                return;
+
+            await EmailSenderService.SendHardwareVaultActivationCodeAsync(new Employee() { FirstName = Employee.FirstName, LastName = Employee.LastName, Email = Email }, Code);
+        }
+
+        private async Task CopyToClipboardAsync()
+        {
+            await JsRuntime.InvokeVoidAsync("copyToClipboard");
         }
     }
 }
