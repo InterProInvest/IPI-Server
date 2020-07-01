@@ -247,5 +247,16 @@ namespace HES.Core.Services
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
             await remoteDevice.LockDeviceCode(key, code, 3);
         }
+
+        public async Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        {
+            if (!vault.IsStatusApplied)
+            {
+                var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
+                var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+                await remoteDevice.LockDeviceCode(key, code, 3);
+                await _hardwareVaultService.SetStatusAppliedAsync(vault);
+            }
+        }
     }
 }

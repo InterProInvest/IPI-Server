@@ -29,6 +29,7 @@ namespace HES.Core.Interfaces
         Task UpdateHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault);
         Task<HardwareVaultActivation> CreateVaultActivationAsync(string vaultId);
         Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
+        Task SetStatusAppliedAsync(HardwareVault hardwareVault);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);

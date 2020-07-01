@@ -7,5 +7,6 @@ namespace HES.Core.Interfaces
     public interface IRemoteTaskService
     {
         Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, TaskOperation operation);
+        Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVault vault);
     }
 }

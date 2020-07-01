@@ -14,6 +14,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -169,6 +170,7 @@ namespace HES.Core.Services
                     await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Suspend);
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Suspended:
+                    await _remoteTaskService.SuspendVaultAsync(remoteDevice, vault);
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Deactivated:
                     //await CheckIsNeedBackupAsync(remoteDevice, vault);

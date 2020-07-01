@@ -46,6 +46,7 @@ namespace HES.Web.Pages.Employees
 
         public string WarningMessage { get; set; }
         public bool Initialized { get; set; }
+
         public WizardStep WizardStep { get; set; }
         public Employee Employee { get; set; }
         public EditContext EmployeeContext { get; set; }
@@ -54,10 +55,10 @@ namespace HES.Web.Pages.Employees
         public EditContext WorkstationAccountContext { get; set; }
         public WorkstationDomain WorkstationDomain { get; set; }
         public EditContext WorkstationDomainContext { get; set; }
-        public bool AccountSkiped { get; set; }
         public string SharedAccountId { get; set; }
-        public string Code { get; set; }
+        public bool AccountSkiped { get; set; }
         public string InputType { get; private set; } = "Password";
+        public string Code { get; set; }
         public string Email { get; private set; }
 
         protected override async Task OnInitializedAsync()
@@ -136,6 +137,7 @@ namespace HES.Web.Pages.Employees
                     WizardStep = WizardStep.Activation;
                     break;
                 case WizardStep.Activation:
+                    ToastService.ShowToast("Employee created.", ToastLevel.Success);
                     await ModalDialogService.CloseAsync();
                     break;
             }
