@@ -157,15 +157,18 @@ namespace HES.Core.Hubs
         // Incoming request
         public async Task<HesResponse> OnDeviceConnected(BleDeviceDto dto)
         {
-            // Workstation not approved
-            if (!await _workstationService.CheckIsApprovedAsync(GetWorkstationId()))
-                return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
-
-            if (dto?.DeviceSerialNo == null)
-                throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
-
             try
             {
+                // Workstation not approved
+                if (!await _workstationService.CheckIsApprovedAsync(GetWorkstationId()))
+                    return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved.");
+
+                if (dto?.DeviceSerialNo == null)
+                    throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
+
+                //if (dto.LicenseInfo == 0)
+                //    throw new Exception("Hardware vault no working licenses.");
+
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
                 await OnDevicePropertiesChanged(dto);
                 await CheckVaultStatusAsync(dto);
@@ -202,10 +205,7 @@ namespace HES.Core.Hubs
         public async Task<HesResponse> OnDevicePropertiesChanged(BleDeviceDto dto)
         {
             try
-            {
-                if (dto == null)
-                    throw new ArgumentNullException(nameof(dto));
-
+            {              
                 if (dto.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
@@ -227,7 +227,8 @@ namespace HES.Core.Hubs
             if (vault == null)
                 return;
 
-            if (vault.Status == Enums.VaultStatus.Deactivated || vault.Status == Enums.VaultStatus.Compromised)
+            if (vault.Status == Enums.VaultStatus.Deactivated ||vault.Status == Enums.VaultStatus.Compromised ||
+                vault.Status == Enums.VaultStatus.Suspended || vault.Status == Enums.VaultStatus.Reserved)
                 await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
         }
 

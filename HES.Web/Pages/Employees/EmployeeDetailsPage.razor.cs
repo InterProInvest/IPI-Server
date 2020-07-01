@@ -184,7 +184,7 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Set as workstation account", body);
+            await ModalDialogService.ShowAsync("Account", body);
         }
 
         private async Task OpenDialogEditPersonalAccountAsync()

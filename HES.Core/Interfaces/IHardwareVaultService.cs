@@ -24,11 +24,11 @@ namespace HES.Core.Interfaces
         Task<List<HardwareVault>> UpdateRangeVaultsAsync(IList<HardwareVault> vaults);
         Task UnchangedVaultAsync(HardwareVault vault);
         Task UpdateAfterWipeAsync(string vaultId);
-        Task UpdateAfterLinkAsync(string vaultId, string masterPassword);
         Task UpdateHardwareVaultInfoAsync(BleDeviceDto dto);
-        Task UpdateHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault);
+        Task ChangeHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault);
         Task<HardwareVaultActivation> CreateVaultActivationAsync(string vaultId);
         Task ChangeVaultActivationStatusAsync(string vaultId, HardwareVaultActivationStatus status);
+        Task SetStatusAppliedAsync(HardwareVault hardwareVault);
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);

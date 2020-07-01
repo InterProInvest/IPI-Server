@@ -187,15 +187,5 @@ namespace HES.Tests.Services
             Assert.Equal(VaultStatus.Ready, result.Status);
             Assert.True(result.HasNewLicense);
         }
-
-        [Fact, Order(15)]
-        public async Task UpdateAfterLinkAsync()
-        {
-            await _hardwareVaultService.UpdateAfterLinkAsync(_testingOptions.HardwareVaultId, "TestMasterPassword");
-
-            var result = await _hardwareVaultService.GetVaultByIdAsync(_testingOptions.HardwareVaultId);
-
-            Assert.Equal("TestMasterPassword", result.MasterPassword);
-        }
     }
 }

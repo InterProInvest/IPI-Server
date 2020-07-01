@@ -51,6 +51,7 @@ namespace HES.Core.Entities
         public uint Timestamp { get; set; }
 
         public bool HasNewLicense { get; set; }
+        public bool IsStatusApplied { get; set; }
 
 
         [Display(Name = "License Status")]

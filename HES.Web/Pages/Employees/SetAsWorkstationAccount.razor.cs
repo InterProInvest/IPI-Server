@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Employees
                 var employee = await EmployeeService.GetEmployeeByIdAsync(Account.Employee.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(employee.Id));
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Workstation account changed.", ToastLevel.Success);
+                ToastService.ShowToast("Account changed.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync("PageUpdated", Account.EmployeeId, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }

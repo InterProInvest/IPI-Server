@@ -415,15 +415,8 @@ namespace HES.Core.Services
 
             vault.EmployeeId = employeeId;
             vault.Status = VaultStatus.Reserved;
-
-            // Create a link before creating an account
-            var linkTask = new HardwareVaultTask()
-            {
-                HardwareVaultId = vaultId,
-                Password = _dataProtectionService.Encrypt(GenerateMasterPassword()),
-                Operation = TaskOperation.Link,
-                CreatedAt = DateTime.UtcNow
-            };
+            vault.IsStatusApplied = false;
+            vault.MasterPassword = _dataProtectionService.Encrypt(GenerateMasterPassword());
 
             var accounts = await GetAccountsByEmployeeIdAsync(employeeId);
             var tasks = new List<HardwareVaultTask>();
@@ -447,7 +440,6 @@ namespace HES.Core.Services
             {
                 await _hardwareVaultService.UpdateVaultAsync(vault);
                 await _hardwareVaultService.CreateVaultActivationAsync(vaultId);
-                await _hardwareVaultTaskService.AddTaskAsync(linkTask);
 
                 if (tasks.Count > 0)
                     await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
