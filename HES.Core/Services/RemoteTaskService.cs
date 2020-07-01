@@ -23,14 +23,14 @@ namespace HES.Core.Services
         private readonly IAccountService _accountService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly ILogger<RemoteTaskService> _logger;
-        private readonly IHubContext<EmployeeDetailsHub> _hubContext;
+        private readonly IHubContext<RefreshHub> _hubContext;
 
         public RemoteTaskService(IHardwareVaultService hardwareVaultService,
                                  IHardwareVaultTaskService hardwareVaultTaskService,
                                  IAccountService accountService,
                                  IDataProtectionService dataProtectionService,
                                  ILogger<RemoteTaskService> logger,
-                                 IHubContext<EmployeeDetailsHub> hubContext)
+                                 IHubContext<RefreshHub> hubContext)
         {
             _hardwareVaultService = hardwareVaultService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
@@ -72,7 +72,7 @@ namespace HES.Core.Services
             }
 
             if (task.HardwareVaultId != null)
-                await _hubContext.Clients.All.SendAsync("VaultSynced", task.HardwareVault.EmployeeId);
+                await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultSynced, task.HardwareVault.EmployeeId);
 
             // Delete task
             await _hardwareVaultTaskService.DeleteTaskAsync(task);

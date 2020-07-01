@@ -22,7 +22,7 @@ namespace HES.Web.Pages.Employees
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<AddHardwareVault> Logger { get; set; }
-        [Inject] IHubContext<EmployeeDetailsHub> HubContext { get; set; }
+        [Inject] IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string EmployeeId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
@@ -91,7 +91,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault added", ToastLevel.Success);      
-                await HubContext.Clients.All.SendAsync("PageUpdated", EmployeeId, ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

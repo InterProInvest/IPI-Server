@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Workstations
                     break;
                 case "Online":
                     //
-                    break;              
+                    break;
             }
 
 
@@ -85,19 +85,14 @@ namespace HES.Web.Pages.Workstations
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/workstationsHub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>("PageUpdated", async (connectionId) =>
+            hubConnection.On(RefreshPage.Workstations, async () =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId)
-                {
-                    await WorkstationService.DetachWorkstationsAsync(MainTableService.Entities);
-                    await MainTableService.LoadTableDataAsync();
-                    StateHasChanged();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                await WorkstationService.DetachWorkstationsAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

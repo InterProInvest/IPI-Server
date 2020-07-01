@@ -1,6 +1,8 @@
 ﻿using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -13,9 +15,13 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public ILogger<ChangeStatus> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Parameter] public string HardwareVaultId { get; set; }
         [Parameter] public VaultStatus VaultStatus { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
+
 
         public string StatusDescription { get; set; }
         public VaultStatusReason StatusReason { get; set; } = VaultStatusReason.Lost;
@@ -43,7 +49,7 @@ namespace HES.Web.Pages.HardwareVaults
                         ToastService.ShowToast("Vault compromised.", ToastLevel.Success);
                         break;
                 }
-
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVaultId);
                 await ModalDialogService.CloseAsync();
             }

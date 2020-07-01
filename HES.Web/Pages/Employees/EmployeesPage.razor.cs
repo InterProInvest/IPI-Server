@@ -85,19 +85,14 @@ namespace HES.Web.Pages.Employees
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/employeesHub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>("PageUpdated", async (connectionId) =>
+            hubConnection.On(RefreshPage.Employees, async () =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId)
-                {            
-                    await EmployeeService.DetachEmployeeAsync(MainTableService.Entities);
-                    await MainTableService.LoadTableDataAsync();
-                    StateHasChanged();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                await EmployeeService.DetachEmployeeAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

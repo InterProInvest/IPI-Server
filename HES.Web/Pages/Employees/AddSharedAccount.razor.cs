@@ -23,7 +23,7 @@ namespace HES.Web.Pages.Employees
         [Inject] IToastService ToastService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] ILogger<AddSharedAccount> Logger { get; set; }
-        [Inject] IHubContext<EmployeeDetailsHub> HubContext { get; set; }
+        [Inject] IHubContext<RefreshHub> HubContext { get; set; }
 
         public List<SharedAccount> SharedAccounts { get; set; }
         public SharedAccount SelectedSharedAccount { get; set; }
@@ -53,7 +53,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account added and will be recorded when the device is connected to the server.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", EmployeeId, ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

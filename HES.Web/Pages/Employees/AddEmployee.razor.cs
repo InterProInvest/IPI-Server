@@ -21,7 +21,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public IHubContext<EmployeesHub> HubContext { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
         public List<ActiveDirectoryUser> Users { get; set; }
@@ -73,7 +73,7 @@ namespace HES.Web.Pages.Employees
 
                 await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
                 ToastService.ShowToast("Employee imported.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

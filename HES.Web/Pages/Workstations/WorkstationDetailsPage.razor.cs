@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -137,18 +138,17 @@ namespace HES.Web.Pages.Workstations
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/workstationDetailsHub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string, string>("PageUpdated", async (workstationId, connectionId) =>
+            hubConnection.On<string>(RefreshPage.WorkstationsDetails, async (entityId) =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId && workstationId == WorkstationId)
-                {
-                    await WorkstationService.DetachdProximityVaultsAsync(WorkstationProximityVaults);
-                    await LoadTableDataAsync();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                if (entityId != WorkstationId)
+                    return;
+
+                await WorkstationService.DetachdProximityVaultsAsync(WorkstationProximityVaults);
+                await LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

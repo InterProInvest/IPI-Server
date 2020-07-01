@@ -23,7 +23,7 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<CreateSharedAccount> Logger { get; set; }
-        [Inject] public IHubContext<SharedAccountsHub> HubContext { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
         public SharedAccount SharedAccount { get; set; }
@@ -55,7 +55,7 @@ namespace HES.Web.Pages.SharedAccounts
 
                 await SharedAccountService.CreateSharedAccountAsync(SharedAccount);
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -105,7 +105,7 @@ namespace HES.Web.Pages.SharedAccounts
                 }
 
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

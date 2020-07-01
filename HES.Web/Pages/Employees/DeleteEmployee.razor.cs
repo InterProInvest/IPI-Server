@@ -16,7 +16,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<DeleteEmployee> Logger { get; set; }
-        [Inject] public IHubContext<EmployeesHub> HubContext { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public Employee Employee { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -33,7 +33,7 @@ namespace HES.Web.Pages.Employees
             try
             {
                 await EmployeeService.DeleteEmployeeAsync(Employee.Id);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 ToastService.ShowToast("Employee removed.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

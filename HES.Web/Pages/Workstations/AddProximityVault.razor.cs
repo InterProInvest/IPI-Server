@@ -23,7 +23,7 @@ namespace HES.Web.Pages.Workstations
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<AddProximityVault> Logger { get; set; }
-        [Inject] IHubContext<WorkstationDetailsHub> HubContext { get; set; }
+        [Inject] IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string WorkstationId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
@@ -98,7 +98,7 @@ namespace HES.Web.Pages.Workstations
                 await RemoteWorkstationConnectionsService.UpdateProximitySettingsAsync(WorkstationId, await WorkstationService.GetProximitySettingsAsync(WorkstationId));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault added", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", WorkstationId, ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.WorkstationsDetails, WorkstationId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

@@ -4,12 +4,13 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 {
-    public partial class HardwareVaultAccessProfilePage : ComponentBase
+    public partial class HardwareVaultAccessProfilePage : ComponentBase, IDisposable
     {
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
@@ -32,16 +33,11 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.HardwareVaultProfiles, async (connectionId) =>
+            hubConnection.On(RefreshPage.HardwareVaultProfiles, async () =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId)
-                {
-                    await HardwareVaultService.DetachProfilesAsync(MainTableService.Entities);
-                    await MainTableService.LoadTableDataAsync();
-                    StateHasChanged();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                await HardwareVaultService.DetachProfilesAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();
@@ -96,6 +92,11 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             };
 
             await MainTableService.ShowModalAsync("Details Profile", body, ModalDialogSize.Default);
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }
