@@ -296,31 +296,29 @@ namespace HES.Web.Pages.Employees
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/employeeDetailsHub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string, string>("PageUpdated", async (employeeId, connectionId) =>
+            hubConnection.On<string>(RefreshPage.EmployeesDetails, async (employeeId) =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId && employeeId == EmployeeId)
-                {
-                    await EmployeeService.DetachEmployeeAsync(Employee);
-                    await LoadEmployeeAsync();
-                    await EmployeeService.DetachdAccountAsync(Accounts);
-                    await LoadTableDataAsync();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                if (employeeId != EmployeeId)
+                    return;
+
+                await EmployeeService.DetachEmployeeAsync(Employee);
+                await LoadEmployeeAsync();
+                await EmployeeService.DetachdAccountAsync(Accounts);
+                await LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
-            hubConnection.On<string>("VaultSynced", async (employeeId) =>
+            hubConnection.On<string>(RefreshPage.EmployeesDetailsVaultSynced, async (employeeId) =>
             {
                 if (employeeId == EmployeeId)
-                {
-                    await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
-                    await EmployeeService.DetachEmployeeAsync(Employee);
-                    await LoadEmployeeAsync();        
-                    ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
-                }
+                    return;
+                await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
+                await EmployeeService.DetachEmployeeAsync(Employee);
+                await LoadEmployeeAsync();
+                ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

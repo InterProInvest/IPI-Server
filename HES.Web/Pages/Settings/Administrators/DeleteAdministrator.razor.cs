@@ -26,7 +26,7 @@ namespace HES.Web.Pages.Settings.Administrators
             {
                 await ApplicationUserService.DeleteUserAsync(ApplicationUser.Id);
                 ToastService.ShowToast("Administrator deleted.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync(RefreshPage.Administrators, ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

@@ -26,7 +26,7 @@ namespace HES.Web.Pages.Templates
             {
                 await TemplateService.DeleteTemplateAsync(Template.Id);
                 ToastService.ShowToast("Template deleted.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync(RefreshPage.Templates, ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

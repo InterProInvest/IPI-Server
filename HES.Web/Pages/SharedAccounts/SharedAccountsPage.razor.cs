@@ -96,19 +96,14 @@ namespace HES.Web.Pages.SharedAccounts
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/sharedAccountsHub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>("PageUpdated", async (connectionId) =>
+            hubConnection.On(RefreshPage.SharedAccounts, async () =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId)
-                {
-                    await SharedAccountService.DetachSharedAccountAsync(MainTableService.Entities);
-                    await MainTableService.LoadTableDataAsync();
-                    StateHasChanged();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                await SharedAccountService.DetachSharedAccountAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

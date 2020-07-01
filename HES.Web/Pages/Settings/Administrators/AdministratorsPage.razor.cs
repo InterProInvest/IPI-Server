@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Administrators
 {
-    public partial class AdministratorsPage : ComponentBase
+    public partial class AdministratorsPage : ComponentBase, IDisposable
     {
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
         [Inject] public IApplicationUserService ApplicationUserService { get; set; }
@@ -42,16 +42,11 @@ namespace HES.Web.Pages.Settings.Administrators
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Administrators, async (connectionId) =>
+            hubConnection.On(RefreshPage.Administrators, async () =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId)
-                {
-                    await ApplicationUserService.DetachUsersAsync(MainTableService.Entities);
-                    await MainTableService.LoadTableDataAsync();
-                    StateHasChanged();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                await ApplicationUserService.DetachUsersAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();
@@ -106,6 +101,11 @@ namespace HES.Web.Pages.Settings.Administrators
             };
 
             await MainTableService.ShowModalAsync("Delete Administrator", body, ModalDialogSize.Default);
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }

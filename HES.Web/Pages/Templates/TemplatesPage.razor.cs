@@ -4,12 +4,13 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Templates
 {
-    public partial class TemplatesPage : ComponentBase
+    public partial class TemplatesPage : ComponentBase, IDisposable
     {
         [Inject] public ITemplateService TemplateService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
@@ -32,16 +33,11 @@ namespace HES.Web.Pages.Templates
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Templates, async (connectionId) =>
+            hubConnection.On(RefreshPage.Templates, async () =>
             {
-                var id = hubConnection.ConnectionId;
-                if (id != connectionId)
-                {
-                    await TemplateService.DetachTemplatesAsync(MainTableService.Entities);
-                    await MainTableService.LoadTableDataAsync();
-                    StateHasChanged();
-                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-                }
+                await TemplateService.DetachTemplatesAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();
@@ -83,6 +79,11 @@ namespace HES.Web.Pages.Templates
             };
 
             await MainTableService.ShowModalAsync("Delete Template", body, ModalDialogSize.Default);
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }

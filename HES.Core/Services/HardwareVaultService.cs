@@ -97,6 +97,19 @@ namespace HES.Core.Services
                     .ToListAsync();
         }
 
+        public async Task DetachVaultAsync(HardwareVault vault)
+        {
+            await _hardwareVaultRepository.DetachedAsync(vault);
+        }
+
+        public async Task DetachVaultsAsync(List<HardwareVault> vaults)
+        {
+            foreach (var item in vaults)
+            {
+                await DetachVaultAsync(item);
+            }
+        }
+
         public async Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
         {
             var query = _hardwareVaultRepository

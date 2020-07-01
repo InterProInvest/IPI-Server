@@ -1,8 +1,10 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -13,9 +15,13 @@ namespace HES.Web.Pages.HardwareVaults
     {
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public ILogger<EditRfid> Logger { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Parameter] public string HardwareVaultId { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
+
 
         public HardwareVault HardwareVault { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
@@ -46,6 +52,7 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 await HardwareVaultService.UpdateVaultAsync(HardwareVault);
                 ToastService.ShowToast("RFID updated.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

@@ -3,20 +3,23 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class HardwareVaultsPage : ComponentBase
+    public partial class HardwareVaultsPage : ComponentBase, IDisposable
     {
         [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<HardwareVaultsPage> Logger { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
+        private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
@@ -44,6 +47,23 @@ namespace HES.Web.Pages.HardwareVaults
 
             await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
             await BreadcrumbsService.SetHardwareVaults();
+            await InitializeHubAsync();
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On(RefreshPage.Templates, async () =>
+            {
+                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            await hubConnection.StartAsync();
         }
 
         public async Task ImportVaultsAsync()
@@ -67,6 +87,7 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 builder.OpenComponent(0, typeof(EditRfid));
                 builder.AddAttribute(1, nameof(EditRfid.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(EditRfid.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -80,6 +101,7 @@ namespace HES.Web.Pages.HardwareVaults
                 builder.OpenComponent(0, typeof(ChangeStatus));
                 builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Suspended);
+                builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -93,6 +115,7 @@ namespace HES.Web.Pages.HardwareVaults
                 builder.OpenComponent(0, typeof(ChangeStatus));
                 builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Active);
+                builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -106,6 +129,7 @@ namespace HES.Web.Pages.HardwareVaults
                 builder.OpenComponent(0, typeof(ChangeStatus));
                 builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Compromised);
+                builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -130,10 +154,16 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 builder.OpenComponent(0, typeof(ChangeProfile));
                 builder.AddAttribute(1, nameof(ChangeProfile.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(ChangeProfile.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
 
             await MainTableService.ShowModalAsync("Profile", body);
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }

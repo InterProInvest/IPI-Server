@@ -20,7 +20,7 @@ namespace HES.Web.Pages.Workstations
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<ApproveWorkstation> Logger { get; set; }
-        [Inject] public IHubContext<WorkstationsHub> HubContext { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public Workstation Workstation { get; set; }
         [Parameter] public string ConnectionId { get; set; }
@@ -53,7 +53,7 @@ namespace HES.Web.Pages.Workstations
                 await WorkstationService.ApproveWorkstationAsync(Workstation);
                 await RemoteWorkstationConnectionsService.UpdateRfidStateAsync(Workstation.Id, Workstation.RFID);          
                 ToastService.ShowToast("Workstation updated.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Workstations);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

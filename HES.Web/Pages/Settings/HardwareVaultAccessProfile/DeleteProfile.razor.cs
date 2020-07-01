@@ -26,7 +26,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             {
                 await HardwareVaultService.DeleteProfileAsync(AccessProfile.Id);
                 ToastService.ShowToast("Hardware vault profile deleted.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync(RefreshPage.Templates, ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

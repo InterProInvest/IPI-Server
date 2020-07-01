@@ -19,7 +19,7 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
-        [Inject] public IHubContext<SharedAccountsHub> HubContext { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public SharedAccount Account { get; set; }
 
@@ -38,7 +38,7 @@ namespace HES.Web.Pages.SharedAccounts
                 var vaults = await SharedAccountService.EditSharedAccountAsync(Account);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
                 ToastService.ShowToast("Shared account updated.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync("PageUpdated", ConnectionId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
