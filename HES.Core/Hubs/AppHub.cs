@@ -205,10 +205,7 @@ namespace HES.Core.Hubs
         public async Task<HesResponse> OnDevicePropertiesChanged(BleDeviceDto dto)
         {
             try
-            {
-                if (dto == null)
-                    throw new ArgumentNullException(nameof(dto));
-
+            {              
                 if (dto.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
@@ -230,9 +227,8 @@ namespace HES.Core.Hubs
             if (vault == null)
                 return;
 
-            if (vault.Status == Enums.VaultStatus.Deactivated ||
-                vault.Status == Enums.VaultStatus.Compromised ||
-                vault.Status == Enums.VaultStatus.Suspended)
+            if (vault.Status == Enums.VaultStatus.Deactivated ||vault.Status == Enums.VaultStatus.Compromised ||
+                vault.Status == Enums.VaultStatus.Suspended || vault.Status == Enums.VaultStatus.Reserved)
                 await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
         }
 

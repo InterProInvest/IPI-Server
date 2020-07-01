@@ -153,14 +153,14 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new HideezException(HideezErrorCode.HesDeviceNotFound);
 
-            await _hardwareVaultService.UpdateHardwareVaultStatusAsync(remoteDevice, vault);
+            await _hardwareVaultService.ChangeHardwareVaultStatusAsync(remoteDevice, vault);
 
             switch (vault.Status)
             {
                 case VaultStatus.Ready:
                     throw new HideezException(HideezErrorCode.HesDeviceNotAssignedToAnyUser);
                 case VaultStatus.Reserved:
-                    await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Link);
+                    await _remoteTaskService.LinkVaultAsync(remoteDevice, vault);
                     break;
                 case VaultStatus.Active:
                     await CheckPassphraseAsync(remoteDevice, vault.Id);
@@ -174,9 +174,7 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Deactivated:
                     //await CheckIsNeedBackupAsync(remoteDevice, vault);
-                    if (!remoteDevice.AccessLevel.IsLinkRequired)
-                        await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword)));
-                    await _hardwareVaultService.UpdateAfterWipeAsync(vault.Id);
+                    await _remoteTaskService.WipeVaultAsync(remoteDevice, vault);
                     throw new HideezException(HideezErrorCode.DeviceHasBeenWiped);
                 case VaultStatus.Compromised:
                     throw new HideezException(HideezErrorCode.HesDeviceCompromised);

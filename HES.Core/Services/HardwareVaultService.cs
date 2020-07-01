@@ -487,6 +487,7 @@ namespace HES.Core.Services
             vault.StatusDescription = null;
             vault.MasterPassword = null;
             vault.HasNewLicense = true;
+            vault.IsStatusApplied = false;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -497,42 +498,27 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task UpdateAfterLinkAsync(string vaultId, string masterPassword)
+        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto device)
         {
-            if (vaultId == null)
-                throw new ArgumentNullException(nameof(vaultId));
-
-            var vault = await GetVaultByIdAsync(vaultId);
-
+            var vault = await _hardwareVaultRepository.GetByIdAsync(device.DeviceSerialNo);
             if (vault == null)
-                throw new Exception($"Vault {vault.Id} not found");
+                throw new Exception($"Vault {device.DeviceSerialNo} not found");
 
-            vault.MasterPassword = masterPassword;
-
-            await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.MasterPassword) });
-        }
-
-        public async Task UpdateHardwareVaultInfoAsync(BleDeviceDto bleDevice)
-        {
-            var vault = await _hardwareVaultRepository.GetByIdAsync(bleDevice.DeviceSerialNo);
-            if (vault == null)
-                throw new Exception($"Vault {bleDevice.DeviceSerialNo} not found");
-
-            vault.Timestamp = bleDevice.Timestamp;
-            vault.Battery = bleDevice.Battery;
-            vault.Firmware = bleDevice.FirmwareVersion;
+            vault.Timestamp = device.Timestamp;
+            vault.Battery = device.Battery;
+            vault.Firmware = device.FirmwareVersion;
             vault.LastSynced = DateTime.UtcNow;
 
             await _hardwareVaultRepository.UpdateAsync(vault);
         }
 
-        public async Task UpdateHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
-        {     
+        public async Task ChangeHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        {
             if (remoteDevice.IsLocked)
             {
                 if (!remoteDevice.IsCanUnlock &&
                     (vault.Status == VaultStatus.Active ||
-                    vault.Status == VaultStatus.Reserved || 
+                    vault.Status == VaultStatus.Reserved ||
                     vault.Status == VaultStatus.Suspended))
                 {
                     vault.Status = VaultStatus.Locked;
@@ -543,18 +529,20 @@ namespace HES.Core.Services
             if (!remoteDevice.IsLocked &&
                 !remoteDevice.IsCanUnlock &&
                 !remoteDevice.AccessLevel.IsLinkRequired &&
-                vault.IsStatusApplied &&
-                (vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved))
+                vault.IsStatusApplied && (vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved))
             {
-                var accessParams = await GetAccessParamsAsync(vault.Id);
-                var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
-                await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
+                if (vault.Status == VaultStatus.Reserved)
+                {
+                    var accessParams = await GetAccessParamsAsync(vault.Id);
+                    var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+                    await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
+                }
 
                 await ChangeVaultActivationStatusAsync(vault.Id, HardwareVaultActivationStatus.Activated);
 
                 vault.Status = VaultStatus.Active;
                 await _hardwareVaultRepository.UpdateAsync(vault);
-            }         
+            }
         }
 
         public async Task SetStatusAppliedAsync(HardwareVault hardwareVault)
@@ -640,12 +628,12 @@ namespace HES.Core.Services
             vault.Status = VaultStatus.Suspended;
             vault.StatusReason = VaultStatusReason.None;
             vault.StatusDescription = null;
+            vault.IsStatusApplied = false;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await CreateVaultActivationAsync(vaultId);
                 await _hardwareVaultRepository.UpdateAsync(vault);
-                await _hardwareVaultTaskService.AddSuspendAsync(vaultId);
 
                 transactionScope.Complete();
             }
@@ -672,7 +660,6 @@ namespace HES.Core.Services
             {
                 await CreateVaultActivationAsync(vaultId);
                 await _hardwareVaultRepository.UpdateAsync(vault);
-                //await _hardwareVaultTaskService.AddSuspendAsync(vaultId);
 
                 transactionScope.Complete();
             }

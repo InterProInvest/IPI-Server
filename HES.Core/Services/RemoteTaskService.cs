@@ -57,18 +57,6 @@ namespace HES.Core.Services
                 case TaskOperation.Primary:
                     await _accountService.UpdateAfterAccountModifyAsync(task.Account, task.Timestamp);
                     break;
-                case TaskOperation.Profile:
-                case TaskOperation.Suspend:
-                    break;
-                case TaskOperation.Wipe:
-                    await _hardwareVaultService.UpdateAfterWipeAsync(task.HardwareVaultId);
-                    break;
-                case TaskOperation.Link:
-                    await _hardwareVaultService.UpdateAfterLinkAsync(task.HardwareVaultId, task.Password);
-                    break;
-                default:
-                    _logger.LogCritical($"Unhandled task operation ({task.Operation})");
-                    break;
             }
 
             if (task.HardwareVaultId != null)
@@ -147,21 +135,21 @@ namespace HES.Core.Services
                 case TaskOperation.Delete:
                     await DeleteAccountAsync(remoteDevice, task);
                     break;
-                case TaskOperation.Wipe:
-                    await WipeVaultAsync(remoteDevice, task);
-                    break;
-                case TaskOperation.Link:
-                    await LinkVaultAsync(remoteDevice, task);
-                    break;
+                //case TaskOperation.Wipe:
+                //    await WipeVaultAsync(remoteDevice, task);
+                //    break;
+                //case TaskOperation.Link:
+                //    await LinkVaultAsync(remoteDevice, task);
+                //    break;
                 case TaskOperation.Primary:
                     await SetAccountAsPrimaryAsync(remoteDevice, task);
                     break;
                 case TaskOperation.Profile:
                     await ProfileVaultAsync(remoteDevice, task);
                     break;
-                case TaskOperation.Suspend:
-                    await SuspendVaultAsync(remoteDevice, task);
-                    break;
+                //case TaskOperation.Suspend:
+                //    await SuspendVaultAsync(remoteDevice, task);
+                //    break;
             }
             return storageId;
         }
@@ -207,31 +195,31 @@ namespace HES.Core.Services
             await pm.DeleteAccount(storageId, isPrimary);
         }
 
-        private async Task WipeVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
-        {
-            if (remoteDevice.AccessLevel.IsLinkRequired == true)
-            {
-                _logger.LogError($"Trying to wipe the empty hardware vault [{remoteDevice.Id}]");
-                return;
-            }
+        //private async Task WipeVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
+        //{
+        //    if (remoteDevice.AccessLevel.IsLinkRequired == true)
+        //    {
+        //        _logger.LogError($"Trying to wipe the empty hardware vault [{remoteDevice.Id}]");
+        //        return;
+        //    }
 
-            var key = ConvertUtils.HexStringToBytes(task.Password);
-            await remoteDevice.Wipe(key);
-        }
+        //    var key = ConvertUtils.HexStringToBytes(task.Password);
+        //    await remoteDevice.Wipe(key);
+        //}
 
-        private async Task LinkVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
-        {
-            if (!remoteDevice.AccessLevel.IsLinkRequired)
-            {
-                _logger.LogError($"Trying to link already linked hardware vault [{remoteDevice.Id}]");
-                return;
-            }
+        //private async Task LinkVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
+        //{
+        //    if (!remoteDevice.AccessLevel.IsLinkRequired)
+        //    {
+        //        _logger.LogError($"Trying to link already linked hardware vault [{remoteDevice.Id}]");
+        //        return;
+        //    }
 
-            var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(task.HardwareVaultId));
-            var key = ConvertUtils.HexStringToBytes(task.Password);
+        //    var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(task.HardwareVaultId));
+        //    var key = ConvertUtils.HexStringToBytes(task.Password);
 
-            await remoteDevice.Link(key, code, 3);
-        }
+        //    await remoteDevice.Link(key, code, 3);
+        //}
 
         private async Task ProfileVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
         {
@@ -240,23 +228,42 @@ namespace HES.Core.Services
             await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
         }
 
-        private async Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
+        //private async Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVaultTask task)
+        //{
+        //    var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(task.HardwareVaultId));
+        //    var vault = await _hardwareVaultService.GetVaultByIdAsync(task.HardwareVaultId);
+        //    var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+        //    await remoteDevice.LockDeviceCode(key, code, 3);
+        //}
+
+        public async Task LinkVaultAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
-            var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(task.HardwareVaultId));
-            var vault = await _hardwareVaultService.GetVaultByIdAsync(task.HardwareVaultId);
+            if (!remoteDevice.AccessLevel.IsLinkRequired)
+                return;
+
+            var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
-            await remoteDevice.LockDeviceCode(key, code, 3);
+            await remoteDevice.Link(key, code, 3);
+            await _hardwareVaultService.SetStatusAppliedAsync(vault);
         }
 
         public async Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
             if (!vault.IsStatusApplied)
-            {
-                var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
-                var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
-                await remoteDevice.LockDeviceCode(key, code, 3);
-                await _hardwareVaultService.SetStatusAppliedAsync(vault);
-            }
+                return;
+
+            var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
+            var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+            await remoteDevice.LockDeviceCode(key, code, 3);
+            await _hardwareVaultService.SetStatusAppliedAsync(vault);
+        }
+
+        public async Task WipeVaultAsync(RemoteDevice remoteDevice, HardwareVault vault)
+        {
+            if (!remoteDevice.AccessLevel.IsLinkRequired)
+                await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword)));
+
+            await _hardwareVaultService.UpdateAfterWipeAsync(vault.Id);
         }
     }
 }
