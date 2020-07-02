@@ -249,7 +249,7 @@ namespace HES.Core.Services
 
         public async Task SuspendVaultAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
-            if (!vault.IsStatusApplied)
+            if (vault.IsStatusApplied)
                 return;
 
             var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
