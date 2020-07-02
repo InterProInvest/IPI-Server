@@ -7,6 +7,7 @@
         public const string HardwareVaults = "HardwareVaults";
         public const string EmployeesDetails = "EmployeesDetails";
         public const string EmployeesDetailsVaultSynced = "EmployeesDetailsVaultSynced";
+        public const string EmployeesDetailsVaultState = "EmployeesDetailsVaultState";
         public const string Workstations = "Workstations";
         public const string SharedAccounts = "SharedAccounts";
         public const string WorkstationsDetails = "WorkstationsDetails";

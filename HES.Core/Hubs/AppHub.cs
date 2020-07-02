@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.Client;
@@ -8,6 +9,7 @@ using Hideez.SDK.Communication.Workstation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,30 +23,33 @@ namespace HES.Core.Hubs
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
-        private readonly IHardwareVaultService _deviceService;
+        private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
         private readonly IEmployeeService _employeeService;
+        private readonly IHubContext<RefreshHub> _hubContext;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                       IWorkstationAuditService workstationAuditService,
                       IWorkstationService workstationService,
-                      IHardwareVaultService deviceService,
+                      IHardwareVaultService hardwareVaultService,
                       IHardwareVaultTaskService deviceTaskService,
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
+                      IHubContext<RefreshHub> hubContext,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _workstationAuditService = workstationAuditService;
             _workstationService = workstationService;
-            _deviceService = deviceService;
+            _hardwareVaultService = hardwareVaultService;
             _deviceTaskService = deviceTaskService;
             _licenseService = licenseService;
             _employeeService = employeeService;
+            _hubContext = hubContext;
             _logger = logger;
         }
 
@@ -170,7 +175,9 @@ namespace HES.Core.Hubs
                 //    throw new Exception("Hardware vault no working licenses.");
 
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
+
                 await OnDevicePropertiesChanged(dto);
+                await InvokeVaultOnlineState(dto.DeviceSerialNo);
                 await CheckVaultStatusAsync(dto);
                 await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
                 return HesResponse.Ok;
@@ -189,6 +196,7 @@ namespace HES.Core.Hubs
             {
                 if (!string.IsNullOrEmpty(vaultId))
                 {
+                    await InvokeVaultOnlineState(vaultId);
                     _remoteDeviceConnectionsService.OnDeviceDisconnected(vaultId, GetWorkstationId());
                     await _employeeService.UpdateLastSeenAsync(vaultId);
                 }
@@ -205,11 +213,11 @@ namespace HES.Core.Hubs
         public async Task<HesResponse> OnDevicePropertiesChanged(BleDeviceDto dto)
         {
             try
-            {              
+            {
                 if (dto.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
-                await _deviceService.UpdateHardwareVaultInfoAsync(dto);
+                await _hardwareVaultService.UpdateHardwareVaultInfoAsync(dto);
 
                 return HesResponse.Ok;
             }
@@ -222,14 +230,24 @@ namespace HES.Core.Hubs
 
         private async Task CheckVaultStatusAsync(BleDeviceDto dto)
         {
-            var vault = await _deviceService.GetVaultByIdAsync(dto.DeviceSerialNo);
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(dto.DeviceSerialNo);
 
             if (vault == null)
                 return;
 
-            if (vault.Status == Enums.VaultStatus.Deactivated ||vault.Status == Enums.VaultStatus.Compromised ||
-                vault.Status == Enums.VaultStatus.Suspended || vault.Status == Enums.VaultStatus.Reserved)
+            if (vault.Status == VaultStatus.Deactivated || vault.Status == VaultStatus.Compromised ||
+                vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved)
                 await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
+        }
+
+        private async Task InvokeVaultOnlineState(string vaultId)
+        {
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
+
+            if (vault == null && vault?.EmployeeId == null)
+                return;
+
+            await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
         }
 
         // Incomming request
@@ -237,7 +255,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var device = await _deviceService
+                var device = await _hardwareVaultService
                     .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
@@ -258,7 +276,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var device = await _deviceService
+                var device = await _hardwareVaultService
                     .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
@@ -279,7 +297,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var device = await _deviceService
+                var device = await _hardwareVaultService
                     .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()

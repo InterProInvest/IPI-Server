@@ -104,6 +104,8 @@ namespace HES.Web.Pages.Employees
 
         #endregion
 
+        #region Dialogs
+
         private async Task OpenDialogAddHardwareVaultAsync()
         {
             RenderFragment body = (builder) =>
@@ -293,6 +295,8 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Hardware vault details", body);
         }
 
+        #endregion
+
         private async Task InitializeHubAsync()
         {
             hubConnection = new HubConnectionBuilder()
@@ -313,12 +317,23 @@ namespace HES.Web.Pages.Employees
 
             hubConnection.On<string>(RefreshPage.EmployeesDetailsVaultSynced, async (employeeId) =>
             {
-                if (employeeId == EmployeeId)
+                if (employeeId != EmployeeId)
                     return;
+
                 await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
                 await EmployeeService.DetachEmployeeAsync(Employee);
                 await LoadEmployeeAsync();
                 ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
+            });
+
+            hubConnection.On<string>(RefreshPage.EmployeesDetailsVaultState, async (employeeId) =>
+            {
+                if (employeeId != EmployeeId)
+                    return;
+
+                await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
+                await EmployeeService.DetachEmployeeAsync(Employee);
+                await LoadEmployeeAsync();
             });
 
             await hubConnection.StartAsync();

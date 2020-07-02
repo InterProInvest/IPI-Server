@@ -56,7 +56,7 @@ namespace HES.Web.Pages.HardwareVaults
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.Templates, async () =>
+            hubConnection.On(RefreshPage.HardwareVaults, async () =>
             {
                 await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
                 await MainTableService.LoadTableDataAsync();
