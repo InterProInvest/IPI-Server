@@ -527,16 +527,10 @@ namespace HES.Core.Services
 
         public async Task ChangeHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
-            if (remoteDevice.IsLocked)
+            if (remoteDevice.IsLocked && !remoteDevice.IsCanUnlock && vault.Status != VaultStatus.Suspended)
             {
-                if (!remoteDevice.IsCanUnlock &&
-                    (vault.Status == VaultStatus.Active ||
-                    vault.Status == VaultStatus.Reserved ||
-                    vault.Status == VaultStatus.Suspended))
-                {
-                    vault.Status = VaultStatus.Locked;
-                    await _hardwareVaultRepository.UpdateAsync(vault);
-                }
+                vault.Status = VaultStatus.Locked;
+                await _hardwareVaultRepository.UpdateAsync(vault);
             }
 
             if (!remoteDevice.IsLocked &&
