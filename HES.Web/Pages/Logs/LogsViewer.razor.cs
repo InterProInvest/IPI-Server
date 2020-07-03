@@ -2,10 +2,8 @@
 using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Logs
@@ -15,14 +13,12 @@ namespace HES.Web.Pages.Logs
         [Inject] ILogsViewerService LogsViewerService { get; set; }
         [Inject] ILogger<LogsViewer> Logger { get; set; }
 
-
         public List<string> LogsFiles { get; set; }
         public List<LogModel> Logs { get; set; }
         public LogModel LogModel { get; set; }
 
         private bool isBusy;
         private string searchText = string.Empty;
-
         private string _selectedFile;
 
         protected override void OnInitialized()

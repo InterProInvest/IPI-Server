@@ -18,12 +18,12 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] public IToastService ToastService { get; set; }
 
         private LicensingSettings _licensing;
-        private EmailSettings _email;
-        private ServerSettings _server;
+        //private EmailSettings _email;
+        //private ServerSettings _server;
         private DomainHost _domain;
         private bool _licensingIsBusy;
-        private bool _emailIsBusy;
-        private bool _serverIsBusy;
+        //private bool _emailIsBusy;
+        //private bool _serverIsBusy;
         private bool _initialized;
 
         class DomainHost
@@ -36,8 +36,8 @@ namespace HES.Web.Pages.Settings.Parameters
         {
             await BreadcrumbsService.SetParameters();
             _licensing = await LoadLicensingSettingsAsync();
-            _email = await LoadEmailSettingsAsync();
-            _server = await LoadServerSettingsAsync();
+            //_email = await LoadEmailSettingsAsync();
+            //_server = await LoadServerSettingsAsync();
             _domain = await LoadDomainSettingsAsync();
             _initialized = true;
         }
@@ -74,72 +74,72 @@ namespace HES.Web.Pages.Settings.Parameters
             }
         }
 
-        private async Task<EmailSettings> LoadEmailSettingsAsync()
-        {
-            var sttings = await AppSettingsService.GetEmailSettingsAsync();
+        //private async Task<EmailSettings> LoadEmailSettingsAsync()
+        //{
+        //    var sttings = await AppSettingsService.GetEmailSettingsAsync();
 
-            if (sttings == null)
-                return new EmailSettings();
+        //    if (sttings == null)
+        //        return new EmailSettings();
 
-            return sttings;
-        }
+        //    return sttings;
+        //}
 
-        private async Task UpdateEmailSettingsAsync()
-        {
-            try
-            {
-                if (_emailIsBusy)
-                    return;
+        //private async Task UpdateEmailSettingsAsync()
+        //{
+        //    try
+        //    {
+        //        if (_emailIsBusy)
+        //            return;
 
-                _emailIsBusy = true;
+        //        _emailIsBusy = true;
 
-                await AppSettingsService.SetEmailSettingsAsync(_email);
-                ToastService.ShowToast("Email settings updated.", ToastLevel.Success);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                _emailIsBusy = false;
-            }
-        }
+        //        await AppSettingsService.SetEmailSettingsAsync(_email);
+        //        ToastService.ShowToast("Email settings updated.", ToastLevel.Success);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.LogError(ex.Message);
+        //        ToastService.ShowToast(ex.Message, ToastLevel.Error);
+        //    }
+        //    finally
+        //    {
+        //        _emailIsBusy = false;
+        //    }
+        //}
 
-        private async Task<ServerSettings> LoadServerSettingsAsync()
-        {
-            var serverSettings = await AppSettingsService.GetServerSettingsAsync();
+        //private async Task<ServerSettings> LoadServerSettingsAsync()
+        //{
+        //    var serverSettings = await AppSettingsService.GetServerSettingsAsync();
 
-            if (serverSettings == null)
-                return new ServerSettings();
+        //    if (serverSettings == null)
+        //        return new ServerSettings();
 
-            return serverSettings;
-        }
+        //    return serverSettings;
+        //}
 
-        private async Task UpdateServerSettingsAsync()
-        {
-            try
-            {
-                if (_serverIsBusy)
-                {
-                    return;
-                }
+        //private async Task UpdateServerSettingsAsync()
+        //{
+        //    try
+        //    {
+        //        if (_serverIsBusy)
+        //        {
+        //            return;
+        //        }
 
-                _serverIsBusy = true;
-                await AppSettingsService.SetServerSettingsAsync(_server);
-                ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                _serverIsBusy = false;
-            }
-        }
+        //        _serverIsBusy = true;
+        //        await AppSettingsService.SetServerSettingsAsync(_server);
+        //        ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.LogError(ex.Message);
+        //        ToastService.ShowToast(ex.Message, ToastLevel.Error);
+        //    }
+        //    finally
+        //    {
+        //        _serverIsBusy = false;
+        //    }
+        //}
 
         private async Task<DomainHost> LoadDomainSettingsAsync()
         {

@@ -25,7 +25,7 @@ else
             </div>
         </EditForm>
     </SettingsCard>
-    <SettingsCard Title="Email" Description="Email settings for sending invitations and notifications.">
+    @*<SettingsCard Title="Email" Description="Email settings for sending invitations and notifications.">
         <EditForm Model="@_email" OnValidSubmit="@UpdateEmailSettingsAsync">
             <DataAnnotationsValidator />
             <div class="form-group">
@@ -84,7 +84,7 @@ else
                 </button>
             </div>
         </EditForm>
-    </SettingsCard>
+    </SettingsCard>*@
     <SettingsCard Title="Domain" Description="To connect to the domain and import groups and users.">
         <EditForm Model="@_domain" OnValidSubmit="@UpdateDomainSettingsAsync">
             <DataAnnotationsValidator />

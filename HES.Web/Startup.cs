@@ -39,14 +39,38 @@ namespace HES.Web
             var db = configuration["MYSQL_DB"];
             var uid = configuration["MYSQL_UID"];
             var pwd = configuration["MYSQL_PWD"];
-
             if (server != null && port != null && db != null && uid != null && pwd != null)
+            {
                 configuration["ConnectionStrings:DefaultConnection"] = $"server={server};port={port};database={db};uid={uid};pwd={pwd}";
+            }
+
+            var email_host = configuration["EMAIL_HOST"];
+            var email_port = configuration["EMAIL_PORT"];
+            var email_ssl = configuration["EMAIL_SSL"];
+            var email_user = configuration["EMAIL_USER"];
+            var email_pwd = configuration["EMAIL_PWD"];
+            if (email_host != null && email_port != null && email_ssl != null && email_user != null && email_pwd != null)
+            {
+                configuration["EmailSettings:Host"] = email_host;
+                configuration["EmailSettings:Port"] = email_port;
+                configuration["EmailSettings:EnableSSL"] = email_ssl;
+                configuration["EmailSettings:UserName"] = email_user;
+                configuration["EmailSettings:Password"] = email_pwd;
+            }
+
+            var srv_name = configuration["SRV_NAME"];
+            var srv_url = configuration["SRV_URL"];
+            if (srv_name != null && srv_url != null)
+            {
+                configuration["ServerSettings:Name"] = srv_name;
+                configuration["ServerSettings:Url"] = srv_url;
+            }
 
             var dataprotectoin_pwd = configuration["DATAPROTECTION_PWD"];
-
             if (dataprotectoin_pwd != null)
+            {
                 configuration["DataProtection:Password"] = dataprotectoin_pwd;
+            }
 
             #endregion
 

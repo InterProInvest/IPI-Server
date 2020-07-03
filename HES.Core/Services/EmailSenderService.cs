@@ -5,6 +5,7 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using QRCoder;
 using System;
@@ -23,18 +24,18 @@ namespace HES.Core.Services
     public class EmailSenderService : IEmailSenderService
     {
         private readonly IApplicationUserService _applicationUserService;
-        private readonly IAppSettingsService _appSettingsService;
         private readonly IHostingEnvironment _env;
+        private readonly IConfiguration _config;
         private readonly ILogger<EmailSenderService> _logger;
 
         public EmailSenderService(IApplicationUserService applicationUserService,
-                                  IAppSettingsService appSettingsService,
                                   IHostingEnvironment env,
+                                  IConfiguration config,
                                   ILogger<EmailSenderService> logger)
         {
             _applicationUserService = applicationUserService;
-            _appSettingsService = appSettingsService;
             _env = env;
+            _config = config;
             _logger = logger;
         }
 
@@ -292,24 +293,39 @@ namespace HES.Core.Services
         }
 
 
-        private async Task<EmailSettings> GetEmailSettingsAsync()
+        private Task<EmailSettings> GetEmailSettingsAsync()
         {
-            var settings = await _appSettingsService.GetEmailSettingsAsync();
+            //var settings = await _appSettingsService.GetEmailSettingsAsync();
 
-            if (settings == null)
-                throw new SettingsNotSetException("Email settings not set.");
+            //if (settings == null)
+            //    throw new SettingsNotSetException("Email settings not set.");
 
-            return settings;
+            var settings = new EmailSettings()
+            {
+                Host = _config.GetValue<string>("EmailSettings:Host"),
+                Port = _config.GetValue<int>("EmailSettings:Port"),
+                EnableSSL = _config.GetValue<bool>("EmailSettings:EnableSSL"),
+                UserName = _config.GetValue<string>("EmailSettings:UserName"),
+                Password = _config.GetValue<string>("EmailSettings:Password")
+            };
+
+            return Task.FromResult(settings);
         }
 
-        private async Task<ServerSettings> GetServerSettingsAsync()
+        private Task<ServerSettings> GetServerSettingsAsync()
         {
-            var settings = await _appSettingsService.GetServerSettingsAsync();
+            //var settings = await _appSettingsService.GetServerSettingsAsync();
 
-            if (settings == null)
-                throw new SettingsNotSetException("Server settings not set.");
+            //if (settings == null)
+            //    throw new SettingsNotSetException("Server settings not set.");
 
-            return settings;
+            var settings = new ServerSettings()
+            {
+                Name = _config.GetValue<string>("ServerSettings:Name"),
+                Url = _config.GetValue<string>("ServerSettings:Url")
+            };
+
+            return Task.FromResult(settings);
         }
 
         private string GetTemplate(string name)
