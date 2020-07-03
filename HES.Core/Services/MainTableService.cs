@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -53,12 +52,7 @@ namespace HES.Core.Services
 
             DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
             Entities = await _getEntities.Invoke(DataLoadingOptions);
-
-            foreach (var entity in Entities)
-            {
-                if (entity.GetType().GetProperty(SyncPropName).GetValue(entity).ToString().Equals(SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString()))
-                    SelectedEntity = entity;
-            }
+            SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
 
             _stateHasChanged?.Invoke();
         }
