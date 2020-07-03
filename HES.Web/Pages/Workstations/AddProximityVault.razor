@@ -10,7 +10,7 @@ else
         @foreach (var hardwareVault in HardwareVaults)
         {
             <button class="list-group-item list-group-item-action @(hardwareVault.Id == SelectedHardwareVault?.Id ? "active": string.Empty)" @onclick="async () => await SelectedItemChangedAsync(hardwareVault)">
-                @hardwareVault.Id
+                @hardwareVault.Id - @hardwareVault.Employee.FullName
             </button>
         }
     </div>
