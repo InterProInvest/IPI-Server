@@ -10,6 +10,7 @@ namespace HES.Core.Models.Web
         public string SearchText { get; set; }
         public string SortedColumn { get; set; }
         public ListSortDirection SortDirection { get; set; }
+        public string EntityId { get; set; }
 
         public DataLoadingOptions()
         {

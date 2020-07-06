@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.Group;
+using HES.Core.Models.Web.Groups;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -32,7 +34,7 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
-        public async Task<List<Group>> GetGroupsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, GroupFilter groupFilter)
+        public async Task<List<Group>> GetGroupsAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions)
         {
             var query = _groupRepository
                 .Query()
@@ -40,78 +42,78 @@ namespace HES.Core.Services
                 .AsQueryable();
 
             // Filter
-            if (groupFilter != null)
+            if (dataLoadingOptions.Filter != null)
             {
-                if (!string.IsNullOrWhiteSpace(groupFilter.Name))
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Name))
                 {
-                    query = query.Where(x => x.Name.ToLower().Contains(groupFilter.Name.ToLower()));
+                    query = query.Where(x => x.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
                 }
-                if (!string.IsNullOrWhiteSpace(groupFilter.Email))
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Email))
                 {
-                    query = query.Where(x => x.Email.ToLower().Contains(groupFilter.Email.ToLower()));
+                    query = query.Where(x => x.Email.Contains(dataLoadingOptions.Filter.Email, StringComparison.OrdinalIgnoreCase));
                 }
-                if (!string.IsNullOrWhiteSpace(groupFilter.MembersCount))
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.MembersCount))
                 {
-                    query = query.Where(x => x.GroupMemberships.Count().ToString().Contains(groupFilter.MembersCount));
+                    query = query.Where(x => x.GroupMemberships.Count().ToString().Contains(dataLoadingOptions.Filter.MembersCount));
                 }
             }
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.ToLower().Trim();
-                
-                query = query.Where(x => x.Name.ToLower().Contains(searchText) ||
-                                         x.Email.ToLower().Contains(searchText) ||
-                                         x.GroupMemberships.Count.ToString().Contains(searchText));
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Email.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.GroupMemberships.Count.ToString().Contains(dataLoadingOptions.SearchText));
             }
 
             // Sort Direction
-            switch (sortColumn)
+            switch (dataLoadingOptions.SortedColumn)
             {
                 case nameof(Group.Name):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
                     break;
                 case nameof(Group.Email):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Email) : query.OrderByDescending(x => x.Email);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Email) : query.OrderByDescending(x => x.Email);
                     break;
                 case nameof(Group.GroupMemberships):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.GroupMemberships.Count) : query.OrderByDescending(x => x.GroupMemberships.Count);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.GroupMemberships.Count) : query.OrderByDescending(x => x.GroupMemberships.Count);
                     break;
             }
 
-            return await query.Skip(skip).Take(take).AsNoTracking().ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
 
-        public async Task<int> GetGroupsCountAsync(string searchText, GroupFilter groupFilter)
+        public async Task<int> GetGroupsCountAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions)
         {
             var query = _groupRepository.Query();
 
             // Filter
-            if (groupFilter != null)
+            if (dataLoadingOptions.Filter != null)
             {
-                if (!string.IsNullOrWhiteSpace(groupFilter.Name))
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Name))
                 {
-                    query = query.Where(x => x.Name.ToLower().Contains(groupFilter.Name.ToLower().Trim()));
+                    query = query.Where(x => x.Name.Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
                 }
-                if (!string.IsNullOrWhiteSpace(groupFilter.Email))
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Email))
                 {
-                    query = query.Where(x => x.Email.ToLower().Contains(groupFilter.Email.ToLower().Trim()));
+                    query = query.Where(x => x.Email.Contains(dataLoadingOptions.Filter.Email, StringComparison.OrdinalIgnoreCase));
                 }
-                if (!string.IsNullOrWhiteSpace(groupFilter.MembersCount))
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.MembersCount))
                 {
-                    query = query.Where(x => x.GroupMemberships.Count().ToString().Contains(groupFilter.MembersCount));
+                    query = query.Where(x => x.GroupMemberships.Count().ToString().Contains(dataLoadingOptions.Filter.MembersCount));
                 }
             }
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.ToLower().Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.Name.ToLower().Contains(searchText) ||
-                                    x.Email.ToLower().Contains(searchText) ||
-                                    x.GroupMemberships.Count().ToString().Contains(searchText));
+                query = query.Where(x => x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Email.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.GroupMemberships.Count.ToString().Contains(dataLoadingOptions.SearchText));
             }
 
             return await query.CountAsync();
@@ -144,6 +146,21 @@ namespace HES.Core.Services
             return await _groupRepository.AddAsync(group);
         }
 
+        public async Task CreateGroupRangeAsync(List<Group> groups)
+        {
+            foreach (var group in groups)
+            {
+                try
+                {
+                    await CreateGroupAsync(group);
+                }
+                catch (AlreadyExistException)
+                {
+                    // Continue, if group exist
+                }
+            }
+        }
+
         public async Task EditGroupAsync(Group group)
         {
             if (group == null)
@@ -164,6 +181,14 @@ namespace HES.Core.Services
         public Task UnchangedGroupAsync(Group group)
         {
             return _groupRepository.UnchangedAsync(group);
+        }
+
+        public async Task DetachGroupsAsync(List<Group> groups)
+        {
+            foreach (var item in groups)
+            {
+                await _groupRepository.DetachedAsync(item);
+            }
         }
 
         public async Task<Group> DeleteGroupAsync(string groupId)
@@ -190,6 +215,83 @@ namespace HES.Core.Services
                 .Include(x => x.Employee)
                 .Where(x => x.GroupId == groupId)
                 .ToListAsync();
+        }
+
+        public async Task<List<GroupMembership>> GetGruopMembersAsync(DataLoadingOptions<GroupMembershipFilter> dataLoadingOptions)
+        {
+            var query = _groupMembershipRepository
+                .Query()
+                .Include(x => x.Employee)
+                .Where(x => x.GroupId == dataLoadingOptions.EntityId)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Name))
+                {
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Email))
+                {
+                    query = query.Where(x => x.Employee.Email.Contains(dataLoadingOptions.Filter.Email, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Employee.Email.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(GroupMembership.Employee.FullName):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
+                    break;
+                case nameof(GroupMembership.Employee.Email):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.Email) : query.OrderByDescending(x => x.Employee.Email);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+
+        public async Task<int> GetGruopMembersCountAsync(DataLoadingOptions<GroupMembershipFilter> dataLoadingOptions)
+        {
+            var query = _groupMembershipRepository
+                .Query()
+                .Include(x => x.Employee)
+                .Where(x => x.GroupId == dataLoadingOptions.EntityId)
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Name))
+                {
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Name, StringComparison.OrdinalIgnoreCase));
+                }
+                if (!string.IsNullOrWhiteSpace(dataLoadingOptions.Filter.Email))
+                {
+                    query = query.Where(x => x.Employee.Email.Contains(dataLoadingOptions.Filter.Email, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                         x.Employee.Email.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task<GroupMembership> GetGroupMembershipAsync(string employeeId, string groupId)
@@ -291,19 +393,13 @@ namespace HES.Core.Services
             return await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
-        public async Task CreateGroupRangeAsync(List<Group> groups)
+        public async Task DetachGroupMembershipsAsync(List<GroupMembership> groupMemberships)
         {
-            foreach (var group in groups)
+            foreach (var item in groupMemberships)
             {
-                try
-                {
-                    await CreateGroupAsync(group);
-                }
-                catch (AlreadyExistException)
-                {
-                    // Continue, if group exist
-                }
+                await _groupMembershipRepository.DetachedAsync(item);
             }
         }
+
     }
 }

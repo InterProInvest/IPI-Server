@@ -1,8 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -15,8 +16,10 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<DeleteGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string GroupId { get; set; }
+
         public Group Group { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -26,9 +29,7 @@ namespace HES.Web.Pages.Groups
                 Group = await GroupService.GetGroupByIdAsync(GroupId);
 
                 if (Group == null)
-                {
                     throw new Exception("Group not found");
-                }
 
             }
             catch (Exception ex)
@@ -44,18 +45,16 @@ namespace HES.Web.Pages.Groups
             try
             {
                 await GroupService.DeleteGroupAsync(GroupId);
-                await Refresh.InvokeAsync(this);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 ToastService.ShowToast("Group deleted.", ToastLevel.Success);
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                await ModalDialogService.CloseAsync();
-            }
+                await ModalDialogService.CancelAsync();
+            }         
         }
     }
 }

@@ -30,7 +30,7 @@ namespace HES.Core.Services
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
-        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id")
+        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id", string entityId = null)
         {
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
@@ -38,6 +38,7 @@ namespace HES.Core.Services
             _modalDialogService.OnClose += LoadTableDataAsync;
             DataLoadingOptions.SortedColumn = sortedColumn;
             DataLoadingOptions.SortDirection = sortDirection;
+            DataLoadingOptions.EntityId = entityId;
             SyncPropName = syncPropName;
             await LoadTableDataAsync();
         }

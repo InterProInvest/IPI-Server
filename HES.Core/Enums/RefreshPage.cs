@@ -8,6 +8,8 @@
         public const string EmployeesDetails = "EmployeesDetails";
         public const string EmployeesDetailsVaultSynced = "EmployeesDetailsVaultSynced";
         public const string EmployeesDetailsVaultState = "EmployeesDetailsVaultState";
+        public const string Groups = "Groups";
+        public const string GroupDetails = "GroupDetails";
         public const string Workstations = "Workstations";
         public const string SharedAccounts = "SharedAccounts";
         public const string WorkstationsDetails = "WorkstationsDetails";

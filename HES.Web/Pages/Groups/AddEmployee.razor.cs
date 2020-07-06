@@ -1,8 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,9 @@ namespace HES.Web.Pages.Groups
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<AddEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string GroupId { get; set; }
 
         public Dictionary<Employee, bool> Employees { get; set; }
@@ -60,8 +62,8 @@ namespace HES.Web.Pages.Groups
                 var employeeIds = Employees.Where(x => x.Value).Select(x => x.Key.Id).ToList();
 
                 await GroupService.AddEmployeesToGroupAsync(employeeIds, GroupId);
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Employee added.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.GroupDetails);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
