@@ -171,12 +171,13 @@ namespace HES.Core.Hubs
                 if (dto?.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
-                //if (dto.LicenseInfo == 0)
-                //    throw new Exception("Hardware vault no working licenses.");
-
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
 
                 await OnDevicePropertiesChanged(dto);
+
+                if (dto.LicenseInfo == 0)
+                    return HesResponse.Ok;
+
                 await InvokeVaultOnlineState(dto.DeviceSerialNo);
                 await CheckVaultStatusAsync(dto);
                 await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
