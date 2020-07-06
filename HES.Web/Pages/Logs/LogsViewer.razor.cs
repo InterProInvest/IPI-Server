@@ -16,6 +16,7 @@ namespace HES.Web.Pages.Logs
         public List<string> LogsFiles { get; set; }
         public List<LogModel> Logs { get; set; }
         public LogModel LogModel { get; set; }
+        public bool LocalTime { get; set; }
 
         private bool isBusy;
         private string searchText = string.Empty;
