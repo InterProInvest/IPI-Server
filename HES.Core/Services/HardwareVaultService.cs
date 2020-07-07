@@ -506,6 +506,7 @@ namespace HES.Core.Services
             {
                 await _hardwareVaultRepository.UpdateAsync(vault);
                 await _licenseService.ChangeLicenseNotAppliedAsync(vaultId);
+                await ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
 
                 transactionScope.Complete();
             }
