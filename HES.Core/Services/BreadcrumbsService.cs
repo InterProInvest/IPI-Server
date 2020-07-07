@@ -17,6 +17,16 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetDataProtection()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Data Protection" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetDashboard()
         {
             Breadcrumbs = new List<Breadcrumb>()

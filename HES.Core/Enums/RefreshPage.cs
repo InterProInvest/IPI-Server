@@ -14,6 +14,7 @@
         public const string Workstations = "Workstations";
         public const string SharedAccounts = "SharedAccounts";
         public const string WorkstationsDetails = "WorkstationsDetails";
+        public const string DataProtection = "DataProtection";
         public const string Administrators = "Administrators";
         public const string HardwareVaultProfiles = "HardwareVaultProfile";
         public const string Licenses = "Licenses";

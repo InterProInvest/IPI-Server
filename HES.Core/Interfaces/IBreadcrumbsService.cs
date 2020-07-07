@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
         Task SetEmployeeDetails(string name);
         Task SetHardwareVaults();
         Task SetTemplates();
+        Task SetDataProtection();
         Task SetGroups();
         Task SetAdministrators();
         Task SetHardwareVaultProfiles();
