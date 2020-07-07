@@ -292,7 +292,6 @@ namespace HES.Core.Services
             var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             var accounts = await scopedAccountRepository.Query().ToListAsync();
-            var emailSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
             var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
             foreach (var device in devices)
@@ -346,15 +345,6 @@ namespace HES.Core.Services
                 }
             }
 
-            if (emailSettings != null)
-            {
-                var settings = JsonConvert.DeserializeObject<EmailSettings>(emailSettings.Value);
-                var plainText = key.Decrypt(settings.Password);
-                settings.Password = newKey.Encrypt(plainText);
-                var json = JsonConvert.SerializeObject(settings);
-                emailSettings.Value = json;
-            }
-
             if (domainSettings != null)
             {
                 var settings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
@@ -370,8 +360,8 @@ namespace HES.Core.Services
                 await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
                 await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
                 await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
-                await scopedAppSettingsRepository.UpdateAsync(emailSettings);
-                await scopedAppSettingsRepository.UpdateAsync(domainSettings);
+                if (domainSettings != null)
+                    await scopedAppSettingsRepository.UpdateAsync(domainSettings);
                 transactionScope.Complete();
             }
         }
@@ -389,7 +379,6 @@ namespace HES.Core.Services
             var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             var accounts = await scopedAccountRepository.Query().ToListAsync();
-            var emailSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
             var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
             foreach (var device in devices)
@@ -422,17 +411,9 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Encrypt(account.OtpSecret);
             }
 
-            if (emailSettings != null)
-            {
-                var settings = JsonConvert.DeserializeObject<EmailSettings>(emailSettings.Value);
-                settings.Password = key.Encrypt(settings.Password);
-                var json = JsonConvert.SerializeObject(settings);
-                emailSettings.Value = json;
-            }
-
             if (domainSettings != null)
             {
-                var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);             
+                var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
                 ldapSettings.Password = key.Encrypt(ldapSettings.Password);
                 var json = JsonConvert.SerializeObject(ldapSettings);
                 domainSettings.Value = json;
@@ -444,8 +425,8 @@ namespace HES.Core.Services
                 await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
                 await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
                 await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
-                await scopedAppSettingsRepository.UpdateAsync(emailSettings);
-                await scopedAppSettingsRepository.UpdateAsync(domainSettings);
+                if (domainSettings != null)
+                    await scopedAppSettingsRepository.UpdateAsync(domainSettings);
                 transactionScope.Complete();
             }
         }
@@ -463,7 +444,6 @@ namespace HES.Core.Services
             var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
             var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             var accounts = await scopedAccountRepository.Query().ToListAsync();
-            var emailSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
             var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
 
             foreach (var device in devices)
@@ -496,14 +476,6 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Decrypt(account.OtpSecret);
             }
 
-            if (emailSettings != null)
-            {
-                var settings = JsonConvert.DeserializeObject<EmailSettings>(emailSettings.Value);
-                settings.Password = key.Decrypt(settings.Password);
-                var json = JsonConvert.SerializeObject(settings);
-                emailSettings.Value = json;
-            }
-
             if (domainSettings != null)
             {
                 var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
@@ -518,8 +490,8 @@ namespace HES.Core.Services
                 await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
                 await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
                 await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
-                await scopedAppSettingsRepository.UpdateAsync(emailSettings);
-                await scopedAppSettingsRepository.UpdateAsync(domainSettings);
+                if (domainSettings != null)
+                    await scopedAppSettingsRepository.UpdateAsync(domainSettings);
                 transactionScope.Complete();
             }
         }
