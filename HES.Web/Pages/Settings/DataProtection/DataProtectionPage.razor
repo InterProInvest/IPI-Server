@@ -1,0 +1,101 @@
+﻿<h1 class="text-navyblue">Data Protection</h1>
+<hr />
+
+@if (Status == Core.Services.ProtectionStatus.Off)
+{
+    <p>Data protection for this server is disabled.</p>
+    <button type="button" class="btn btn-primary" @onclick="async () => await EnableDataProtectionAsync()">Enable</button>
+}
+else if (Status == Core.Services.ProtectionStatus.On)
+{
+    <p>Data protection for this server is enabled.</p>
+    <button type="button" class="btn btn-primary" @onclick="async () => await DisableDataProtectionAsync()">Disable</button>
+}
+
+@*@switch (Status)
+            <br />
+            <p>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#changeEncryptionPassword" aria-expanded="false" aria-controls="changeEncryptionPassword">
+                    Change encryption password
+                </button>
+            </p>
+            <div class="collapse" id="changeEncryptionPassword">
+                <div class="profile-fill-card">
+                    <form method="post" style="max-width:350px">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label class="text-gray" asp-for="ChangePassword.OldPassword"></label>
+                            <input asp-for="ChangePassword.OldPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="ChangePassword.OldPassword" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="text-gray" asp-for="ChangePassword.NewPassword"></label>
+                            <input asp-for="ChangePassword.NewPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="ChangePassword.NewPassword" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="text-gray" asp-for="ChangePassword.ConfirmPassword"></label>
+                            <input asp-for="ChangePassword.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                        <div class="form-group m-0">
+                            <input type="submit" value="Change" class="btn btn-primary" asp-page-handler="ChangeProtectionSecret" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+            break;
+        case Core.Services.ProtectionStatus.Busy:
+            <h5>Protection is Busy</h5>
+            break;
+    }*@
+<hr />
+<h5>
+    What is the purpose of Data Protection?
+</h5>
+<p>
+    Data Protection solves the problem of secure data storage in the database (DB).
+</p>
+<h5>
+    What confidential data is stored in the DB?
+</h5>
+<p>
+    The database stores Device Keys – encryption keys that provide access to the information stored on the Hideez Key. Passwords and OTP Secrets that are awaiting transfer to devices are also temporarily stored in the DB.
+    Passwords to the “Shared Account” are permanently stored in the database. If Data Protection is turned off, all passwords and keys are stored in plain text. If you have a Device Key and the device itself, you can read all the content of the Hideez Key memory.
+</p>
+<h5>
+    Do I need to enable Data Protection?
+</h5>
+<p>
+    First of all, you need to evaluate which employees have a direct to potential access to the HES database.
+    If some of them should not have access to the sensitive data listed above than Data Protection must be enabled.
+    Please also note, that the data can be physically read from the HDD/SDD on which it is stored. It is necessary to consider the possibility of both software and physical access to the data.
+    In some cases, for example, if the HES and the database server are running on the same physical server that can be accessed by a limited number of trusted people, then Data Protection can be omitted.
+</p>
+<h5>
+    How does it work?
+</h5>
+<p>
+    All the confidential fields in the DB are encrypted using the AES-256 algorithm. The encryption key (a password) is entered manually by the administrator after the webserver start, and then it is stored only in the server’s RAM.
+    If the server reboots, the encryption key erases, and all the administrators receive an email asking them to enter the Data Protection password. Before the password is entered, the server doesn’t process incoming requests. Once the password is provided, the server switches to the normal mode, and the data is decrypted on the fly.
+    <br />
+    <br />
+    The password to Data Protection can be placed in a config file or Environment Variables on the server to avoid manual input. In this case, the server can reboot without administrator involvement. Such a scenario also means that only authorized persons should have access to the server.
+    <br />
+    <br />
+    The password to Data Protection can be changed. To do this, enter the current password and a new password twice in the HES interface. All data in the DB will be re-encrypted.
+</p>
+<h5>
+    Risks and best practices
+</h5>
+<p>
+    The main risk of Data Protection use is the password loss for its activation. In such a case, you lose access to the encrypted data on the server, as well as access to all the data on all of your Hideez Key devices.
+    All the devices will have to undergo manual reset procedure with full memory wipe, and then to be bonded again with the employees. All the accounts should be added to the devices from scratch.
+    Therefore we recommend that the password to Data Protection should be known to several employees and preferably stored on a safe physical token (vault).
+    <br />
+    <br />
+    In case of using Data Protection, there is a risk that the HES server can be temporarily unavailable due to emergency restart until the activation password to Data Protection is entered. However, it should not affect the company operations, since all the accounts are stored on employees’ devices and can be used without a connection to the HES server.
+    <br />
+    <br />
+    An update of the Data Protection password should be done according to the company’s information security regulations.
+</p>

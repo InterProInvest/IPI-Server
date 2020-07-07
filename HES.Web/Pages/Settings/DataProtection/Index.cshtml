@@ -10,7 +10,9 @@
 <partial name="_SuccessMessage" for="SuccessMessage" />
 <partial name="_ErrorMessage" for="ErrorMessage" />
 
-<h1 class="text-navyblue">Data Protection</h1>
+<component type="typeof(DataProtectionPage)" render-mode="Server" />
+
+@*<h1 class="text-navyblue">Data Protection</h1>
 <hr />
 @switch (Model.Status)
 {
@@ -161,4 +163,4 @@
         });
     </script>
     <partial name="_ValidationScriptsPartial" />
-}
+}*@
