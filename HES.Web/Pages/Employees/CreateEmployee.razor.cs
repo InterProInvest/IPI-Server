@@ -129,6 +129,7 @@ namespace HES.Web.Pages.Employees
                     if (SelectedHardwareVault == null)
                     {
                         ToastService.ShowToast("Employee created.", ToastLevel.Success);
+                        await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                         await ModalDialogService.CloseAsync();
                         break;
                     }
@@ -138,6 +139,7 @@ namespace HES.Web.Pages.Employees
                     break;
                 case WizardStep.Activation:
                     ToastService.ShowToast("Employee created.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                     await ModalDialogService.CloseAsync();
                     break;
             }
@@ -267,10 +269,6 @@ namespace HES.Web.Pages.Employees
 
                 if (SelectedHardwareVault != null)
                     RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
-
-                ToastService.ShowToast("Employee created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
-                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
