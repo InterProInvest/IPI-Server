@@ -5,6 +5,7 @@
         public const string Templates = "Templates";
         public const string Employees = "Employees";
         public const string HardwareVaults = "HardwareVaults";
+        public const string HardwareVaultsUpdated = "HardwareVaultsUpdated";
         public const string EmployeesDetails = "EmployeesDetails";
         public const string EmployeesDetailsVaultSynced = "EmployeesDetailsVaultSynced";
         public const string EmployeesDetailsVaultState = "EmployeesDetailsVaultState";

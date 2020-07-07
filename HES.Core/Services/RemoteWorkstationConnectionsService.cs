@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.DTO;
@@ -7,6 +8,7 @@ using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Hideez.SDK.Communication.Workstation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,6 +38,7 @@ namespace HES.Core.Services
         private readonly IDataProtectionService _dataProtectionService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly ILogger<RemoteWorkstationConnectionsService> _logger;
+        private readonly IHubContext<RefreshHub> _hubContext;
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
                       IRemoteTaskService remoteTaskService,
@@ -46,7 +49,8 @@ namespace HES.Core.Services
                       IHardwareVaultService hardwareVaultService,
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
-                      ILogger<RemoteWorkstationConnectionsService> logger)
+                      ILogger<RemoteWorkstationConnectionsService> logger,
+                      IHubContext<RefreshHub> hubContext)
         {
             _services = services;
             _remoteTaskService = remoteTaskService;
@@ -58,6 +62,7 @@ namespace HES.Core.Services
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         #region Hardware Vault
@@ -133,6 +138,7 @@ namespace HES.Core.Services
             finally
             {
                 _devicesInProgress.TryRemove(vaultId, out TaskCompletionSource<bool> _);
+                await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultsUpdated);
             }
         }
 

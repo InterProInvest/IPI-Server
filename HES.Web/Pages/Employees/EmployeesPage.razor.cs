@@ -31,6 +31,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddEmployee));
+                builder.AddAttribute(1, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 

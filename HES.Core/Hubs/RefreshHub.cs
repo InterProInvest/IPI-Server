@@ -9,10 +9,5 @@ namespace HES.Core.Hubs
         {
             await Clients.All.SendAsync(page, entityId);
         }
-
-        public async Task UpdateAllExcept(string page, string connectionId)
-        {
-            await Clients.AllExcept(connectionId).SendAsync(page);
-        }
     }
 }

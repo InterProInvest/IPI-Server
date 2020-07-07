@@ -63,6 +63,12 @@ namespace HES.Web.Pages.HardwareVaults
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
+            hubConnection.On(RefreshPage.HardwareVaultsUpdated, async () =>
+            {
+                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+            });
+
             await hubConnection.StartAsync();
         }
 
