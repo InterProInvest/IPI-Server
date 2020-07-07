@@ -377,6 +377,14 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
+        public async Task DetachLicenseOrders(List<LicenseOrder> licenseOrders)
+        {
+            foreach (var item in licenseOrders)
+            {
+                await _licenseOrderRepository.DetachedAsync(item);
+            }
+        }
+
         #endregion
 
         #region License

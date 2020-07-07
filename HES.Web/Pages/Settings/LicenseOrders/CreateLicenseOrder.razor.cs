@@ -1,9 +1,11 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.LicenseOrders;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -18,6 +20,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<CreateLicenseOrder> Logger { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
@@ -79,6 +83,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                 var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                 await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
