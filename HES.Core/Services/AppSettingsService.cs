@@ -2,6 +2,7 @@
 using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace HES.Core.Services
 
         public async Task<LicensingSettings> GetLicensingSettingsAsync()
         {
-            var licensing = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Licensing);
+            var licensing = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Licensing);
 
             if (licensing == null)
                 return null;
@@ -56,7 +57,7 @@ namespace HES.Core.Services
 
         public async Task<EmailSettings> GetEmailSettingsAsync()
         {
-            var settings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
+            var settings = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Email);
 
             if (settings == null)
                 return null;
@@ -64,7 +65,7 @@ namespace HES.Core.Services
             var deserialized = JsonConvert.DeserializeObject<EmailSettings>(settings.Value);
             deserialized.Password = _dataProtectionService.Decrypt(deserialized.Password);
 
-            return deserialized;        
+            return deserialized;
         }
 
         public async Task SetEmailSettingsAsync(EmailSettings email)
@@ -96,7 +97,7 @@ namespace HES.Core.Services
 
         public async Task<ServerSettings> GetServerSettingsAsync()
         {
-            var server = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Server);
+            var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Server);
 
             if (server == null)
                 return null;
@@ -131,7 +132,7 @@ namespace HES.Core.Services
 
         public async Task<LdapSettings> GetLdapSettingsAsync()
         {
-            var domain = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
+            var domain = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Domain);
 
             if (domain == null)
                 return null;

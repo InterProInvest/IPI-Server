@@ -16,5 +16,6 @@
         public const string Administrators = "Administrators";
         public const string HardwareVaultProfiles = "HardwareVaultProfile";
         public const string Licenses = "Licenses";
+        public const string Parameters = "Parameters";
     }
 }
