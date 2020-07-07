@@ -34,14 +34,23 @@ namespace HES.Web.Pages.Settings.DataProtection
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+        [Parameter] public EventCallback Refresh { get; set; }
+
         public NewPasswordModel NewPassword { get; set; } = new NewPasswordModel();
+        public bool IsBusy { get; set; }
 
         private async Task EnableDataProtectionAsync()
         {
+            if (IsBusy)
+                return;
+
+            IsBusy = true;
+
             try
             {
                 var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
                 await DataProtectionService.EnableProtectionAsync(NewPassword.Password);
+                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Data protection enabled.", ToastLevel.Success);
                 Logger.LogInformation($"Data protection enabled by {authState.User.Identity.Name}");
             }
@@ -52,7 +61,9 @@ namespace HES.Web.Pages.Settings.DataProtection
             }
             finally
             {
-                await HubContext.Clients.All.SendAsync(RefreshPage.DataProtection, ConnectionId);
+                IsBusy = false;
+
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.DataProtection);
                 await ModalDialogService.CloseAsync();
             }
         }

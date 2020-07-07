@@ -4,10 +4,6 @@ using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Printing;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.DataProtection
@@ -27,9 +23,15 @@ namespace HES.Web.Pages.Settings.DataProtection
 
         protected override async Task OnInitializedAsync()
         {
-            Status = DataProtectionService.Status();
+            ProtectionStatus();
             await BreadcrumbsService.SetDataProtection();
             await InitializeHubAsync();
+        }
+
+        private void ProtectionStatus()
+        {
+            Status = DataProtectionService.Status();
+            StateHasChanged();
         }
 
         private async Task InitializeHubAsync()
@@ -38,10 +40,9 @@ namespace HES.Web.Pages.Settings.DataProtection
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.DataProtection, async (connectionId) =>
+            hubConnection.On(RefreshPage.DataProtection, () =>
             {
-                Status = DataProtectionService.Status();
-                StateHasChanged();
+                ProtectionStatus();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
@@ -53,11 +54,25 @@ namespace HES.Web.Pages.Settings.DataProtection
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EnableDataProtection));
-                builder.AddAttribute(1, nameof(EnableDataProtection.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(EnableDataProtection.Refresh), EventCallback.Factory.Create(this, ProtectionStatus));
+                builder.AddAttribute(2, nameof(EnableDataProtection.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
             await ModalDialogService.ShowAsync("Enable Data Protection", body, ModalDialogSize.Default);
+        }
+
+        private async Task ChangeDataProtectionPasswordAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(ChangeDataProtectionPassword));
+                builder.AddAttribute(1, nameof(ChangeDataProtectionPassword.Refresh), EventCallback.Factory.Create(this, ProtectionStatus));
+                builder.AddAttribute(2, nameof(ChangeDataProtectionPassword.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Change Data Protection Password", body, ModalDialogSize.Default);
         }
 
         private async Task DisableDataProtectionAsync()
@@ -65,7 +80,8 @@ namespace HES.Web.Pages.Settings.DataProtection
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DisableDataProtection));
-                builder.AddAttribute(1, nameof(DisableDataProtection.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(DisableDataProtection.Refresh), EventCallback.Factory.Create(this, ProtectionStatus));
+                builder.AddAttribute(2, nameof(DisableDataProtection.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
