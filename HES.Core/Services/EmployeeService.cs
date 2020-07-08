@@ -459,6 +459,8 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
+            await _hardwareVaultService.ReloadHardwareVault(vault);
+
             var employeeId = vault.EmployeeId;
             var deleteAccounts = vault.Employee.HardwareVaults.Count() == 1 ? true : false;
 

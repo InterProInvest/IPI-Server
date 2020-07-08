@@ -528,15 +528,14 @@ namespace HES.Core.Services
 
         public async Task ChangeHardwareVaultStatusAsync(RemoteDevice remoteDevice, HardwareVault vault)
         {
-            if (remoteDevice.IsLocked && !remoteDevice.IsCanUnlock && vault.Status != VaultStatus.Suspended)
+            if (remoteDevice.IsLocked && !remoteDevice.IsCanUnlock && (vault.Status == VaultStatus.Reserved || vault.Status == VaultStatus.Active || vault.Status == VaultStatus.Suspended))
             {
                 vault.Status = VaultStatus.Locked;
                 await _hardwareVaultRepository.UpdateAsync(vault);
+                return;
             }
 
-            if (!remoteDevice.IsLocked &&
-                !remoteDevice.IsCanUnlock &&
-                !remoteDevice.AccessLevel.IsLinkRequired &&
+            if (!remoteDevice.IsLocked && !remoteDevice.IsCanUnlock && !remoteDevice.AccessLevel.IsLinkRequired &&
                 vault.IsStatusApplied && (vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved))
             {
                 if (vault.Status == VaultStatus.Reserved)
@@ -546,11 +545,10 @@ namespace HES.Core.Services
                     await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
                 }
 
-                await ChangeVaultActivationStatusAsync(vault.Id, HardwareVaultActivationStatus.Activated);
-
                 vault.Status = VaultStatus.Active;
                 await _hardwareVaultRepository.UpdateAsync(vault);
-            }
+                await ChangeVaultActivationStatusAsync(vault.Id, HardwareVaultActivationStatus.Activated);
+            }           
         }
 
         public async Task SetStatusAppliedAsync(HardwareVault hardwareVault)
