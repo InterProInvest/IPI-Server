@@ -9,50 +9,50 @@ else
             <VaultFilter FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <ButtonSpinner Class="btn-primary" Text="Import Vaults" Callback="ImportVaultsAsync" />
+            <ButtonSpinner Class="btn-primary mr-1" Text="Import Vaults" Callback="ImportVaultsAsync" />
             @if (MainTableService.SelectedEntity != null)
             {
-                <button type="button" @onclick="EditRfidAsync" class="btn btn-light border mx-2" title="Edit RFID">
+                <button type="button" @onclick="EditRfidAsync" class="btn btn-light border mx-1" title="Edit RFID">
                     <img class="icon-btn" src="/svg/action/edit.svg" />
                     Edit RFID
                 </button>
                 @if (MainTableService.SelectedEntity.Status == VaultStatus.Locked)
                 {
-                    <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-2" title="Activate vault">
+                    <button type="button" @onclick="ActivateVaultAsync" class="btn btn-light border mx-1" title="Activate vault">
                         <img class="icon-btn" src="/svg/action/unlock.svg" />
                         Activate vault
                     </button>
                 }
                 @if (MainTableService.SelectedEntity.Status == VaultStatus.Active)
                 {
-                    <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-2" title="Suspend vault">
+                    <button type="button" @onclick="SuspendVaultAsync" class="btn btn-light border mx-1" title="Suspend vault">
                         <img class="icon-btn" src="/svg/action/otp.svg" />
                         Suspend vault
                     </button>
 
-                    <button type="button" @onclick="ChangeVaultProfileAsync" class="btn btn-light border mx-2" title="Set vault profile">
+                    <button type="button" @onclick="ChangeVaultProfileAsync" class="btn btn-light border mx-1" title="Set vault profile">
                         <img class="icon-btn" src="/svg/action/done.svg" />
                         Change profile
                     </button>
                 }
-                @if (MainTableService.SelectedEntity.Status == VaultStatus.Active || MainTableService.SelectedEntity.Status == VaultStatus.Locked || MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
-                {
-                    <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-2" title="Compromised">
-                        <img class="icon-btn" src="/svg/action/password.svg" />
-                        Vault Is Compromised
-                    </button>
-                }
                 @if (MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
                 {
-                    <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-2" title="Show activation code">
+                    <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-1" title="Show activation code">
                         <img class="icon-btn" src="/svg/action/details.svg" />
                         Show activation code
+                    </button>
+                }
+                @if (MainTableService.SelectedEntity.Status == VaultStatus.Active || MainTableService.SelectedEntity.Status == VaultStatus.Locked || MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
+                {
+                    <button type="button" @onclick="CompromisedVaultAsync" class="btn btn-light border mx-1" title="Compromised">
+                        <img class="icon-btn" src="/svg/action/password.svg" />
+                        Vault Is Compromised
                     </button>
                 }
             }
         </ActionButtons>
         <FilterButtons>
-            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />       
+            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
     <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
@@ -158,14 +158,7 @@ else
         </TableHeader>
         <TableRow>
             <td>
-                @if (context.IsOnline)
-                    {
-                    <span title="Conected" class="state-connected">@context.Id</span>
-                    }
-                    else
-                    {
-                    @context.Id
-                    }
+                @context.Id
             </td>
             <td>
                 @context.MAC
@@ -197,9 +190,16 @@ else
                 @context.Status
             </td>
             <td>
-                @if (context.LastSynced != null)
+                @if (context.IsOnline)
                     {
-                    @context.LastSynced.Value.ToLocalTime()
+                    <span class="badge badge-success">Connected</span>
+                    }
+                    else
+                    {
+                        if (context.LastSynced != null)
+                        {
+                            @context.LastSynced.Value.ToLocalTime()
+                        }
                     }
             </td>
             <td>

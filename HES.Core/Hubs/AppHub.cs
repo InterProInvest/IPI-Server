@@ -242,6 +242,8 @@ namespace HES.Core.Hubs
 
         private async Task InvokeVaultOnlineState(string vaultId)
         {
+            await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultsUpdated);
+
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
             if (vault == null && vault?.EmployeeId == null)

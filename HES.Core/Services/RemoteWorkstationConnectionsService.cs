@@ -176,7 +176,7 @@ namespace HES.Core.Services
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Suspended:
                     await _remoteTaskService.SuspendVaultAsync(remoteDevice, vault);
-                    throw new HideezException(HideezErrorCode.HesDeviceLocked);
+                    break;
                 case VaultStatus.Deactivated:
                     //await CheckIsNeedBackupAsync(remoteDevice, vault);
                     await _remoteTaskService.WipeVaultAsync(remoteDevice, vault);
