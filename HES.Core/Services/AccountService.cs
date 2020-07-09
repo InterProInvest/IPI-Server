@@ -81,9 +81,8 @@ namespace HES.Core.Services
             await _accountRepository.UpdateOnlyPropAsync(accounts, properties);
         }
 
-        public async Task UpdateAfterAccountCreateAsync(Account account, byte[] storageId, uint timestamp)
+        public async Task UpdateAfterAccountCreateAsync(Account account, uint timestamp)
         {
-            account.StorageId = storageId;
             account.Timestamp = timestamp;
             account.Password = null;
             account.OtpSecret = null;

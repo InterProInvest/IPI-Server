@@ -7,6 +7,7 @@ using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Account;
 using HES.Core.Utilities;
+using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Security;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -642,7 +643,8 @@ namespace HES.Core.Services
                 OtpUpdatedAt = Validation.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
                 Password = _dataProtectionService.Encrypt(personalAccount.Password),
                 OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
-                EmployeeId = personalAccount.EmployeeId
+                EmployeeId = personalAccount.EmployeeId,
+                StorageId = new StorageId().Data
             };
 
             Employee employee = await GetEmployeeByIdAsync(personalAccount.EmployeeId);
@@ -956,7 +958,8 @@ namespace HES.Core.Services
                 EmployeeId = employeeId,
                 SharedAccountId = sharedAccountId,
                 Password = sharedAccount.Password,
-                OtpSecret = sharedAccount.OtpSecret
+                OtpSecret = sharedAccount.OtpSecret,
+                StorageId = new StorageId().Data
             };
 
             var employee = await GetEmployeeByIdAsync(employeeId);

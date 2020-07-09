@@ -20,7 +20,7 @@ namespace HES.Core.Interfaces
         Task UnchangedAsync(Account account);
         Task UpdateOnlyPropAsync(Account account, string[] properties);
         Task UpdateOnlyPropAsync(IList<Account> accounts, string[] properties);
-        Task UpdateAfterAccountCreateAsync(Account account, byte[] storageId, uint timestamp);
+        Task UpdateAfterAccountCreateAsync(Account account, uint timestamp);
         Task UpdateAfterAccountModifyAsync(Account account, uint timestamp);
         Task DeleteAsync(Account account);
         Task DeleteRangeAsync(IList<Account> accounts);
