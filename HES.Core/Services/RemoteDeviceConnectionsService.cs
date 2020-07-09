@@ -18,12 +18,17 @@ namespace HES.Core.Services
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IEmployeeService _employeeService;
+        private readonly IDataProtectionService _dataProtectionService;
         private readonly ILogger<RemoteDeviceConnectionsService> _logger;
 
-        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService, IEmployeeService employeeService, ILogger<RemoteDeviceConnectionsService> logger)
+        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService,
+                                              IEmployeeService employeeService,
+                                              IDataProtectionService dataProtectionService,
+                                              ILogger<RemoteDeviceConnectionsService> logger)
         {
             _hardwareVaultService = hardwareVaultService;
             _employeeService = employeeService;
+            _dataProtectionService = dataProtectionService;
             _logger = logger;
         }
 
@@ -98,7 +103,7 @@ namespace HES.Core.Services
             {
                 var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
-                if (vault.Status != VaultStatus.Active || !vault.NeedSync || vault.EmployeeId == null)
+                if (vault.Status != VaultStatus.Active || vault.NeedSync || vault.EmployeeId == null)
                     return;
 
                 var employee = await _employeeService.GetEmployeeByIdAsync(vault.EmployeeId);
@@ -121,6 +126,12 @@ namespace HES.Core.Services
                     if (firstRemoteDeviceTask.Result == null || secondRemoteDeviceTask.Result == null)
                         return;
 
+                    var firstVaultKey = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+                    await firstRemoteDeviceTask.Result.CheckPassphrase(firstVaultKey);
+
+                    var secondVaultKey = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(employeeVault.MasterPassword));
+                    await secondRemoteDeviceTask.Result.CheckPassphrase(secondVaultKey);
+
                     IRemoteAppConnection appConnection;
                     string lockedVaultStorage;
 
@@ -131,7 +142,7 @@ namespace HES.Core.Services
                         if (appConnection == null)
                             return;
 
-                        lockedVaultStorage = vault.Id;                      
+                        lockedVaultStorage = vault.Id;
                     }
                     else
                     {
