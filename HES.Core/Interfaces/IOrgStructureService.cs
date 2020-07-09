@@ -12,6 +12,7 @@ namespace HES.Core.Interfaces
         Task<List<Company>> GetCompaniesAsync();
         Task<Company> CreateCompanyAsync(Company company);
         Task EditCompanyAsync(Company company);
+        Task UnchangedCompanyAsync(Company company);
         Task DeleteCompanyAsync(string id);
         IQueryable<Department> DepartmentQuery();
         Task<List<Department>> GetDepartmentsAsync();

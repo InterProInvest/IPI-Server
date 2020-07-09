@@ -48,129 +48,129 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public async Task OnGetAsync()
         {
-            Companies = await _orgStructureService.GetCompaniesAsync();
-            Departments = await _orgStructureService.GetDepartmentsAsync();
+            //Companies = await _orgStructureService.GetCompaniesAsync();
+            //Departments = await _orgStructureService.GetDepartmentsAsync();
         }
 
         #region Company
 
-        public async Task<JsonResult> OnGetJsonCompanyAsync()
-        {
-            return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
-        }
+        //public async Task<JsonResult> OnGetJsonCompanyAsync()
+        //{
+        //    return new JsonResult(await _orgStructureService.CompanyQuery().OrderBy(c => c.Name).ToListAsync());
+        //}
 
-        public IActionResult OnGetCreateCompany()
-        {
-            return Partial("_CreateCompany", this);
-        }
+        //public IActionResult OnGetCreateCompany()
+        //{
+        //    return Partial("_CreateCompany", this);
+        //}
 
-        public async Task<IActionResult> OnPostCreateCompanyAsync(Company company)
-        {
-            if (!ModelState.IsValid)
-            {
-                ErrorMessage = Validation.GetModelStateErrors(ModelState);
-                _logger.LogError(ErrorMessage);
-                return RedirectToPage("./Index");
-            }
+        //public async Task<IActionResult> OnPostCreateCompanyAsync(Company company)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        ErrorMessage = Validation.GetModelStateErrors(ModelState);
+        //        _logger.LogError(ErrorMessage);
+        //        return RedirectToPage("./Index");
+        //    }
 
-            try
-            {
-                await _orgStructureService.CreateCompanyAsync(company);
-                SuccessMessage = $"Company created.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        await _orgStructureService.CreateCompanyAsync(company);
+        //        SuccessMessage = $"Company created.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            return RedirectToPage("./Index");
-        }
+        //    return RedirectToPage("./Index");
+        //}
 
-        public async Task<IActionResult> OnGetEditCompanyAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnGetEditCompanyAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            Company = await _orgStructureService.GetCompanyByIdAsync(id);
+        //    Company = await _orgStructureService.GetCompanyByIdAsync(id);
 
-            if (Company == null)
-            {
-                _logger.LogWarning($"{nameof(Company)} is null");
-                return NotFound();
-            }
+        //    if (Company == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(Company)} is null");
+        //        return NotFound();
+        //    }
 
-            return Partial("_EditCompany", this);
-        }
+        //    return Partial("_EditCompany", this);
+        //}
 
-        public async Task<IActionResult> OnPostEditCompanyAsync(Company company)
-        {
-            if (!ModelState.IsValid)
-            {
-                ErrorMessage = Validation.GetModelStateErrors(ModelState);
-                _logger.LogError(ErrorMessage);
-                return RedirectToPage("./Index");
-            }
+        //public async Task<IActionResult> OnPostEditCompanyAsync(Company company)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        ErrorMessage = Validation.GetModelStateErrors(ModelState);
+        //        _logger.LogError(ErrorMessage);
+        //        return RedirectToPage("./Index");
+        //    }
 
-            try
-            {
-                await _orgStructureService.EditCompanyAsync(company);
-                SuccessMessage = $"Company updated.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        await _orgStructureService.EditCompanyAsync(company);
+        //        SuccessMessage = $"Company updated.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            return RedirectToPage("./Index");
-        }
+        //    return RedirectToPage("./Index");
+        //}
 
-        public async Task<IActionResult> OnGetDeleteCompanyAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnGetDeleteCompanyAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            Company = await _orgStructureService.GetCompanyByIdAsync(id);
+        //    Company = await _orgStructureService.GetCompanyByIdAsync(id);
 
-            if (Company == null)
-            {
-                _logger.LogWarning($"{nameof(Company)} is null");
-                return NotFound();
-            }
+        //    if (Company == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(Company)} is null");
+        //        return NotFound();
+        //    }
 
-            HasForeignKey = await _orgStructureService.DepartmentQuery().AnyAsync(x => x.CompanyId == id);
+        //    HasForeignKey = await _orgStructureService.DepartmentQuery().AnyAsync(x => x.CompanyId == id);
 
-            return Partial("_DeleteCompany", this);
-        }
+        //    return Partial("_DeleteCompany", this);
+        //}
 
-        public async Task<IActionResult> OnPostDeleteCompanyAsync(string id)
-        {
-            if (id == null)
-            {
-                _logger.LogWarning($"{nameof(id)} is null");
-                return NotFound();
-            }
+        //public async Task<IActionResult> OnPostDeleteCompanyAsync(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        _logger.LogWarning($"{nameof(id)} is null");
+        //        return NotFound();
+        //    }
 
-            try
-            {
-                await _orgStructureService.DeleteCompanyAsync(id);
-                SuccessMessage = $"Company deleted.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                ErrorMessage = ex.Message;
-            }
+        //    try
+        //    {
+        //        await _orgStructureService.DeleteCompanyAsync(id);
+        //        SuccessMessage = $"Company deleted.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        ErrorMessage = ex.Message;
+        //    }
 
-            return RedirectToPage("./Index");
-        }
+        //    return RedirectToPage("./Index");
+        //}
 
         #endregion
 

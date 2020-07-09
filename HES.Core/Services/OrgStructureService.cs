@@ -1,4 +1,5 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -37,15 +38,17 @@ namespace HES.Core.Services
 
         public async Task<List<Company>> GetCompaniesAsync()
         {
-            return await _companyRepository.Query().OrderBy(c => c.Name).ToListAsync();
+            return await _companyRepository.Query().Include(x => x.Departments).OrderBy(c => c.Name).ToListAsync();
         }
 
         public async Task<Company> CreateCompanyAsync(Company company)
         {
             if (company == null)
-            {
                 throw new ArgumentNullException(nameof(company));
-            }
+
+            var exist = await _companyRepository.Query().AsNoTracking().AnyAsync(x => x.Name == company.Name);
+            if (exist)
+                throw new AlreadyExistException("Already in use.");
 
             return await _companyRepository.AddAsync(company);
         }
@@ -53,11 +56,18 @@ namespace HES.Core.Services
         public async Task EditCompanyAsync(Company company)
         {
             if (company == null)
-            {
                 throw new ArgumentNullException(nameof(company));
-            }
+
+            var exist = await _companyRepository.Query().AsNoTracking().AnyAsync(x => x.Name == company.Name && x.Id != company.Id);
+            if (exist)
+                throw new AlreadyExistException("Already in use.");
 
             await _companyRepository.UpdateAsync(company);
+        }
+
+        public async Task UnchangedCompanyAsync(Company company)
+        {
+            await _companyRepository.UnchangedAsync(company);
         }
 
         public async Task DeleteCompanyAsync(string id)
