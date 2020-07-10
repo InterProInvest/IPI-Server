@@ -462,6 +462,14 @@ namespace HES.Core.Services
 
             await _hardwareVaultService.ReloadHardwareVault(vault);
 
+            if (vault.Status != VaultStatus.Reserved &&
+                vault.Status != VaultStatus.Active &&
+                vault.Status != VaultStatus.Locked &&
+                vault.Status != VaultStatus.Suspended)
+            {
+                throw new Exception($"Vault {vaultId} in a status that does not allow to remove.");
+            }
+
             var employeeId = vault.EmployeeId;
             var deleteAccounts = vault.Employee.HardwareVaults.Count() == 1 ? true : false;
 
@@ -472,9 +480,10 @@ namespace HES.Core.Services
 
                 vault.EmployeeId = null;
 
-                if (vault.MasterPassword == null)
+                if (vault.Status == VaultStatus.Reserved && !vault.IsStatusApplied)
                 {
                     vault.Status = VaultStatus.Ready;
+                    vault.MasterPassword = null;
                     await _hardwareVaultService.ChangeVaultActivationStatusAsync(vaultId, HardwareVaultActivationStatus.Canceled);
                 }
                 else
