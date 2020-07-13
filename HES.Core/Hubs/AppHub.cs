@@ -333,7 +333,8 @@ namespace HES.Core.Hubs
                 DeviceMac = device.MAC,
                 DeviceSerialNo = device.Id,
                 NeedUpdate = needUpdate,
-                HasNewLicense = device.HasNewLicense
+                HasNewLicense = device.HasNewLicense,
+                DeviceCompromised = device.Status == VaultStatus.Compromised ? true : false
             };
 
             return info;
