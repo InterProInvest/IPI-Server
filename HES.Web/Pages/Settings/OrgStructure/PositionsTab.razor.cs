@@ -28,6 +28,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             await LoadPositionsAsync();
             await InitializeHubAsync();
+            await BreadcrumbsService.SetOrgStructure();
         }
 
         private string GetSortIcon()

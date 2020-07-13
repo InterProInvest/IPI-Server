@@ -22,8 +22,9 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         protected override async Task OnInitializedAsync()
         {
-            await InitializeHubAsync();
             await LoadCompaniesAsync();
+            await InitializeHubAsync();
+            await BreadcrumbsService.SetOrgStructure();
         }
 
         private async Task LoadCompaniesAsync()
