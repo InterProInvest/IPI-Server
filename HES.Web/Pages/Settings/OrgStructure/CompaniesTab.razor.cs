@@ -123,8 +123,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             hubConnection.On(RefreshPage.OrgSructureCompanies, async () =>
             {
-                //await EmployeeService.DetachEmployeeAsync(MainTableService.Entities);
-                //await MainTableService.LoadTableDataAsync();
+                await OrgStructureService.DetachCompaniesAsync(Companies);
+                await LoadCompaniesAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 

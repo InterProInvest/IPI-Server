@@ -85,6 +85,14 @@ namespace HES.Core.Services
             await _companyRepository.DeleteAsync(company);
         }
 
+        public async Task DetachCompaniesAsync(List<Company> companies)
+        {
+            foreach (var item in companies)
+            {
+                await _companyRepository.DetachedAsync(item);
+            }
+        }
+
         #endregion
 
         #region Department
@@ -187,9 +195,11 @@ namespace HES.Core.Services
         public async Task<Position> CreatePositionAsync(Position position)
         {
             if (position == null)
-            {
                 throw new ArgumentNullException(nameof(position));
-            }
+
+            var exist = await _positionRepository.Query().AsNoTracking().AnyAsync(x => x.Name == position.Name);
+            if (exist)
+                throw new AlreadyExistException("Already in use.");
 
             return await _positionRepository.AddAsync(position);
         }
@@ -200,21 +210,37 @@ namespace HES.Core.Services
             {
                 throw new ArgumentNullException(nameof(position));
             }
+
+            var exist = await _positionRepository.Query().AsNoTracking().AnyAsync(x => x.Name == position.Name && x.Id != position.Id);
+            if (exist)
+                throw new AlreadyExistException("Already in use.");
+
             await _positionRepository.UpdateAsync(position);
+        }
+
+        public async Task UnchangedPositionAsync(Position position)
+        {
+            await _positionRepository.UnchangedAsync(position);
         }
 
         public async Task DeletePositionAsync(string id)
         {
             if (id == null)
-            {
                 throw new ArgumentNullException(nameof(id));
-            }
+
             var position = await _positionRepository.GetByIdAsync(id);
             if (position == null)
-            {
                 throw new Exception("Position does not exist.");
-            }
+
             await _positionRepository.DeleteAsync(position);
+        }
+
+        public async Task DetachPositionsAsync(List<Position> positions)
+        {
+            foreach (var item in positions)
+            {
+                await _positionRepository.DetachedAsync(item);
+            }
         }
 
         #endregion
