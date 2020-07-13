@@ -93,6 +93,7 @@ namespace HES.Core.Services
         {
             return _departmentRepository.Query();
         }
+
         public async Task<List<Department>> GetDepartmentsAsync()
         {
             return await _departmentRepository
@@ -101,6 +102,7 @@ namespace HES.Core.Services
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
+
         public async Task<List<Department>> GetDepartmentsByCompanyIdAsync(string id)
         {
             return await _departmentRepository
@@ -122,9 +124,11 @@ namespace HES.Core.Services
         public async Task<Department> CreateDepartmentAsync(Department department)
         {
             if (department == null)
-            {
                 throw new ArgumentNullException(nameof(department));
-            }
+
+            var exist = await _departmentRepository.Query().AsNoTracking().AnyAsync(x => x.Name == department.Name);
+            if (exist)
+                throw new AlreadyExistException("Already in use.");
 
             return await _departmentRepository.AddAsync(department);
         }
@@ -132,23 +136,29 @@ namespace HES.Core.Services
         public async Task EditDepartmentAsync(Department department)
         {
             if (department == null)
-            {
                 throw new ArgumentNullException(nameof(department));
-            }
+
+            var exist = await _departmentRepository.Query().AsNoTracking().AnyAsync(x => x.Name == department.Name && x.Id != department.Id);
+            if (exist)
+                throw new AlreadyExistException("Already in use.");
+
             await _departmentRepository.UpdateAsync(department);
+        }
+
+        public async Task UnchangedDepartmentAsync(Department department)
+        {
+            await _departmentRepository.UnchangedAsync(department);
         }
 
         public async Task DeleteDepartmentAsync(string id)
         {
             if (id == null)
-            {
                 throw new ArgumentNullException(nameof(id));
-            }
+
             var department = await _departmentRepository.GetByIdAsync(id);
             if (department == null)
-            {
                 throw new Exception("Department does not exist.");
-            }
+
             await _departmentRepository.DeleteAsync(department);
         }
 

@@ -20,6 +20,7 @@ namespace HES.Core.Interfaces
         Task<Department> GetDepartmentByIdAsync(string id);
         Task<Department> CreateDepartmentAsync(Department department);
         Task EditDepartmentAsync(Department department);
+        Task UnchangedDepartmentAsync(Department department);
         Task DeleteDepartmentAsync(string id);
         IQueryable<Position> PositionQuery();
         Task<List<Position>> GetPositionsAsync();

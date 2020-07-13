@@ -75,7 +75,44 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         private async Task OpenDialogCreateDepartmentAsync(Company company)
         {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(CreateDepartment));
+                builder.AddAttribute(1, nameof(CreateDepartment.CompanyId), company.Id);
+                builder.AddAttribute(2, nameof(CreateDepartment.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(3, nameof(CreateDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
+                builder.CloseComponent();
+            };
 
+            await ModalDialogService.ShowAsync("Create Department", body);
+        }
+
+        private async Task OpenDialogEditDepartmentAsync(Department department)
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(EditDepartment));
+                builder.AddAttribute(1, nameof(EditDepartment.Department), department);
+                builder.AddAttribute(2, nameof(EditDepartment.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(3, nameof(EditDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Edit Department", body);
+        }
+
+        private async Task OpenDialogDeleteDepartmentAsync(Department department)
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteDepartment));
+                builder.AddAttribute(1, nameof(DeleteDepartment.Department), department);
+                builder.AddAttribute(2, nameof(DeleteDepartment.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(3, nameof(DeleteDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete Department", body);
         }
 
         private async Task InitializeHubAsync()

@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using Microsoft.AspNetCore.Components;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.OrgStructure
 {
@@ -9,9 +11,23 @@ namespace HES.Web.Pages.Settings.OrgStructure
     {
         [Parameter] public RenderFragment CompanyBody { get; set; }
         [Parameter] public List<Department> Departments { get; set; }
+        [Parameter] public Func<Department, Task> EditDepartmentDialog { get; set; }
+        [Parameter] public Func<Department, Task> DeleteDepartmentDialog { get; set; }
 
         public string SearchText { get; set; } = string.Empty;
         public bool IsSortedAscending { get; set; } = true;
+
+        protected override void OnParametersSet()
+        {
+            if (IsSortedAscending)
+            {
+                Departments = Departments.OrderBy(x => x.Name).ToList();
+            }
+            else
+            {
+                Departments = Departments.OrderByDescending(x => x.Name).ToList();
+            }
+        }
 
         private string GetSortIcon()
         {
@@ -27,6 +43,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         private void SortTable()
         {
+            IsSortedAscending = !IsSortedAscending;
+
             if (IsSortedAscending)
             {
                 Departments = Departments.OrderBy(x => x.Name).ToList();
@@ -35,8 +53,6 @@ namespace HES.Web.Pages.Settings.OrgStructure
             {
                 Departments = Departments.OrderByDescending(x => x.Name).ToList();
             }
-
-            IsSortedAscending = !IsSortedAscending;
         }
     }
 }
