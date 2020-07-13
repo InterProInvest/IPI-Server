@@ -62,7 +62,6 @@
             <div class="custom-content p-4">
                 <component type="typeof(ModalDialog)" render-mode="Server" />
                 <component type="typeof(Toast)" render-mode="Server" />
-                <partial name="_SpinnerPartial" />
                 @RenderBody()
             </div>
         </div>
@@ -87,7 +86,6 @@
     <!-- DatePicker JS -->
     <script src="~/lib/air-datepicker/datepicker.min.js"></script>
     <!-- Main JS -->
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
