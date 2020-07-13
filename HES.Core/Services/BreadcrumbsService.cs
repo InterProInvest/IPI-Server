@@ -150,6 +150,17 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetOrgStructure()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Settings" },
+                new Breadcrumb () { Active = true, Content = "OrgStructure" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetWorkstations()
         {
             Breadcrumbs = new List<Breadcrumb>()

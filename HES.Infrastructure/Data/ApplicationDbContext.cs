@@ -42,6 +42,8 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Department>().HasMany(x => x.Workstations).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Department>().HasMany(x => x.WorkstationEvents).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Department>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
+            // Position
+            modelBuilder.Entity<Position>().HasMany(x => x.Employees).WithOne(p => p.Position).HasForeignKey(p => p.PositionId).OnDelete(DeleteBehavior.SetNull);
 
             base.OnModelCreating(modelBuilder);
         }

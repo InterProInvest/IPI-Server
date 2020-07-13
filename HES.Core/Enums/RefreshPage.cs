@@ -19,5 +19,7 @@
         public const string HardwareVaultProfiles = "HardwareVaultProfile";
         public const string Licenses = "Licenses";
         public const string Parameters = "Parameters";
+        public const string OrgSructureCompanies = "OrgSructureCompanies";
+        public const string OrgSructurePositions = "OrgSructurePositions";
     }
 }
