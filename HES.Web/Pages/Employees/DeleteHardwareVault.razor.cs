@@ -34,6 +34,7 @@ namespace HES.Web.Pages.Employees
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault removed.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, employeeId);
+                await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

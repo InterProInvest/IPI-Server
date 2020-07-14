@@ -177,7 +177,7 @@ namespace HES.Core.Hubs
                 if (dto.LicenseInfo == 0)
                     return HesResponse.Ok;
 
-                await InvokeVaultOnlineState(dto.DeviceSerialNo);
+                await InvokeVaultStateChanged(dto.DeviceSerialNo);
                 await CheckVaultStatusAsync(dto);
                 await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
                 return HesResponse.Ok;
@@ -196,7 +196,7 @@ namespace HES.Core.Hubs
             {
                 if (!string.IsNullOrEmpty(vaultId))
                 {
-                    await InvokeVaultOnlineState(vaultId);
+                    await InvokeVaultStateChanged(vaultId);
                     _remoteDeviceConnectionsService.OnDeviceDisconnected(vaultId, GetWorkstationId());
                     await _employeeService.UpdateLastSeenAsync(vaultId);
                 }
@@ -240,16 +240,14 @@ namespace HES.Core.Hubs
                 await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
         }
 
-        private async Task InvokeVaultOnlineState(string vaultId)
+        private async Task InvokeVaultStateChanged(string vaultId)
         {
-            await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultsUpdated);
+            await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
 
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
-            if (vault == null && vault?.EmployeeId == null)
-                return;
-
-            await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
+            if (vault != null && vault?.EmployeeId != null)
+                await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
         }
 
         // Incomming request
