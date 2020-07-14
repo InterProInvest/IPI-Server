@@ -21,7 +21,6 @@ namespace HES.Web.Pages.Workstations
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<ApproveWorkstation> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public Workstation Workstation { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 

@@ -32,7 +32,6 @@ namespace HES.Web.Pages.Workstations
                     break;
             }
 
-
             await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, StateHasChanged, nameof(Workstation.Name));
             await BreadcrumbsService.SetWorkstations();
             await InitializeHubAsync();
@@ -60,6 +59,18 @@ namespace HES.Web.Pages.Workstations
                 builder.CloseComponent();
             };
             await MainTableService.ShowModalAsync("Unapprove Workstation", body);
+        }
+
+        private async Task DeleteWorkstationAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteWorkstation));
+                builder.AddAttribute(1, nameof(DeleteWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, nameof(DeleteWorkstation.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+            await MainTableService.ShowModalAsync("Delete Workstation", body);
         }
 
         private async Task WorkstationDetailsAsync()

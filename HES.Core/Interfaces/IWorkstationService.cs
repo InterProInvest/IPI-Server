@@ -23,7 +23,8 @@ namespace HES.Core.Interfaces
         Task UpdateWorkstationInfoAsync(WorkstationInfo workstationInfo);
         Task EditWorkstationAsync(Workstation workstation);
         Task ApproveWorkstationAsync(Workstation workstation);
-        Task UnapproveWorkstationAsync(string id);
+        Task UnapproveWorkstationAsync(string workstationId);
+        Task DeleteWorkstationAsync(string workstationId);
         Task<bool> GetRfidStateAsync(string workstationId);
         Task<bool> CheckIsApprovedAsync(string workstationId);
         Task DetachWorkstationsAsync(List<Workstation> workstations);

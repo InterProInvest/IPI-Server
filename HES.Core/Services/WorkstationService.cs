@@ -310,6 +310,18 @@ namespace HES.Core.Services
             await _workstationRepository.UpdateAsync(workstation);
         }
 
+        public async Task DeleteWorkstationAsync(string workstationId)
+        {
+            if (workstationId == null)
+                throw new ArgumentNullException(nameof(workstationId));
+
+            var workstation = await GetWorkstationByIdAsync(workstationId);
+            if (workstation == null)
+                throw new Exception("Workstation not found.");
+
+            await _workstationRepository.DeleteAsync(workstation);
+        }
+
         public async Task<bool> GetRfidStateAsync(string workstationId)
         {
             var workstation = await _workstationRepository
