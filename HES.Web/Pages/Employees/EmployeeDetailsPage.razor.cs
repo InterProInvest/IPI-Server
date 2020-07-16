@@ -295,6 +295,18 @@ namespace HES.Web.Pages.Employees
             await ModalDialogService.ShowAsync("Hardware vault details", body);
         }
 
+        private async Task OpenDialogShowActivationCodeAsync(HardwareVault hardwareVault)
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(HardwareVaults.ShowActivationCode));
+                builder.AddAttribute(1, nameof(HardwareVaults.ShowActivationCode.HardwareVault), hardwareVault);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Activation code", body);
+        }
+
         #endregion
 
         private async Task InitializeHubAsync()

@@ -49,29 +49,7 @@ namespace HES.Web.Pages.HardwareVaults
             await BreadcrumbsService.SetHardwareVaults();
             await InitializeHubAsync();
         }
-
-        private async Task InitializeHubAsync()
-        {
-            hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
-            .Build();
-
-            hubConnection.On(RefreshPage.HardwareVaults, async () =>
-            {
-                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
-                await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-            });
-
-            hubConnection.On(RefreshPage.HardwareVaultStateChanged, async () =>
-            {
-                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
-                await MainTableService.LoadTableDataAsync();
-            });
-
-            await hubConnection.StartAsync();
-        }
-
+              
         public async Task ImportVaultsAsync()
         {
             try
@@ -166,6 +144,29 @@ namespace HES.Web.Pages.HardwareVaults
 
             await MainTableService.ShowModalAsync("Profile", body);
         }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On(RefreshPage.HardwareVaults, async () =>
+            {
+                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            hubConnection.On(RefreshPage.HardwareVaultStateChanged, async () =>
+            {
+                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+                await MainTableService.LoadTableDataAsync();
+            });
+
+            await hubConnection.StartAsync();
+        }
+
 
         public void Dispose()
         {

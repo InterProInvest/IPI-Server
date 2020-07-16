@@ -78,7 +78,14 @@ else
                             }
                         </div>
                         <div>
-                            <button type="button" class="btn btn-light border mx-2" title="Hardware Vault Details" @onclick="@(() => OpenDialogHardwareVaultDetailsAsync(hardwareVault))">
+                            @if (hardwareVault.Status == VaultStatus.Suspended || hardwareVault.Status == VaultStatus.Reserved)
+                            {
+                                <button type="button" @onclick="@(async () => await OpenDialogShowActivationCodeAsync(hardwareVault))" class="btn btn-light border mx-1" title="Show activation code">
+                                    <img class="icon-btn" src="/svg/icon-security.svg" />
+                                    Activation code
+                                </button>
+                            }
+                            <button type="button" class="btn btn-light border mx-2" title="Hardware Vault Details" @onclick="@(async () => await OpenDialogHardwareVaultDetailsAsync(hardwareVault))">
                                 <img class="icon-btn" src="/svg/action/details.svg" />
                                 Details
                             </button>

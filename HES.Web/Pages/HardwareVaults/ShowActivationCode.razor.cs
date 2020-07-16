@@ -1,7 +1,10 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
@@ -11,6 +14,8 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IEmailSenderService EmailSenderService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<ShowActivationCode> Logger { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
         [Parameter] public HardwareVault HardwareVault { get; set; }
 
@@ -19,8 +24,17 @@ namespace HES.Web.Pages.HardwareVaults
 
         protected override async Task OnInitializedAsync()
         {
-            Code = await HardwareVaultService.GetVaultActivationCodeAsync(HardwareVault.Id);
-            InputType = "Password";
+            try
+            {
+                Code = await HardwareVaultService.GetVaultActivationCodeAsync(HardwareVault.Id);
+                InputType = "Password";
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CloseAsync();
+            }
         }
 
         private async Task SendEmailAsync()

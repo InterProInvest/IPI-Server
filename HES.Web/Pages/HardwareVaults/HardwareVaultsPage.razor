@@ -38,8 +38,8 @@ else
                 @if (MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
                 {
                     <button type="button" @onclick="ShowActivationCodeAsync" class="btn btn-light border mx-1" title="Show activation code">
-                        <img class="icon-btn" src="/svg/action/details.svg" />
-                        Show activation code
+                        <img class="icon-btn" src="/svg/icon-security.svg" />
+                        Activation code
                     </button>
                 }
                 @if (MainTableService.SelectedEntity.Status == VaultStatus.Active || MainTableService.SelectedEntity.Status == VaultStatus.Locked || MainTableService.SelectedEntity.Status == VaultStatus.Suspended || MainTableService.SelectedEntity.Status == VaultStatus.Reserved)
@@ -198,7 +198,7 @@ else
                     {
                         if (context.LastSynced != null)
                         {
-                            @context.LastSynced.Value.ToLocalTime()
+                        @context.LastSynced.Value.ToLocalTime()
                         }
                     }
             </td>
