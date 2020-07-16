@@ -172,7 +172,6 @@ namespace HES.Core.Services
                     await CheckTaskAsync(remoteDevice, vault.Id, primaryAccountOnly);
                     break;
                 case VaultStatus.Locked:
-                    await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, TaskOperation.Suspend);
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
                 case VaultStatus.Suspended:
                     await _remoteTaskService.SuspendVaultAsync(remoteDevice, vault);
@@ -223,6 +222,7 @@ namespace HES.Core.Services
                 throw new Exception($"Vault {vaultId} was wiped a non-current server");
 
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+            _logger.LogDebug($"MasterPassword {vault.Id} CheckPassphrase {vault.MasterPassword}");
 
             await remoteDevice.CheckPassphrase(key);
         }

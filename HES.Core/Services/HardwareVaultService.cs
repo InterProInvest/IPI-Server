@@ -11,6 +11,7 @@ using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ namespace HES.Core.Services
         private readonly IAppSettingsService _appSettingsService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<HardwareVaultService> _logger;
 
         public HardwareVaultService(IAsyncRepository<HardwareVault> hardwareVaultRepository,
                                     IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
@@ -45,7 +47,8 @@ namespace HES.Core.Services
                                     IWorkstationService workstationService,
                                     IAppSettingsService appSettingsService,
                                     IDataProtectionService dataProtectionService,
-                                    IHttpClientFactory httpClientFactory)
+                                    IHttpClientFactory httpClientFactory,
+                                    ILogger<HardwareVaultService> logger)
         {
             _hardwareVaultRepository = hardwareVaultRepository;
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
@@ -57,6 +60,7 @@ namespace HES.Core.Services
             _appSettingsService = appSettingsService;
             _dataProtectionService = dataProtectionService;
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
         #region Vault
@@ -543,6 +547,7 @@ namespace HES.Core.Services
                 {
                     var accessParams = await GetAccessParamsAsync(vault.Id);
                     var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+                    _logger.LogDebug($"MasterPassword {vault.Id} ACCESS {key}");
                     await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
                 }
 

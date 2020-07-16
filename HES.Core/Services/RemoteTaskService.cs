@@ -122,7 +122,7 @@ namespace HES.Core.Services
         }
 
         private async Task ExecuteRemoteTask(RemoteDevice remoteDevice, HardwareVaultTask task)
-        {         
+        {
             switch (task.Operation)
             {
                 case TaskOperation.Create:
@@ -139,7 +139,7 @@ namespace HES.Core.Services
                     break;
                 case TaskOperation.Profile:
                     await ProfileVaultAsync(remoteDevice, task);
-                    break;    
+                    break;
             }
         }
 
@@ -185,6 +185,7 @@ namespace HES.Core.Services
         {
             var accessParams = await _hardwareVaultService.GetAccessParamsAsync(task.HardwareVaultId);
             var key = ConvertUtils.HexStringToBytes(task.Password);
+            _logger.LogDebug($"MasterPassword {task.HardwareVaultId} ACCESS(profile) {task.Password}");
             await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
         }
 
@@ -195,6 +196,7 @@ namespace HES.Core.Services
 
             var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+            _logger.LogDebug($"MasterPassword {vault.Id} LINK {vault.MasterPassword}");
             await remoteDevice.Link(key, code, 3);
             await _hardwareVaultService.SetStatusAppliedAsync(vault);
         }
@@ -206,6 +208,7 @@ namespace HES.Core.Services
 
             var code = Encoding.UTF8.GetBytes(await _hardwareVaultService.GetVaultActivationCodeAsync(vault.Id));
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+            _logger.LogDebug($"MasterPassword {vault.Id} SUSPEND {vault.MasterPassword}");
             await remoteDevice.LockDeviceCode(key, code, 3);
             await _hardwareVaultService.SetStatusAppliedAsync(vault);
         }
