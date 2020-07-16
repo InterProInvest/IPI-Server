@@ -547,7 +547,7 @@ namespace HES.Core.Services
                 {
                     var accessParams = await GetAccessParamsAsync(vault.Id);
                     var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
-                    _logger.LogDebug($"MasterPassword {vault.Id} ACCESS {key}");
+                    _logger.LogDebug($"MasterPassword {vault.Id} ACCESS {vault.MasterPassword}");
                     await remoteDevice.Access(DateTime.UtcNow, key, accessParams);
                 }
 
