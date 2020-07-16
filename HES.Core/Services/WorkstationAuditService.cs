@@ -431,26 +431,26 @@ namespace HES.Core.Services
         {
             return await _summaryByDayAndEmployeeRepository.SqlQuery
                 ($@"SELECT
-	                    DATE(workstationsessions.StartDate) AS Date,
-	                    employees.Id AS EmployeeId,
-	                    IFNULL(CONCAT(employees.FirstName,' ',employees.LastName), 'N/A') AS Employee,
-	                    companies.Id AS CompanyId,
-	                    IFNULL(companies.Name, 'N/A') AS Company,
-	                    departments.Id AS DepartmentId,
-	                    IFNULL(departments.Name, 'N/A') AS Department,
+	                    DATE(WorkstationSessions.StartDate) AS Date,
+	                    Employees.Id AS EmployeeId,
+	                    IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
 	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,
 	                    COUNT(*) AS SessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration
-                    FROM workstationsessions
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
                     GROUP BY
-	                    DATE(workstationsessions.StartDate),
-	                    workstationsessions.EmployeeId
+	                    DATE(WorkstationSessions.StartDate),
+	                    WorkstationSessions.EmployeeId
                     ORDER BY
-	                    DATE(workstationsessions.StartDate) DESC, Employee ASC
+	                    DATE(WorkstationSessions.StartDate) DESC, Employee ASC
                     LIMIT 500")
                 .AsNoTracking()
                 .ToListAsync();
@@ -463,39 +463,43 @@ namespace HES.Core.Services
 
             if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
             {
-                parameters.Add($"workstationsessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
+                parameters.Add($"WorkstationSessions.StartDate >= '{summaryFilter.StartDate.Value.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
+            }
+            if (summaryFilter.EndDate != null)
+            {
+                parameters.Add($"WorkstationSessions.EndDate <= '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
             if (summaryFilter.EmployeeId != null)
             {
                 if (summaryFilter.EmployeeId == "N/A")
                 {
-                    parameters.Add($"employees.Id IS NULL");
+                    parameters.Add($"Employees.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"employees.Id = '{summaryFilter.EmployeeId}'");
+                    parameters.Add($"Employees.Id = '{summaryFilter.EmployeeId}'");
                 }
             }
             if (summaryFilter.CompanyId != null)
             {
                 if (summaryFilter.CompanyId == "N/A")
                 {
-                    parameters.Add($"companies.Id IS NULL");
+                    parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
                 }
             }
             if (summaryFilter.DepartmentId != null)
             {
                 if (summaryFilter.DepartmentId == "N/A")
                 {
-                    parameters.Add($"departments.Id IS NULL");
+                    parameters.Add($"Departments.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"departments.Id = '{summaryFilter.DepartmentId}'");
+                    parameters.Add($"Departments.Id = '{summaryFilter.DepartmentId}'");
                 }
             }
 
@@ -511,27 +515,27 @@ namespace HES.Core.Services
 
             return await _summaryByDayAndEmployeeRepository.SqlQuery
                 ($@"SELECT
-	                    DATE(workstationsessions.StartDate) AS Date,
-	                    employees.Id AS EmployeeId,
-	                    IFNULL(CONCAT(employees.FirstName,' ',employees.LastName), 'N/A') AS Employee,
-	                    companies.Id AS CompanyId,
-	                    IFNULL(companies.Name, 'N/A') AS Company,
-	                    departments.Id AS DepartmentId,
-	                    IFNULL(departments.Name, 'N/A') AS Department,
+	                    DATE(WorkstationSessions.StartDate) AS Date,
+	                    Employees.Id AS EmployeeId,
+	                    IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
 	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,
 	                    COUNT(*) AS SessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration
-                    FROM workstationsessions
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
                 {where}
                     GROUP BY
-	                    DATE(workstationsessions.StartDate),
-	                    workstationsessions.EmployeeId
+	                    DATE(WorkstationSessions.StartDate),
+	                    WorkstationSessions.EmployeeId
                     ORDER BY
-	                    DATE(workstationsessions.StartDate) DESC, Employee ASC
+	                    DATE(WorkstationSessions.StartDate) DESC, Employee ASC
                     LIMIT {summaryFilter.Records}")
                 .AsNoTracking()
                 .ToListAsync();
@@ -541,25 +545,25 @@ namespace HES.Core.Services
         {
             return await _summaryByEmployeesRepository.SqlQuery
                  ($@"SELECT
-	                    employees.Id AS EmployeeId,
-	                    IFNULL(CONCAT(employees.FirstName,' ',employees.LastName), 'N/A') AS Employee,
-	                    companies.Id AS CompanyId,
-	                    IFNULL(companies.Name, 'N/A') AS Company,
-	                    departments.Id AS DepartmentId,
-	                    IFNULL(departments.Name, 'N/A') AS Department,
+	                    Employees.Id AS EmployeeId,
+	                    IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
 	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-	                    COUNT(DISTINCT DATE(workstationsessions.StartDate)) AS WorkingDaysCount,
+	                    COUNT(DISTINCT DATE(WorkstationSessions.StartDate)) AS WorkingDaysCount,
 	                    COUNT(*) AS TotalSessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
-	                    COUNT(*) / COUNT(DISTINCT DATE(workstationsessions.StartDate)) AS AvgSessionsCountPerDay,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT DATE(workstationsessions.StartDate))) AS AvgWorkingHoursPerDay
-                    FROM workstationsessions
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id    
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
+	                    COUNT(*) / COUNT(DISTINCT DATE(WorkstationSessions.StartDate)) AS AvgSessionsCountPerDay,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT DATE(WorkstationSessions.StartDate))) AS AvgWorkingHoursPerDay
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id    
                     GROUP BY
-	                    workstationsessions.EmployeeId
+	                    WorkstationSessions.EmployeeId
                     ORDER BY
 	                    Employee ASC
                     LIMIT 500")
@@ -574,28 +578,28 @@ namespace HES.Core.Services
 
             if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
             {
-                parameters.Add($"workstationsessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
+                parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
             if (summaryFilter.CompanyId != null)
             {
                 if (summaryFilter.CompanyId == "N/A")
                 {
-                    parameters.Add($"companies.Id IS NULL");
+                    parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
                 }
             }
             if (summaryFilter.DepartmentId != null)
             {
                 if (summaryFilter.DepartmentId == "N/A")
                 {
-                    parameters.Add($"departments.Id IS NULL");
+                    parameters.Add($"Departments.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"departments.Id = '{summaryFilter.DepartmentId}'");
+                    parameters.Add($"Departments.Id = '{summaryFilter.DepartmentId}'");
                 }
             }
 
@@ -611,26 +615,26 @@ namespace HES.Core.Services
 
             return await _summaryByEmployeesRepository.SqlQuery
                 ($@"SELECT
-	                    employees.Id AS EmployeeId,
-	                    IFNULL(CONCAT(employees.FirstName,' ',employees.LastName), 'N/A') AS Employee,
-	                    companies.Id AS CompanyId,
-	                    IFNULL(companies.Name, 'N/A') AS Company,
-	                    departments.Id AS DepartmentId,
-	                    IFNULL(departments.Name, 'N/A') AS Department,
+	                    Employees.Id AS EmployeeId,
+	                    IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
 	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-	                    COUNT(DISTINCT DATE(workstationsessions.StartDate)) AS WorkingDaysCount,
+	                    COUNT(DISTINCT DATE(WorkstationSessions.StartDate)) AS WorkingDaysCount,
 	                    COUNT(*) AS TotalSessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
-	                    COUNT(*) / COUNT(DISTINCT DATE(workstationsessions.StartDate)) AS AvgSessionsCountPerDay,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT DATE(workstationsessions.StartDate))) AS AvgWorkingHoursPerDay
-                    FROM workstationsessions
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
+	                    COUNT(*) / COUNT(DISTINCT DATE(WorkstationSessions.StartDate)) AS AvgSessionsCountPerDay,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT DATE(WorkstationSessions.StartDate))) AS AvgWorkingHoursPerDay
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
                 {where}
                     GROUP BY
-	                    workstationsessions.EmployeeId
+	                    WorkstationSessions.EmployeeId
                     ORDER BY
 	                    Employee ASC
                     LIMIT {summaryFilter.Records}")
@@ -642,23 +646,23 @@ namespace HES.Core.Services
         {
             return await _summaryByDepartmentsRepository.SqlQuery
                 ($@"SELECT
-	                    companies.Id AS CompanyId,
-	                    IFNULL(companies.Name, 'N/A') AS Company,
-	                    departments.Id AS DepartmentId,
-	                    IFNULL(departments.Name, 'N/A') AS Department,
-	                    COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS EmployeesCount,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
+	                    COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS EmployeesCount,
 	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
 	                    COUNT(*) AS TotalSessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
-	                    COUNT(*) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
-                    FROM workstationsessions
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
+	                    COUNT(*) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
                     GROUP BY
-	                    departments.Id
+	                    Departments.Id
                     ORDER BY
 	                    Company ASC, Department ASC
                     LIMIT 500")
@@ -673,18 +677,18 @@ namespace HES.Core.Services
 
             if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
             {
-                parameters.Add($"workstationsessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
+                parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
 
             if (summaryFilter.CompanyId != null)
             {
                 if (summaryFilter.CompanyId == "N/A")
                 {
-                    parameters.Add($"companies.Id IS NULL");
+                    parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
                 }
             }
 
@@ -700,24 +704,24 @@ namespace HES.Core.Services
 
             return await _summaryByDepartmentsRepository.SqlQuery
                 ($@"SELECT
-	                    companies.Id AS CompanyId,
-	                    IFNULL(companies.Name, 'N/A') AS Company,
-	                    departments.Id AS DepartmentId,
-	                    IFNULL(departments.Name, 'N/A') AS Department,
-	                    COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS EmployeesCount,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
+	                    COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS EmployeesCount,
 	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
 	                    COUNT(*) AS TotalSessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
-	                    COUNT(*) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
-                    FROM workstationsessions
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
+	                    COUNT(*) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
                 {where}
                     GROUP BY
-	                    departments.Id
+	                    Departments.Id
                     ORDER BY
 	                    Company ASC, Department ASC
                     LIMIT {summaryFilter.Records}")
@@ -729,20 +733,20 @@ namespace HES.Core.Services
         {
             return await _summaryByWorkstationsRepository.SqlQuery
                 ($@"SELECT
-	                    workstations.Name AS Workstation,
-	                    COUNT(DISTINCT IFNULL(companies.Id, 'N/A')) AS CompaniesCount,
-	                    COUNT(DISTINCT IFNULL(departments.Id, 'N/A')) AS DepartmentsCount,
-	                    COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS EmployeesCount,
+	                    Workstations.Name AS Workstation,
+	                    COUNT(DISTINCT IFNULL(Companies.Id, 'N/A')) AS CompaniesCount,
+	                    COUNT(DISTINCT IFNULL(Departments.Id, 'N/A')) AS DepartmentsCount,
+	                    COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS EmployeesCount,
 	                    COUNT(*) AS TotalSessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
-	                    COUNT(*) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
-                    FROM workstationsessions
-	                    LEFT JOIN workstations ON workstationsessions.WorkstationId = workstations.Id
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id 
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
+	                    COUNT(*) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
+                    FROM WorkstationSessions
+	                    LEFT JOIN Workstations ON WorkstationSessions.WorkstationId = Workstations.Id
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id 
                     GROUP BY
 	                    WorkstationId
                     LIMIT 500")
@@ -757,39 +761,39 @@ namespace HES.Core.Services
 
             if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
             {
-                parameters.Add($"workstationsessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
+                parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
             if (summaryFilter.EmployeeId != null)
             {
                 if (summaryFilter.EmployeeId == "N/A")
                 {
-                    parameters.Add($"employees.Id IS NULL");
+                    parameters.Add($"Employees.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"employees.Id = '{summaryFilter.EmployeeId}'");
+                    parameters.Add($"Employees.Id = '{summaryFilter.EmployeeId}'");
                 }
             }
             if (summaryFilter.CompanyId != null)
             {
                 if (summaryFilter.CompanyId == "N/A")
                 {
-                    parameters.Add($"companies.Id IS NULL");
+                    parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
                 }
             }
             if (summaryFilter.DepartmentId != null)
             {
                 if (summaryFilter.DepartmentId == "N/A")
                 {
-                    parameters.Add($"departments.Id IS NULL");
+                    parameters.Add($"Departments.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"departments.Id = '{summaryFilter.DepartmentId}'");
+                    parameters.Add($"Departments.Id = '{summaryFilter.DepartmentId}'");
                 }
             }
 
@@ -805,20 +809,20 @@ namespace HES.Core.Services
 
             return await _summaryByWorkstationsRepository.SqlQuery
                 ($@"SELECT
-	                    workstations.Name AS Workstation,
-	                    COUNT(DISTINCT IFNULL(companies.Id, 'N/A')) AS CompaniesCount,
-	                    COUNT(DISTINCT IFNULL(departments.Id, 'N/A')) AS DepartmentsCount,
-	                    COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS EmployeesCount,
+	                    Workstations.Name AS Workstation,
+	                    COUNT(DISTINCT IFNULL(Companies.Id, 'N/A')) AS CompaniesCount,
+	                    COUNT(DISTINCT IFNULL(Departments.Id, 'N/A')) AS DepartmentsCount,
+	                    COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS EmployeesCount,
 	                    COUNT(*) AS TotalSessionsCount,
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS TotalSessionsDuration,	
-	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate)))) AS AvgSessionsDuration,	
-	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(workstationsessions.EndDate, NOW()), workstationsessions.StartDate))) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
-	                    COUNT(*) / COUNT(DISTINCT IFNULL(employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
-                    FROM workstationsessions
-	                    LEFT JOIN workstations ON workstationsessions.WorkstationId = workstations.Id
-	                    LEFT JOIN employees ON workstationsessions.EmployeeId = employees.Id
-	                    LEFT JOIN departments ON employees.DepartmentId = departments.Id
-	                    LEFT JOIN companies ON departments.CompanyId = companies.Id
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
+	                    COUNT(*) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
+                    FROM WorkstationSessions
+	                    LEFT JOIN Workstations ON WorkstationSessions.WorkstationId = Workstations.Id
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
                 {where}
                     GROUP BY
 	                    WorkstationId
