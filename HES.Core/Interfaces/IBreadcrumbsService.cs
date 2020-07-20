@@ -16,7 +16,8 @@ namespace HES.Core.Interfaces
         Task SetGroups();
         Task SetAdministrators();
         Task SetHardwareVaultProfiles();
-        public Task SetSharedAccounts();
+        Task SetSharedAccounts();
+        Task SetAuditSummaries();
         Task SetGroupDetails(string name);
         Task SetLicenseOrders();
         Task SetParameters();

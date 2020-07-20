@@ -57,7 +57,9 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SummaryByDayAndEmployee>>> GetSummaryByDayAndEmployees()
         {
-            return await _workstationAuditService.GetSummaryByDayAndEmployeesAsync();
+            //return await _workstationAuditService.GetSummaryByDayAndEmployeesAsync();
+            var list = new List<SummaryByDayAndEmployee>();
+            return list;
         }
 
         [HttpPost]

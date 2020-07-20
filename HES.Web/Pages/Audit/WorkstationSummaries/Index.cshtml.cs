@@ -33,42 +33,43 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
 
         public async Task OnGet()
         {
-            SummaryByDayAndEmployee = await _workstationAuditService.GetSummaryByDayAndEmployeesAsync();
+            //SummaryByDayAndEmployee = await _workstationAuditService.GetSummaryByDayAndEmployeesAsync();
+            //SummaryByDayAndEmployee = new List<SummaryByDayAndEmployee>();
 
-            ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
-            ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
+            //ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
+            //ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
 
-            ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
-            ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
+            //ViewData["DatePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.ToLower();
+            //ViewData["TimePattern"] = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToUpper() == "H:MM" ? "hh:ii" : "hh:ii aa";
         }
 
-        public async Task<IActionResult> OnPostFilterSummaryByDaysAndEmployeesAsync(SummaryFilter summaryFilter)
-        {
-            SummaryByDayAndEmployee = await _workstationAuditService.GetFilteredSummaryByDaysAndEmployeesAsync(summaryFilter);
-            return Partial("_ByDaysAndEmployees", this);
-        }
+        //public async Task<IActionResult> OnPostFilterSummaryByDaysAndEmployeesAsync(SummaryFilter summaryFilter)
+        //{
+        //    SummaryByDayAndEmployee = await _workstationAuditService.GetFilteredSummaryByDaysAndEmployeesAsync(summaryFilter);
+        //    return Partial("_ByDaysAndEmployees", this);
+        //}
 
-        public async Task<IActionResult> OnPostFilterSummaryByEmployeesAsync(SummaryFilter summaryFilter)
-        {
-            SummaryByEmployees = await _workstationAuditService.GetFilteredSummaryByEmployeesAsync(summaryFilter);
-            return Partial("_ByEmployees", this);
-        }
+        //public async Task<IActionResult> OnPostFilterSummaryByEmployeesAsync(SummaryFilter summaryFilter)
+        //{
+        //    SummaryByEmployees = await _workstationAuditService.GetFilteredSummaryByEmployeesAsync(summaryFilter);
+        //    return Partial("_ByEmployees", this);
+        //}
 
-        public async Task<IActionResult> OnPostFilterSummaryByDepartmentsAsync(SummaryFilter summaryFilter)
-        {
-            SummaryByDepartments = await _workstationAuditService.GetFilteredSummaryByDepartmentsAsync(summaryFilter);
-            return Partial("_ByDepartments", this);
-        }
+        //public async Task<IActionResult> OnPostFilterSummaryByDepartmentsAsync(SummaryFilter summaryFilter)
+        //{
+        //    SummaryByDepartments = await _workstationAuditService.GetFilteredSummaryByDepartmentsAsync(summaryFilter);
+        //    return Partial("_ByDepartments", this);
+        //}
 
-        public async Task<IActionResult> OnPostFilterSummaryByWorkstationsAsync(SummaryFilter summaryFilter)
-        {
-            SummaryByWorkstations = await _workstationAuditService.GetFilteredSummaryByWorkstationsAsync(summaryFilter);
-            return Partial("_ByWorkstations", this);
-        }
+        //public async Task<IActionResult> OnPostFilterSummaryByWorkstationsAsync(SummaryFilter summaryFilter)
+        //{
+        //    SummaryByWorkstations = await _workstationAuditService.GetFilteredSummaryByWorkstationsAsync(summaryFilter);
+        //    return Partial("_ByWorkstations", this);
+        //}
 
-        public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
-        {
-            return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
-        }
+        //public async Task<JsonResult> OnGetJsonDepartmentAsync(string id)
+        //{
+        //    return new JsonResult(await _orgStructureService.DepartmentQuery().Where(d => d.CompanyId == id).ToListAsync());
+        //}
     }
 }

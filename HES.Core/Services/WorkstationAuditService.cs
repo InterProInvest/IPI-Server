@@ -2,12 +2,14 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Web;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -427,8 +429,88 @@ namespace HES.Core.Services
 
         #region Summary
 
-        public async Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync()
+        public async Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions)
         {
+            var having = string.Empty;
+            var searchParameter = string.Empty;
+            var filterParameters = new List<string>();
+            var orderby = string.Empty;
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.StartDate != null)
+                {
+                    filterParameters.Add($"Date >= '{dataLoadingOptions.Filter.StartDate.Value.ToString("yyyy-MM-dd")}'");
+                }
+                if (dataLoadingOptions.Filter.EndDate != null)
+                {
+                    filterParameters.Add($"Date <= '{dataLoadingOptions.Filter.EndDate.Value.ToString("yyyy-MM-dd")}'");
+                }
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    filterParameters.Add($"Employee LIKE '%{dataLoadingOptions.Filter.Employee}%'");       
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    filterParameters.Add($"Company LIKE '%{dataLoadingOptions.Filter.Company}%'");
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    filterParameters.Add($"Department LIKE '%{dataLoadingOptions.Filter.Department}%'");                   
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+                searchParameter = $"Date LIKE '%{dataLoadingOptions.SearchText}%' OR Employee LIKE '%{dataLoadingOptions.SearchText}%' OR Company LIKE '%{dataLoadingOptions.SearchText}%' OR Department LIKE '%{dataLoadingOptions.SearchText}%'";
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(SummaryByDayAndEmployee.Date):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Date ASC, Employee ASC" : "ORDER BY Date DESC, Employee ASC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.Employee):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Employee ASC" : "ORDER BY Employee DESC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.Company):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Company ASC" : "ORDER BY Company DESC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.Department):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Department ASC" : "ORDER BY Department DESC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.WorkstationsCount):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY WorkstationsCount ASC" : "ORDER BY WorkstationsCount DESC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.AvgSessionsDuration):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY AvgSessionsDuration ASC" : "ORDER BY AvgSessionsDuration DESC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.SessionsCount):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY SessionsCount ASC" : "ORDER BY SessionsCount DESC";
+                    break;
+                case nameof(SummaryByDayAndEmployee.TotalSessionsDuration):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY TotalSessionsDuration ASC" : "ORDER BY TotalSessionsDuration DESC";
+                    break;
+            }
+
+            if (filterParameters.Count > 0 && searchParameter == string.Empty)
+            {
+                having = string.Join(" AND ", filterParameters).Insert(0, "HAVING ");
+            }
+            else if (filterParameters.Count == 0 && searchParameter != string.Empty)
+            {
+                having = $"HAVING {searchParameter}";
+            }
+            else if (filterParameters.Count > 0 && searchParameter != string.Empty)
+            {
+                var filter = string.Join(" AND ", filterParameters);
+                having = $"HAVING ({filter}) AND ({searchParameter})";
+            }
+
             return await _summaryByDayAndEmployeeRepository.SqlQuery
                 ($@"SELECT
 	                    DATE(WorkstationSessions.StartDate) AS Date,
@@ -449,11 +531,89 @@ namespace HES.Core.Services
                     GROUP BY
 	                    DATE(WorkstationSessions.StartDate),
 	                    WorkstationSessions.EmployeeId
-                    ORDER BY
-	                    DATE(WorkstationSessions.StartDate) DESC, Employee ASC
-                    LIMIT 500")
+                {having}
+                {orderby}
+                    LIMIT {dataLoadingOptions.Take} OFFSET {dataLoadingOptions.Skip}")
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<int> GetSummaryByDayAndEmployeesCountAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions)
+        {
+            var having = string.Empty;
+            var searchParameter = string.Empty;
+            var filterParameters = new List<string>();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.StartDate != null)
+                {
+                    filterParameters.Add($"Date >= '{dataLoadingOptions.Filter.StartDate.Value.ToString("yyyy-MM-dd")}'");
+                }
+                if (dataLoadingOptions.Filter.EndDate != null)
+                {
+                    filterParameters.Add($"Date <= '{dataLoadingOptions.Filter.EndDate.Value.ToString("yyyy-MM-dd")}'");
+                }
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    filterParameters.Add($"Employee LIKE '%{dataLoadingOptions.Filter.Employee}%'");
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    filterParameters.Add($"Company LIKE '%{dataLoadingOptions.Filter.Company}%'");
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    filterParameters.Add($"Department LIKE '%{dataLoadingOptions.Filter.Department}%'");
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+                searchParameter = $"Date LIKE '%{dataLoadingOptions.SearchText}%' OR Employee LIKE '%{dataLoadingOptions.SearchText}%' OR Company LIKE '%{dataLoadingOptions.SearchText}%' OR Department LIKE '%{dataLoadingOptions.SearchText}%'";
+            }
+
+            if (filterParameters.Count > 0 && searchParameter == string.Empty)
+            {
+                having = string.Join(" AND ", filterParameters).Insert(0, "HAVING ");
+            }
+            else if (filterParameters.Count == 0 && searchParameter != string.Empty)
+            {
+                having = $"HAVING {searchParameter}";
+            }
+            else if (filterParameters.Count > 0 && searchParameter != string.Empty)
+            {
+                var filter = string.Join(" AND ", filterParameters);
+                having = $"HAVING ({filter}) AND ({searchParameter})";
+            }
+
+            return await _summaryByDayAndEmployeeRepository.SqlQuery
+                ($@"SELECT
+	                    DATE(WorkstationSessions.StartDate) AS Date,
+	                    Employees.Id AS EmployeeId,
+	                    IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
+	                    Companies.Id AS CompanyId,
+	                    IFNULL(Companies.Name, 'N/A') AS Company,
+	                    Departments.Id AS DepartmentId,
+	                    IFNULL(Departments.Name, 'N/A') AS Department,
+	                    COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
+	                    SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,
+	                    COUNT(*) AS SessionsCount,
+	                    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration
+                    FROM WorkstationSessions
+	                    LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
+	                    LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
+	                    LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
+                    GROUP BY
+	                    DATE(WorkstationSessions.StartDate),
+	                    WorkstationSessions.EmployeeId
+                {having}
+                    ORDER BY
+	                    DATE(WorkstationSessions.StartDate) DESC, Employee ASC")
+                .CountAsync();
         }
 
         public async Task<List<SummaryByDayAndEmployee>> GetFilteredSummaryByDaysAndEmployeesAsync(SummaryFilter summaryFilter)
@@ -469,37 +629,37 @@ namespace HES.Core.Services
             {
                 parameters.Add($"WorkstationSessions.EndDate <= '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
-            if (summaryFilter.EmployeeId != null)
+            if (summaryFilter.Employee != null)
             {
-                if (summaryFilter.EmployeeId == "N/A")
+                if (summaryFilter.Employee == "N/A")
                 {
                     parameters.Add($"Employees.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Employees.Id = '{summaryFilter.EmployeeId}'");
+                    parameters.Add($"Employees.Id = '{summaryFilter.Employee}'");
                 }
             }
-            if (summaryFilter.CompanyId != null)
+            if (summaryFilter.Company != null)
             {
-                if (summaryFilter.CompanyId == "N/A")
+                if (summaryFilter.Company == "N/A")
                 {
                     parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
                 }
             }
-            if (summaryFilter.DepartmentId != null)
+            if (summaryFilter.Department != null)
             {
-                if (summaryFilter.DepartmentId == "N/A")
+                if (summaryFilter.Department == "N/A")
                 {
                     parameters.Add($"Departments.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Departments.Id = '{summaryFilter.DepartmentId}'");
+                    parameters.Add($"Departments.Id = '{summaryFilter.Department}'");
                 }
             }
 
@@ -580,26 +740,26 @@ namespace HES.Core.Services
             {
                 parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
-            if (summaryFilter.CompanyId != null)
+            if (summaryFilter.Company != null)
             {
-                if (summaryFilter.CompanyId == "N/A")
+                if (summaryFilter.Company == "N/A")
                 {
                     parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
                 }
             }
-            if (summaryFilter.DepartmentId != null)
+            if (summaryFilter.Department != null)
             {
-                if (summaryFilter.DepartmentId == "N/A")
+                if (summaryFilter.Department == "N/A")
                 {
                     parameters.Add($"Departments.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Departments.Id = '{summaryFilter.DepartmentId}'");
+                    parameters.Add($"Departments.Id = '{summaryFilter.Department}'");
                 }
             }
 
@@ -680,15 +840,15 @@ namespace HES.Core.Services
                 parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
 
-            if (summaryFilter.CompanyId != null)
+            if (summaryFilter.Company != null)
             {
-                if (summaryFilter.CompanyId == "N/A")
+                if (summaryFilter.Company == "N/A")
                 {
                     parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
                 }
             }
 
@@ -763,37 +923,37 @@ namespace HES.Core.Services
             {
                 parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
             }
-            if (summaryFilter.EmployeeId != null)
+            if (summaryFilter.Employee != null)
             {
-                if (summaryFilter.EmployeeId == "N/A")
+                if (summaryFilter.Employee == "N/A")
                 {
                     parameters.Add($"Employees.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Employees.Id = '{summaryFilter.EmployeeId}'");
+                    parameters.Add($"Employees.Id = '{summaryFilter.Employee}'");
                 }
             }
-            if (summaryFilter.CompanyId != null)
+            if (summaryFilter.Company != null)
             {
-                if (summaryFilter.CompanyId == "N/A")
+                if (summaryFilter.Company == "N/A")
                 {
                     parameters.Add($"Companies.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Companies.Id = '{summaryFilter.CompanyId}'");
+                    parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
                 }
             }
-            if (summaryFilter.DepartmentId != null)
+            if (summaryFilter.Department != null)
             {
-                if (summaryFilter.DepartmentId == "N/A")
+                if (summaryFilter.Department == "N/A")
                 {
                     parameters.Add($"Departments.Id IS NULL");
                 }
                 else
                 {
-                    parameters.Add($"Departments.Id = '{summaryFilter.DepartmentId}'");
+                    parameters.Add($"Departments.Id = '{summaryFilter.Department}'");
                 }
             }
 

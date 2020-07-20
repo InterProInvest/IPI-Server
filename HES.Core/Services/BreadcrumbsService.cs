@@ -139,6 +139,17 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetAuditSummaries()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Audit" },
+                new Breadcrumb () { Active = true, Content = "Summaries" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetParameters()
         {
             Breadcrumbs = new List<Breadcrumb>()

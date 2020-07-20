@@ -1,5 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Models;
+using HES.Core.Models.Web;
 using Hideez.SDK.Communication.HES.DTO;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,8 @@ namespace HES.Core.Interfaces
         Task<List<WorkstationSession>> GetFilteredWorkstationSessionsAsync(WorkstationSessionFilter workstationSessionFilter);
         Task AddOrUpdateWorkstationSession(WorkstationEventDto workstationEventDto);
         Task CloseSessionAsync(string workstationId);
-        Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync();
+        Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions);
+        Task<int> GetSummaryByDayAndEmployeesCountAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions);
         Task<List<SummaryByDayAndEmployee>> GetFilteredSummaryByDaysAndEmployeesAsync(SummaryFilter summaryFilter);
         Task<List<SummaryByEmployees>> GetSummaryByEmployeesAsync();
         Task<List<SummaryByEmployees>> GetFilteredSummaryByEmployeesAsync(SummaryFilter summaryFilter);
