@@ -13,23 +13,23 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
 {
     public class IndexModel : PageModel
     {
-        private readonly IWorkstationAuditService _workstationAuditService;
-        private readonly IEmployeeService _employeeService;
-        private readonly IOrgStructureService _orgStructureService;
-        public IList<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
-        public IList<SummaryByEmployees> SummaryByEmployees { get; set; }
-        public IList<SummaryByDepartments> SummaryByDepartments { get; set; }
-        public IList<SummaryByWorkstations> SummaryByWorkstations { get; set; }
-        public SummaryFilter SummaryFilter { get; set; }
+        //private readonly IWorkstationAuditService _workstationAuditService;
+        //private readonly IEmployeeService _employeeService;
+        //private readonly IOrgStructureService _orgStructureService;
+        //public IList<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
+        //public IList<SummaryByEmployees> SummaryByEmployees { get; set; }
+        //public IList<SummaryByDepartments> SummaryByDepartments { get; set; }
+        //public IList<SummaryByWorkstations> SummaryByWorkstations { get; set; }
+        //public SummaryFilter SummaryFilter { get; set; }
 
-        public IndexModel(IWorkstationAuditService workstationAuditService,
-                            IEmployeeService employeeService,
-                            IOrgStructureService orgStructureService)
-        {
-            _workstationAuditService = workstationAuditService;
-            _employeeService = employeeService;
-            _orgStructureService = orgStructureService;
-        }
+        //public IndexModel(IWorkstationAuditService workstationAuditService,
+        //                    IEmployeeService employeeService,
+        //                    IOrgStructureService orgStructureService)
+        //{
+        //    //_workstationAuditService = workstationAuditService;
+        //    //_employeeService = employeeService;
+        //    //_orgStructureService = orgStructureService;
+        //}
 
         public async Task OnGet()
         {

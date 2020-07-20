@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Web.Audit;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -62,54 +63,66 @@ namespace HES.Web.Controllers
             return list;
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<SummaryByDayAndEmployee>>> GetFilteredSummaryByDayAndEmployees(SummaryFilter summaryFilter)
-        {
-            return await _workstationAuditService.GetFilteredSummaryByDaysAndEmployeesAsync(summaryFilter);
-        }
+        //[HttpPost]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<ActionResult<IEnumerable<SummaryByDayAndEmployee>>> GetFilteredSummaryByDayAndEmployees(SummaryFilter summaryFilter)
+        //{
+        //    //return await _workstationAuditService.GetFilteredSummaryByDaysAndEmployeesAsync(summaryFilter);
+        //    var list = new List<SummaryByDayAndEmployee>();
+        //    return list;
+        //}
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SummaryByEmployees>>> GetSummaryByEmployee()
         {
-            return await _workstationAuditService.GetSummaryByEmployeesAsync();
+            //return await _workstationAuditService.GetSummaryByEmployeesAsync();
+            var list = new List<SummaryByEmployees>();
+            return list;
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<SummaryByEmployees>>> GetFilteredSummaryByEmployees(SummaryFilter summaryFilter)
-        {
-            return await _workstationAuditService.GetFilteredSummaryByEmployeesAsync(summaryFilter);
-        }
+        //[HttpPost]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<ActionResult<IEnumerable<SummaryByEmployees>>> GetFilteredSummaryByEmployees(SummaryFilter summaryFilter)
+        //{
+        //    //return await _workstationAuditService.GetFilteredSummaryByEmployeesAsync(summaryFilter);
+        //    var list = new List<SummaryByEmployees>();
+        //    return list;
+        //}
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SummaryByDepartments>>> GetSummaryByDepartments()
         {
-            return await _workstationAuditService.GetSummaryByDepartmentsAsync();
+            //return await _workstationAuditService.GetSummaryByDepartmentsAsync();
+            var list = new List<SummaryByDepartments>();
+            return list;
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<SummaryByDepartments>>> GetFilteredSummaryByDepartments(SummaryFilter summaryFilter)
-        {
-            return await _workstationAuditService.GetFilteredSummaryByDepartmentsAsync(summaryFilter);
-        }
+        //[HttpPost]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<ActionResult<IEnumerable<SummaryByDepartments>>> GetFilteredSummaryByDepartments(SummaryFilter summaryFilter)
+        //{
+        //    return await _workstationAuditService.GetFilteredSummaryByDepartmentsAsync(summaryFilter);
+        //}
 
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SummaryByWorkstations>>> GetSummaryByWorkstations()
         {
-            return await _workstationAuditService.GetSummaryByWorkstationsAsync();
+            //return await _workstationAuditService.GetSummaryByWorkstationsAsync();
+            var list = new List<SummaryByWorkstations>();
+            return list;
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SummaryByWorkstations>>> GetFilteredSummaryByWorkstations(SummaryFilter summaryFilter)
         {
-            return await _workstationAuditService.GetFilteredSummaryByWorkstationsAsync(summaryFilter);
+            //return await _workstationAuditService.GetFilteredSummaryByWorkstationsAsync(summaryFilter);
+            var list = new List<SummaryByWorkstations>();
+            return list;
         }
     }
 }

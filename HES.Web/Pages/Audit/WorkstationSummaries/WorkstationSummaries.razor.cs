@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using HES.Core.Interfaces;
+using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Audit.WorkstationSummaries
 {
     public partial class WorkstationSummaries : ComponentBase
     {
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         public RenderFragment Tab { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
+            await BreadcrumbsService.SetAuditSummaries();
             GetByDaysAndEmployeesTab();
         }
 

@@ -1,4 +1,5 @@
-﻿@if (MainTableService.Entities == null)
+﻿@using HES.Core.Models.Web.Audit
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -19,56 +20,56 @@ else
         <TableHeader>
             <MainTableHeader Title="Date"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.Date)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.Date)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Employee"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.Employee)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.Employee)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Company"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.Company)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.Company)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Department"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.Department)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.Department)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Workstations Count"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.WorkstationsCount)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.WorkstationsCount)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Avg Sessions Duration"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.AvgSessionsDuration)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.AvgSessionsDuration)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Sessions Count"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.SessionsCount)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.SessionsCount)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
             <MainTableHeader Title="Total Sessions Duration"
                              TitleWidth="12.5"
-                             SortColumn="@nameof(HES.Core.Models.SummaryByDayAndEmployee.TotalSessionsDuration)"
+                             SortColumn="@nameof(SummaryByDayAndEmployee.TotalSessionsDuration)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"

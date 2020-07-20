@@ -1,4 +1,4 @@
-﻿using HES.Core.Models;
+﻿using HES.Core.Models.Web.Audit;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Threading.Tasks;
