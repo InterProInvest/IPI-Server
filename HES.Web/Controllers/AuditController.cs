@@ -30,14 +30,18 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<WorkstationEvent>>> GetEvents()
         {
-            return await _workstationAuditService.GetWorkstationEventsAsync();
+            //return await _workstationAuditService.GetWorkstationEventsAsync();
+            var list = new List<WorkstationEvent>();
+            return list;
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<WorkstationEvent>>> GetFilteredEvents(WorkstationEventFilter workstationEventFilter)
         {
-            return await _workstationAuditService.GetFilteredWorkstationEventsAsync(workstationEventFilter);
+            //return await _workstationAuditService.GetFilteredWorkstationEventsAsync(workstationEventFilter);
+            var list = new List<WorkstationEvent>();
+            return list;
         }
 
         [HttpGet]

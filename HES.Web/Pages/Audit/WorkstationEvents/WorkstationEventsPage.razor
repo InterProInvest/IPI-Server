@@ -1,0 +1,150 @@
+﻿@if (MainTableService.Entities == null)
+{
+    <LoadingPage />
+}
+else
+{
+    <TableAction>
+        <FilterForm>
+            <WorkstationEventsFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+            <h2 class="text-navyblue mb-0">Workstation Events</h2>
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+        <TableHeader>
+            <MainTableHeader Title="Date"
+                             TitleWidth="12"
+                             SortColumn="@nameof(WorkstationEvent.Date)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Event"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.EventId)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Severity"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.SeverityId)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Note"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Note)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Workstation"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Workstation)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Session"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.UserSession)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Hardware Vault"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.HardwareVault)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Employee"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Employee)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Company"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Department.Company)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Department"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Department)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Account"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Account)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Type"
+                             TitleWidth="8"
+                             SortColumn="@nameof(WorkstationEvent.Account.Type)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)context.Date, TimeZoneInfo.Local)
+            </td>
+            <td>
+                @context.EventId
+            </td>
+            <td>
+                @context.SeverityId
+            </td>
+            <td>
+                @context.Note
+            </td>
+            <td>
+                @context.Workstation?.Name
+            </td>
+            <td>
+                @context.UserSession
+            </td>
+            <td>
+                @context.HardwareVault?.Id
+            </td>
+            <td>
+                @context.Employee?.FullName
+            </td>
+            <td>
+                @context.Department?.Company?.Name
+            </td>
+            <td>
+                @context.Department?.Name
+            </td>
+            <td>
+                @context.Account?.Name
+            </td>
+            <td>
+                @context.Account?.Type
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
+                DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
+                TotalRecords="MainTableService.TotalRecords"
+                CurrentPage="MainTableService.CurrentPage"
+                DisplayRows="MainTableService.DataLoadingOptions.Take"
+                DisplayRecords="MainTableService.Entities.Count" />
+}

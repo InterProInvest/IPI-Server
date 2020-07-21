@@ -62,88 +62,217 @@ namespace HES.Core.Services
             return _workstationEventRepository.Query();
         }
 
-        public async Task<List<WorkstationEvent>> GetWorkstationEventsAsync()
+        public async Task<List<WorkstationEvent>> GetWorkstationEventsAsync(DataLoadingOptions<WorkstationEventFilter> dataLoadingOptions)
         {
-            return await _workstationEventRepository
+            var query = _workstationEventRepository
                 .Query()
                 .Include(w => w.Workstation)
                 .Include(w => w.HardwareVault)
                 .Include(w => w.Employee)
                 .Include(w => w.Department.Company)
                 .Include(w => w.Account)
-                .OrderByDescending(w => w.Date)
-                .Take(500)
-                .ToListAsync();
+                .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.StartDate != null)
+                {
+                    query = query.Where(w => w.Date >= dataLoadingOptions.Filter.StartDate);
+                }
+                if (dataLoadingOptions.Filter.EndDate != null)
+                {
+                    query = query.Where(x => x.Date <= dataLoadingOptions.Filter.EndDate);
+                }
+                if (dataLoadingOptions.Filter.Event != null)
+                {
+                    query = query.Where(w => w.EventId == (WorkstationEventType)dataLoadingOptions.Filter.Event);
+                }
+                if (dataLoadingOptions.Filter.Severity != null)
+                {
+                    query = query.Where(w => w.SeverityId == (WorkstationEventSeverity)dataLoadingOptions.Filter.Severity);
+                }
+                if (dataLoadingOptions.Filter.Note != null)
+                {
+                    query = query.Where(w => w.Note.Contains(dataLoadingOptions.Filter.Note, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Workstation != null)
+                {
+                    query = query.Where(w => w.Workstation.Name.Contains(dataLoadingOptions.Filter.Workstation, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.UserSession != null)
+                {
+                    query = query.Where(w => w.UserSession.Contains(dataLoadingOptions.Filter.UserSession, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.HardwareVault != null)
+                {
+                    query = query.Where(w => w.HardwareVault.Id.Contains(dataLoadingOptions.Filter.HardwareVault, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(w => w.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(w => w.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Account != null)
+                {
+                    query = query.Where(w => w.Account.Name.Contains(dataLoadingOptions.Filter.Account, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.AccountType != null)
+                {
+                    query = query.Where(w => w.Account.Type == (AccountType)dataLoadingOptions.Filter.AccountType);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Note.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Workstation.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.UserSession.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Id.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Account.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(WorkstationEvent.Date):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Date) : query.OrderByDescending(x => x.Date);
+                    break;
+                case nameof(WorkstationEvent.EventId):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.EventId) : query.OrderByDescending(x => x.EventId);
+                    break;
+                case nameof(WorkstationEvent.SeverityId):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.SeverityId) : query.OrderByDescending(x => x.SeverityId);
+                    break;
+                case nameof(WorkstationEvent.Note):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Note) : query.OrderByDescending(x => x.Note);
+                    break;
+                case nameof(WorkstationEvent.Workstation):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Workstation.Name) : query.OrderByDescending(x => x.Workstation.Name);
+                    break;
+                case nameof(WorkstationEvent.UserSession):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UserSession) : query.OrderByDescending(x => x.UserSession);
+                    break;
+                case nameof(WorkstationEvent.HardwareVault):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Id) : query.OrderByDescending(x => x.HardwareVault.Id);
+                    break;
+                case nameof(WorkstationEvent.Employee):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
+                    break;
+                case nameof(WorkstationEvent.Department.Company):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Company.Name) : query.OrderByDescending(x => x.Department.Company.Name);
+                    break;
+                case nameof(WorkstationEvent.Department):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Name) : query.OrderByDescending(x => x.Department.Name);
+                    break;
+                case nameof(WorkstationEvent.Account):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Account.Name) : query.OrderByDescending(x => x.Account.Name);
+                    break;
+                case nameof(WorkstationEvent.Account.Type):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Account.Type) : query.OrderByDescending(x => x.Account.Type);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
 
-        public async Task<List<WorkstationEvent>> GetFilteredWorkstationEventsAsync(WorkstationEventFilter workstationEventFilter)
+        public async Task<int> GetWorkstationEventsCountAsync(DataLoadingOptions<WorkstationEventFilter> dataLoadingOptions)
         {
-            var filter = _workstationEventRepository
-                 .Query()
-                 .Include(w => w.Workstation)
-                 .Include(w => w.HardwareVault)
-                 .Include(w => w.Employee)
-                 .Include(w => w.Department.Company)
-                 .Include(w => w.Account)
-                 .AsQueryable();
+            var query = _workstationEventRepository
+                .Query()
+                .Include(w => w.Workstation)
+                .Include(w => w.HardwareVault)
+                .Include(w => w.Employee)
+                .Include(w => w.Department.Company)
+                .Include(w => w.Account)
+                .AsQueryable();
 
-            if (workstationEventFilter.StartDate != null)
+            // Filter
+            if (dataLoadingOptions.Filter != null)
             {
-                filter = filter.Where(w => w.Date >= workstationEventFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
-            }
-            if (workstationEventFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.Date <= workstationEventFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-            if (workstationEventFilter.EventId != null)
-            {
-                filter = filter.Where(w => w.EventId == (WorkstationEventType)workstationEventFilter.EventId);
-            }
-            if (workstationEventFilter.SeverityId != null)
-            {
-                filter = filter.Where(w => w.SeverityId == (WorkstationEventSeverity)workstationEventFilter.SeverityId);
-            }
-            if (workstationEventFilter.Note != null)
-            {
-                filter = filter.Where(w => w.Note.Contains(workstationEventFilter.Note));
-            }
-            if (workstationEventFilter.WorkstationId != null)
-            {
-                filter = filter.Where(w => w.WorkstationId == workstationEventFilter.WorkstationId);
-            }
-            if (workstationEventFilter.UserSession != null)
-            {
-                filter = filter.Where(w => w.UserSession.Contains(workstationEventFilter.UserSession));
-            }
-            if (workstationEventFilter.DeviceId != null)
-            {
-                filter = filter.Where(w => w.HardwareVault.Id == workstationEventFilter.DeviceId);
-            }
-            if (workstationEventFilter.EmployeeId != null)
-            {
-                filter = filter.Where(w => w.EmployeeId == workstationEventFilter.EmployeeId);
-            }
-            if (workstationEventFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == workstationEventFilter.CompanyId);
-            }
-            if (workstationEventFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == workstationEventFilter.DepartmentId);
-            }
-            if (workstationEventFilter.DeviceAccountId != null)
-            {
-                filter = filter.Where(w => w.AccountId == workstationEventFilter.DeviceAccountId);
-            }
-            if (workstationEventFilter.DeviceAccountTypeId != null)
-            {
-                filter = filter.Where(w => w.Account.Type == (AccountType)workstationEventFilter.DeviceAccountTypeId);
+                if (dataLoadingOptions.Filter.StartDate != null)
+                {
+                    query = query.Where(w => w.Date >= dataLoadingOptions.Filter.StartDate);
+                }
+                if (dataLoadingOptions.Filter.EndDate != null)
+                {
+                    query = query.Where(x => x.Date <= dataLoadingOptions.Filter.EndDate);
+                }
+                if (dataLoadingOptions.Filter.Event != null)
+                {
+                    query = query.Where(w => w.EventId == (WorkstationEventType)dataLoadingOptions.Filter.Event);
+                }
+                if (dataLoadingOptions.Filter.Severity != null)
+                {
+                    query = query.Where(w => w.SeverityId == (WorkstationEventSeverity)dataLoadingOptions.Filter.Severity);
+                }
+                if (dataLoadingOptions.Filter.Note != null)
+                {
+                    query = query.Where(w => w.Note.Contains(dataLoadingOptions.Filter.Note, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Workstation != null)
+                {
+                    query = query.Where(w => w.Workstation.Name.Contains(dataLoadingOptions.Filter.Workstation, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.UserSession != null)
+                {
+                    query = query.Where(w => w.UserSession.Contains(dataLoadingOptions.Filter.UserSession, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.HardwareVault != null)
+                {
+                    query = query.Where(w => w.HardwareVault.Id.Contains(dataLoadingOptions.Filter.HardwareVault, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(w => w.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(w => w.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Account != null)
+                {
+                    query = query.Where(w => w.Account.Name.Contains(dataLoadingOptions.Filter.Account, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.AccountType != null)
+                {
+                    query = query.Where(w => w.Account.Type == (AccountType)dataLoadingOptions.Filter.AccountType);
+                }
             }
 
-            return await filter
-                .OrderByDescending(w => w.Date)
-                .Take(workstationEventFilter.Records)
-                .ToListAsync();
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Note.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Workstation.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.UserSession.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Id.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Account.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task AddEventDtoAsync(WorkstationEventDto workstationEventDto)
@@ -199,19 +328,6 @@ namespace HES.Core.Services
                 EmployeeId = employee?.Id,
                 DepartmentId = employee?.DepartmentId,
                 AccountId = account?.Id,
-            };
-
-            await _workstationEventRepository.AddAsync(workstationEvent);
-        }
-
-        public async Task AddPendingUnlockEventAsync(string deviceId)
-        {
-            var workstationEvent = new WorkstationEvent
-            {
-                Date = DateTime.UtcNow,
-                EventId = WorkstationEventType.DevicePendingUnlock,
-                SeverityId = WorkstationEventSeverity.Info,
-                HardwareVaultId = deviceId
             };
 
             await _workstationEventRepository.AddAsync(workstationEvent);
@@ -617,91 +733,6 @@ namespace HES.Core.Services
                 .CountAsync();
         }
 
-        //public async Task<List<SummaryByDayAndEmployee>> GetFilteredSummaryByDaysAndEmployeesAsync(SummaryFilter summaryFilter)
-        //{
-        //    var where = string.Empty;
-        //    List<string> parameters = new List<string>();
-
-        //    if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
-        //    {
-        //        parameters.Add($"WorkstationSessions.StartDate >= '{summaryFilter.StartDate.Value.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
-        //    }
-        //    if (summaryFilter.EndDate != null)
-        //    {
-        //        parameters.Add($"WorkstationSessions.EndDate <= '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
-        //    }
-        //    if (summaryFilter.Employee != null)
-        //    {
-        //        if (summaryFilter.Employee == "N/A")
-        //        {
-        //            parameters.Add($"Employees.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Employees.Id = '{summaryFilter.Employee}'");
-        //        }
-        //    }
-        //    if (summaryFilter.Company != null)
-        //    {
-        //        if (summaryFilter.Company == "N/A")
-        //        {
-        //            parameters.Add($"Companies.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
-        //        }
-        //    }
-        //    if (summaryFilter.Department != null)
-        //    {
-        //        if (summaryFilter.Department == "N/A")
-        //        {
-        //            parameters.Add($"Departments.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Departments.Id = '{summaryFilter.Department}'");
-        //        }
-        //    }
-
-        //    if (parameters.Count > 0)
-        //    {
-        //        where = string.Join(" AND ", parameters).Insert(0, "WHERE ");
-        //    }
-
-        //    if (summaryFilter.Records == 0)
-        //    {
-        //        summaryFilter.Records = 500;
-        //    }
-
-        //    return await _summaryByDayAndEmployeeRepository.SqlQuery
-        //        ($@"SELECT
-        //             DATE(WorkstationSessions.StartDate) AS Date,
-        //             Employees.Id AS EmployeeId,
-        //             IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
-        //             Companies.Id AS CompanyId,
-        //             IFNULL(Companies.Name, 'N/A') AS Company,
-        //             Departments.Id AS DepartmentId,
-        //             IFNULL(Departments.Name, 'N/A') AS Department,
-        //             COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-        //             SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,
-        //             COUNT(*) AS SessionsCount,
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration
-        //            FROM WorkstationSessions
-        //             LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
-        //             LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
-        //             LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
-        //        {where}
-        //            GROUP BY
-        //             DATE(WorkstationSessions.StartDate),
-        //             WorkstationSessions.EmployeeId
-        //            ORDER BY
-        //             DATE(WorkstationSessions.StartDate) DESC, Employee ASC
-        //            LIMIT {summaryFilter.Records}")
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
-
         public async Task<List<SummaryByEmployees>> GetSummaryByEmployeesAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions)
         {
             var having = string.Empty;
@@ -839,7 +870,7 @@ namespace HES.Core.Services
                 dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
                 searchParameter = $"Employee LIKE '%{dataLoadingOptions.SearchText}%' OR Company LIKE '%{dataLoadingOptions.SearchText}%' OR Department LIKE '%{dataLoadingOptions.SearchText}%'";
             }
-                    
+
             if (filterParameters.Count > 0 && searchParameter == string.Empty)
             {
                 having = string.Join(" AND ", filterParameters).Insert(0, "HAVING ");
@@ -876,79 +907,8 @@ namespace HES.Core.Services
                     GROUP BY
 	                    WorkstationSessions.EmployeeId
                   {having}")
-                 .CountAsync();                 
+                 .CountAsync();
         }
-
-        //public async Task<List<SummaryByEmployees>> GetFilteredSummaryByEmployeesAsync(SummaryFilter summaryFilter)
-        //{
-        //    var where = string.Empty;
-        //    List<string> parameters = new List<string>();
-
-        //    if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
-        //    {
-        //        parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
-        //    }
-        //    if (summaryFilter.Company != null)
-        //    {
-        //        if (summaryFilter.Company == "N/A")
-        //        {
-        //            parameters.Add($"Companies.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
-        //        }
-        //    }
-        //    if (summaryFilter.Department != null)
-        //    {
-        //        if (summaryFilter.Department == "N/A")
-        //        {
-        //            parameters.Add($"Departments.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Departments.Id = '{summaryFilter.Department}'");
-        //        }
-        //    }
-
-        //    if (parameters.Count > 0)
-        //    {
-        //        where = string.Join(" AND ", parameters).Insert(0, "WHERE ");
-        //    }
-
-        //    if (summaryFilter.Records == 0)
-        //    {
-        //        summaryFilter.Records = 500;
-        //    }
-
-        //    return await _summaryByEmployeesRepository.SqlQuery
-        //        ($@"SELECT
-        //             Employees.Id AS EmployeeId,
-        //             IFNULL(CONCAT(Employees.FirstName,' ',Employees.LastName), 'N/A') AS Employee,
-        //             Companies.Id AS CompanyId,
-        //             IFNULL(Companies.Name, 'N/A') AS Company,
-        //             Departments.Id AS DepartmentId,
-        //             IFNULL(Departments.Name, 'N/A') AS Department,
-        //             COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-        //             COUNT(DISTINCT DATE(WorkstationSessions.StartDate)) AS WorkingDaysCount,
-        //             COUNT(*) AS TotalSessionsCount,
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
-        //             SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
-        //             COUNT(*) / COUNT(DISTINCT DATE(WorkstationSessions.StartDate)) AS AvgSessionsCountPerDay,
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT DATE(WorkstationSessions.StartDate))) AS AvgWorkingHoursPerDay
-        //            FROM WorkstationSessions
-        //             LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
-        //             LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
-        //             LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
-        //        {where}
-        //            GROUP BY
-        //             WorkstationSessions.EmployeeId
-        //            ORDER BY
-        //             Employee ASC
-        //            LIMIT {summaryFilter.Records}")
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
 
         public async Task<List<SummaryByDepartments>> GetSummaryByDepartmentsAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions)
         {
@@ -1006,7 +966,7 @@ namespace HES.Core.Services
                     break;
                 case nameof(SummaryByDepartments.AvgTotalSessionsCountByEmployee):
                     orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY AvgTotalSessionsCountByEmployee ASC" : "ORDER BY AvgTotalSessionsCountByEmployee DESC";
-                    break;         
+                    break;
             }
 
             if (filterParameters.Count > 0 && searchParameter == string.Empty)
@@ -1109,66 +1069,7 @@ namespace HES.Core.Services
                  {having}")
                 .CountAsync();
         }
-
-        //public async Task<List<SummaryByDepartments>> GetFilteredSummaryByDepartmentsAsync(SummaryFilter summaryFilter)
-        //{
-        //    var where = string.Empty;
-        //    List<string> parameters = new List<string>();
-
-        //    if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
-        //    {
-        //        parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
-        //    }
-
-        //    if (summaryFilter.Company != null)
-        //    {
-        //        if (summaryFilter.Company == "N/A")
-        //        {
-        //            parameters.Add($"Companies.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
-        //        }
-        //    }
-
-        //    if (parameters.Count > 0)
-        //    {
-        //        where = string.Join(" AND ", parameters).Insert(0, "WHERE ");
-        //    }
-
-        //    if (summaryFilter.Records == 0)
-        //    {
-        //        summaryFilter.Records = 500;
-        //    }
-
-        //    return await _summaryByDepartmentsRepository.SqlQuery
-        //        ($@"SELECT
-        //             Companies.Id AS CompanyId,
-        //             IFNULL(Companies.Name, 'N/A') AS Company,
-        //             Departments.Id AS DepartmentId,
-        //             IFNULL(Departments.Name, 'N/A') AS Department,
-        //             COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS EmployeesCount,
-        //             COUNT(DISTINCT WorkstationId) AS WorkstationsCount,
-        //             COUNT(*) AS TotalSessionsCount,
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
-        //             SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
-        //             COUNT(*) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
-        //            FROM WorkstationSessions
-        //             LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
-        //             LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
-        //             LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
-        //        {where}
-        //            GROUP BY
-        //             Departments.Id
-        //            ORDER BY
-        //             Company ASC, Department ASC
-        //            LIMIT {summaryFilter.Records}")
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
-
+         
         public async Task<List<SummaryByWorkstations>> GetSummaryByWorkstationsAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions)
         {
             var having = string.Empty;
@@ -1300,7 +1201,7 @@ namespace HES.Core.Services
                 dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
                 searchParameter = $"Workstation LIKE '%{dataLoadingOptions.SearchText}%'";
             }
-                      
+
             if (filterParameters.Count > 0 && searchParameter == string.Empty)
             {
                 having = string.Join(" AND ", filterParameters).Insert(0, "HAVING ");
@@ -1336,84 +1237,7 @@ namespace HES.Core.Services
                  {having}")
                  .CountAsync();
         }
-
-        //public async Task<List<SummaryByWorkstations>> GetFilteredSummaryByWorkstationsAsync(SummaryFilter summaryFilter)
-        //{
-        //    var where = string.Empty;
-        //    List<string> parameters = new List<string>();
-
-        //    if (summaryFilter.StartDate != null && summaryFilter.EndDate != null)
-        //    {
-        //        parameters.Add($"WorkstationSessions.StartDate BETWEEN '{summaryFilter.StartDate.Value.AddSeconds(0).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}' AND '{summaryFilter.EndDate.Value.AddSeconds(59).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'");
-        //    }
-        //    if (summaryFilter.Employee != null)
-        //    {
-        //        if (summaryFilter.Employee == "N/A")
-        //        {
-        //            parameters.Add($"Employees.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Employees.Id = '{summaryFilter.Employee}'");
-        //        }
-        //    }
-        //    if (summaryFilter.Company != null)
-        //    {
-        //        if (summaryFilter.Company == "N/A")
-        //        {
-        //            parameters.Add($"Companies.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Companies.Id = '{summaryFilter.Company}'");
-        //        }
-        //    }
-        //    if (summaryFilter.Department != null)
-        //    {
-        //        if (summaryFilter.Department == "N/A")
-        //        {
-        //            parameters.Add($"Departments.Id IS NULL");
-        //        }
-        //        else
-        //        {
-        //            parameters.Add($"Departments.Id = '{summaryFilter.Department}'");
-        //        }
-        //    }
-
-        //    if (parameters.Count > 0)
-        //    {
-        //        where = string.Join(" AND ", parameters).Insert(0, "WHERE ");
-        //    }
-
-        //    if (summaryFilter.Records == 0)
-        //    {
-        //        summaryFilter.Records = 500;
-        //    }
-
-        //    return await _summaryByWorkstationsRepository.SqlQuery
-        //        ($@"SELECT
-        //             Workstations.Name AS Workstation,
-        //             COUNT(DISTINCT IFNULL(Companies.Id, 'N/A')) AS CompaniesCount,
-        //             COUNT(DISTINCT IFNULL(Departments.Id, 'N/A')) AS DepartmentsCount,
-        //             COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS EmployeesCount,
-        //             COUNT(*) AS TotalSessionsCount,
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS TotalSessionsDuration,	
-        //             SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate)))) AS AvgSessionsDuration,	
-        //             SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(IFNULL(WorkstationSessions.EndDate, NOW()), WorkstationSessions.StartDate))) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A'))) AS AvgTotalDuartionByEmployee,
-        //             COUNT(*) / COUNT(DISTINCT IFNULL(Employees.Id, 'N/A')) AS AvgTotalSessionsCountByEmployee
-        //            FROM WorkstationSessions
-        //             LEFT JOIN Workstations ON WorkstationSessions.WorkstationId = Workstations.Id
-        //             LEFT JOIN Employees ON WorkstationSessions.EmployeeId = Employees.Id
-        //             LEFT JOIN Departments ON Employees.DepartmentId = Departments.Id
-        //             LEFT JOIN Companies ON Departments.CompanyId = Companies.Id
-        //        {where}
-        //            GROUP BY
-        //             WorkstationId
-        //            LIMIT {summaryFilter.Records}")
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
-
+                
         #endregion
     }
 }

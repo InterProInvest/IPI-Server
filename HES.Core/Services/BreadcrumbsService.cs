@@ -139,6 +139,28 @@ namespace HES.Core.Services
             return Task.CompletedTask;
         }
 
+        public Task SetAuditWorkstationEvents()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Audit" },
+                new Breadcrumb () { Active = true, Content = "Workstation Events" }
+            };
+
+            return Task.CompletedTask;
+        }
+        
+        public Task SetAuditWorkstationSessions()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Audit" },
+                new Breadcrumb () { Active = true, Content = "Workstation Sessions" }
+            };
+
+            return Task.CompletedTask;
+        }
+
         public Task SetAuditSummaries()
         {
             Breadcrumbs = new List<Breadcrumb>()
