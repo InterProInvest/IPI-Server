@@ -1204,7 +1204,7 @@ namespace HES.Core.Services
             switch (dataLoadingOptions.SortedColumn)
             {
                 case nameof(SummaryByWorkstations.Workstation):
-                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Employee ASC" : "ORDER BY Employee DESC";
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Workstation ASC" : "ORDER BY Workstation DESC";
                     break;
                 //case nameof(SummaryByWorkstations.Company):
                 //    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Company ASC" : "ORDER BY Company DESC";
@@ -1213,22 +1213,22 @@ namespace HES.Core.Services
                 //    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY Department ASC" : "ORDER BY Department DESC";
                 //    break;
                 case nameof(SummaryByWorkstations.EmployeesCount):
-                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY WorkstationsCount ASC" : "ORDER BY WorkstationsCount DESC";
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY EmployeesCount ASC" : "ORDER BY EmployeesCount DESC";
                     break;
                 case nameof(SummaryByWorkstations.TotalSessionsCount):
-                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY WorkingDaysCount ASC" : "ORDER BY WorkingDaysCount DESC";
-                    break;
-                case nameof(SummaryByWorkstations.TotalSessionsDuration):
                     orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY TotalSessionsCount ASC" : "ORDER BY TotalSessionsCount DESC";
                     break;
-                case nameof(SummaryByWorkstations.AvgSessionsDuration):
+                case nameof(SummaryByWorkstations.TotalSessionsDuration):
                     orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY TotalSessionsDuration ASC" : "ORDER BY TotalSessionsDuration DESC";
                     break;
-                case nameof(SummaryByWorkstations.AvgTotalDuartionByEmployee):
+                case nameof(SummaryByWorkstations.AvgSessionsDuration):
                     orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY AvgSessionsDuration ASC" : "ORDER BY AvgSessionsDuration DESC";
                     break;
+                case nameof(SummaryByWorkstations.AvgTotalDuartionByEmployee):
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY AvgTotalDuartionByEmployee ASC" : "ORDER BY AvgTotalDuartionByEmployee DESC";
+                    break;
                 case nameof(SummaryByWorkstations.AvgTotalSessionsCountByEmployee):
-                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY AvgSessionsCountPerDay ASC" : "ORDER BY AvgSessionsCountPerDay DESC";
+                    orderby = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? "ORDER BY AvgTotalSessionsCountByEmployee ASC" : "ORDER BY AvgTotalSessionsCountByEmployee DESC";
                     break;
             }
 
