@@ -1,7 +1,7 @@
 ﻿@using HES.Core.Models.Web.Audit
 @if (MainTableService.Entities == null)
 {
-    <LoadingPage />
+    <LoadingTab />
 }
 else
 {
@@ -53,7 +53,7 @@ else
                              CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
                              SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
                              SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            <MainTableHeader Title="TotalSessionsCount"
+            <MainTableHeader Title="Total Sessions Count"
                              TitleWidth="10"
                              SortColumn="@nameof(SummaryByEmployees.TotalSessionsCount)"
                              CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
