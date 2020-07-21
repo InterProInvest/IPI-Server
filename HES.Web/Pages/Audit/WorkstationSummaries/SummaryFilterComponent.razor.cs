@@ -8,6 +8,7 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
     public partial class SummaryFilterComponent : ComponentBase
     {
         [Parameter] public Func<SummaryFilter, Task> FilterChanged { get; set; }
+        [Parameter] public string TabName { get; set; }
 
         public SummaryFilter Filter { get; set; }
 
