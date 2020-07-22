@@ -170,6 +170,7 @@ namespace HES.Core.Services
                 case VaultStatus.Active:
                     await CheckPassphraseAsync(remoteDevice, vault.Id);
                     await CheckTaskAsync(remoteDevice, vault.Id, primaryAccountOnly);
+                    await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
                     break;
                 case VaultStatus.Locked:
                     throw new HideezException(HideezErrorCode.HesDeviceLocked);
