@@ -6,8 +6,8 @@
     ViewData["ActivePage"] = MenuNavPages.Audit;
     ViewData["AuditPage"] = AuditNavPages.WorkstationSessions;
 }
-
-<div id="filter-collapse" class="filter-card collapse pb-1">
+<component type="typeof(WorkstationSessionsPage)" render-mode="Server" />
+@*<div id="filter-collapse" class="filter-card collapse pb-1">
     <form method="post" id="filterForm">
         <div class="row">
             <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
@@ -110,10 +110,10 @@
 
 <div id="content">
     <partial name="_WorkstationSessionsTable" />
-</div>
+</div>*@
 
 @section Scripts{
-    <script src="~/js/dt-init-workstation-sessions.js"></script>
+    @*<script src="~/js/dt-init-workstation-sessions.js"></script>
     <script>
         // Initialize DateTimePicker
         $('#startDate').datepicker({
@@ -240,6 +240,6 @@
             $('#breadcrumb').toggleClass('d-none');
             $('.breadcrumb').append('<li class="breadcrumb-item active">Audit</li>');
             $('.breadcrumb').append('<li class="breadcrumb-item active">Sessions</li>');
-        });
+        });*@
     </script>
 }

@@ -1,32 +1,21 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using HES.Core.Enums;
+using Hideez.SDK.Communication;
+using System;
 
-namespace HES.Core.Models
+namespace HES.Core.Models.Web.Audit
 {
     public class WorkstationSessionFilter
     {
-        [Display(Name = "Start Date")]
         public DateTime? StartDate { get; set; }
-        [Display(Name = "End Date")]
         public DateTime? EndDate { get; set; }
-        [Display(Name = "Unlocked by")]
-        public int? UnlockId { get; set; }
-        [Display(Name = "Workstation")]
-        public string WorkstationId { get; set; }
-        [Display(Name = "Session")]
+        public SessionSwitchSubject? UnlockedBy { get; set; }
+        public string Workstation { get; set; }
         public string UserSession { get; set; }
-        [Display(Name = "Device")]
-        public string DeviceId { get; set; }
-        [Display(Name = "Employee")]
-        public string EmployeeId { get; set; }
-        [Display(Name = "Company")]
-        public string CompanyId { get; set; }
-        [Display(Name = "Department")]
-        public string DepartmentId { get; set; }
-        [Display(Name = "Account")]
-        public string DeviceAccountId { get; set; }
-        [Display(Name = "Account Type")]
-        public int? DeviceAccountTypeId { get; set; }
-        public int Records { get; set; }
+        public string HardwareVault { get; set; }
+        public string Employee { get; set; }
+        public string Company { get; set; }
+        public string Department { get; set; }
+        public string Account { get; set; }
+        public AccountType? AccountType { get; set; }
     }
 }

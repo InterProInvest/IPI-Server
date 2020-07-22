@@ -10,27 +10,14 @@ namespace HES.Core.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
-
-        [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }
-
-        [Display(Name = "End Date")]
         public DateTime? EndDate { get; set; }
-
-        [Display(Name = "Unlocked By")]
         public SessionSwitchSubject UnlockedBy { get; set; }
-
         public string WorkstationId { get; set; }
-
-        [Display(Name = "Session")]
         public string UserSession { get; set; }
-
         public string HardwareVaultId { get; set; }
-
         public string EmployeeId { get; set; }
-
         public string DepartmentId { get; set; }      
-
         public string AccountId { get; set; }
 
 

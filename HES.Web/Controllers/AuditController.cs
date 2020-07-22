@@ -48,15 +48,17 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<WorkstationSession>>> GetSessions()
         {
-            return await _workstationAuditService.GetWorkstationSessionsAsync();
+            //return await _workstationAuditService.GetWorkstationSessionsAsync();
+            var list = new List<WorkstationSession>();
+            return list;
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<WorkstationSession>>> GetFilteredSessions(WorkstationSessionFilter workstationSessionFilter)
-        {
-            return await _workstationAuditService.GetFilteredWorkstationSessionsAsync(workstationSessionFilter);
-        }
+        //[HttpPost]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<ActionResult<IEnumerable<WorkstationSession>>> GetFilteredSessions(WorkstationSessionFilter workstationSessionFilter)
+        //{
+        //    return await _workstationAuditService.GetFilteredWorkstationSessionsAsync(workstationSessionFilter);
+        //}
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]

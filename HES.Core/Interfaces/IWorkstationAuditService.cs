@@ -1,5 +1,4 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Audit;
 using Hideez.SDK.Communication.HES.DTO;
@@ -16,8 +15,8 @@ namespace HES.Core.Interfaces
         Task<int> GetWorkstationEventsCountAsync(DataLoadingOptions<WorkstationEventFilter> dataLoadingOptions);
         Task AddEventDtoAsync(WorkstationEventDto workstationEventDto);
         IQueryable<WorkstationSession> SessionQuery();
-        Task<List<WorkstationSession>> GetWorkstationSessionsAsync();
-        Task<List<WorkstationSession>> GetFilteredWorkstationSessionsAsync(WorkstationSessionFilter workstationSessionFilter);
+        Task<List<WorkstationSession>> GetWorkstationSessionsAsync(DataLoadingOptions<WorkstationSessionFilter> dataLoadingOptions);
+        Task<int> GetWorkstationSessionsCountAsync(DataLoadingOptions<WorkstationSessionFilter> dataLoadingOptions);
         Task AddOrUpdateWorkstationSession(WorkstationEventDto workstationEventDto);
         Task CloseSessionAsync(string workstationId);
         Task<List<SummaryByDayAndEmployee>> GetSummaryByDayAndEmployeesAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions);

@@ -16,6 +16,9 @@ namespace HES.Web.Components
 
         private async Task OnRowSelectedAsync(TItem item)
         {
+            if (SelecedItemChanged == null)
+                return;
+
             SelectedItem = item;
             await SelecedItemChanged.Invoke(SelectedItem);
         }

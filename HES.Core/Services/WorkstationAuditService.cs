@@ -1,7 +1,6 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Audit;
 using Hideez.SDK.Communication;
@@ -342,23 +341,9 @@ namespace HES.Core.Services
             return _workstationSessionRepository.Query();
         }
 
-        public async Task<List<WorkstationSession>> GetWorkstationSessionsAsync()
+        public async Task<List<WorkstationSession>> GetWorkstationSessionsAsync(DataLoadingOptions<WorkstationSessionFilter> dataLoadingOptions)
         {
-            return await _workstationSessionRepository
-                .Query()
-                .Include(w => w.Workstation)
-                .Include(w => w.HardwareVault)
-                .Include(w => w.Employee)
-                .Include(w => w.Department.Company)
-                .Include(w => w.Account)
-                .OrderByDescending(w => w.StartDate)
-                .Take(500)
-                .ToListAsync();
-        }
-
-        public async Task<List<WorkstationSession>> GetFilteredWorkstationSessionsAsync(WorkstationSessionFilter workstationSessionFilter)
-        {
-            var filter = _workstationSessionRepository
+            var query = _workstationSessionRepository
                 .Query()
                 .Include(w => w.Workstation)
                 .Include(w => w.HardwareVault)
@@ -367,55 +352,185 @@ namespace HES.Core.Services
                 .Include(w => w.Account)
                 .AsQueryable();
 
-            if (workstationSessionFilter.StartDate != null)
+            // Filter
+            if (dataLoadingOptions.Filter != null)
             {
-                filter = filter.Where(w => w.StartDate >= workstationSessionFilter.StartDate.Value.AddSeconds(0).AddMilliseconds(0).ToUniversalTime());
-            }
-            if (workstationSessionFilter.EndDate != null)
-            {
-                filter = filter.Where(w => w.EndDate <= workstationSessionFilter.EndDate.Value.AddSeconds(59).AddMilliseconds(999).ToUniversalTime());
-            }
-            if (workstationSessionFilter.UnlockId != null)
-            {
-                filter = filter.Where(w => w.UnlockedBy == (SessionSwitchSubject)workstationSessionFilter.UnlockId);
-            }
-            if (workstationSessionFilter.WorkstationId != null)
-            {
-                filter = filter.Where(w => w.WorkstationId == workstationSessionFilter.WorkstationId);
-            }
-            if (workstationSessionFilter.UserSession != null)
-            {
-                filter = filter.Where(w => w.UserSession.Contains(workstationSessionFilter.UserSession));
-            }
-            if (workstationSessionFilter.DeviceId != null)
-            {
-                filter = filter.Where(w => w.HardwareVault.Id == workstationSessionFilter.DeviceId);
-            }
-            if (workstationSessionFilter.EmployeeId != null)
-            {
-                filter = filter.Where(w => w.EmployeeId == workstationSessionFilter.EmployeeId);
-            }
-            if (workstationSessionFilter.CompanyId != null)
-            {
-                filter = filter.Where(w => w.Department.Company.Id == workstationSessionFilter.CompanyId);
-            }
-            if (workstationSessionFilter.DepartmentId != null)
-            {
-                filter = filter.Where(w => w.DepartmentId == workstationSessionFilter.DepartmentId);
-            }
-            if (workstationSessionFilter.DeviceAccountId != null)
-            {
-                filter = filter.Where(w => w.AccountId == workstationSessionFilter.DeviceAccountId);
-            }
-            if (workstationSessionFilter.DeviceAccountTypeId != null)
-            {
-                filter = filter.Where(w => w.Account.Type == (AccountType)workstationSessionFilter.DeviceAccountTypeId);
+                if (dataLoadingOptions.Filter.StartDate != null)
+                {
+                    query = query.Where(w => w.StartDate >= dataLoadingOptions.Filter.StartDate);
+                }
+                if (dataLoadingOptions.Filter.EndDate != null)
+                {
+                    query = query.Where(x => x.EndDate <= dataLoadingOptions.Filter.EndDate);
+                }
+                if (dataLoadingOptions.Filter.UnlockedBy != null)
+                {
+                    query = query.Where(w => w.UnlockedBy == (SessionSwitchSubject)dataLoadingOptions.Filter.UnlockedBy);
+                }   
+                if (dataLoadingOptions.Filter.Workstation != null)
+                {
+                    query = query.Where(w => w.Workstation.Name.Contains(dataLoadingOptions.Filter.Workstation, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.UserSession != null)
+                {
+                    query = query.Where(w => w.UserSession.Contains(dataLoadingOptions.Filter.UserSession, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.HardwareVault != null)
+                {
+                    query = query.Where(w => w.HardwareVault.Id.Contains(dataLoadingOptions.Filter.HardwareVault, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(w => w.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(w => w.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Account != null)
+                {
+                    query = query.Where(w => w.Account.Name.Contains(dataLoadingOptions.Filter.Account, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.AccountType != null)
+                {
+                    query = query.Where(w => w.Account.Type == (AccountType)dataLoadingOptions.Filter.AccountType);
+                }
             }
 
-            return await filter
-                .OrderByDescending(w => w.StartDate)
-                .Take(workstationSessionFilter.Records)
-                .ToListAsync();
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Workstation.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.UserSession.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Id.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Account.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort Direction
+            switch (dataLoadingOptions.SortedColumn)
+            {
+                case nameof(WorkstationSession.StartDate):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate);
+                    break;    
+                case nameof(WorkstationSession.EndDate):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.EndDate) : query.OrderByDescending(x => x.EndDate);
+                    break;  
+                case nameof(WorkstationSession.UnlockedBy):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UnlockedBy) : query.OrderByDescending(x => x.UnlockedBy);
+                    break;
+                case nameof(WorkstationSession.Workstation):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Workstation.Name) : query.OrderByDescending(x => x.Workstation.Name);
+                    break;
+                case nameof(WorkstationSession.UserSession):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UserSession) : query.OrderByDescending(x => x.UserSession);
+                    break;
+                case nameof(WorkstationSession.HardwareVault):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Id) : query.OrderByDescending(x => x.HardwareVault.Id);
+                    break;
+                case nameof(WorkstationSession.Employee):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Employee.FirstName).ThenBy(x => x.Employee.LastName) : query.OrderByDescending(x => x.Employee.FirstName).ThenByDescending(x => x.Employee.LastName);
+                    break;
+                case nameof(WorkstationSession.Department.Company):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Company.Name) : query.OrderByDescending(x => x.Department.Company.Name);
+                    break;
+                case nameof(WorkstationSession.Department):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Department.Name) : query.OrderByDescending(x => x.Department.Name);
+                    break;
+                case nameof(WorkstationSession.Account):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Account.Name) : query.OrderByDescending(x => x.Account.Name);
+                    break;
+                case nameof(WorkstationSession.Account.Type):
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Account.Type) : query.OrderByDescending(x => x.Account.Type);
+                    break;
+            }
+
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+        }
+
+        public async Task<int> GetWorkstationSessionsCountAsync(DataLoadingOptions<WorkstationSessionFilter> dataLoadingOptions)
+        {
+            var query = _workstationSessionRepository
+              .Query()
+              .Include(w => w.Workstation)
+              .Include(w => w.HardwareVault)
+              .Include(w => w.Employee)
+              .Include(w => w.Department.Company)
+              .Include(w => w.Account)
+              .AsQueryable();
+
+            // Filter
+            if (dataLoadingOptions.Filter != null)
+            {
+                if (dataLoadingOptions.Filter.StartDate != null)
+                {
+                    query = query.Where(w => w.StartDate >= dataLoadingOptions.Filter.StartDate);
+                }
+                if (dataLoadingOptions.Filter.EndDate != null)
+                {
+                    query = query.Where(x => x.EndDate <= dataLoadingOptions.Filter.EndDate);
+                }
+                if (dataLoadingOptions.Filter.UnlockedBy != null)
+                {
+                    query = query.Where(w => w.UnlockedBy == (SessionSwitchSubject)dataLoadingOptions.Filter.UnlockedBy);
+                }
+                if (dataLoadingOptions.Filter.Workstation != null)
+                {
+                    query = query.Where(w => w.Workstation.Name.Contains(dataLoadingOptions.Filter.Workstation, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.UserSession != null)
+                {
+                    query = query.Where(w => w.UserSession.Contains(dataLoadingOptions.Filter.UserSession, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.HardwareVault != null)
+                {
+                    query = query.Where(w => w.HardwareVault.Id.Contains(dataLoadingOptions.Filter.HardwareVault, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Employee != null)
+                {
+                    query = query.Where(x => (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.Filter.Employee, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Company != null)
+                {
+                    query = query.Where(w => w.Department.Company.Name.Contains(dataLoadingOptions.Filter.Company, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Department != null)
+                {
+                    query = query.Where(w => w.Department.Name.Contains(dataLoadingOptions.Filter.Department, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.Account != null)
+                {
+                    query = query.Where(w => w.Account.Name.Contains(dataLoadingOptions.Filter.Account, StringComparison.OrdinalIgnoreCase));
+                }
+                if (dataLoadingOptions.Filter.AccountType != null)
+                {
+                    query = query.Where(w => w.Account.Type == (AccountType)dataLoadingOptions.Filter.AccountType);
+                }
+            }
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
+            {
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
+
+                query = query.Where(x => x.Workstation.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.UserSession.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Id.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.Employee.FirstName + " " + x.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Account.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task AddOrUpdateWorkstationSession(WorkstationEventDto workstationEventDto)
