@@ -957,6 +957,11 @@ namespace HES.Core.Services
                 throw new Exception("Profile not found");
             }
 
+            if (deviceAccessProfile.HardwareVaults.Count > 0)
+            {
+                throw new Exception("Cannot delete a profile if setted to a hardware vaults");
+            }
+
             await _hardwareVaultProfileRepository.DeleteAsync(deviceAccessProfile);
         }
 
