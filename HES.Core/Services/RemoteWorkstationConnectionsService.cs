@@ -214,16 +214,15 @@ namespace HES.Core.Services
             var vault = await _hardwareVaultService.VaultQuery().AsNoTracking().FirstOrDefaultAsync(d => d.Id == vaultId);
 
             if (vault == null)
-                throw new Exception($"Vault {vaultId} not found.");
+                throw new Exception($"Vault {vaultId} not found. Contact your system administrator.");
 
             if (!remoteDevice.AccessLevel.IsLinkRequired && vault.MasterPassword == null)
-                throw new Exception($"Vault {vaultId} is linked to another server");
+                throw new Exception($"Vault {vaultId} is linked to another server. Contact your system administrator.");
 
             if (remoteDevice.AccessLevel.IsLinkRequired && vault.MasterPassword != null)
-                throw new Exception($"Vault {vaultId} was wiped a non-current server");
+                throw new Exception($"Vault {vaultId} was wiped a non-current server. Contact your system administrator.");
 
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
-            _logger.LogDebug($"MasterPassword {vault.Id} CheckPassphrase {vault.MasterPassword}");
 
             await remoteDevice.CheckPassphrase(key);
         }
