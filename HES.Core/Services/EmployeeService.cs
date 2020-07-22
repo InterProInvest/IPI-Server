@@ -1062,6 +1062,11 @@ namespace HES.Core.Services
         private string GenerateMasterPassword()
         {
             var buf = AesCryptoHelper.CreateRandomBuf(32);
+            for (int i = 0; i < 32; i++)
+            {
+                if (buf[i] == 0)
+                    buf[i] = 0xff;
+            }
             var pass = ConvertUtils.ByteArrayToHexString(buf);
             return pass;
         }
