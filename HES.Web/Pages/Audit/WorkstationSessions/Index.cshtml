@@ -6,4 +6,4 @@
     ViewData["ActivePage"] = MenuNavPages.Audit;
     ViewData["AuditPage"] = AuditNavPages.WorkstationSessions;
 }
-<component type="typeof(WorkstationSessionsPage)" render-mode="Server" />
+<component type="typeof(WorkstationSessionsPage)" render-mode="Server" param-DashboardFilter="@Model.DashboardFilter"/>

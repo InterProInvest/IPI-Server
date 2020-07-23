@@ -1,6 +1,8 @@
-﻿using HES.Core.Enums;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using Hideez.SDK.Communication;
 using System;
+using System.Linq;
 
 namespace HES.Core.Models.Web.Audit
 {
@@ -17,5 +19,6 @@ namespace HES.Core.Models.Web.Audit
         public string Department { get; set; }
         public string Account { get; set; }
         public AccountType? AccountType { get; set; }
+        public IQueryable<WorkstationSession> Query { get; set; }
     }
 }

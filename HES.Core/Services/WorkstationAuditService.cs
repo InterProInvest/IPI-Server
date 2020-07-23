@@ -399,6 +399,10 @@ namespace HES.Core.Services
                 {
                     query = query.Where(w => w.Account.Type == (AccountType)dataLoadingOptions.Filter.AccountType);
                 }
+                if (dataLoadingOptions.Filter.Query != null)
+                {
+                    query = dataLoadingOptions.Filter.Query;
+                }
             }
 
             // Search
@@ -513,6 +517,10 @@ namespace HES.Core.Services
                 if (dataLoadingOptions.Filter.AccountType != null)
                 {
                     query = query.Where(w => w.Account.Type == (AccountType)dataLoadingOptions.Filter.AccountType);
+                }
+                if (dataLoadingOptions.Filter.Query != null)
+                {
+                    query = dataLoadingOptions.Filter.Query;
                 }
             }
 

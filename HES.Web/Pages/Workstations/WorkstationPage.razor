@@ -139,27 +139,36 @@ else
                 @context.IP
             </td>
             <td>
-                @context.LastSeen.ToLocalTime()
+                @if (context.IsOnline)
+                {
+                    <span class="badge badge-success" title="Workstation is online">
+                        Online
+                    </span>
+                }
+                else
+                {
+                    @context.LastSeen.ToLocalTime()
+                }
             </td>
             <td>
                 @if (context.RFID)
-                {
-                <span class="badge badge-success">Yes</span>
-                }
-                else
-                {
-                <span class="badge badge-secondary">No</span>
-                }
+                    {
+                    <span class="badge badge-success">Yes</span>
+                    }
+                    else
+                    {
+                    <span class="badge badge-secondary">No</span>
+                    }
             </td>
             <td>
                 @if (context.Approved)
-                {
-                <span class="badge badge-success">Yes</span>
-                }
-                else
-                {
-                <span class="badge badge-danger">No</span>
-                }
+                    {
+                    <span class="badge badge-success">Yes</span>
+                    }
+                    else
+                    {
+                    <span class="badge badge-danger">No</span>
+                    }
             </td>
         </TableRow>
     </MainTable>
