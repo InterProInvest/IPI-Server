@@ -139,7 +139,16 @@ else
                 @context.IP
             </td>
             <td>
-                @context.LastSeen.ToLocalTime()
+                @if (context.IsOnline)
+                {
+                    <span class="badge badge-success" title="Workstation is online">
+                        Online
+                    </span>
+                }
+                else
+                {
+                    @context.LastSeen.ToLocalTime()
+                }
             </td>
             <td>
                 @if (context.RFID)
