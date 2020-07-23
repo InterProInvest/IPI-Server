@@ -32,7 +32,7 @@ namespace HES.Infrastructure.Data
                 InitializeHardwareVaultProfile(scope).Wait();
                 InitializeDataProtection(scope).Wait();
             }
-         
+
             return host;
         }
 
@@ -85,8 +85,19 @@ namespace HES.Infrastructure.Data
                     PinTryCount = 10,
                 });
 
-                await context.SaveChangesAsync();
             }
+            else
+            {
+                var profiles = await context.HardwareVaultProfiles.ToListAsync();
+                foreach (var item in profiles)
+                {
+                    item.ButtonBonding = true;
+                    item.MasterKeyBonding = true;
+                    item.MasterKeyNewChannel = false;
+                }
+            }
+
+            await context.SaveChangesAsync();
         }
 
         private static async Task InitializeDataProtection(IServiceScope scope)

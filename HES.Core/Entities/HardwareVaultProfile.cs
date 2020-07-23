@@ -17,7 +17,7 @@ namespace HES.Core.Entities
         [Display(Name = "Updated")]
         public DateTime? UpdatedAt { get; set; }
         public List<HardwareVault> HardwareVaults { get; set; }
-        public bool ButtonBonding { get; set; }
+        public bool ButtonBonding { get; set; } = true;
         public bool ButtonConnection { get; set; }
         public bool ButtonNewChannel { get; set; }
         public bool PinBonding { get; set; }
