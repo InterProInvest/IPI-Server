@@ -18,7 +18,6 @@ namespace HES.Web.Pages.Employees
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<DeleteAccount> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -28,9 +27,8 @@ namespace HES.Web.Pages.Employees
             {
                 var account = await EmployeeService.DeleteAccountAsync(Account.Id);      
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(account.EmployeeId));
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account deleted.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

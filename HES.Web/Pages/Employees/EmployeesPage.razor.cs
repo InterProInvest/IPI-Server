@@ -21,8 +21,8 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
             await BreadcrumbsService.SetEmployees();
+            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
             await InitializeHubAsync();
         }
 
@@ -89,9 +89,11 @@ namespace HES.Web.Pages.Employees
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.Employees, async () =>
+            hubConnection.On<string>(RefreshPage.Employees, async (employeeId) =>
             {
-                await EmployeeService.DetachEmployeeAsync(MainTableService.Entities);
+                if (employeeId != null)
+                    await EmployeeService.ReloadEmployeeAsync(employeeId);              
+
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

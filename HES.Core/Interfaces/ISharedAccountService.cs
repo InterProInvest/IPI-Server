@@ -1,7 +1,6 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.SharedAccounts;
 using System.Collections.Generic;
 using System.Linq;

@@ -18,7 +18,6 @@ namespace HES.Web.Pages.Employees
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<DeleteAccount> Logger { get; set; }
         [Inject] IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public Account Account { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -29,9 +28,8 @@ namespace HES.Web.Pages.Employees
                 await EmployeeService.SetAsWorkstationAccountAsync(Account.Employee.Id, Account.Id);
                 var employee = await EmployeeService.GetEmployeeByIdAsync(Account.Employee.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(employee.Id));
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account changed.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId, Account.Id);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

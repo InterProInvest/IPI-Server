@@ -2,7 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using System.Collections.Generic;
 using System.ComponentModel;
 

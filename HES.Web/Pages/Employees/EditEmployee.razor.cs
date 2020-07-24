@@ -6,6 +6,7 @@ using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,10 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EditEmployee : ComponentBase
+    public partial class EditEmployee : ComponentBase, IDisposable
     {
         [Inject] public IEmployeeService EmployeeService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -30,9 +32,14 @@ namespace HES.Web.Pages.Employees
         public List<Department> Departments { get; set; }
         public List<Position> Positions { get; set; }
         public bool Initialized { get; set; }
+        public bool EntityBeingEdited { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
+            EntityBeingEdited = MemoryCache.TryGetValue(Employee.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(Employee.Id, Employee);
+
             ModalDialogService.OnCancel += ModalDialogService_OnCancel;
             Companies = await OrgStructureService.GetCompaniesAsync();
 
@@ -66,7 +73,7 @@ namespace HES.Web.Pages.Employees
             {
                 await EmployeeService.EditEmployeeAsync(Employee);
                 ToastService.ShowToast("Employee updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, Employee.Id);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -85,6 +92,12 @@ namespace HES.Web.Pages.Employees
         {
             await EmployeeService.UnchangedEmployeeAsync(Employee);
             ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Employee.Id);
         }
     }
 }

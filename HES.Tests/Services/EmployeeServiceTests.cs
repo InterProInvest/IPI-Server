@@ -1,12 +1,10 @@
-﻿using HES.Core.Entities;
-using HES.Core.Enums;
+﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
-using HES.Core.Models;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.Accounts;
 using HES.Tests.Helpers;
 using HES.Web;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -149,7 +147,9 @@ namespace HES.Tests.Services
         [Fact, Order(13)]
         public async Task GetAccountsCountAsync()
         {
-            var accountsCount = await _employeeService.GetAccountsCountAsync(string.Empty, _testingOptions.AccountsEmployeeId);
+            var options = new DataLoadingOptions<AccountFilter>() { EntityId = _testingOptions.AccountsEmployeeId };
+
+            var accountsCount = await _employeeService.GetAccountsCountAsync(options);
 
             Assert.Equal(_testingOptions.AccountsCount, accountsCount);
 
@@ -158,7 +158,9 @@ namespace HES.Tests.Services
         [Fact, Order(14)]
         public async Task GetAccountsAsync()
         {
-            var result = await _employeeService.GetAccountsAsync(0, _testingOptions.AccountsCount, nameof(Account.Id), ListSortDirection.Ascending, string.Empty, _testingOptions.AccountsEmployeeId);
+            var options = new DataLoadingOptions<AccountFilter>() { EntityId = _testingOptions.AccountsEmployeeId };
+
+            var result = await _employeeService.GetAccountsAsync(options);
 
             Assert.NotEmpty(result);
             Assert.Equal(_testingOptions.AccountsCount, result.Count);
@@ -206,10 +208,10 @@ namespace HES.Tests.Services
             var accounts = await _employeeService.GetAccountsByEmployeeIdAsync(_testingOptions.AccountsEmployeeId);
             var account = accounts.FirstOrDefault(x => x.Name == _testingOptions.PersonalAccount.Name);
 
-            account.Name = "test"; 
+            account.Name = "test";
 
             await _employeeService.UnchangedPersonalAccountAsync(account);
-            
+
             Assert.True(account.Name == _testingOptions.PersonalAccount.Name);
         }
 

@@ -39,7 +39,7 @@ namespace HES.Web.Pages.Employees
             {
                 await SoftwareVaultService.CreateAndSendInvitationAsync(Employee, ServerSettings, ValidTo);         
                 ToastService.ShowToast("Invitation sent.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Employee.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Employee.Id, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

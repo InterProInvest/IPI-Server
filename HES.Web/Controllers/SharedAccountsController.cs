@@ -6,7 +6,7 @@ using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Core.Models.API.SharedAccount;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.SharedAccounts;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;

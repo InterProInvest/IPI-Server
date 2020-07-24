@@ -115,6 +115,7 @@ namespace HES.Web
 
             services.AddHttpClient().RemoveAll<IHttpMessageHandlerBuilderFilter>();
             services.AddSignalR();
+            services.AddMemoryCache();
 
             // Cookie
             services.Configure<CookiePolicyOptions>(options =>
