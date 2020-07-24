@@ -128,13 +128,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     return;
                 }
 
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                var hardwareVaults = await HardwareVaultService.VaultQuery().Where(x => _renewLicenseOrder.HardwareVaults.Select(d => d.Id).Contains(x.Id)).ToListAsync();
-                var maxEndDate = hardwareVaults.Select(x => x.LicenseEndDate).Max();
+                var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
+                var maxEndDate = checkedHardwareVaults.Select(x => x.LicenseEndDate).Max();
 
                 if (_renewLicenseOrder.EndDate < maxEndDate)
                 {
@@ -142,13 +137,17 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     return;
                 }
 
+                if (_isBusy)
+                    return;
+
+                _isBusy = true;
+
                 LicenseOrder.ContactEmail = _renewLicenseOrder.ContactEmail;
                 LicenseOrder.Note = _renewLicenseOrder.Note;
                 LicenseOrder.ProlongExistingLicenses = true;
                 LicenseOrder.StartDate = null;
                 LicenseOrder.EndDate = _renewLicenseOrder.EndDate.Date;
 
-                var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                 await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);

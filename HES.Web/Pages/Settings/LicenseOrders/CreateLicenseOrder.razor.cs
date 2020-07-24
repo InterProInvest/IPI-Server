@@ -115,11 +115,6 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     return;
                 }
 
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
                 var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                 var maxEndDate = checkedHardwareVaults.Select(x => x.LicenseEndDate).Max();
 
@@ -128,6 +123,11 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"The selected End Date less than max end date for selected hardware vaults.");
                     return;
                 }
+
+                if (_isBusy)
+                    return;
+
+                _isBusy = true;
 
                 var licenseOrder = new LicenseOrder()
                 {
