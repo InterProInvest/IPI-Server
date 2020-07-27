@@ -80,7 +80,6 @@ namespace HES.Web.Pages.Groups
 
             hubConnection.On(RefreshPage.GroupDetails, async () =>
             {
-                await GroupService.DetachGroupMembershipsAsync(MainTableService.Entities);
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

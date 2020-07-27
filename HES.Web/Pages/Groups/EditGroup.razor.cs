@@ -6,24 +6,27 @@ using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class EditGroup : ComponentBase
+    public partial class EditGroup : ComponentBase, IDisposable
     {
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public ILogger<EditGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string GroupId { get; set; }
 
         public Group Group { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public bool EntityBeingEdited { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -36,6 +39,10 @@ namespace HES.Web.Pages.Groups
                 {
                     throw new Exception("Group not found");
                 }
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Group.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Group.Id, Group);
             }
             catch (Exception ex)
             {
@@ -51,7 +58,7 @@ namespace HES.Web.Pages.Groups
             {
                 await GroupService.EditGroupAsync(Group);            
                 ToastService.ShowToast("Group updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, Group.Id);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -71,5 +78,12 @@ namespace HES.Web.Pages.Groups
             await GroupService.UnchangedGroupAsync(Group);
             ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Group.Id);
+        }
+
     }
 }
