@@ -92,7 +92,7 @@ namespace HES.Web.Pages.Employees
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault added", ToastLevel.Success);      
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId, null);
-                await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
+                await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, SelectedHardwareVault.Id);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

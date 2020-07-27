@@ -11,7 +11,6 @@ using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -36,7 +35,6 @@ namespace HES.Core.Services
         private readonly IAppSettingsService _appSettingsService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<HardwareVaultService> _logger;
 
         public HardwareVaultService(IAsyncRepository<HardwareVault> hardwareVaultRepository,
                                     IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
@@ -47,8 +45,7 @@ namespace HES.Core.Services
                                     IWorkstationService workstationService,
                                     IAppSettingsService appSettingsService,
                                     IDataProtectionService dataProtectionService,
-                                    IHttpClientFactory httpClientFactory,
-                                    ILogger<HardwareVaultService> logger)
+                                    IHttpClientFactory httpClientFactory)
         {
             _hardwareVaultRepository = hardwareVaultRepository;
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
@@ -60,7 +57,6 @@ namespace HES.Core.Services
             _appSettingsService = appSettingsService;
             _dataProtectionService = dataProtectionService;
             _httpClientFactory = httpClientFactory;
-            _logger = logger;
         }
 
         #region Vault
@@ -99,19 +95,6 @@ namespace HES.Core.Services
                             x.LicenseStatus != VaultLicenseStatus.Expired)
                     .AsNoTracking()
                     .ToListAsync();
-        }
-
-        public async Task DetachVaultAsync(HardwareVault vault)
-        {
-            await _hardwareVaultRepository.DetachedAsync(vault);
-        }
-
-        public async Task DetachVaultsAsync(List<HardwareVault> vaults)
-        {
-            foreach (var item in vaults)
-            {
-                await DetachVaultAsync(item);
-            }
         }
 
         public async Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
@@ -711,17 +694,10 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ReloadHardwareVault(HardwareVault hardwareVault)
+        public async Task ReloadHardwareVault(string hardwareVaultId)
         {
+            var hardwareVault = await _hardwareVaultRepository.GetByIdAsync(hardwareVaultId);
             await _hardwareVaultRepository.ReloadAsync(hardwareVault);
-        }
-
-        public async Task ReloadHardwareVaults(List<HardwareVault> hardwareVaults)
-        {
-            foreach (var item in hardwareVaults)
-            {
-                await _hardwareVaultRepository.ReloadAsync(item);
-            }
         }
 
         #endregion

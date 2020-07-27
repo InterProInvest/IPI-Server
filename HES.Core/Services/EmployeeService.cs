@@ -406,7 +406,7 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vault} not found");
 
-            await _hardwareVaultService.ReloadHardwareVault(vault);
+            await _hardwareVaultService.ReloadHardwareVault(vaultId);
 
             if (vault.Status != VaultStatus.Ready)
                 throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
@@ -457,7 +457,7 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
 
-            await _hardwareVaultService.ReloadHardwareVault(vault);
+            await _hardwareVaultService.ReloadHardwareVault(vaultId);
 
             if (vault.Status != VaultStatus.Reserved &&
                 vault.Status != VaultStatus.Active &&
@@ -501,11 +501,6 @@ namespace HES.Core.Services
 
                 transactionScope.Complete();
             }
-        }
-
-        public async Task ReloadHardwareVaultsAsync(List<HardwareVault> hardwareVaults)
-        {
-            await _hardwareVaultService.ReloadHardwareVaults(hardwareVaults);
         }
 
         #endregion

@@ -19,6 +19,7 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public ILogger<HardwareVaultsPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
+
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
@@ -49,7 +50,7 @@ namespace HES.Web.Pages.HardwareVaults
             await BreadcrumbsService.SetHardwareVaults();
             await InitializeHubAsync();
         }
-              
+
         public async Task ImportVaultsAsync()
         {
             try
@@ -70,7 +71,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditRfid));
-                builder.AddAttribute(1, nameof(EditRfid.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(1, nameof(EditRfid.HardwareVault), MainTableService.SelectedEntity);
                 builder.AddAttribute(2, nameof(EditRfid.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
@@ -83,7 +84,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVault), MainTableService.SelectedEntity);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Suspended);
                 builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
@@ -97,7 +98,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVault), MainTableService.SelectedEntity);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Active);
                 builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
@@ -111,7 +112,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVault), MainTableService.SelectedEntity);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Compromised);
                 builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
@@ -137,7 +138,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeProfile));
-                builder.AddAttribute(1, nameof(ChangeProfile.HardwareVaultId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(1, nameof(ChangeProfile.HardwareVault), MainTableService.SelectedEntity);
                 builder.AddAttribute(2, nameof(ChangeProfile.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
@@ -150,23 +151,27 @@ namespace HES.Web.Pages.HardwareVaults
             hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
-
-            hubConnection.On(RefreshPage.HardwareVaults, async () =>
+     
+            hubConnection.On<string>(RefreshPage.HardwareVaults, async (hardwareVaultId) =>
             {
-                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+                if (hardwareVaultId != null)
+                    await HardwareVaultService.ReloadHardwareVault(hardwareVaultId);
+
                 await MainTableService.LoadTableDataAsync();
+
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
-
-            hubConnection.On(RefreshPage.HardwareVaultStateChanged, async () =>
+       
+            hubConnection.On<string>(RefreshPage.HardwareVaultStateChanged, async (hardwareVaultId) =>
             {
-                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+                if (hardwareVaultId != null)
+                    await HardwareVaultService.ReloadHardwareVault(hardwareVaultId);
+
                 await MainTableService.LoadTableDataAsync();
             });
 
             await hubConnection.StartAsync();
         }
-
 
         public void Dispose()
         {
