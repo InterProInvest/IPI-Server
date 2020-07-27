@@ -46,8 +46,8 @@ namespace HES.Web.Pages.HardwareVaults
                     break;
             }
 
-            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
             await BreadcrumbsService.SetHardwareVaults();
+            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
             await InitializeHubAsync();
         }
 

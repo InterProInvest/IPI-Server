@@ -4,47 +4,54 @@
 }
 else
 {
-    <EditForm Model="Workstation" OnValidSubmit="EditAsync">
-        <h5 class="text-gray mb-4 ">@Workstation.Name</h5>
-        <div class="form-group">
-            <label class="control-label text-gra">Company</label>
-            <select @onchange="CompanyChangedAsync" class="form-control text-navyblue">
-                <option></option>
-                @foreach (var item in Companies)
-                {
-                    if (Workstation.Department?.CompanyId == item.Id)
+    if (EntityBeingEdited)
+    {
+        <EditedByAnother EntityName="workstation" CloseAction="ModalDialogService.CancelAsync" />
+    }
+    else
+    {
+        <EditForm Model="Workstation" OnValidSubmit="EditAsync">
+            <h5 class="text-gray mb-4 ">@Workstation.Name</h5>
+            <div class="form-group">
+                <label class="control-label text-gra">Company</label>
+                <select @onchange="CompanyChangedAsync" class="form-control text-navyblue">
+                    <option></option>
+                    @foreach (var item in Companies)
                     {
-                        <option value="@item.Id" selected>@item.Name</option>
+                        if (Workstation.Department?.CompanyId == item.Id)
+                        {
+                            <option value="@item.Id" selected>@item.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
                     }
-                    else
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gra">Department</label>
+                <select @bind="Workstation.DepartmentId" class="form-control text-navyblue">
+                    @foreach (var item in Departments)
                     {
                         <option value="@item.Id">@item.Name</option>
                     }
-                }
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="control-label text-gra">Department</label>
-            <select @bind="Workstation.DepartmentId" class="form-control text-navyblue">
-                @foreach (var item in Departments)
-                {
-                    <option value="@item.Id">@item.Name</option>
-                }
-            </select>
-        </div>
-        <label class="control-label text-gray">Unlock settings</label>
-        <ul class="list-group mb-4">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Has RFID
-                <div class="custom-control custom-switch">
-                    <input id="hasRfid" type="checkbox" class="custom-control-input" @bind="Workstation.RFID">
-                    <label class="custom-control-label" for="hasRfid"></label>
-                </div>
-            </li>
-        </ul>
-        <div class="text-right">
-            <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-            <input type="submit" value="Save" class="btn btn-primary" />
-        </div>
-    </EditForm>
+                </select>
+            </div>
+            <label class="control-label text-gray">Unlock settings</label>
+            <ul class="list-group mb-4">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Has RFID
+                    <div class="custom-control custom-switch">
+                        <input id="hasRfid" type="checkbox" class="custom-control-input" @bind="Workstation.RFID">
+                        <label class="custom-control-label" for="hasRfid"></label>
+                    </div>
+                </li>
+            </ul>
+            <div class="text-right">
+                <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </EditForm>
+    }
 }

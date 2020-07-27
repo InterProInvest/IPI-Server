@@ -4,6 +4,7 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,14 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Workstations
 {
-    public partial class EditWorkstation : ComponentBase
+    public partial class EditWorkstation : ComponentBase, IDisposable
     {
         [Inject] public IWorkstationService WorkstationService { get; set; }
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<ApproveWorkstation> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public Workstation Workstation { get; set; }
@@ -27,9 +29,14 @@ namespace HES.Web.Pages.Workstations
         public List<Company> Companies { get; set; }
         public List<Department> Departments { get; set; }
         public bool Initialized { get; set; }
+        public bool EntityBeingEdited { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
+            EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(Workstation.Id, Workstation);
+
             ModalDialogService.OnCancel += OnCancel;
             Companies = await OrgStructureService.GetCompaniesAsync();
 
@@ -73,6 +80,12 @@ namespace HES.Web.Pages.Workstations
         {
             await WorkstationService.UnchangedWorkstationAsync(Workstation);
             ModalDialogService.OnCancel -= OnCancel;
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Workstation.Id);
         }
     }
 }
