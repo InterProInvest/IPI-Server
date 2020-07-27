@@ -22,12 +22,15 @@ namespace HES.Core.Services
 
         public async Task<LicensingSettings> GetLicensingSettingsAsync()
         {
-            var licensing = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Licensing);
+            var licensing = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Licensing);
 
             if (licensing == null)
                 return null;
 
-            return JsonConvert.DeserializeObject<LicensingSettings>(licensing.Value);
+            var deserialized = JsonConvert.DeserializeObject<LicensingSettings>(licensing.Value);
+            deserialized.ApiKey = _dataProtectionService.Decrypt(deserialized.ApiKey);
+
+            return deserialized;
         }
 
         public async Task SetLicensingSettingsAsync(LicensingSettings licensing)
@@ -35,15 +38,17 @@ namespace HES.Core.Services
             if (licensing == null)
                 throw new ArgumentNullException(nameof(LicensingSettings));
 
+            licensing.ApiKey = _dataProtectionService.Encrypt(licensing.ApiKey);
+
             var json = JsonConvert.SerializeObject(licensing);
 
-            var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Licensing);
+            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Licensing);
 
             if (appSettings == null)
             {
                 appSettings = new AppSettings()
                 {
-                    Id = AppSettingsConstants.Licensing,
+                    Id = ServerConstants.Licensing,
                     Value = json
                 };
                 await _appSettingsRepository.AddAsync(appSettings);
@@ -57,7 +62,7 @@ namespace HES.Core.Services
 
         public async Task<EmailSettings> GetEmailSettingsAsync()
         {
-            var settings = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Email);
+            var settings = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Email);
 
             if (settings == null)
                 return null;
@@ -77,13 +82,13 @@ namespace HES.Core.Services
 
             var json = JsonConvert.SerializeObject(email);
 
-            var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Email);
+            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Email);
 
             if (appSettings == null)
             {
                 appSettings = new AppSettings()
                 {
-                    Id = AppSettingsConstants.Email,
+                    Id = ServerConstants.Email,
                     Value = json
                 };
                 await _appSettingsRepository.AddAsync(appSettings);
@@ -97,7 +102,7 @@ namespace HES.Core.Services
 
         public async Task<ServerSettings> GetServerSettingsAsync()
         {
-            var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Server);
+            var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Server);
 
             if (server == null)
                 return null;
@@ -112,13 +117,13 @@ namespace HES.Core.Services
 
             var json = JsonConvert.SerializeObject(server);
 
-            var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Server);
+            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Server);
 
             if (appSettings == null)
             {
                 appSettings = new AppSettings()
                 {
-                    Id = AppSettingsConstants.Server,
+                    Id = ServerConstants.Server,
                     Value = json
                 };
                 await _appSettingsRepository.AddAsync(appSettings);
@@ -132,7 +137,7 @@ namespace HES.Core.Services
 
         public async Task<LdapSettings> GetLdapSettingsAsync()
         {
-            var domain = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == AppSettingsConstants.Domain);
+            var domain = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Domain);
 
             if (domain == null)
                 return null;
@@ -152,13 +157,13 @@ namespace HES.Core.Services
 
             var json = JsonConvert.SerializeObject(ldapSettings);
 
-            var appSettings = await _appSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
+            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Domain);
 
             if (appSettings == null)
             {
                 appSettings = new AppSettings()
                 {
-                    Id = AppSettingsConstants.Domain,
+                    Id = ServerConstants.Domain,
                     Value = json
                 };
                 await _appSettingsRepository.AddAsync(appSettings);

@@ -75,9 +75,9 @@ namespace HES.Web.Pages.Settings.Parameters
 
                 _licensingIsBusy = true;
                 await AppSettingsService.SetLicensingSettingsAsync(_licensing);
+                _licensing = await LoadLicensingSettingsAsync();
                 ToastService.ShowToast("License settings updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);
-                //await HubContext.Clients.All.SendAsync(RefreshPage.Parameters);
+                await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);         
             }
             catch (Exception ex)
             {

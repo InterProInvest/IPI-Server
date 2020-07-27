@@ -24,6 +24,27 @@ namespace HES.Core.Services
         NotFinishedPasswordChange
     }
 
+    /// <summary>
+    /// When protection is enabled, fields are encrypted
+    /// Accounts
+    ///     - Password
+    ///     - OtpSecret    
+    /// AppSettings
+    ///     - Key: domain - field: Password
+    ///     - Key: licensing - field: ApiKey
+    /// HardwareVaultsActivations
+    ///     - ActivationCode
+    /// HardwareVaults   
+    ///     - MasterPassword
+    /// HardwareVaultTasks
+    ///     - Password
+    ///     - OtpSecret
+    /// SharedAccounts
+    ///     - Password
+    ///     - OtpSecret
+    /// SoftwareVaultInvitations
+    ///     - ActivationCode   
+    /// </summary>
     public class DataProtectionService : IDataProtectionService
     {
         public IServiceProvider Services { get; }
@@ -72,9 +93,9 @@ namespace HES.Core.Services
             {
                 if (_protectionEnabled && !_protectionActivated)
                 {
-                    //using var scope = Services.CreateScope();
-                    //var scopedEmailSenderService = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
-                    //await scopedEmailSenderService.SendActivateDataProtectionAsync();
+                    using var scope = Services.CreateScope();
+                    var scopedEmailSenderService = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
+                    await scopedEmailSenderService.SendActivateDataProtectionAsync();
                 }
             }
         }
@@ -281,29 +302,73 @@ namespace HES.Core.Services
 
         private async Task ReencryptDatabase(DataProtectionKey key, DataProtectionKey newKey)
         {
+
             using var scope = Services.CreateScope();
-            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
-            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
-            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+
+            // Accounts
             var scopedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Account>>();
-            var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
-
-            var devices = await scopedDeviceRepository.Query().ToListAsync();
-            var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             var accounts = await scopedAccountRepository.Query().ToListAsync();
-            var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
-
-            foreach (var device in devices)
+            foreach (var account in accounts)
             {
-                if (device.MasterPassword != null)
+                if (account.Password != null)
                 {
-                    var plainText = key.Decrypt(device.MasterPassword);
-                    device.MasterPassword = newKey.Encrypt(plainText);
+                    var plainText = key.Decrypt(account.Password);
+                    account.Password = newKey.Encrypt(plainText);
+                }
+                if (account.OtpSecret != null)
+                {
+                    var plainText = key.Decrypt(account.OtpSecret);
+                    account.OtpSecret = newKey.Encrypt(plainText);
                 }
             }
 
-            foreach (var task in deviceTasks)
+            // AppSettings
+            var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
+            var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(ServerConstants.Domain);
+            var licenseSettings = await scopedAppSettingsRepository.GetByIdAsync(ServerConstants.Licensing);
+
+            if (domainSettings != null)
+            {
+                var settings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
+                var plainText = key.Decrypt(settings.Password);
+                settings.Password = newKey.Encrypt(plainText);
+                var json = JsonConvert.SerializeObject(settings);
+                domainSettings.Value = json;
+            }
+            if (licenseSettings != null)
+            {
+                var settings = JsonConvert.DeserializeObject<LicensingSettings>(licenseSettings.Value);
+                var plainText = key.Decrypt(settings.ApiKey);
+                settings.ApiKey = newKey.Encrypt(plainText);
+                var json = JsonConvert.SerializeObject(settings);
+                licenseSettings.Value = json;
+            }
+
+            // HardwareVaultsActivations
+            var scopedHardwareVaultActivationRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultActivation>>();
+            var hardwareVaultActivations = await scopedHardwareVaultActivationRepository.Query().ToListAsync();
+            foreach (var hardwareVaultActivation in hardwareVaultActivations)
+            {
+                var plainText = key.Decrypt(hardwareVaultActivation.AcivationCode);
+                hardwareVaultActivation.AcivationCode = newKey.Encrypt(plainText);
+            }
+
+            // HardwareVaults   
+            var scopedHardwareVaultRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
+            var hardwareVaults = await scopedHardwareVaultRepository.Query().ToListAsync();
+            foreach (var hardwareVault in hardwareVaults)
+            {
+                if (hardwareVault.MasterPassword != null)
+                {
+                    var plainText = key.Decrypt(hardwareVault.MasterPassword);
+                    hardwareVault.MasterPassword = newKey.Encrypt(plainText);
+                }
+            }
+
+            // HardwareVaultTasks
+            var scopedHardwareVaultTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
+            var hardwareVaultTasks = await scopedHardwareVaultTaskRepository.Query().ToListAsync();
+            foreach (var task in hardwareVaultTasks)
             {
                 if (task.Password != null)
                 {
@@ -317,6 +382,9 @@ namespace HES.Core.Services
                 }
             }
 
+            // SharedAccounts
+            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             foreach (var account in sharedAccounts)
             {
                 if (account.Password != null)
@@ -331,37 +399,26 @@ namespace HES.Core.Services
                 }
             }
 
-            foreach (var account in accounts)
-            {
-                if (account.Password != null)
-                {
-                    var plainText = key.Decrypt(account.Password);
-                    account.Password = newKey.Encrypt(plainText);
-                }
-                if (account.OtpSecret != null)
-                {
-                    var plainText = key.Decrypt(account.OtpSecret);
-                    account.OtpSecret = newKey.Encrypt(plainText);
-                }
-            }
-
-            if (domainSettings != null)
-            {
-                var settings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
-                var plainText = key.Decrypt(settings.Password);
-                settings.Password = newKey.Encrypt(plainText);
-                var json = JsonConvert.SerializeObject(settings);
-                domainSettings.Value = json;
-            }
+            // SoftwareVaultInvitations
+            //var scopedSoftwareVaultInvitationRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SoftwareVaultInvitation>>();
+            //var softwareVaultInvitations = await scopedSoftwareVaultInvitationRepository.Query().ToListAsync();
+            //foreach (var softwareVaultInvitation in softwareVaultInvitations)
+            //{
+            //    
+            //}
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
-                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
+                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Password), nameof(Account.OtpSecret) });
                 if (domainSettings != null)
                     await scopedAppSettingsRepository.UpdateAsync(domainSettings);
+                if (licenseSettings != null)
+                    await scopedAppSettingsRepository.UpdateAsync(licenseSettings);
+                await scopedHardwareVaultActivationRepository.UpdateOnlyPropAsync(hardwareVaultActivations, new string[] { nameof(HardwareVaultActivation.AcivationCode) });
+                await scopedHardwareVaultRepository.UpdateOnlyPropAsync(hardwareVaults, new string[] { nameof(HardwareVault.MasterPassword) });
+                await scopedHardwareVaultTaskRepository.UpdateOnlyPropAsync(hardwareVaultTasks, new string[] { nameof(HardwareVaultTask.Password), nameof(HardwareVaultTask.OtpSecret) });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { nameof(SharedAccount.Password), nameof(SharedAccount.OtpSecret) });
+                //await scopedSoftwareVaultInvitationRepository.UpdateOnlyPropAsync(softwareVaultInvitations, new string[] { nameof(SoftwareVaultInvitation.ActivationCode) });
                 transactionScope.Complete();
             }
         }
@@ -369,40 +426,10 @@ namespace HES.Core.Services
         private async Task EncryptDatabase(DataProtectionKey key)
         {
             using var scope = Services.CreateScope();
-            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
-            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
-            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+
+            // Accounts
             var scopedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Account>>();
-            var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
-
-            var devices = await scopedDeviceRepository.Query().ToListAsync();
-            var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             var accounts = await scopedAccountRepository.Query().ToListAsync();
-            var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
-
-            foreach (var device in devices)
-            {
-                if (device.MasterPassword != null)
-                    device.MasterPassword = key.Encrypt(device.MasterPassword);
-            }
-
-            foreach (var task in deviceTasks)
-            {
-                if (task.Password != null)
-                    task.Password = key.Encrypt(task.Password);
-                if (task.OtpSecret != null)
-                    task.OtpSecret = key.Encrypt(task.OtpSecret);
-            }
-
-            foreach (var account in sharedAccounts)
-            {
-                if (account.Password != null)
-                    account.Password = key.Encrypt(account.Password);
-                if (account.OtpSecret != null)
-                    account.OtpSecret = key.Encrypt(account.OtpSecret);
-            }
-
             foreach (var account in accounts)
             {
                 if (account.Password != null)
@@ -410,6 +437,11 @@ namespace HES.Core.Services
                 if (account.OtpSecret != null)
                     account.OtpSecret = key.Encrypt(account.OtpSecret);
             }
+
+            // AppSettings
+            var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
+            var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(ServerConstants.Domain);
+            var licenseSettings = await scopedAppSettingsRepository.GetByIdAsync(ServerConstants.Licensing);
 
             if (domainSettings != null)
             {
@@ -418,15 +450,73 @@ namespace HES.Core.Services
                 var json = JsonConvert.SerializeObject(ldapSettings);
                 domainSettings.Value = json;
             }
+            if (licenseSettings != null)
+            {
+                var settings = JsonConvert.DeserializeObject<LicensingSettings>(licenseSettings.Value);
+                settings.ApiKey = key.Encrypt(settings.ApiKey);
+                var json = JsonConvert.SerializeObject(settings);
+                licenseSettings.Value = json;
+            }
+
+            // HardwareVaultsActivations
+            var scopedHardwareVaultActivationRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultActivation>>();
+            var hardwareVaultActivations = await scopedHardwareVaultActivationRepository.Query().ToListAsync();
+            foreach (var hardwareVaultActivation in hardwareVaultActivations)
+            {
+                hardwareVaultActivation.AcivationCode = key.Encrypt(hardwareVaultActivation.AcivationCode);
+            }
+
+            // HardwareVaults   
+            var scopedHardwareVaultRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
+            var hardwareVaults = await scopedHardwareVaultRepository.Query().ToListAsync();
+            foreach (var hardwareVault in hardwareVaults)
+            {
+                if (hardwareVault.MasterPassword != null)
+                    hardwareVault.MasterPassword = key.Encrypt(hardwareVault.MasterPassword);
+            }
+
+            // HardwareVaultTasks
+            var scopedHardwareVaultTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
+            var hardwareVaultTasks = await scopedHardwareVaultTaskRepository.Query().ToListAsync();
+            foreach (var task in hardwareVaultTasks)
+            {
+                if (task.Password != null)
+                    task.Password = key.Encrypt(task.Password);
+                if (task.OtpSecret != null)
+                    task.OtpSecret = key.Encrypt(task.OtpSecret);
+            }
+
+            // SharedAccounts
+            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
+            foreach (var account in sharedAccounts)
+            {
+                if (account.Password != null)
+                    account.Password = key.Encrypt(account.Password);
+                if (account.OtpSecret != null)
+                    account.OtpSecret = key.Encrypt(account.OtpSecret);
+            }
+
+            // SoftwareVaultInvitations
+            //var scopedSoftwareVaultInvitationRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SoftwareVaultInvitation>>();
+            //var softwareVaultInvitations = await scopedSoftwareVaultInvitationRepository.Query().ToListAsync();
+            //foreach (var softwareVaultInvitation in softwareVaultInvitations)
+            //{
+            //    softwareVaultInvitation.ActivationCode = key.Encrypt(softwareVaultInvitation.ActivationCode);
+            //}
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
-                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
+                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Password), nameof(Account.OtpSecret) });
                 if (domainSettings != null)
                     await scopedAppSettingsRepository.UpdateAsync(domainSettings);
+                if (licenseSettings != null)
+                    await scopedAppSettingsRepository.UpdateAsync(licenseSettings);
+                await scopedHardwareVaultActivationRepository.UpdateOnlyPropAsync(hardwareVaultActivations, new string[] { nameof(HardwareVaultActivation.AcivationCode) });
+                await scopedHardwareVaultRepository.UpdateOnlyPropAsync(hardwareVaults, new string[] { nameof(HardwareVault.MasterPassword) });
+                await scopedHardwareVaultTaskRepository.UpdateOnlyPropAsync(hardwareVaultTasks, new string[] { nameof(HardwareVaultTask.Password), nameof(HardwareVaultTask.OtpSecret) });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { nameof(SharedAccount.Password), nameof(SharedAccount.OtpSecret) });
+                //await scopedSoftwareVaultInvitationRepository.UpdateOnlyPropAsync(softwareVaultInvitations, new string[] { nameof(SoftwareVaultInvitation.ActivationCode) });
                 transactionScope.Complete();
             }
         }
@@ -434,40 +524,10 @@ namespace HES.Core.Services
         private async Task DecryptDatabase(DataProtectionKey key)
         {
             using var scope = Services.CreateScope();
-            var scopedDeviceRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
-            var scopedDeviceTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
-            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+
+            // Accounts
             var scopedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<Account>>();
-            var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
-
-            var devices = await scopedDeviceRepository.Query().ToListAsync();
-            var deviceTasks = await scopedDeviceTaskRepository.Query().ToListAsync();
-            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
             var accounts = await scopedAccountRepository.Query().ToListAsync();
-            var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(AppSettingsConstants.Domain);
-
-            foreach (var device in devices)
-            {
-                if (device.MasterPassword != null)
-                    device.MasterPassword = key.Decrypt(device.MasterPassword);
-            }
-
-            foreach (var task in deviceTasks)
-            {
-                if (task.Password != null)
-                    task.Password = key.Decrypt(task.Password);
-                if (task.OtpSecret != null)
-                    task.OtpSecret = key.Decrypt(task.OtpSecret);
-            }
-
-            foreach (var account in sharedAccounts)
-            {
-                if (account.Password != null)
-                    account.Password = key.Decrypt(account.Password);
-                if (account.OtpSecret != null)
-                    account.OtpSecret = key.Decrypt(account.OtpSecret);
-            }
-
             foreach (var account in accounts)
             {
                 if (account.Password != null)
@@ -476,6 +536,11 @@ namespace HES.Core.Services
                     account.OtpSecret = key.Decrypt(account.OtpSecret);
             }
 
+            // AppSettings
+            var scopedAppSettingsRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<AppSettings>>();
+            var domainSettings = await scopedAppSettingsRepository.GetByIdAsync(ServerConstants.Domain);
+            var licenseSettings = await scopedAppSettingsRepository.GetByIdAsync(ServerConstants.Licensing);
+
             if (domainSettings != null)
             {
                 var ldapSettings = JsonConvert.DeserializeObject<LdapSettings>(domainSettings.Value);
@@ -483,15 +548,73 @@ namespace HES.Core.Services
                 var json = JsonConvert.SerializeObject(ldapSettings);
                 domainSettings.Value = json;
             }
+            if (licenseSettings != null)
+            {
+                var settings = JsonConvert.DeserializeObject<LicensingSettings>(licenseSettings.Value);
+                settings.ApiKey = key.Decrypt(settings.ApiKey);
+                var json = JsonConvert.SerializeObject(settings);
+                licenseSettings.Value = json;
+            }
+
+            // HardwareVaultsActivations
+            var scopedHardwareVaultActivationRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultActivation>>();
+            var hardwareVaultActivations = await scopedHardwareVaultActivationRepository.Query().ToListAsync();
+            foreach (var hardwareVaultActivation in hardwareVaultActivations)
+            {
+                hardwareVaultActivation.AcivationCode = key.Decrypt(hardwareVaultActivation.AcivationCode);
+            }
+
+            // HardwareVaults   
+            var scopedHardwareVaultRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVault>>();
+            var hardwareVaults = await scopedHardwareVaultRepository.Query().ToListAsync();
+            foreach (var hardwareVault in hardwareVaults)
+            {
+                if (hardwareVault.MasterPassword != null)
+                    hardwareVault.MasterPassword = key.Decrypt(hardwareVault.MasterPassword);
+            }
+
+            // HardwareVaultTasks
+            var scopedHardwareVaultTaskRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<HardwareVaultTask>>();
+            var hardwareVaultTasks = await scopedHardwareVaultTaskRepository.Query().ToListAsync();
+            foreach (var task in hardwareVaultTasks)
+            {
+                if (task.Password != null)
+                    task.Password = key.Decrypt(task.Password);
+                if (task.OtpSecret != null)
+                    task.OtpSecret = key.Decrypt(task.OtpSecret);
+            }
+
+            // SharedAccounts
+            var scopedSharedAccountRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SharedAccount>>();
+            var sharedAccounts = await scopedSharedAccountRepository.Query().ToListAsync();
+            foreach (var account in sharedAccounts)
+            {
+                if (account.Password != null)
+                    account.Password = key.Decrypt(account.Password);
+                if (account.OtpSecret != null)
+                    account.OtpSecret = key.Decrypt(account.OtpSecret);
+            }
+
+            // SoftwareVaultInvitations
+            //var scopedSoftwareVaultInvitationRepository = scope.ServiceProvider.GetRequiredService<IAsyncRepository<SoftwareVaultInvitation>>();
+            //var softwareVaultInvitations = await scopedSoftwareVaultInvitationRepository.Query().ToListAsync();
+            //foreach (var softwareVaultInvitation in softwareVaultInvitations)
+            //{
+            //    softwareVaultInvitation.ActivationCode = key.Encrypt(softwareVaultInvitation.ActivationCode);
+            //}
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                await scopedDeviceRepository.UpdateOnlyPropAsync(devices, new string[] { "MasterPassword" });
-                await scopedDeviceTaskRepository.UpdateOnlyPropAsync(deviceTasks, new string[] { "Password", "OtpSecret" });
-                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { "Password", "OtpSecret" });
-                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { "Password", "OtpSecret" });
+                await scopedAccountRepository.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Password), nameof(Account.OtpSecret) });
                 if (domainSettings != null)
                     await scopedAppSettingsRepository.UpdateAsync(domainSettings);
+                if (licenseSettings != null)
+                    await scopedAppSettingsRepository.UpdateAsync(licenseSettings);
+                await scopedHardwareVaultActivationRepository.UpdateOnlyPropAsync(hardwareVaultActivations, new string[] { nameof(HardwareVaultActivation.AcivationCode) });
+                await scopedHardwareVaultRepository.UpdateOnlyPropAsync(hardwareVaults, new string[] { nameof(HardwareVault.MasterPassword) });
+                await scopedHardwareVaultTaskRepository.UpdateOnlyPropAsync(hardwareVaultTasks, new string[] { nameof(HardwareVaultTask.Password), nameof(HardwareVaultTask.OtpSecret) });
+                await scopedSharedAccountRepository.UpdateOnlyPropAsync(sharedAccounts, new string[] { nameof(SharedAccount.Password), nameof(SharedAccount.OtpSecret) });
+                //await scopedSoftwareVaultInvitationRepository.UpdateOnlyPropAsync(softwareVaultInvitations, new string[] { nameof(SoftwareVaultInvitation.ActivationCode) });
                 transactionScope.Complete();
             }
         }
