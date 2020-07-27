@@ -5,17 +5,19 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class EditSharedAccountPassword : ComponentBase
+    public partial class EditSharedAccountPassword : ComponentBase, IDisposable
     {
         [Inject] public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
@@ -23,7 +25,14 @@ namespace HES.Web.Pages.SharedAccounts
         [Parameter] public SharedAccount Account { get; set; }
 
         public AccountPassword AccountPassword { get; set; } = new AccountPassword();
+        public bool EntityBeingEdited { get; set; }
 
+        protected override void OnInitialized()
+        {
+            EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(Account.Id, Account);
+        }
         private async Task EditAccoountPasswordAsync()
         {
             try
@@ -40,6 +49,12 @@ namespace HES.Web.Pages.SharedAccounts
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
             }
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Account.Id);
         }
     }
 }

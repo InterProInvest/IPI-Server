@@ -23,8 +23,7 @@ namespace HES.Core.Interfaces
         Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount, AccountPassword accountPassword);
         Task<List<string>> EditSharedAccountOtpAsync(SharedAccount sharedAccount, AccountOtp accountOtp);
         Task<List<string>> DeleteSharedAccountAsync(string id);
-        Task DetachSharedAccountAsync(SharedAccount sharedAccount);
-        Task DetachSharedAccountAsync(List<SharedAccount> sharedAccounts);
+        Task ReloadSharedAccountAsync(string sharedAccountId);
 
     }
 }

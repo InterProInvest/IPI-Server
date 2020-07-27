@@ -487,14 +487,6 @@ namespace HES.Core.Services
             await _workstationProximityVaultRepository.DeleteRangeAsync(allProximity);
         }
 
-        public async Task DetachdProximityVaultsAsync(List<WorkstationProximityVault> workstationProximityVaults)
-        {
-            foreach (var item in workstationProximityVaults)
-            {
-                await _workstationProximityVaultRepository.DetachedAsync(item);
-            }
-        }
-
         public async Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId)
         {
             var workstation = await GetWorkstationByIdAsync(workstationId);

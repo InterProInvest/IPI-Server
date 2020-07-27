@@ -4,22 +4,33 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class DeleteSharedAccount : ComponentBase
+    public partial class DeleteSharedAccount : ComponentBase, IDisposable
     {
         [Inject] public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public ILogger<DeleteSharedAccount> Logger { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public SharedAccount Account { get; set; }
+
+        public bool EntityBeingEdited { get; set; }
+
+        protected override void OnInitialized()
+        {
+            EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(Account.Id, Account);
+        }
 
         private async Task DeleteAccoountAsync()
         {
@@ -37,6 +48,12 @@ namespace HES.Web.Pages.SharedAccounts
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
             }
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Account.Id);
         }
     }
 }
