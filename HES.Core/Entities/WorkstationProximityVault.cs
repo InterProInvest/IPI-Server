@@ -8,16 +8,10 @@ namespace HES.Core.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
-
-        [Display(Name = "Hardware Vault")]
         public string HardwareVaultId { get; set; }
-
         public string WorkstationId { get; set; }
-
         public int LockProximity { get; set; }
-
         public int UnlockProximity { get; set; }
-
         public int LockTimeout { get; set; }
 
         [ForeignKey("HardwareVaultId")]

@@ -53,7 +53,9 @@ namespace HES.Core.Services
 
             DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
             Entities = await _getEntities.Invoke(DataLoadingOptions);
-            SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
+
+            if (SyncPropName != null)
+                SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
 
             _stateHasChanged?.Invoke();
         }

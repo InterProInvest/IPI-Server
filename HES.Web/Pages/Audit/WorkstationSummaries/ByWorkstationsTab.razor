@@ -1,0 +1,122 @@
+﻿@using HES.Core.Models.Web.Audit
+@if (MainTableService.Entities == null)
+{
+    <LoadingTab />
+}
+else
+{
+    <TableAction>
+        <FilterForm>
+            <SummaryFilterComponent FilterChanged="MainTableService.FilterChangedAsync" TabName="@nameof(ByWorkstationsTab)" />
+        </FilterForm>
+        <ActionButtons>
+            <h2 class="text-navyblue mb-0">Summary</h2>
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+        <TableHeader>
+            <MainTableHeader Title="Workstation"
+                             TitleWidth="16"
+                             SortColumn="@nameof(SummaryByWorkstations.Workstation)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Employees Count"
+                             TitleWidth="14"
+                             SortColumn="@nameof(SummaryByWorkstations.EmployeesCount)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Total Sessions Count"
+                             TitleWidth="14"
+                             SortColumn="@nameof(SummaryByWorkstations.TotalSessionsCount)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Total Sessions Duration"
+                             TitleWidth="14"
+                             SortColumn="@nameof(SummaryByWorkstations.TotalSessionsDuration)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Avg Sessions Duration"
+                             TitleWidth="14"
+                             SortColumn="@nameof(SummaryByWorkstations.AvgSessionsDuration)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Avg Total Duartion By Employee"
+                             TitleWidth="14"
+                             SortColumn="@nameof(SummaryByWorkstations.AvgTotalDuartionByEmployee)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+            <MainTableHeader Title="Avg Total Sessions Count By Employee"
+                             TitleWidth="14"
+                             SortColumn="@nameof(SummaryByWorkstations.AvgTotalSessionsCountByEmployee)"
+                             CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                             CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                             SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                             SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
+        </TableHeader>
+        <TableRow>
+            <td>
+                @context.Workstation
+            </td>
+            <td>
+                @context.EmployeesCount
+            </td>
+            <td>
+                @context.TotalSessionsCount
+            </td>
+            <td>
+                @if (context.TotalSessionsDuration.Days != 0)
+                    {
+                    @context.TotalSessionsDuration.ToString("%d") <span>day(s)</span> @context.TotalSessionsDuration.ToString("hh\\:mm\\:ss")
+                    }
+                    else
+                    {
+                    @context.TotalSessionsDuration.ToString("hh\\:mm\\:ss")
+                    }
+            </td>
+            <td>
+                @if (context.AvgSessionsDuration.Days != 0)
+                    {
+                    @context.AvgSessionsDuration.ToString("%d") <span>day(s)</span> @context.AvgSessionsDuration.ToString("hh\\:mm\\:ss")
+                    }
+                    else
+                    {
+                    @context.AvgSessionsDuration.ToString("hh\\:mm\\:ss")
+                    }
+            </td>
+            <td>
+                @if (context.AvgTotalDuartionByEmployee.Days != 0)
+                    {
+                    @context.AvgTotalDuartionByEmployee.ToString("%d") <span>day(s)</span> @context.AvgTotalDuartionByEmployee.ToString("hh\\:mm\\:ss")
+                    }
+                    else
+                    {
+                    @context.AvgTotalDuartionByEmployee.ToString("hh\\:mm\\:ss")
+                    }
+            </td>
+            <td>
+                @Math.Round(context.AvgTotalSessionsCountByEmployee, 1)
+            </td>
+        </TableRow>
+    </MainTable>
+    <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
+                DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
+                TotalRecords="MainTableService.TotalRecords"
+                CurrentPage="MainTableService.CurrentPage"
+                DisplayRows="MainTableService.DataLoadingOptions.Take"
+                DisplayRecords="MainTableService.Entities.Count" />
+}

@@ -11,13 +11,10 @@ namespace HES.Core.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         public DateTime Date { get; set; }
-        [Display(Name = "Event")]
         public WorkstationEventType EventId { get; set; }
-        [Display(Name = "Severity")]
         public WorkstationEventSeverity SeverityId { get; set; }
         public string Note { get; set; }
         public string WorkstationId { get; set; }
-        [Display(Name = "Session")]
         public string UserSession { get; set; }
         public string HardwareVaultId { get; set; }
         public string EmployeeId { get; set; }
