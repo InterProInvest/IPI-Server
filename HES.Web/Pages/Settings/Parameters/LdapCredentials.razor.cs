@@ -1,10 +1,6 @@
-﻿using HES.Core.Enums;
-using HES.Core.Hubs;
-using HES.Core.Interfaces;
+﻿using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -13,46 +9,24 @@ namespace HES.Web.Pages.Settings.Parameters
     public partial class LdapCredentials : ComponentBase
     {
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
-        [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] public IToastService ToastService { get; set; }
-        [Inject] public ILogger<LdapCredentials> Logger { get; set; }
-        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public string ConnectionId { get; set; }
-
+        [Parameter] public Func<LdapSettings, Task> LoadEntities { get; set; }
+        [Parameter] public EventCallback CancelRequested { get; set; }
         [Parameter] public string Host { get; set; }
 
-        private LdapSettings _ldapSettings;
-        private bool _IsBusy;
+        public LdapSettings LdapSettings { get; set; }
+        public bool SaveCredentials { get; set; }
 
         protected override void OnInitialized()
         {
-            _ldapSettings = new LdapSettings() { Host = Host };
+            LdapSettings = new LdapSettings() { Host = Host };
         }
 
-        private async Task SaveAsync()
+        private async Task ConnectAsync()
         {
-            try
-            {
-                if (_IsBusy)
-                    return;
+            if (SaveCredentials)
+                await AppSettingsService.SetLdapSettingsAsync(LdapSettings);
 
-                _IsBusy = true;
-
-                await AppSettingsService.SetLdapSettingsAsync(_ldapSettings);
-                ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Parameters);
-                await ModalDialogService.CloseAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _IsBusy = false;
-            }
+            await LoadEntities.Invoke(LdapSettings);
         }
     }
 }

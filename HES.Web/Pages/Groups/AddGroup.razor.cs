@@ -27,15 +27,14 @@ namespace HES.Web.Pages.Groups
 
         public List<ActiveDirectoryGroup> Groups { get; set; }
         public LdapSettings LdapSettings { get; set; }
+        public ActiveDirectoryInitialization ActiveDirectoryInitialization { get; set; }
         public string WarningMessage { get; set; }
-
-        private bool _isBusy;
-        private string _searchText = string.Empty;
-        private bool _isSortedAscending = true;
-        private string _currentSortColumn = nameof(Group.Name);
-        private bool _createEmployees;
-        private bool _initialized;
-
+        public bool IsBusy { get; set; }
+        public string SearchText { get; set; } = string.Empty;
+        public bool IsSortedAscending { get; set; } = true;
+        public string CurrentSortColumn { get; set; } = nameof(Group.Name);
+        public bool CreateEmployees { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -43,12 +42,37 @@ namespace HES.Web.Pages.Groups
             {
                 LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
 
-                if (LdapSettings != null)
+                if (LdapSettings == null)
                 {
-                    Groups = await LdapService.GetGroupsAsync(LdapSettings);
+                    ActiveDirectoryInitialization = ActiveDirectoryInitialization.HostNotSet;
                 }
+                else if (LdapSettings?.Host != null && LdapSettings?.UserName == null && LdapSettings?.Password == null)
+                {
+                    ActiveDirectoryInitialization = ActiveDirectoryInitialization.CredentialsNotSet;
+                }
+                else
+                {
+                    await GetGroups(LdapSettings);
+                }
+                
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
+        }
 
-                _initialized = true;
+
+        private async Task GetGroups(LdapSettings settings)
+        {
+            try
+            {
+                Groups = await LdapService.GetGroupsAsync(settings);
+                ActiveDirectoryInitialization = ActiveDirectoryInitialization.Loaded;
+                StateHasChanged();
             }
             catch (Exception ex)
             {
@@ -68,14 +92,14 @@ namespace HES.Web.Pages.Groups
                     return;
                 }
 
-                if (_isBusy)
+                if (IsBusy)
                 {
                     return;
                 }
 
-                _isBusy = true;
+                IsBusy = true;
 
-                await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), _createEmployees);
+                await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), CreateEmployees);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, null);
                 await ModalDialogService.CloseAsync();
@@ -88,17 +112,17 @@ namespace HES.Web.Pages.Groups
             }
             finally
             {
-                _isBusy = false;
+                IsBusy = false;
             }
         }
 
         private string GetSortIcon(string columnName)
         {
-            if (_currentSortColumn != columnName)
+            if (CurrentSortColumn != columnName)
             {
                 return string.Empty;
             }
-            if (_isSortedAscending)
+            if (IsSortedAscending)
             {
                 return "table-sort-arrow-up";
             }
@@ -110,15 +134,15 @@ namespace HES.Web.Pages.Groups
 
         private void SortTable(string columnName)
         {
-            if (columnName != _currentSortColumn)
+            if (columnName != CurrentSortColumn)
             {
                 Groups = Groups.OrderBy(x => x.Group.GetType().GetProperty(columnName).GetValue(x.Group, null)).ToList();
-                _currentSortColumn = columnName;
-                _isSortedAscending = true;
+                CurrentSortColumn = columnName;
+                IsSortedAscending = true;
             }
             else
             {
-                if (_isSortedAscending)
+                if (IsSortedAscending)
                 {
                     Groups = Groups.OrderByDescending(x => x.Group.GetType().GetProperty(columnName).GetValue(x.Group, null)).ToList();
                 }
@@ -127,7 +151,7 @@ namespace HES.Web.Pages.Groups
                     Groups = Groups.OrderBy(x => x.Group.GetType().GetProperty(columnName).GetValue(x.Group, null)).ToList();
                 }
 
-                _isSortedAscending = !_isSortedAscending;
+                IsSortedAscending = !IsSortedAscending;
             }
         }
     }

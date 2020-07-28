@@ -1,13 +1,10 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Parameters
@@ -21,166 +18,74 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        public string ApiAddress { get; set; }
+        public string DomainHost { get; set; }
+        public bool Initialized { get; set; }
 
         private HubConnection hubConnection;
-
-        private LicensingSettings _licensing;
-        //private EmailSettings _email;
-        //private ServerSettings _server;
-        private DomainHost _domain;
-        private bool _licensingIsBusy;
-        //private bool _emailIsBusy;
-        //private bool _serverIsBusy;
-        private bool _initialized;
-
-        class DomainHost
-        {
-            [Required]
-            public string Host { get; set; }
-        }
 
         protected override async Task OnInitializedAsync()
         {
             await BreadcrumbsService.SetParameters();
-            await InitializeHubAsync();
             await LoadDataSettingsAsync();
-
-            _initialized = true;
+            await InitializeHubAsync();
+            Initialized = true;
         }
 
         private async Task LoadDataSettingsAsync()
         {
-            _licensing = await LoadLicensingSettingsAsync();
-            //_email = await LoadEmailSettingsAsync();
-            //_server = await LoadServerSettingsAsync();
-            _domain = await LoadDomainSettingsAsync();
+            ApiAddress = await LoadLicensingSettingsAsync();
+            DomainHost = await LoadDomainSettingsAsync();
         }
-
-        private async Task<LicensingSettings> LoadLicensingSettingsAsync()
+        
+        private async Task<string> LoadLicensingSettingsAsync()
         {
             var licensingSettings = await AppSettingsService.GetLicensingSettingsAsync();
-
-            if (licensingSettings == null)
-                return new LicensingSettings();
-
-            return licensingSettings;
+            return licensingSettings?.ApiAddress;
         }
 
-        private async Task UpdateLicensingSettingsAsync()
-        {
-            try
-            {
-                if (_licensingIsBusy)
-                    return;
-
-                _licensingIsBusy = true;
-                await AppSettingsService.SetLicensingSettingsAsync(_licensing);
-                _licensing = await LoadLicensingSettingsAsync();
-                ToastService.ShowToast("License settings updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);         
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                _licensingIsBusy = false;
-            }
-        }
-
-        //private async Task<EmailSettings> LoadEmailSettingsAsync()
-        //{
-        //    var sttings = await AppSettingsService.GetEmailSettingsAsync();
-
-        //    if (sttings == null)
-        //        return new EmailSettings();
-
-        //    return sttings;
-        //}
-
-        //private async Task UpdateEmailSettingsAsync()
-        //{
-        //    try
-        //    {
-        //        if (_emailIsBusy)
-        //            return;
-
-        //        _emailIsBusy = true;
-
-        //        await AppSettingsService.SetEmailSettingsAsync(_email);
-        //        ToastService.ShowToast("Email settings updated.", ToastLevel.Success);
-        //        await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.LogError(ex.Message);
-        //        ToastService.ShowToast(ex.Message, ToastLevel.Error);
-        //    }
-        //    finally
-        //    {
-        //        _emailIsBusy = false;
-        //    }
-        //}
-
-        //private async Task<ServerSettings> LoadServerSettingsAsync()
-        //{
-        //    var serverSettings = await AppSettingsService.GetServerSettingsAsync();
-
-        //    if (serverSettings == null)
-        //        return new ServerSettings();
-
-        //    return serverSettings;
-        //}
-
-        //private async Task UpdateServerSettingsAsync()
-        //{
-        //    try
-        //    {
-        //        if (_serverIsBusy)
-        //        {
-        //            return;
-        //        }
-
-        //        _serverIsBusy = true;
-        //        await AppSettingsService.SetServerSettingsAsync(_server);
-        //        ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
-        //        await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);
-                  
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.LogError(ex.Message);
-        //        ToastService.ShowToast(ex.Message, ToastLevel.Error);
-        //    }
-        //    finally
-        //    {
-        //        _serverIsBusy = false;
-        //    }
-        //}
-
-        private async Task<DomainHost> LoadDomainSettingsAsync()
-        {
-            var domainSettings = await AppSettingsService.GetLdapSettingsAsync();
-
-            if (domainSettings == null)
-                return new DomainHost();
-
-            return new DomainHost() { Host = domainSettings.Host };
-        }
-
-        private async Task UpdateDomainSettingsAsync()
+        private async Task OpenDialogLicensingSettingsAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(LdapCredentials));
-                builder.AddAttribute(1, "Host", _domain.Host);
+                builder.OpenComponent(0, typeof(LicenseSettingsDialog));
+                builder.AddAttribute(1, nameof(LicenseSettingsDialog.ApiAddress), ApiAddress);
+                builder.AddAttribute(2, nameof(LicenseSettingsDialog.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Active Directory", body);
+            await ModalDialogService.ShowAsync("License Settings", body);
+        }
+                
+        private async Task<string> LoadDomainSettingsAsync()
+        {
+            var domainSettings = await AppSettingsService.GetLdapSettingsAsync();
+            return domainSettings?.Host;
+        }
+
+        private async Task OpenDialogLdapSettingsAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(LdapSettingsDialog));
+                builder.AddAttribute(1, nameof(LdapSettingsDialog.Host), DomainHost);
+                builder.AddAttribute(2, nameof(LdapSettingsDialog.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Domain Settings", body);
+        }
+
+        private async Task OpenDialogDeleteLdapCredentialsAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(DeleteLdapCredentials));
+                builder.AddAttribute(1, nameof(DeleteLdapCredentials.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await ModalDialogService.ShowAsync("Delete", body);
         }
 
         private async Task InitializeHubAsync()
@@ -189,11 +94,12 @@ namespace HES.Web.Pages.Settings.Parameters
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.Parameters, async () =>
-            {           
+            hubConnection.On<string>(RefreshPage.Parameters, async (connectionId) =>
+            {
                 await LoadDataSettingsAsync();
                 StateHasChanged();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                if (hubConnection.ConnectionId != connectionId)
+                    ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

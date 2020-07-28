@@ -1,103 +1,51 @@
-﻿@if (!_initialized)
+﻿@if (!Initialized)
 {
     <LoadingPage />
 }
 else
 {
     <SettingsCard Title="Licensing" Description="API authentication key for ordering licenses and the address of the licensing server.">
-        <EditForm Model="@_licensing" OnValidSubmit="@UpdateLicensingSettingsAsync">
-            <DataAnnotationsValidator />
-            <div class="form-group">
-                <label class="control-label text-gray">Api Key</label>
-                <InputText id="apiKey" @bind-Value="_licensing.ApiKey" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _licensing.ApiKey)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">Api Address</label>
-                <InputText id="apiAddress" @bind-Value="_licensing.ApiAddress" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _licensing.ApiAddress)" class="text-danger" />
-            </div>
-            <div class="form-group mt-4 mb-0">
-                <button type="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm @(_licensingIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Update</span>
-                </button>
-            </div>
-        </EditForm>
-    </SettingsCard>
-    @*<SettingsCard Title="Email" Description="Email settings for sending invitations and notifications.">
-        <EditForm Model="@_email" OnValidSubmit="@UpdateEmailSettingsAsync">
-            <DataAnnotationsValidator />
-            <div class="form-group">
-                <label class="control-label text-gray">Host</label>
-                <InputText @bind-Value="_email.Host" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _email.Host)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">Port</label>
-                <InputNumber @bind-Value="_email.Port" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _email.Port)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">SSL</label>
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="emailSsl" @bind="_email.EnableSSL">
-                    <label class="custom-control-label" for="emailSsl">@(_email.EnableSSL ? "Enabled" : "Disabled")</label>
+        <div class="form-group">
+            <label class="control-label text-gray">Api Address</label>
+            @if (ApiAddress != null)
+            {
+                <div class="alert alert-secondary" role="alert">
+                    @ApiAddress
                 </div>
-                <ValidationMessage For="@(() => _email.EnableSSL)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">User Name</label>
-                <InputText @bind-Value="_email.UserName" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _email.UserName)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">Password</label>
-                <InputText @bind-Value="_email.Password" type="password" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _email.Password)" class="text-danger" />
-            </div>
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm @(_emailIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Update</span>
-                </button>
-            </div>
-        </EditForm>
+            }
+            else
+            {
+                <div class="alert alert-danger" role="alert">
+                    Required to set
+                </div>
+            }
+        </div>
+        <div class="mt-4">
+            <button type="button" class="btn btn-primary" @onclick="OpenDialogLicensingSettingsAsync">Set Licensing Settings</button>
+        </div>
     </SettingsCard>
-    <SettingsCard Title="Server" Description="Information about this server that will be used in emails.">
-        <EditForm Model="@_server" OnValidSubmit="@UpdateServerSettingsAsync">
-            <DataAnnotationsValidator />
-            <div class="form-group">
-                <label class="control-label text-gray">Server Name</label>
-                <InputText id="serverName" @bind-Value="_server.Name" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _server.Name)" class="text-danger" />
-            </div>
-            <div class="form-group">
-                <label class="control-label text-gray">Server Url</label>
-                <InputText id="serverUrl" @bind-Value="_server.Url" class="form-control text-navyblue" />
-                <ValidationMessage For="@(() => _server.Url)" class="text-danger" />
-            </div>
-            <div class="form-group mt-4 mb-0">
-                <button type="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm @(_serverIsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Update</span>
-                </button>
-            </div>
-        </EditForm>
-    </SettingsCard>*@
     <SettingsCard Title="Domain" Description="To connect to the domain and import groups and users.">
-        <EditForm Model="@_domain" OnValidSubmit="@UpdateDomainSettingsAsync">
-            <DataAnnotationsValidator />
-            <div class="form-group">
-                <label class="control-label text-gray">Host</label>
-                <InputText id="domainHost" @bind-Value="_domain.Host" class="form-control text-navyblue" placeholder="my.company.com" />
-                <ValidationMessage For="@(() => _domain.Host)" class="text-danger" />
-            </div>
-            <div class="form-group mt-4 mb-0">
-                <button type="submit" class="btn btn-primary">
-                    <span>Update</span>
-                </button>
-            </div>
-        </EditForm>
+        <div class="form-group">
+            <label class="control-label text-gray">Host</label>
+            @if (DomainHost != null)
+            {
+                <div class="alert alert-secondary" role="alert">
+                    @DomainHost
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger" role="alert">
+                    Required to set
+                </div>
+            }
+        </div>
+        <div class="mt-4">
+            <button type="button" class="btn btn-primary" @onclick="OpenDialogLdapSettingsAsync">Set Domain Settings</button>
+            @if (DomainHost != null)
+            {
+                <button type="button" class="btn btn-danger" @onclick="OpenDialogDeleteLdapCredentialsAsync">Delete Credentials</button>
+            }
+        </div>
     </SettingsCard>
 }

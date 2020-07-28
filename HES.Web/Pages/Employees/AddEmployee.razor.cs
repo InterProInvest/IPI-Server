@@ -26,14 +26,14 @@ namespace HES.Web.Pages.Employees
 
         public List<ActiveDirectoryUser> Users { get; set; }
         public LdapSettings LdapSettings { get; set; }
+        public ActiveDirectoryInitialization ActiveDirectoryInitialization { get; set; }
         public string WarningMessage { get; set; }
-
-        private bool _isBusy;
-        private string _searchText = string.Empty;
-        private bool _isSortedAscending = true;
-        private string _currentSortColumn = nameof(Employee.FullName);
-        private bool _createGroups;
-        private bool _initialized;
+        public bool IsBusy { get; set; }
+        public string SearchText { get; set; } = string.Empty;
+        public bool IsSortedAscending { get; set; } = true;
+        public string CurrentSortColumn { get; set; } = nameof(Employee.FullName);
+        public bool CreateGroups { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -41,18 +41,42 @@ namespace HES.Web.Pages.Employees
             {
                 LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
 
-                if (LdapSettings != null)
+                if (LdapSettings == null)
                 {
-                    Users = await LdapService.GetUsersAsync(LdapSettings);
+                    ActiveDirectoryInitialization = ActiveDirectoryInitialization.HostNotSet;
+                }
+                else if (LdapSettings?.Host != null && LdapSettings?.UserName == null && LdapSettings?.Password == null)
+                {
+                    ActiveDirectoryInitialization = ActiveDirectoryInitialization.CredentialsNotSet;
+                }
+                else
+                {
+                    await GetUsers(LdapSettings);
                 }
 
-                _initialized = true;
+                Initialized = true;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
+            }
+        }
+
+        private async Task GetUsers(LdapSettings settings)
+        {
+            try
+            {
+                Users = await LdapService.GetUsersAsync(settings);
+                ActiveDirectoryInitialization = ActiveDirectoryInitialization.Loaded;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
             }
         }
 
@@ -60,10 +84,10 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                if (_isBusy)
+                if (IsBusy)
                     return;
 
-                _isBusy = true;
+                IsBusy = true;
 
                 if (!Users.Any(x => x.Checked))
                 {
@@ -71,7 +95,7 @@ namespace HES.Web.Pages.Employees
                     return;
                 }
 
-                await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
+                await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), CreateGroups);
                 ToastService.ShowToast("Employee imported.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, null);
                 await ModalDialogService.CloseAsync();
@@ -84,17 +108,17 @@ namespace HES.Web.Pages.Employees
             }
             finally
             {
-                _isBusy = false;
+                IsBusy = false;
             }
         }
 
         private string GetSortIcon(string columnName)
         {
-            if (_currentSortColumn != columnName)
+            if (CurrentSortColumn != columnName)
             {
                 return string.Empty;
             }
-            if (_isSortedAscending)
+            if (IsSortedAscending)
             {
                 return "table-sort-arrow-up";
             }
@@ -106,15 +130,15 @@ namespace HES.Web.Pages.Employees
 
         private void SortTable(string columnName)
         {
-            if (columnName != _currentSortColumn)
+            if (columnName != CurrentSortColumn)
             {
                 Users = Users.OrderBy(x => x.Employee.GetType().GetProperty(columnName).GetValue(x.Employee, null)).ToList();
-                _currentSortColumn = columnName;
-                _isSortedAscending = true;
+                CurrentSortColumn = columnName;
+                IsSortedAscending = true;
             }
             else
             {
-                if (_isSortedAscending)
+                if (IsSortedAscending)
                 {
                     Users = Users.OrderByDescending(x => x.Employee.GetType().GetProperty(columnName).GetValue(x.Employee, null)).ToList();
                 }
@@ -123,7 +147,7 @@ namespace HES.Web.Pages.Employees
                     Users = Users.OrderBy(x => x.Employee.GetType().GetProperty(columnName).GetValue(x.Employee, null)).ToList();
                 }
 
-                _isSortedAscending = !_isSortedAscending;
+                IsSortedAscending = !IsSortedAscending;
             }
         }
     }
