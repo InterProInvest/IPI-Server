@@ -377,12 +377,10 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task DetachLicenseOrders(List<LicenseOrder> licenseOrders)
+        public async Task ReloadLicenseOrder(string licenseOrderId)
         {
-            foreach (var item in licenseOrders)
-            {
-                await _licenseOrderRepository.DetachedAsync(item);
-            }
+            var licenseOrder = await _licenseOrderRepository.GetByIdAsync(licenseOrderId);
+            await _licenseOrderRepository.ReloadAsync(licenseOrder);
         }
 
         #endregion

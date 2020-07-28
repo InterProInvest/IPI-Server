@@ -73,7 +73,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Edit License Order", body, ModalDialogSize.ExtraLarge);
+            await MainTableService.ShowModalAsync("Edit License Order", body, ModalDialogSize.Large);
         }
 
         private async Task DeleteLicenseOrderAsync()
@@ -95,9 +95,11 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.Licenses, async () =>
+            hubConnection.On<string>(RefreshPage.Licenses, async (licenseOrderId) =>
             {
-                await LicenseService.DetachLicenseOrders(MainTableService.Entities);
+                if (licenseOrderId != null)
+                    await LicenseService.ReloadLicenseOrder(licenseOrderId);
+
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
