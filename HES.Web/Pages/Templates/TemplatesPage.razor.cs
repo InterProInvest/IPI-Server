@@ -27,22 +27,6 @@ namespace HES.Web.Pages.Templates
             await InitializeHubAsync();
         }
 
-        private async Task InitializeHubAsync()
-        {
-            hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
-            .Build();
-
-            hubConnection.On(RefreshPage.Templates, async () =>
-            {
-                await TemplateService.DetachTemplatesAsync(MainTableService.Entities);
-                await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-            });
-
-            await hubConnection.StartAsync();
-        }
-
         private async Task CreateTemplateAsync()
         {
             RenderFragment body = (builder) =>
@@ -79,6 +63,24 @@ namespace HES.Web.Pages.Templates
             };
 
             await MainTableService.ShowModalAsync("Delete Template", body, ModalDialogSize.Default);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On<string>(RefreshPage.Templates, async (templateId) =>
+            {
+                if (templateId != null)
+                    await TemplateService.ReloadTemplateAsync(templateId);
+                
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            await hubConnection.StartAsync();
         }
 
         public void Dispose()

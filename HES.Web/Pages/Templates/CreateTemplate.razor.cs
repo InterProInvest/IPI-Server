@@ -28,7 +28,7 @@ namespace HES.Web.Pages.Templates
             {
                 await TemplateService.CreateTmplateAsync(Template);
                 ToastService.ShowToast("Template created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
