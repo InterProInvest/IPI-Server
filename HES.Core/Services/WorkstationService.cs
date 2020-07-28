@@ -345,12 +345,10 @@ namespace HES.Core.Services
             return true;
         }
 
-        public async Task DetachWorkstationsAsync(List<Workstation> workstations)
+        public async Task ReloadWorkstationAsync(string workstationId)
         {
-            foreach (var item in workstations)
-            {
-                await _workstationRepository.DetachedAsync(item);
-            }
+            var workstation = await _workstationRepository.GetByIdAsync(workstationId);
+            await _workstationRepository.ReloadAsync(workstation);
         }
 
         public async Task UnchangedWorkstationAsync(Workstation workstation)
@@ -487,14 +485,6 @@ namespace HES.Core.Services
              .ToListAsync();
 
             await _workstationProximityVaultRepository.DeleteRangeAsync(allProximity);
-        }
-
-        public async Task DetachdProximityVaultsAsync(List<WorkstationProximityVault> workstationProximityVaults)
-        {
-            foreach (var item in workstationProximityVaults)
-            {
-                await _workstationProximityVaultRepository.DetachedAsync(item);
-            }
         }
 
         public async Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId)

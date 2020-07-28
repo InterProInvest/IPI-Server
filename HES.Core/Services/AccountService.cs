@@ -24,17 +24,10 @@ namespace HES.Core.Services
             return _accountRepository.Query();
         }
 
-        public async Task DetachdAccountAsync(Account account)
+        public async Task ReloadAccountAsync(string accountId)
         {
-            await _accountRepository.DetachedAsync(account);
-        }
-
-        public async Task DetachdAccountAsync(List<Account> accounts)
-        {
-            foreach (var item in accounts)
-            {
-                await DetachdAccountAsync(item);
-            }
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            await _accountRepository.ReloadAsync(account);
         }
 
         public Task<Account> GetAccountByIdAsync(string accountId)

@@ -3,7 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.HardwareVaults;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -129,7 +129,7 @@ namespace HES.Web.Pages.Employees
                     if (SelectedHardwareVault == null)
                     {
                         ToastService.ShowToast("Employee created.", ToastLevel.Success);
-                        await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
+                        await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, null);
                         await ModalDialogService.CloseAsync();
                         break;
                     }
@@ -139,7 +139,7 @@ namespace HES.Web.Pages.Employees
                     break;
                 case WizardStep.Activation:
                     ToastService.ShowToast("Employee created.", ToastLevel.Success);
-                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, null);
                     await ModalDialogService.CloseAsync();
                     break;
             }

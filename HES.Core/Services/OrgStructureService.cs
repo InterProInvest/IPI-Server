@@ -85,12 +85,11 @@ namespace HES.Core.Services
             await _companyRepository.DeleteAsync(company);
         }
 
-        public async Task DetachCompaniesAsync(List<Company> companies)
+        public async Task ReloadCompanyAsync(string companyId)
         {
-            foreach (var item in companies)
-            {
-                await _companyRepository.DetachedAsync(item);
-            }
+            var company = await _companyRepository.GetByIdAsync(companyId);
+            // With detach reloaded include entity
+            await _companyRepository.DetachedAsync(company);
         }
 
         #endregion
@@ -235,12 +234,10 @@ namespace HES.Core.Services
             await _positionRepository.DeleteAsync(position);
         }
 
-        public async Task DetachPositionsAsync(List<Position> positions)
+        public async Task ReloadPositionAsync(string positionId)
         {
-            foreach (var item in positions)
-            {
-                await _positionRepository.DetachedAsync(item);
-            }
+            var position = await _positionRepository.GetByIdAsync(positionId);
+            await _positionRepository.ReloadAsync(position);
         }
 
         #endregion

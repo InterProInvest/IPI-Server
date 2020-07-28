@@ -99,9 +99,11 @@ namespace HES.Web.Pages.SharedAccounts
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.SharedAccounts, async () =>
+            hubConnection.On<string>(RefreshPage.SharedAccounts, async (sharedAccountId) =>
             {
-                await SharedAccountService.DetachSharedAccountAsync(MainTableService.Entities);
+                if (sharedAccountId != null)                
+                    await SharedAccountService.ReloadSharedAccountAsync(sharedAccountId);
+
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

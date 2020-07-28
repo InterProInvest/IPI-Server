@@ -73,7 +73,7 @@ namespace HES.Web.Pages.Employees
 
                 await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), _createGroups);
                 ToastService.ShowToast("Employee imported.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

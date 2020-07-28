@@ -4,23 +4,25 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 {
-    public partial class EditProfile : ComponentBase
+    public partial class EditProfile : ComponentBase, IDisposable
     {
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<EditProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
-
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public HardwareVaultProfile AccessProfile { get; set; }
 
+        public bool EntityBeingEdited { get; set; }
         public int InitPinExpirationValue { get; set; }
         public int InitPinLengthValue { get; set; }
         public int InitPinTryCountValue { get; set; }
@@ -33,6 +35,10 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             InitPinExpirationValue = AccessProfile.PinExpirationConverted;
             InitPinLengthValue = AccessProfile.PinLength;
             InitPinTryCountValue = AccessProfile.PinTryCount;
+
+            EntityBeingEdited = MemoryCache.TryGetValue(AccessProfile.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(AccessProfile.Id, AccessProfile);
         }
 
         private async Task EditProfileAsync()
@@ -71,6 +77,12 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         private void OnInputPinTryCount(ChangeEventArgs args)
         {
             AccessProfile.PinTryCount = Convert.ToInt32((string)args.Value);
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(AccessProfile.Id);
         }
     }
 }

@@ -1,32 +1,41 @@
-﻿using HES.Core.Enums;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class ChangeStatus : ComponentBase
+    public partial class ChangeStatus : ComponentBase, IDisposable
     {
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public ILogger<ChangeStatus> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
-        [Parameter] public string HardwareVaultId { get; set; }
+        [Parameter] public HardwareVault HardwareVault { get; set; }
         [Parameter] public VaultStatus VaultStatus { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-
 
         public string StatusDescription { get; set; }
         public VaultStatusReason StatusReason { get; set; } = VaultStatusReason.Lost;
         public string CompromisedConfirmText { get; set; } = string.Empty;
         public bool CompromisedIsDisabled { get; set; } = true;
+        public bool EntityBeingEdited { get; set; }
+
+        protected override void OnInitialized()
+        {
+            EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(HardwareVault.Id, HardwareVault);
+        }
 
         private async Task ChangeStatusAsync()
         {
@@ -35,22 +44,22 @@ namespace HES.Web.Pages.HardwareVaults
                 switch (VaultStatus)
                 {
                     case VaultStatus.Active:
-                        await HardwareVaultService.ActivateVaultAsync(HardwareVaultId);
+                        await HardwareVaultService.ActivateVaultAsync(HardwareVault.Id);
                         ToastService.ShowToast("Vault pending activate.", ToastLevel.Success);
                         break;
                     case VaultStatus.Suspended:
-                        await HardwareVaultService.SuspendVaultAsync(HardwareVaultId, StatusDescription);
+                        await HardwareVaultService.SuspendVaultAsync(HardwareVault.Id, StatusDescription);
                         ToastService.ShowToast("Vault pending suspend.", ToastLevel.Success);
                         break;
                     case VaultStatus.Compromised:
                         if (CompromisedIsDisabled)
                             return;
-                        await HardwareVaultService.VaultCompromisedAsync(HardwareVaultId, StatusReason, StatusDescription);
+                        await HardwareVaultService.VaultCompromisedAsync(HardwareVault.Id, StatusReason, StatusDescription);
                         ToastService.ShowToast("Vault compromised.", ToastLevel.Success);
                         break;
                 }
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVaultId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults, HardwareVault.Id);
+                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVault.Id);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
@@ -63,7 +72,7 @@ namespace HES.Web.Pages.HardwareVaults
 
         private void CompromisedConfirm()
         {
-            if (CompromisedConfirmText == HardwareVaultId)
+            if (CompromisedConfirmText == HardwareVault.Id)
             {
                 CompromisedIsDisabled = false;
             }
@@ -71,6 +80,12 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 CompromisedIsDisabled = true;
             }
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(HardwareVault.Id);
         }
     }
 }

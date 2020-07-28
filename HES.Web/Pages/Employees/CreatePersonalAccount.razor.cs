@@ -3,7 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.AppSettings;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -64,7 +64,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -110,7 +110,7 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

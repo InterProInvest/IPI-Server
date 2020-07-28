@@ -4,40 +4,47 @@
 }
 else
 {
-    <EditForm Model="Workstation" OnValidSubmit="ApproveAsync">
-        <h5 class="text-gray mb-4 ">You want to approve workstation @Workstation.Name?</h5>
-        <div class="form-group">
-            <label class="control-label text-gray">Company</label>
-            <select class="form-control" @onchange="CompanyChangedAsync">
-                <option selected></option>
-                @foreach (var item in Companies)
-                {
-                    <option value="@item.Id">@item.Name</option>
-                }
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="control-label text-gray">Department</label>
-            <select @bind="Workstation.DepartmentId" class="form-control">
-                @foreach (var item in Departments)
-                {
-                    <option value="@item.Id">@item.Name</option>
-                }
-            </select>
-        </div>
-        <label class="control-label text-gray">Unlock settings</label>
-        <ul class="list-group mb-4">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Has RFID
-                <div class="custom-control custom-switch">
-                    <input id="hasRfid" type="checkbox" class="custom-control-input" @bind-value="Workstation.RFID">
-                    <label class="custom-control-label" for="hasRfid"></label>
-                </div>
-            </li>
-        </ul>
-        <div class="text-right">
-            <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-            <input type="submit" value="Approve" class="btn btn-primary" />
-        </div>
-    </EditForm>
+    if (EntityBeingEdited)
+    {
+        <EditedByAnother EntityName="workstation" CloseAction="ModalDialogService.CancelAsync" />
+    }
+    else
+    {
+        <EditForm Model="Workstation" OnValidSubmit="ApproveAsync">
+            <h5 class="text-gray mb-4 ">You want to approve workstation @Workstation.Name?</h5>
+            <div class="form-group">
+                <label class="control-label text-gray">Company</label>
+                <select class="form-control" @onchange="CompanyChangedAsync">
+                    <option selected></option>
+                    @foreach (var item in Companies)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="control-label text-gray">Department</label>
+                <select @bind="Workstation.DepartmentId" class="form-control">
+                    @foreach (var item in Departments)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
+            </div>
+            <label class="control-label text-gray">Unlock settings</label>
+            <ul class="list-group mb-4">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Has RFID
+                    <div class="custom-control custom-switch">
+                        <input id="hasRfid" type="checkbox" class="custom-control-input" @bind-value="Workstation.RFID">
+                        <label class="custom-control-label" for="hasRfid"></label>
+                    </div>
+                </li>
+            </ul>
+            <div class="text-right">
+                <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
+                <input type="submit" value="Approve" class="btn btn-primary" />
+            </div>
+        </EditForm>
+    }
 }

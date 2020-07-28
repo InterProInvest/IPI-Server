@@ -33,8 +33,8 @@ namespace HES.Web.Pages.Employees
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVault.Id);
                 await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault removed.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, employeeId);
-                await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, employeeId, null);
+                await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, HardwareVault.Id);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

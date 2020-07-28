@@ -2,12 +2,11 @@
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.API;
 using HES.Core.Models.API.Employee;
 using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -470,7 +469,7 @@ namespace HES.Web.Controllers
             Account createdAccount;
             try
             {
-                var workstationAccount = new Core.Models.Web.Account.WorkstationAccount()
+                var workstationAccount = new WorkstationAccount()
                 {
                     Name = accountDto.Name,
                     UserName = accountDto.UserName,
@@ -498,7 +497,7 @@ namespace HES.Web.Controllers
             Account createdAccount;
             try
             {
-                var workstationAccount = new Core.Models.Web.Account.WorkstationAccount()
+                var workstationAccount = new WorkstationAccount()
                 {
                     Name = accountDto.Name,
                     UserName = accountDto.UserName,

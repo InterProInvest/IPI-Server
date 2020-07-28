@@ -80,6 +80,7 @@ namespace HES.Core.Services
 
             return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
+
         public async Task<int> GetTemplatesCountAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions)
         {
             var query = _templateRepository.Query();
@@ -114,17 +115,10 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task DetachTemplateAsync(Template template)
+        public async Task ReloadTemplateAsync(string templateId)
         {
-            await _templateRepository.DetachedAsync(template);
-        }
-
-        public async Task DetachTemplatesAsync(List<Template> templates)
-        {
-            foreach (var item in templates)
-            {
-                await DetachTemplateAsync(item);
-            }
+            var template = await _templateRepository.GetByIdAsync(templateId);
+            await _templateRepository.ReloadAsync(template);
         }
 
         public async Task<List<Template>> GetTemplatesAsync()

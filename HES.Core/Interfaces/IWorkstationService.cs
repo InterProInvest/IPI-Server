@@ -27,7 +27,7 @@ namespace HES.Core.Interfaces
         Task DeleteWorkstationAsync(string workstationId);
         Task<bool> GetRfidStateAsync(string workstationId);
         Task<bool> CheckIsApprovedAsync(string workstationId);
-        Task DetachWorkstationsAsync(List<Workstation> workstations);
+        Task ReloadWorkstationAsync(string workstationId);
         Task UnchangedWorkstationAsync(Workstation workstation);
         IQueryable<WorkstationProximityVault> ProximityVaultQuery();
         Task<WorkstationProximityVault> GetProximityVaultByIdAsync(string id);
@@ -36,7 +36,6 @@ namespace HES.Core.Interfaces
         Task<WorkstationProximityVault> AddProximityVaultAsync(string workstationId, string vaultId);
         Task DeleteProximityVaultAsync(string proximityVaultId);
         Task DeleteProximityByVaultIdAsync(string vaultId);
-        Task DetachdProximityVaultsAsync(List<WorkstationProximityVault> workstationProximityVaults);
         Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId);
     }
 }

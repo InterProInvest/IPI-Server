@@ -4,35 +4,42 @@
 }
 else
 {
-    <EditForm Model="Account" OnValidSubmit="EditAccountAsync">
-        <DataAnnotationsValidator />
-        <ValidationErrorMessage @ref="ValidationErrorMessage" />
-        <div class="form-group">
-            <label class="control-label text-gray">Name</label>
-            <InputText class="form-control" @bind-Value="Account.Name" />
-            <ValidationMessage For="@(() => Account.Name)" class="text-danger" />
-        </div>
-        @if (Account.Kind != AccountKind.Workstation)
-        {
+    if (EntityBeingEdited)
+    {
+        <EditedByAnother EntityName="group" CloseAction="ModalDialogService.CancelAsync" />
+    }
+    else
+    {
+        <EditForm Model="Account" OnValidSubmit="EditAccountAsync">
+            <DataAnnotationsValidator />
+            <ValidationErrorMessage @ref="ValidationErrorMessage" />
             <div class="form-group">
-                <label class="control-label text-gray">Urls</label>
-                <InputText class="form-control" @bind-Value="Account.Urls" />
-                <ValidationMessage For="@(() => Account.Urls)" class="text-danger" />
+                <label class="control-label text-gray">Name</label>
+                <InputText class="form-control" @bind-Value="Account.Name" />
+                <ValidationMessage For="@(() => Account.Name)" class="text-danger" />
             </div>
+            @if (Account.Kind != AccountKind.Workstation)
+            {
+                <div class="form-group">
+                    <label class="control-label text-gray">Urls</label>
+                    <InputText class="form-control" @bind-Value="Account.Urls" />
+                    <ValidationMessage For="@(() => Account.Urls)" class="text-danger" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label text-gray">Apps</label>
+                    <InputText class="form-control" @bind-Value="Account.Apps" />
+                    <ValidationMessage For="@(() => Account.Apps)" class="text-danger" />
+                </div>
+            }
             <div class="form-group">
-                <label class="control-label text-gray">Apps</label>
-                <InputText class="form-control" @bind-Value="Account.Apps" />
-                <ValidationMessage For="@(() => Account.Apps)" class="text-danger" />
+                <label class="control-label text-gray">Login</label>
+                <InputText class="form-control" @bind-Value="Account.Login" />
+                <ValidationMessage For="@(() => Account.Login)" class="text-danger" />
             </div>
-        }
-        <div class="form-group">
-            <label class="control-label text-gray">Login</label>
-            <InputText class="form-control" @bind-Value="Account.Login" />
-            <ValidationMessage For="@(() => Account.Login)" class="text-danger" />
-        </div>
-        <div class="text-right">
-            <button type="button" class="btn btn-secondary" @onclick="async () => await ModalDialogService.CancelAsync()">Cancel</button>
-            <input type="submit" value="Save" class="btn btn-primary" />
-        </div>
-    </EditForm>
+            <div class="text-right">
+                <button type="button" class="btn btn-secondary" @onclick="async () => await ModalDialogService.CancelAsync()">Cancel</button>
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </EditForm>
+    }
 }

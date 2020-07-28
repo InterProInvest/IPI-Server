@@ -28,7 +28,6 @@ namespace HES.Web.Pages.Employees
         public List<SharedAccount> SharedAccounts { get; set; }
         public SharedAccount SelectedSharedAccount { get; set; }
 
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string EmployeeId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -51,9 +50,8 @@ namespace HES.Web.Pages.Employees
                 var account = await EmployeeService.AddSharedAccountAsync(EmployeeId, SelectedSharedAccount.Id);
                 var employee = await EmployeeService.GetEmployeeByIdAsync(account.EmployeeId);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Account added and will be recorded when the device is connected to the server.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

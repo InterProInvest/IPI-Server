@@ -32,8 +32,8 @@ namespace HES.Web.Pages.Workstations
                     break;
             }
 
-            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, StateHasChanged, nameof(Workstation.Name));
             await BreadcrumbsService.SetWorkstations();
+            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, StateHasChanged, nameof(Workstation.Name));
             await InitializeHubAsync();
         }
 
@@ -99,9 +99,11 @@ namespace HES.Web.Pages.Workstations
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.Workstations, async () =>
+            hubConnection.On<string>(RefreshPage.Workstations, async (WorkstationId) =>
             {
-                await WorkstationService.DetachWorkstationsAsync(MainTableService.Entities);
+                if (WorkstationId != null)
+                    await WorkstationService.ReloadWorkstationAsync(WorkstationId);
+          
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

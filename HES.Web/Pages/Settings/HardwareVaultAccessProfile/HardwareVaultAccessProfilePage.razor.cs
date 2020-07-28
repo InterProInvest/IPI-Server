@@ -27,22 +27,6 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             await InitializeHubAsync();
         }
 
-        private async Task InitializeHubAsync()
-        {
-            hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
-            .Build();
-
-            hubConnection.On(RefreshPage.HardwareVaultProfiles, async () =>
-            {
-                await HardwareVaultService.DetachProfilesAsync(MainTableService.Entities);
-                await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-            });
-
-            await hubConnection.StartAsync();
-        }
-
         private async Task CreateProfileAsync()
         {
             RenderFragment body = (builder) =>
@@ -92,6 +76,24 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             };
 
             await MainTableService.ShowModalAsync("Details Profile", body, ModalDialogSize.Default);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On<string>(RefreshPage.HardwareVaultProfiles, async (profileId) =>
+            {
+                if (profileId != null)
+                    await HardwareVaultService.ReloadProfileAsync(profileId);
+
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            await hubConnection.StartAsync();
         }
 
         public void Dispose()

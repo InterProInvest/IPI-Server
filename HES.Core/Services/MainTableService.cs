@@ -45,18 +45,11 @@ namespace HES.Core.Services
 
         public async Task LoadTableDataAsync()
         {
-            var currentTotalRows = TotalRecords;
             TotalRecords = await _getEntitiesCount.Invoke(DataLoadingOptions);
-
-            if (currentTotalRows != TotalRecords)
-                CurrentPage = 1;
-
+            SetCurrentPage();
             DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
             Entities = await _getEntities.Invoke(DataLoadingOptions);
-
-            if (SyncPropName != null)
-                SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
-
+            SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
             _stateHasChanged?.Invoke();
         }
 
@@ -81,8 +74,8 @@ namespace HES.Core.Services
 
         public async Task DisplayRowsChangedAsync(int displayRows)
         {
-            DataLoadingOptions.Take = displayRows;
-            CurrentPage = 1;
+            DataLoadingOptions.Take = displayRows;   
+            SetCurrentPage();
             await LoadTableDataAsync();
         }
 
@@ -107,6 +100,19 @@ namespace HES.Core.Services
         public async Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default)
         {
             await _modalDialogService.ShowAsync(modalTitle, modalBody, modalSize);
+        }
+
+        private void SetCurrentPage()
+        {
+            var totalPages = (int)Math.Ceiling(TotalRecords / (decimal)DataLoadingOptions.Take);
+
+            if (totalPages == 0)
+            {
+                CurrentPage = 1;
+                return;
+            }
+
+            CurrentPage = totalPages < CurrentPage ? totalPages : CurrentPage;
         }
 
         public void Dispose()

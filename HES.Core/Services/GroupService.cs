@@ -183,12 +183,10 @@ namespace HES.Core.Services
             return _groupRepository.UnchangedAsync(group);
         }
 
-        public async Task DetachGroupsAsync(List<Group> groups)
+        public async Task ReloadGroupAsync(string groupId)
         {
-            foreach (var item in groups)
-            {
-                await _groupRepository.DetachedAsync(item);
-            }
+            var group = await _groupRepository.GetByIdAsync(groupId);
+            await _groupRepository.ReloadAsync(group);
         }
 
         public async Task<Group> DeleteGroupAsync(string groupId)
@@ -392,14 +390,5 @@ namespace HES.Core.Services
 
             return await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
-
-        public async Task DetachGroupMembershipsAsync(List<GroupMembership> groupMemberships)
-        {
-            foreach (var item in groupMemberships)
-            {
-                await _groupMembershipRepository.DetachedAsync(item);
-            }
-        }
-
     }
 }

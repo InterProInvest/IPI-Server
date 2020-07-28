@@ -7,6 +7,7 @@ using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -14,18 +15,20 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class EditLicenseOrder : ComponentBase
+    public partial class EditLicenseOrder : ComponentBase, IDisposable
     {
-        [Inject] ILicenseService LicenseService { get; set; }
-        [Inject] IHardwareVaultService HardwareVaultService { get; set; }
-        [Inject] IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<EditLicenseOrder> Logger { get; set; }
+        [Inject] public ILicenseService LicenseService { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
+        [Inject] public ILogger<EditLicenseOrder> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public LicenseOrder LicenseOrder { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public bool EntityBeingEdited { get; set; }
 
         private NewLicenseOrder _newLicenseOrder;
         private RenewLicenseOrder _renewLicenseOrder;
@@ -34,6 +37,10 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         protected override async Task OnInitializedAsync()
         {
+            EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
+
             if (!LicenseOrder.ProlongExistingLicenses)
             {
                 _newLicenseOrder = new NewLicenseOrder()
@@ -96,7 +103,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                 var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                 await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses, LicenseOrder.Id);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
@@ -149,7 +156,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 LicenseOrder.EndDate = _renewLicenseOrder.EndDate.Date;
 
                 await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses, LicenseOrder.Id);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
@@ -163,6 +170,12 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             {
                 _isBusy = false;
             }
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(LicenseOrder.Id);
         }
     }
 }

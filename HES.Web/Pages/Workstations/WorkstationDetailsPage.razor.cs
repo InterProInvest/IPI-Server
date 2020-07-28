@@ -146,7 +146,6 @@ namespace HES.Web.Pages.Workstations
                 if (entityId != WorkstationId)
                     return;
 
-                await WorkstationService.DetachdProximityVaultsAsync(WorkstationProximityVaults);
                 await LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

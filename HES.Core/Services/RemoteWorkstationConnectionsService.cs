@@ -138,7 +138,7 @@ namespace HES.Core.Services
             finally
             {
                 _devicesInProgress.TryRemove(vaultId, out TaskCompletionSource<bool> _);
-                await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
+                await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, vaultId);
             }
         }
 

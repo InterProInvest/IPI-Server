@@ -242,7 +242,7 @@ namespace HES.Core.Hubs
 
         private async Task InvokeVaultStateChanged(string vaultId)
         {
-            await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
+            await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, vaultId);
 
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 

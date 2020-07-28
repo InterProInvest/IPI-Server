@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Groups
             {     
                 await GroupService.CreateGroupAsync(Group);
                 ToastService.ShowToast("Group created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

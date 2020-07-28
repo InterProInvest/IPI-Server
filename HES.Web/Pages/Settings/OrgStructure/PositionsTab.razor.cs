@@ -110,9 +110,11 @@ namespace HES.Web.Pages.Settings.OrgStructure
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.OrgSructurePositions, async () =>
+            hubConnection.On<string>(RefreshPage.OrgSructurePositions, async (positionId) =>
             {
-                await OrgStructureService.DetachPositionsAsync(Positions);
+                if (positionId != null)
+                    await OrgStructureService.ReloadPositionAsync(positionId);
+
                 await LoadPositionsAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
