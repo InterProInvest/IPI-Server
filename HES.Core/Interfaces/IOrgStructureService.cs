@@ -14,7 +14,7 @@ namespace HES.Core.Interfaces
         Task EditCompanyAsync(Company company);
         Task UnchangedCompanyAsync(Company company);
         Task DeleteCompanyAsync(string id);
-        Task DetachCompaniesAsync(List<Company> companies);
+        Task ReloadCompanyAsync(string companyId);
         IQueryable<Department> DepartmentQuery();
         Task<List<Department>> GetDepartmentsAsync();
         Task<List<Department>> GetDepartmentsByCompanyIdAsync(string id);
@@ -30,6 +30,6 @@ namespace HES.Core.Interfaces
         Task EditPositionAsync(Position position);
         Task UnchangedPositionAsync(Position position);
         Task DeletePositionAsync(string id);
-        Task DetachPositionsAsync(List<Position> positions);
+        Task ReloadPositionAsync(string positionId);
     }
 }

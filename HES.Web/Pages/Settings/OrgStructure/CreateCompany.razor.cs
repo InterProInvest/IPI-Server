@@ -32,7 +32,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.CreateCompanyAsync(Company);
                 ToastService.ShowToast("Company created.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies, null);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

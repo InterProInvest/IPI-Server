@@ -6,17 +6,19 @@ using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.OrgStructure
 {
-    public partial class EditDepartment : ComponentBase
+    public partial class EditDepartment : ComponentBase, IDisposable
     {
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<EditDepartment> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public Department Department { get; set; }
@@ -24,10 +26,16 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [Parameter] public EventCallback Refresh { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public bool EntityBeingEdited { get; set; }
+
 
         protected override void OnInitialized()
         {
             ModalDialogService.OnCancel += ModalDialogService_OnCancel;
+
+            EntityBeingEdited = MemoryCache.TryGetValue(Department.Id, out object _);
+            if (!EntityBeingEdited)
+                MemoryCache.Set(Department.Id, Department);
         }
 
         private async Task EditAsync()
@@ -37,7 +45,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.EditDepartmentAsync(Department);
                 ToastService.ShowToast("Department updated.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies, Department.CompanyId);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -56,6 +64,12 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             await OrgStructureService.UnchangedDepartmentAsync(Department);
             ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Department.Id);
         }
     }
 }
