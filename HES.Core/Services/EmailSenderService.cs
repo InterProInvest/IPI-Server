@@ -164,7 +164,7 @@ namespace HES.Core.Services
 
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
-            var htmlMessage = GetTemplate("mail-user-confirm-email");
+            var htmlMessage = GetTemplate("mail-activate-data-protection");
             htmlMessage = htmlMessage.Replace("{{callbackUrl}}", $"{serverSettings.Url}");
 
             foreach (var admin in administrators)
