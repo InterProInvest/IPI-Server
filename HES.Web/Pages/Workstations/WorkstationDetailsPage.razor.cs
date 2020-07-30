@@ -30,8 +30,8 @@ namespace HES.Web.Pages.Workstations
         protected override async Task OnInitializedAsync()
         {
             await LoadWorkstationAsync();
+            await BreadcrumbsService.SetWorkstationDetails(Workstation.Name);
             await LoadTableDataAsync();
-            await BreadcrumbsService.SetEmployeeDetails(Workstation.Name);
             await InitializeHubAsync();
             Initialized = true;
         }
