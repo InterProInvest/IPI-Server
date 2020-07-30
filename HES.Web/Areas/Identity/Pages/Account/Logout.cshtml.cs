@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace HES.Web.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
     public class LogoutModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -23,7 +24,7 @@ namespace HES.Web.Areas.Identity.Pages.Account
         }
 
         public void OnGet()
-        {
+        {    
         }
 
         public async Task<IActionResult> OnPost(string returnUrl = null)
