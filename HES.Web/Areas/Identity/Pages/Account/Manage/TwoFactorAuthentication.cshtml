@@ -5,7 +5,9 @@
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
+<component type="typeof(TwoFactorAuthenticationPage)" render-mode="Server" />
+
+@*<partial name="_StatusMessage" for="StatusMessage" />
 <h1 class="text-navyblue">@ViewData["Title"]</h1>
 <div class="profile-fill-card">
     @if (Model.Is2faEnabled)
@@ -58,4 +60,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+}*@
