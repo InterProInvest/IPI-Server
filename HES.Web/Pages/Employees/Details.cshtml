@@ -1,9 +1,0 @@
-﻿@page
-@model HES.Web.Pages.Employees.DetailsModel
-
-@{
-    ViewData["Title"] = "Details";
-    ViewData["ActivePage"] = MenuNavPages.Employees;
-}
-
-<component type="typeof(EmployeeDetailsPage)" render-mode="Server" param-EmployeeId="@Model.EmployeeId" />

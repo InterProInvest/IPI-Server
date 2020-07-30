@@ -1,4 +1,7 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Groups"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -9,21 +12,21 @@ else
             <GroupsFilter FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalAddGroupAsync">
+            <button type="button" class="btn btn-primary mr-1" @onclick="OpenModalAddGroupAsync">
                 Add from AD
             </button>
-            <button type="button" class="btn btn-primary my-1 mr-2" @onclick="OpenModalCreateGroupAsync">
+            <button type="button" class="btn btn-primary mx-1" @onclick="OpenModalCreateGroupAsync">
                 Create group
             </button>
-            <button type="button" class="btn btn-light border my-1 mr-2 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Details" @onclick="NavigateToGroupDetails">
+            <button type="button" class="btn btn-light border mx-1 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Details" @onclick="NavigateToGroupDetails">
                 <img class="icon-btn" src="/svg/action/details.svg" />
                 Details
             </button>
-            <button type="button" class="btn btn-light border my-1 mr-2 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroupAsync">
+            <button type="button" class="btn btn-light border mx-1 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroupAsync">
                 <img class="icon-btn" src="/svg/action/edit.svg" />
                 Edit
             </button>
-            <button type="button" class="btn btn-light border my-1 mr-2 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroupAsync">
+            <button type="button" class="btn btn-light border mx-1 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroupAsync">
                 <img class="icon-btn" src="/svg/action/delete.svg" />
                 Delete
             </button>

@@ -1,4 +1,7 @@
-﻿@if (ServerdCard == null)
+﻿@page "/"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (ServerdCard == null)
 {
     <LoadingPage />
 }

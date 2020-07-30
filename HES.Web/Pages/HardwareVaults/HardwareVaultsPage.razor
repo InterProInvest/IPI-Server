@@ -1,4 +1,8 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/HardwareVaults"
+@page "/HardwareVaults/{DashboardFilter}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }

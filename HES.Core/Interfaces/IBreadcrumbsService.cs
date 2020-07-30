@@ -1,4 +1,5 @@
 ﻿using HES.Core.Models.Web.Breadcrumb;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace HES.Core.Interfaces
 {
     public interface IBreadcrumbsService
     {
-        Task GetBreadcrumbs(out List<Breadcrumb> items);
+        event Func<List<Breadcrumb>, Task> OnSet;
         Task SetDashboard();
         Task SetEmployees();
         Task SetEmployeeDetails(string name);

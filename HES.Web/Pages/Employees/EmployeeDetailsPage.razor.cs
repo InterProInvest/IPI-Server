@@ -21,21 +21,35 @@ namespace HES.Web.Pages.Employees
 
         public Employee Employee { get; set; }
         public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadEmployeeAsync();
-            await BreadcrumbsService.SetEmployeeDetails(Employee.FullName);
-            await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
-            await InitializeHubAsync();
-            Initialized = true;
+            try
+            {
+                LoadFailed = false;
+                await LoadEmployeeAsync();
+                await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
+                await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
+                await InitializeHubAsync();
+            }
+            catch (Exception)
+            {
+                LoadFailed = true;
+            }
+            finally
+            {
+                Initialized = true;
+            }
         }
 
         private async Task LoadEmployeeAsync()
         {
             Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId, true);
+            if (Employee == null)
+                throw new Exception("Not Found");
             StateHasChanged();
         }
 
@@ -280,7 +294,7 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }

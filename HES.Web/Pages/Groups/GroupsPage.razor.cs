@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Groups
 
         private Task NavigateToGroupDetails()
         {
-            NavigationManager.NavigateTo($"/Groups/Details?id={MainTableService.SelectedEntity.Id}", true);
+            NavigationManager.NavigateTo($"/Groups/Details/{MainTableService.SelectedEntity.Id}");
             return Task.CompletedTask;
         }
 

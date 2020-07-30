@@ -1,4 +1,7 @@
-﻿@if (!Initialized)
+﻿@page "/Workstations/Details/{WorkstationId}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (!Initialized)
 {
     <LoadingPage />
 }
@@ -70,7 +73,7 @@ else
                     </td>
                     <td>
                         @context.HardwareVault.Employee?.Department?.Name
-                    </td>                    
+                    </td>
                 </TableRow>
             </MainTable>
             <Pagination CurrentPageChanged="CurrentPageChangedAsync"

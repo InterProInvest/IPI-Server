@@ -1,7 +1,0 @@
-﻿@page
-@model HES.Web.Pages.Groups.DetailsModel
-@{
-    ViewData["Title"] = "Groups";
-    ViewData["ActivePage"] = MenuNavPages.Groups;
-}
-<component type="typeof(DetailsGroup)" render-mode="ServerPrerendered" param-GroupId="@Model.Id" />

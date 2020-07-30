@@ -1,0 +1,133 @@
+﻿<div class="navigation-menu">
+    <div class="navigation-menu__body">
+        <a class="navbar-brand mt-3 mb-3 w-100" href="">
+            <img class="icon-hideez" src="/svg/empty.svg" />
+        </a>
+        <ul class="nav nav-pills custom-pills flex-column" id="accordionSidebar">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <img class="icon-dashboard i-sidebar" src="/svg/empty.svg">
+                    <span class="page_labels">Dashboard</span>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Employees">
+                    <img class="icon-employees i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Employees</span>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="HardwareVaults">
+                    <img class="icon-devices i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Hardware Vaults</span>
+                </NavLink>
+            </li>
+            @*<li class="nav-item">
+                <NavLink class="nav-link" href="SoftwareVaults">
+                        <img class="icon-software-vault i-sidebar" src="/svg/empty.svg"/>
+                        <span class="page_labels">Software Vaults</span>
+                    </NavLink>
+                </li>*@
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Workstations">
+                    <img class="icon-computers i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Workstations</span>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Groups">
+                    <img class="icon-groups i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Groups</span>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="SharedAccounts">
+                    <img class="icon-shared-accounts i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Shared Accounts</span>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="Templates">
+                    <img class="icon-templates i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Templates</span>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed aria-exp"  data-toggle="collapse" href="#audit" role="button" aria-expanded="false" aria-controls="Audit" onclick="collapseHide('settings')">
+                    <img class="icon-audit i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Audit</span>
+                    <img class="icon-arrow i-sidebar" src="/svg/empty.svg" />
+                </a>
+                <div class="collapse shadow sidebar-collapse" id="audit">
+                    <div class="card card-body border-navyblue">
+                        <ul class="nav nav-pills flex-column expand-pills">
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Audit/WorkstationEvents">
+                                    <span>Events</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Audit/WorkstationSessions">
+                                    <span>Sessions</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Audit/WorkstationSummaries">
+                                    <span>Summaries</span>
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed aria-exp" data-toggle="collapse" href="#settings" role="button" aria-expanded="false" aria-controls="Settings" onclick="collapseHide('audit')">
+                    <img class="icon-settings i-sidebar" src="/svg/empty.svg" />
+                    <span class="page_labels">Settings</span>
+                    <img class="icon-arrow i-sidebar" src="/svg/empty.svg" />
+                </a>
+                <div class="collapse shadow sidebar-collapse" id="settings">
+                    <div class="card card-body border-navyblue">
+                        <ul class="nav nav-pills flex-column expand-pills">
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Settings/Administrators">
+                                    <span>Administrators</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Settings/DataProtection">
+                                    <span>Data Protection</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Settings/HardwareVaultAccessProfile">
+                                    <span>Vault Access Profiles</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Settings/OrgStructure">
+                                    <span>OrgStructure</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Settings/LicenseOrders">
+                                    <span>License Orders</span>
+                                </NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="Settings/Parameters">
+                                    <span>Parameters</span>
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="navigation-menu__footer copyright">
+        <span class="d-block">© 2020 Hideez Group Inc.</span>
+        <span class="d-block">Hideez Enterprise Server</span>
+        <span class="d-block">Version: @HES.Core.Constants.ServerConstants.Version</span>
+    </div>
+</div>

@@ -307,8 +307,8 @@ a.navbar-brand {
     color: #0E3059;
     background-color: #FFFFFF;
     font-weight: 500;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin-top: 1px;
+    margin-bottom: 1px;
 }
 
     .custom-pills .nav-link.active:hover {
@@ -323,6 +323,8 @@ a.navbar-brand {
 .custom-pills .nav-link, .nav-pills .show > .nav-link {
     color: #B6C0CB;
     font-weight: 500;
+    margin-top: 1px;
+    margin-bottom: 1px;
 }
 
     .custom-pills .nav-link > .i-sidebar {
@@ -372,7 +374,7 @@ a.navbar-brand {
         }
 
 @media (max-width: 768px) {
-    .sidebar-settings {
+    .sidebar-collapse {
         position: absolute;
         left: 70px;
         z-index: 500;
@@ -753,7 +755,7 @@ div.dataTables_scrollHead table.dataTable {
     display: none;
 }
 
-.sidebar-settings.toggled {
+.sidebar-collapse.toggled {
     position: absolute;
     left: 70px;
     z-index: 500;
@@ -938,8 +940,8 @@ div.dataTables_scrollHead table.dataTable {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-supervisor_account.svg');
-    mask: url('../svg/sidebar/round-supervisor_account.svg');
+    -webkit-mask: url('/svg/sidebar/round-supervisor_account.svg');
+    mask: url('/svg/sidebar/round-supervisor_account.svg');
 }
 
 .icon-computers {
@@ -979,8 +981,8 @@ div.dataTables_scrollHead table.dataTable {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-device.svg');
-    mask: url('../svg/sidebar/round-device.svg');
+    -webkit-mask: url('/svg/sidebar/round-device.svg');
+    mask: url('/svg/sidebar/round-device.svg');
 }
 
 .icon-software-vault {

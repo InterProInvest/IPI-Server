@@ -1,8 +1,0 @@
-﻿@page
-@model HES.Web.Pages.Workstations.DetailsModel
-@{
-    ViewData["Title"] = "Details";
-    ViewData["ActivePage"] = MenuNavPages.Workstations;
-}
-
-<component type="typeof(WorkstationDetailsPage)" render-mode="Server" param-WorkstationId="@Model.WorkstationId" />

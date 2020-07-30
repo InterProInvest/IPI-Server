@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class DetailsGroup : ComponentBase
+    public partial class GroupDetails : ComponentBase
     {
         [Inject] public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
         [Inject] public IGroupService GroupService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public ILogger<DetailsGroup> Logger { get; set; }
+        [Inject] public ILogger<GroupDetails> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string GroupId { get; set; }
 
@@ -31,7 +31,7 @@ namespace HES.Web.Pages.Groups
             {
                 Group = await GroupService.GetGroupByIdAsync(GroupId);
                 if (Group == null)
-                    NavigationManager.NavigateTo("/NotFound");       
+                    NavigationManager.NavigateTo("/NotFound");
 
                 await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
                 await BreadcrumbsService.SetGroupDetails(Group.Name);

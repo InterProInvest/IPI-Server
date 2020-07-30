@@ -1,6 +1,5 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
-using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;

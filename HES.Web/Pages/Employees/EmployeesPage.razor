@@ -1,4 +1,7 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Employees"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -117,9 +120,9 @@ else
             </td>
             <td>
                 @if (context.LastSeen != null)
-                {
+                    {
                     @context.LastSeen.Value.ToLocalTime()
-                }
+                    }
             </td>
             <td>
                 @context.VaultsCount

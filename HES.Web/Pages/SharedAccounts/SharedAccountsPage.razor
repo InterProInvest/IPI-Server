@@ -1,4 +1,7 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/SharedAccounts"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -28,7 +31,7 @@ else
                         <img class="icon-btn" src="/svg/action/otp.svg" />
                         Edit OTP
                     </button>
-                }   
+                }
                 <button type="button" @onclick="DeleteSharedAccountAsync" class="btn btn-light border mx-1" title="Delete shared account">
                     <img class="icon-btn" src="/svg/action/delete.svg" />
                     Delete

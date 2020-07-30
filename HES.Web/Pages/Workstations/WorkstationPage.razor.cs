@@ -77,7 +77,7 @@ namespace HES.Web.Pages.Workstations
         {
             await InvokeAsync(() =>
             {
-                NavigationManager.NavigateTo($"/Workstations/Details?id={MainTableService.SelectedEntity.Id}", true);
+                NavigationManager.NavigateTo($"/Workstations/Details/{MainTableService.SelectedEntity.Id}");
             });
         }
 

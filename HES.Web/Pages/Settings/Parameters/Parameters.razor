@@ -1,4 +1,7 @@
-﻿@if (!Initialized)
+﻿@page "/Settings/Parameters"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (!Initialized)
 {
     <LoadingPage />
 }

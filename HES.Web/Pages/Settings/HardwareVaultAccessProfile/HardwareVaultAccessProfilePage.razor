@@ -1,4 +1,7 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Settings/HardwareVaultAccessProfile"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }

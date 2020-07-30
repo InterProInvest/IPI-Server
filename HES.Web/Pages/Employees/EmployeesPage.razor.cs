@@ -42,7 +42,7 @@ namespace HES.Web.Pages.Employees
         {
             await InvokeAsync(() =>
             {
-                NavigationManager.NavigateTo($"/Employees/Details?id={MainTableService.SelectedEntity.Id}", true);
+                NavigationManager.NavigateTo($"/Employees/Details/{MainTableService.SelectedEntity.Id}");
             });
         }
 
