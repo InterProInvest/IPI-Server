@@ -78,7 +78,7 @@ namespace HES.Core.Services
 
                     var password = TryGetStoredPassword();
 
-                    if (password != null)
+                    if (!string.IsNullOrWhiteSpace(password))
                     {
                         await ActivateProtectionAsync(password);
                     }
