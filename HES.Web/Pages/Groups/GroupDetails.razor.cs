@@ -21,28 +21,37 @@ namespace HES.Web.Pages.Groups
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string GroupId { get; set; }
 
-        private HubConnection hubConnection;
-
         public Group Group { get; set; }
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
+
+        private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
-                Group = await GroupService.GetGroupByIdAsync(GroupId);
-                if (Group == null)
-                    NavigationManager.NavigateTo("/NotFound");
-
-                await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
+                await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
+                await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
                 await InitializeHubAsync();
+                Initialized = true;
             }
             catch (Exception ex)
             {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CancelAsync();
             }
+        }
+
+        private async Task LoadGroupAsync()
+        {
+            Group = await GroupService.GetGroupByIdAsync(GroupId);
+            if (Group == null)
+                throw new Exception("Group not found.");
+            StateHasChanged();
         }
 
         private async Task OpenModalAddEmployeesAsync()
@@ -89,7 +98,7 @@ namespace HES.Web.Pages.Groups
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }

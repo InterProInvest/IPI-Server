@@ -4,6 +4,7 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -16,12 +17,14 @@ namespace HES.Web.Pages.Employees
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<EmployeeDetailsPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
         public bool Initialized { get; set; }
         public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
@@ -29,19 +32,17 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                LoadFailed = false;
                 await LoadEmployeeAsync();
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
                 await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
                 await InitializeHubAsync();
+                Initialized = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 LoadFailed = true;
-            }
-            finally
-            {
-                Initialized = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
             }
         }
 
@@ -49,7 +50,7 @@ namespace HES.Web.Pages.Employees
         {
             Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId, true);
             if (Employee == null)
-                throw new Exception("Not Found");
+                throw new Exception("Employee not found.");
             StateHasChanged();
         }
 

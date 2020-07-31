@@ -1,15 +1,7 @@
 ﻿@page "/Employees/Details/{EmployeeId}"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
 
-@if (!Initialized)
-{
-    <LoadingPage />
-}
-else if (LoadFailed)
-{
-    <LoadingFailed />
-}
-else
+@if (Initialized)
 {
     <div class="row align-items-center details-card mb-3">
         <div class="col">
@@ -283,4 +275,12 @@ else
                         DisplayRecords="MainTableService.Entities.Count" />
         }
     </section>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

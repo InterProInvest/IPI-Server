@@ -284,7 +284,6 @@ namespace HES.Web
                 endpoints.MapHub<AppHub>("/appHub");
                 endpoints.MapHub<RefreshHub>("/refreshHub");
                 endpoints.MapControllers();
-                //endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });

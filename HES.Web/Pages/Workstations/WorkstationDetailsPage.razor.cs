@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +17,7 @@ namespace HES.Web.Pages.Workstations
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<WorkstationDetailsPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string WorkstationId { get; set; }
 
@@ -23,21 +25,34 @@ namespace HES.Web.Pages.Workstations
         public List<WorkstationProximityVault> WorkstationProximityVaults { get; set; }
         public WorkstationProximityVault SelectedEntity { get; set; }
         public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadWorkstationAsync();
-            await LoadTableDataAsync();
-            await BreadcrumbsService.SetEmployeeDetails(Workstation.Name);
-            await InitializeHubAsync();
-            Initialized = true;
+            try
+            {
+                await LoadWorkstationAsync();
+                await BreadcrumbsService.SetEmployeeDetails(Workstation.Name);
+                await LoadTableDataAsync();
+                await InitializeHubAsync();
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task LoadWorkstationAsync()
         {
             Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
+            if (Workstation == null)
+                throw new Exception("Workstation not found.");
         }
 
         #region Main Table
@@ -154,7 +169,7 @@ namespace HES.Web.Pages.Workstations
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }
