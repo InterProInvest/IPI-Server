@@ -67,7 +67,27 @@ namespace HES.Web.Controllers
             }
         }
 
-        
+        [HttpGet]
+        public async Task<ActionResult> ResetAuthenticatorKey(string userId)
+        {
+            var appUser = await _userManager.FindByIdAsync(userId);
+
+            if (appUser == null)
+                return BadRequest();
+
+            try
+            {
+                await _userManager.SetTwoFactorEnabledAsync(appUser, false);
+                await _userManager.ResetAuthenticatorKeyAsync(appUser);
+                await _signInManager.RefreshSignInAsync(appUser);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]

@@ -79,3 +79,13 @@ function copyToClipboard() {
     document.execCommand("copy");
     $("#activationCodeInput").attr("type", "Password").select();
 }
+
+
+function generateQr(text) {
+    new QRCode(document.getElementById("qrCode"),
+        {
+            text: text,
+            width: 150,
+            height: 150
+        });
+}
