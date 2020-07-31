@@ -5,7 +5,10 @@
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<div class="profile-fill-card">
+<component type="typeof(DeletePersonalDataPage)" render-mode="Server" />
+
+
+@*<div class="profile-fill-card">
 
     <h4 class="text-navyblue">@ViewData["Title"]</h4>
 
@@ -34,4 +37,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+}*@

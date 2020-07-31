@@ -76,7 +76,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             {
                 var recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(AppUser, 10);
                 RecoveryCodes = recoveryCodes.ToArray();
-                NavigationManager.NavigateTo("/Identity/Account/Manage/ShowRecoveryCodes", true);
+                NavigationManager.NavigateTo("/Identity/Account/External/ShowRecoveryCodes", true);
             }
             else
             {

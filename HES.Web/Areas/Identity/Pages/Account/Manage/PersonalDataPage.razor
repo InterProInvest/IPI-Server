@@ -1,0 +1,22 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1 class="text-navyblue">Personal Data</h1>
+<div class="profile-fill-card">
+    <div class="row">
+        <div class="col-md-6">
+            <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
+            <p>
+                <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
+            </p>
+            <div class="d-inline-flex">
+                <div class="mr-3">
+                    <button class="btn btn-primary" type="button" @onclick="DownloadPersonalDataASync">Download</button>
+                </div>
+                <p>
+                    <a id="delete" href="/Identity/Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

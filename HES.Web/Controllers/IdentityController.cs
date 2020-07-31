@@ -88,6 +88,29 @@ namespace HES.Web.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult> DeletePersonalData(string userId)
+        {
+            var appUser = await _userManager.FindByIdAsync(userId);
+
+            if (appUser == null)
+                return BadRequest();
+
+            try
+            {
+                var result = await _userManager.DeleteAsync(appUser);
+                if (!result.Succeeded)
+                    return BadRequest($"Unexpected error occurred deleteing user with ID '{userId}'.");
+
+                await _signInManager.SignOutAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]

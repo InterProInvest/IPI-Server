@@ -5,7 +5,9 @@
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
+<component type="typeof(Disable2faPage)" render-mode="Server" />
+
+@*<partial name="_StatusMessage" for="StatusMessage" />
 
 <div class="profile-fill-card">
     <h4 class="text-navyblue mb-3">@ViewData["Title"]</h4>
@@ -24,4 +26,4 @@
             <button class="btn btn-danger" type="submit">Disable 2FA</button>
         </form>
     </div>
-</div>
+</div>*@
