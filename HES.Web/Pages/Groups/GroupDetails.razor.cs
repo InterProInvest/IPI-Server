@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class GroupDetails : ComponentBase
+    public partial class GroupDetails : ComponentBase, IDisposable
     {
         [Inject] public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
         [Inject] public IGroupService GroupService { get; set; }
@@ -32,10 +32,10 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
+                await InitializeHubAsync();
                 await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
                 await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
-                await InitializeHubAsync();
                 Initialized = true;
             }
             catch (Exception ex)
@@ -99,6 +99,7 @@ namespace HES.Web.Pages.Groups
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

@@ -113,7 +113,8 @@ namespace HES.Web.Pages.Workstations
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

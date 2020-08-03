@@ -6,7 +6,6 @@ using HES.Core.Models.Web.LicenseOrders;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
@@ -42,7 +41,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
 
             if (!LicenseOrder.ProlongExistingLicenses)
-            {
+            {          
                 _newLicenseOrder = new NewLicenseOrder()
                 {
                     ContactEmail = LicenseOrder.ContactEmail,

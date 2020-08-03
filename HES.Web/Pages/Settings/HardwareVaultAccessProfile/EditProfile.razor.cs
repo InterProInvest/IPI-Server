@@ -30,7 +30,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         protected override void OnInitialized()
         {
-            ModalDialogService.OnCancel += CancelAsync;
+            ModalDialogService.OnCancel += OnCancelAsync;
 
             InitPinExpirationValue = AccessProfile.PinExpirationConverted;
             InitPinLengthValue = AccessProfile.PinLength;
@@ -54,14 +54,13 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await CancelAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 
-        private async Task CancelAsync()
+        private async Task OnCancelAsync()
         {
             await HardwareVaultService.UnchangedProfileAsync(AccessProfile);
-            ModalDialogService.OnCancel -= CancelAsync;
         }
 
         private void OnInputPinExpiration(ChangeEventArgs args)
@@ -81,6 +80,8 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= OnCancelAsync;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(AccessProfile.Id);
         }

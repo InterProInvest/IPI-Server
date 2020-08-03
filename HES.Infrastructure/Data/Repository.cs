@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Infrastructure
 {
-    public class Repository<T> : IAsyncRepository<T> where T : class
+    public class Repository<T> : IAsyncRepository<T>, IDisposable where T : class
     {
         protected readonly ApplicationDbContext _context;
 
@@ -137,6 +137,11 @@ namespace HES.Infrastructure
         public async Task ReloadAsync(T entity)
         {
             await _context.Entry(entity).ReloadAsync();
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
         }
     }
 }

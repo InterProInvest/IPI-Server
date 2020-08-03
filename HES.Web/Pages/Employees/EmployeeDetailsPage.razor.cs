@@ -32,10 +32,10 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
+                await InitializeHubAsync();
                 await LoadEmployeeAsync();
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
                 await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
-                await InitializeHubAsync();
                 Initialized = true;
             }
             catch (Exception ex)
@@ -296,6 +296,7 @@ namespace HES.Web.Pages.Employees
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

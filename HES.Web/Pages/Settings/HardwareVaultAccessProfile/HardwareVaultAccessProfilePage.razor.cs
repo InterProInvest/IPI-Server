@@ -22,9 +22,9 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         protected override async Task OnInitializedAsync()
         {
+            await InitializeHubAsync();
             await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
             await BreadcrumbsService.SetHardwareVaultProfiles();
-            await InitializeHubAsync();
         }
 
         private async Task CreateProfileAsync()
@@ -98,7 +98,8 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

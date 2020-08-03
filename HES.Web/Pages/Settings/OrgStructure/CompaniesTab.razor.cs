@@ -3,12 +3,13 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.OrgStructure
 {
-    public partial class CompaniesTab : ComponentBase
+    public partial class CompaniesTab : ComponentBase, IDisposable
     {
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
@@ -22,9 +23,9 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadCompaniesAsync();
             await InitializeHubAsync();
             await BreadcrumbsService.SetOrgStructure();
+            await LoadCompaniesAsync();
         }
 
         private async Task LoadCompaniesAsync()
@@ -136,7 +137,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }

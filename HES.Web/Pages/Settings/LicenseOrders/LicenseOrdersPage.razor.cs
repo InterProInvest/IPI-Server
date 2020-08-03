@@ -4,12 +4,13 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class LicenseOrdersPage : ComponentBase
+    public partial class LicenseOrdersPage : ComponentBase, IDisposable
     {
         [Inject] public ILicenseService LicenseService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
@@ -21,9 +22,9 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         protected override async Task OnInitializedAsync()
         {
+            await InitializeHubAsync();
             await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
             await BreadcrumbsService.SetLicenseOrders();
-            await InitializeHubAsync();
         }
 
         private async Task CreateLicenseOrderAsync()
@@ -110,6 +111,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public void Dispose()
         {
             _ = hubConnection.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

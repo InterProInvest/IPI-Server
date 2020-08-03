@@ -25,15 +25,15 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public AuthenticationState AuthenticationState { get; set; }
 
-        private bool IsBusy;
         private HubConnection hubConnection;
+        private bool IsBusy;
 
         protected override async Task OnInitializedAsync()
         {
-            AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
-            await BreadcrumbsService.SetAdministrators();
             await InitializeHubAsync();
+            AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            await BreadcrumbsService.SetAdministrators();
+            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
         }
 
         private async Task InitializeHubAsync()
@@ -105,7 +105,8 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

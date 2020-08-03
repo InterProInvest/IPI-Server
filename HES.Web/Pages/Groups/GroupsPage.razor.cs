@@ -5,11 +5,12 @@ using HES.Core.Models.Web.Group;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class GroupsPage : ComponentBase
+    public partial class GroupsPage : ComponentBase, IDisposable
     {
         [Inject] public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
         [Inject] public IGroupService GroupService { get; set; }
@@ -23,9 +24,9 @@ namespace HES.Web.Pages.Groups
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, StateHasChanged, nameof(Group.Name));
-            await BreadcrumbsService.SetGroups();
             await InitializeHubAsync();
+            await BreadcrumbsService.SetGroups();
+            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, StateHasChanged, nameof(Group.Name));
         }
 
         private Task NavigateToGroupDetails()
@@ -104,7 +105,8 @@ namespace HES.Web.Pages.Groups
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

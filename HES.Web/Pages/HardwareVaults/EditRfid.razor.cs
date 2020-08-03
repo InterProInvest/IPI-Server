@@ -30,11 +30,11 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;      
+                
                 EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
                 if (!EntityBeingEdited)
                     MemoryCache.Set(HardwareVault.Id, HardwareVault);
-
-                ModalDialogService.OnCancel += ModalDialogService_OnCancel;                
             }
             catch (Exception ex)
             {
@@ -64,11 +64,12 @@ namespace HES.Web.Pages.HardwareVaults
         private async Task ModalDialogService_OnCancel()
         {
             await HardwareVaultService.UnchangedVaultAsync(HardwareVault);
-            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(HardwareVault.Id);
         }

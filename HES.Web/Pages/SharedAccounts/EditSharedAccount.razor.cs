@@ -30,12 +30,13 @@ namespace HES.Web.Pages.SharedAccounts
 
         protected override void OnInitialized()
         {
+            ModalDialogService.OnCancel += OnCancelAsync;
+
             EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
             if (!EntityBeingEdited)
                 MemoryCache.Set(Account.Id, Account);
 
             Account.ConfirmPassword = Account.Password;
-            ModalDialogService.OnCancel += CancelAsync;
         }
 
         private async Task EditAccountAsync()
@@ -60,18 +61,19 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 Logger.LogError(ex.Message, ex);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await CancelAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 
-        private async Task CancelAsync()
+        private async Task OnCancelAsync()
         {
             await SharedAccountService.UnchangedAsync(Account);
-            ModalDialogService.OnCancel -= CancelAsync;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= OnCancelAsync;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Account.Id);
         }

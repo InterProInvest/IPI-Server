@@ -18,7 +18,6 @@ namespace HES.Web.Pages.Workstations
         [Inject] ILogger<DeleteProximityVault> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public WorkstationProximityVault WorkstationProximityVault { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string WorkstationId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -27,16 +26,15 @@ namespace HES.Web.Pages.Workstations
             try
             {   
                 await WorkstationService.DeleteProximityVaultAsync(WorkstationProximityVault.Id);          
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault deleted.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.WorkstationsDetails, WorkstationId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
-                await ModalDialogService.CloseAsync();
                 Logger.LogError(ex.Message, ex);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
             }
         }
     }

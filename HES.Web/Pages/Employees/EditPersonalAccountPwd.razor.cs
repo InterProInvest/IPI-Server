@@ -37,6 +37,7 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
+            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
             EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
             if (!EntityBeingEdited)
                 MemoryCache.Set(Account.Id, Account);
@@ -81,8 +82,15 @@ namespace HES.Web.Pages.Employees
             }
         }
 
+        private async Task ModalDialogService_OnCancel()
+        {
+            await EmployeeService.UnchangedPersonalAccountAsync(Account);
+        }
+
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Account.Id);
         }

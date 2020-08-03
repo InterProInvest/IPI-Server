@@ -28,7 +28,7 @@ namespace HES.Core.Services
             return _templateRepository.Query();
         }
 
-        public async Task<Template> GetByIdAsync(dynamic id)
+        public async Task<Template> GetByIdAsync(string id)
         {
             return await _templateRepository.GetByIdAsync(id);
         }
@@ -129,9 +129,15 @@ namespace HES.Core.Services
         public async Task<Template> CreateTmplateAsync(Template template)
         {
             if (template == null)
-            {
                 throw new ArgumentNullException(nameof(template));
-            }
+
+            var accountExist = await _templateRepository
+              .Query()
+              .Where(x => x.Name == template.Name && x.Id != template.Id)
+              .AnyAsync();
+
+            if (accountExist)
+                throw new AlreadyExistException("Template with current name already exists.");
 
             template.Urls = Validation.VerifyUrls(template.Urls);
 
@@ -147,7 +153,6 @@ namespace HES.Core.Services
         {
             if (template == null)
                 throw new ArgumentNullException(nameof(template));
-
 
             var accountExist = await _templateRepository
                .Query()
