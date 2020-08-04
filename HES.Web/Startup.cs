@@ -286,6 +286,15 @@ namespace HES.Web
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapGet("/Identity/Account/Manage/DeletePersonalData", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/DeletePersonalData", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/Disable2fa", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/Disable2fa", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/EnableAuthenticator", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/EnableAuthenticator", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/GenerateRecoveryCodes", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/GenerateRecoveryCodes", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/PersonalData", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/PersonalData", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/ResetAuthenticator", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/ResetAuthenticator", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/ShowRecoveryCodes", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/ShowRecoveryCodes", true, true)));
+                endpoints.MapGet("/Identity/Account/Manage/TwoFactorAuthentication", context => Task.Factory.StartNew(() => context.Response.Redirect("/RedirectToManage/TwoFactorAuthentication", true, true)));
             });
 
             app.UseCookiePolicy();
