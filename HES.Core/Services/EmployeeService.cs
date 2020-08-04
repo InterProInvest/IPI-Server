@@ -401,7 +401,7 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            var employee = await GetEmployeeByIdAsync(employeeId);
             if (employee == null)
                 throw new Exception("Employee not found");
 
