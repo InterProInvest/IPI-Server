@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System;
-using HES.Core.Models.API.Identity;
 using System.Net;
 using System.Text.Encodings.Web;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppUsers;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace HES.Web.Controllers
 {
@@ -58,7 +59,7 @@ namespace HES.Web.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateProfileInfo(ProfileInfoDto profileInfoDto)
+        public async Task<IActionResult> UpdateProfileInfo(ProfileInfo profileInfo)
         {
             try
             {
@@ -66,17 +67,17 @@ namespace HES.Web.Controllers
                 if (user == null)
                     throw new Exception("User is null");
 
-                if (profileInfoDto.Email != user.Email)
+                if (profileInfo.Email != user.Email)
                 {
-                    var setEmailResult = await _userManager.SetEmailAsync(user, profileInfoDto.Email);
+                    var setEmailResult = await _userManager.SetEmailAsync(user, profileInfo.Email);
 
                     if (!setEmailResult.Succeeded)
                         throw new InvalidOperationException($"Unexpected error occurred setting email for user with ID '{user.Id}'.");
                 }
 
-                if (profileInfoDto.PhoneNumber != user.PhoneNumber)
+                if (profileInfo.PhoneNumber != user.PhoneNumber)
                 {
-                    var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, profileInfoDto.PhoneNumber);
+                    var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, profileInfo.PhoneNumber);
 
                     if (!setPhoneResult.Succeeded)
                         throw new InvalidOperationException($"Unexpected error occurred setting phone number for user with ID '{user.Id}'.");
@@ -120,9 +121,25 @@ namespace HES.Web.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateProfilePassword()
+        public async Task<IActionResult> UpdateProfilePassword(ProfilePassword profilePassword)
         {
-            return BadRequest();
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, profilePassword.OldPassword, profilePassword.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                    throw new Exception(string.Join(";", changePasswordResult.Errors));
+
+                await _signInManager.RefreshSignInAsync(user);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
