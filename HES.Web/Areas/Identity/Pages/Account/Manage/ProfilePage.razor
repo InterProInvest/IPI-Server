@@ -3,11 +3,7 @@
 
 <NavigationHeader Tab="NavigationHeader.ActiveTab.Profile" />
 
-@if (ProfileInfo == null)
-{
-    <LoadingTab />
-}
-else
+@if (Initialized)
 {
     <div class="card mb-2">
         <div class="card-body">
@@ -60,4 +56,12 @@ else
             </EditForm>
         </div>
     </div>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

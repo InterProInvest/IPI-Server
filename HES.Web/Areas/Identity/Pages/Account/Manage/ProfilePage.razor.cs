@@ -14,15 +14,16 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 {
     public partial class ProfilePage : ComponentBase
     {
-        [Inject] public NavigationManager NavigationManager { get; set; }
         [Inject] public HttpClient HttpClient { get; set; }
-        [Inject] public IEmailSenderService EmailSender { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<ProfilePage> Logger { get; set; }
 
         public ApplicationUser ApplicationUser { get; set; }
         public ProfileInfo ProfileInfo { get; set; }
-        public ProfilePassword ProfilePassword { get; set; } = new ProfilePassword();
+        public ProfilePassword ProfilePassword { get; set; }
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -40,11 +41,15 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                     Email = ApplicationUser.Email,
                     PhoneNumber = ApplicationUser.PhoneNumber
                 };
+
+                ProfilePassword = new ProfilePassword();
+
+                Initialized = true;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, Core.Enums.ToastLevel.Error);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
         }
 
@@ -88,7 +93,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
         {
             try
             {
-                var response = await HttpClient.PostAsync("api/Identity/UpdateProfileInfo", new StringContent(JsonConvert.SerializeObject(ProfileInfo), Encoding.UTF8, "application/json"));
+                var response = await HttpClient.PostAsync("api/Identity/UpdateProfilePassword", new StringContent(JsonConvert.SerializeObject(ProfilePassword), Encoding.UTF8, "application/json"));
 
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
