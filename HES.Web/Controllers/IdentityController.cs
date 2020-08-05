@@ -12,6 +12,9 @@ using System.Text.Encodings.Web;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppUsers;
 using Microsoft.EntityFrameworkCore.Internal;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HES.Web.Controllers
 {
@@ -20,18 +23,20 @@ namespace HES.Web.Controllers
     [Route("api/[controller]/[action]")]
     public class IdentityController : ControllerBase
     {
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UrlEncoder _urlEncoder;
         private readonly ILogger<IdentityController> _logger;
         private readonly IEmailSenderService _emailSenderService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-
-        public IdentityController(ILogger<IdentityController> logger,
+        public IdentityController(UrlEncoder urlEncoder,
+                                  ILogger<IdentityController> logger,
                                   IEmailSenderService emailSenderService,
                                   UserManager<ApplicationUser> userManager,
                                   SignInManager<ApplicationUser> signInManager)
         {
             _logger = logger;
+            _urlEncoder = urlEncoder;
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSenderService = emailSenderService;
@@ -183,6 +188,102 @@ namespace HES.Web.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<SharedKeyInfo>> LoadSharedKeyAndQrCodeUri()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+                if (string.IsNullOrWhiteSpace(unformattedKey))
+                {
+                    await _userManager.ResetAuthenticatorKeyAsync(user);
+                    unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+                }
+
+                var sharedKeyInfo = new SharedKeyInfo
+                {
+                    SharedKey = FormatKey(unformattedKey),
+                    AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey)
+                };
+
+                return Ok(sharedKeyInfo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<string>>> VerifyTwoFactor(string inputCode)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var verificationCode = inputCode.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+                var isTokenValid = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+
+                if (!isTokenValid)
+                    return BadRequest("Verification code is invalid");
+
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+
+                _logger.LogInformation($"User with ID '{user.Id}' has enabled 2FA with an authenticator app.");
+
+                if (await _userManager.CountRecoveryCodesAsync(user) == 0)
+                {
+                    var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+                    return Ok(recoveryCodes.ToList());
+                }
+
+                return Ok(new List<string>());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        private string FormatKey(string unformattedKey)
+        {
+            var result = new StringBuilder();
+            int currentPosition = 0;
+            while (currentPosition + 4 < unformattedKey.Length)
+            {
+                result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
+                currentPosition += 4;
+            }
+            if (currentPosition < unformattedKey.Length)
+            {
+                result.Append(unformattedKey.Substring(currentPosition));
+            }
+
+            return result.ToString().ToLowerInvariant();
+        }
+
+        private string GenerateQrCodeUri(string email, string unformattedKey)
+        {
+            const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+
+            return string.Format(
+                AuthenticatorUriFormat,
+                _urlEncoder.Encode("HES.Web"),
+                _urlEncoder.Encode(email),
+                unformattedKey);
         }
 
         [HttpPost]
