@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace HES.Web
@@ -108,6 +109,9 @@ namespace HES.Web
             services.AddScoped<ISoftwareVaultService, SoftwareVaultService>();
             services.AddScoped<IBreadcrumbsService, BreadcrumbsService>();
 
+            services.AddScoped<HttpClient>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
@@ -171,6 +175,19 @@ namespace HES.Web
             {
                 config.Events = new CookieAuthenticationEvents
                 {
+                    OnRedirectToAccessDenied = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api"))
+                        {
+                            context.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+                        }
+                        else
+                        {
+                            context.Response.Redirect(context.RedirectUri);
+                        }
+
+                        return Task.CompletedTask;
+                    },
                     OnRedirectToLogin = context =>
                     {
                         if (context.Request.Path.StartsWithSegments("/api"))
