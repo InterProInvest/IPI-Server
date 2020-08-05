@@ -36,7 +36,7 @@
                             @context.User.Identity.Name
                         </h6>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/Identity/Account/Manage">
+                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
                             <img src="/svg/account/round-person.svg" />
                             Profile
                         </a>
@@ -45,9 +45,9 @@
                                 <img src="/svg/account/round-power-off.svg" />
                                 Logout
                             </button>
-                        </form>
+                        </form>    
                     </Authorized>
-                </AuthorizeView>
+                </AuthorizeView>           
             </div>
         </li>
     </ul>
@@ -58,10 +58,10 @@
 
     protected override void OnInitialized()
     {
-        BreadcrumbsService.OnSet += BreadcrumbsOnSet;
+        BreadcrumbsService.OnSet += OnSet;
     }
 
-    private async Task BreadcrumbsOnSet(List<Breadcrumb> breadcrumbs)
+    private async Task OnSet(List<Breadcrumb> breadcrumbs)
     {
         await InvokeAsync(() =>
         {
@@ -72,6 +72,6 @@
 
     public void Dispose()
     {
-        BreadcrumbsService.OnSet -= BreadcrumbsOnSet;
+        BreadcrumbsService.OnSet -= OnSet;
     }
 }

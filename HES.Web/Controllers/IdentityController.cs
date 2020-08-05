@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using HES.Core.Models.Web.Accounts;
-using System;
 
 namespace HES.Web.Controllers
 {
@@ -27,90 +25,6 @@ namespace HES.Web.Controllers
             _userManager = userManager;
             _logger = logger;
         }
-
-        [HttpGet]
-        public async Task<ActionResult<TwoFactInformation>> GetTwoFactInformation(string userId)
-        {
-            var appUser = await _userManager.FindByIdAsync(userId);
-
-            if (appUser == null)
-                return BadRequest();
-
-            var twoFactInfo = new TwoFactInformation();
-
-            try
-            {
-                twoFactInfo.HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(appUser) != null;
-                twoFactInfo.Is2faEnabled = await _userManager.GetTwoFactorEnabledAsync(appUser);
-                twoFactInfo.IsMachineRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(appUser);
-                twoFactInfo.RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(appUser);
-
-                return Ok(twoFactInfo);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> ForgetTwoFactorClient()
-        {
-            try
-            {
-                await _signInManager.ForgetTwoFactorClientAsync();
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> ResetAuthenticatorKey(string userId)
-        {
-            var appUser = await _userManager.FindByIdAsync(userId);
-
-            if (appUser == null)
-                return BadRequest("Unable to load user");
-
-            try
-            {
-                await _userManager.SetTwoFactorEnabledAsync(appUser, false);
-                await _userManager.ResetAuthenticatorKeyAsync(appUser);
-                await _signInManager.RefreshSignInAsync(appUser);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> DeletePersonalData(string userId)
-        {
-            var appUser = await _userManager.FindByIdAsync(userId);
-
-            if (appUser == null)
-                return BadRequest();
-
-            try
-            {
-                var result = await _userManager.DeleteAsync(appUser);
-                if (!result.Succeeded)
-                    return BadRequest($"Unexpected error occurred deleteing user with ID '{userId}'.");
-
-                await _signInManager.SignOutAsync();
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
