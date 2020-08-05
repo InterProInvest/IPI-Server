@@ -225,7 +225,7 @@ namespace HES.Web.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<List<string>>> VerifyTwoFactor(string inputCode)
+        public async Task<ActionResult<VerifyTwoFactorInfo>> VerifyTwoFactor(string inputCode)
         {
             try
             {
@@ -234,11 +234,12 @@ namespace HES.Web.Controllers
                     throw new Exception("User is null");
 
                 var verificationCode = inputCode.Replace(" ", string.Empty).Replace("-", string.Empty);
-
                 var isTokenValid = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
 
+                var verifyTwoFactorInfo = new VerifyTwoFactorInfo { IsTwoFactorTokenValid = isTokenValid };
+
                 if (!isTokenValid)
-                    return BadRequest("Verification code is invalid");
+                    return Ok(verifyTwoFactorInfo);
 
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
 
@@ -247,10 +248,12 @@ namespace HES.Web.Controllers
                 if (await _userManager.CountRecoveryCodesAsync(user) == 0)
                 {
                     var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-                    return Ok(recoveryCodes.ToList());
+                    verifyTwoFactorInfo.RecoveryCodes = recoveryCodes.ToList();
+
+                    return Ok(verifyTwoFactorInfo);
                 }
 
-                return Ok(new List<string>());
+                return Ok(verifyTwoFactorInfo);
             }
             catch (Exception ex)
             {
