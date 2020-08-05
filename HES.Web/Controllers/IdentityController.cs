@@ -32,14 +32,11 @@ namespace HES.Web.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApplicationUser>> GetUser(ClaimsPrincipal claimsPrincipal)
+        public async Task<ActionResult<ApplicationUser>> GetUser()
         {
-            if (claimsPrincipal == null)
-                return BadRequest(new { Error = "Arguments is null" });
-
             try
             {
-                var user = await  _userManager.GetUserAsync(claimsPrincipal);
+                var user = await  _userManager.GetUserAsync(User);
                 if (user == null)
                     throw new Exception("User is null");
 
@@ -47,7 +44,7 @@ namespace HES.Web.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Error = ex.Message });
+                return BadRequest(ex.Message);
             }
         }
 
@@ -56,12 +53,9 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateProfileInfo(ProfileInfoDto profileInfoDto)
         {
-            if (profileInfoDto == null)
-                return BadRequest(new { Error = "Arguments is null" });
-
             try
             {
-                var user = await _userManager.GetUserAsync(profileInfoDto.ClaimsPrincipal);
+                var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                     throw new Exception("User is null");
 
@@ -87,7 +81,7 @@ namespace HES.Web.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Error = ex.Message });
+                return BadRequest(ex.Message);
             }
         }
 
