@@ -49,7 +49,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
             }
         }
 
