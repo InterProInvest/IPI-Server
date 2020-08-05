@@ -225,7 +225,7 @@ namespace HES.Web.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<VerifyTwoFactorInfo>> VerifyTwoFactor(string inputCode)
+        public async Task<ActionResult<VerifyTwoFactorInfo>> VerifyTwoFactor(VerificationCode verificationCode)
         {
             try
             {
@@ -233,8 +233,8 @@ namespace HES.Web.Controllers
                 if (user == null)
                     throw new Exception("User is null");
 
-                var verificationCode = inputCode.Replace(" ", string.Empty).Replace("-", string.Empty);
-                var isTokenValid = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+                var code = verificationCode.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+                var isTokenValid = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, code);
 
                 var verifyTwoFactorInfo = new VerifyTwoFactorInfo { IsTwoFactorTokenValid = isTokenValid };
 
