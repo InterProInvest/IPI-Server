@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System;
 using HES.Core.Models.API.Identity;
+using System.Net;
+using System.Text.Encodings.Web;
+using HES.Core.Interfaces;
 
 namespace HES.Web.Controllers
 {
@@ -19,14 +22,18 @@ namespace HES.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<IdentityController> _logger;
+        private readonly IEmailSenderService _emailSenderService;
 
-        public IdentityController(SignInManager<ApplicationUser> signInManager,
+
+        public IdentityController(ILogger<IdentityController> logger,
+                                  IEmailSenderService emailSenderService,
                                   UserManager<ApplicationUser> userManager,
-                                  ILogger<IdentityController> logger)
+                                  SignInManager<ApplicationUser> signInManager)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
             _logger = logger;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _emailSenderService = emailSenderService;
         }
 
         [HttpGet]
@@ -36,7 +43,7 @@ namespace HES.Web.Controllers
         {
             try
             {
-                var user = await  _userManager.GetUserAsync(User);
+                var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                     throw new Exception("User is null");
 
@@ -83,6 +90,39 @@ namespace HES.Web.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SendVerificationEmail()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                var callbackUrl = $"{HttpContext.Request.PathBase}Identity/Account/ConfirmEmail?userId={user.Id}&code={WebUtility.UrlEncode(code)}";
+
+                await _emailSenderService.SendUserConfirmEmailAsync(user.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateProfilePassword()
+        {
+            return BadRequest();
         }
 
         [HttpPost]
