@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using System;
 
 namespace HES.Web.Controllers
 {
@@ -24,6 +26,26 @@ namespace HES.Web.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = logger;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<ApplicationUser>> GetUser(ClaimsPrincipal claimsPrincipal)
+        {
+            if (claimsPrincipal == null)
+                return BadRequest(new { Error = "Arguments is null" });
+
+            try
+            {
+                var user = _userManager.GetUserAsync(claimsPrincipal);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
         }
 
         [HttpPost]
