@@ -1,20 +1,17 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppUsers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using System;
-using System.Net;
-using System.Text.Encodings.Web;
-using HES.Core.Interfaces;
-using HES.Core.Models.Web.AppUsers;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Text;
-using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
 {

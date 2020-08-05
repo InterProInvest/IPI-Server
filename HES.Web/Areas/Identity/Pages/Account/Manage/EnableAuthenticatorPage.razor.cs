@@ -7,6 +7,7 @@ using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace HES.Web.Areas.Identity.Pages.Account.Manage
@@ -30,7 +31,6 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             try
             {
                 await LoadSharedKeyAndQrCodeUriAsync();
-
                 Initialized = true;
             }
             catch (Exception ex)
@@ -41,9 +41,17 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             }
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await GenerateQrCodeAsync();
+            }
+        }
+
         private async Task LoadSharedKeyAndQrCodeUriAsync()
         {
-            var response = await HttpClient.GetAsync("api/Identity/LoadSharedKeyAndQrCodeUri");
+            var response = HttpClient.GetAsync("api/Identity/LoadSharedKeyAndQrCodeUri").Result;
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception(await response.Content.ReadAsStringAsync());
@@ -51,18 +59,15 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             SharedKeyInfo = JsonConvert.DeserializeObject<SharedKeyInfo>(await response.Content.ReadAsStringAsync());
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        private async Task GenerateQrCodeAsync()
         {
-            if (!firstRender)
+            try
             {
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync("generateQr", SharedKeyInfo.AuthenticatorUri);
-                }
-                catch (Exception ex)
-                {
-                    ToastService.ShowToast(ex.Message, ToastLevel.Error);                 
-                }
+                await JSRuntime.InvokeVoidAsync("generateQr", SharedKeyInfo.AuthenticatorUri);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
         }
 
@@ -70,7 +75,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
         {
             try
             {
-                var response = await HttpClient.PostAsync("api/Identity/VerifyTwoFactor", new StringContent(VerificationCode.Code));
+                var response = await HttpClient.PostAsync("api/Identity/VerifyTwoFactor", (new StringContent(JsonConvert.SerializeObject(VerificationCode), Encoding.UTF8, "application/json")));
 
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
@@ -81,6 +86,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 {
                     ToastService.ShowToast("Verification code is invalid.", ToastLevel.Error);
                     await LoadSharedKeyAndQrCodeUriAsync();
+                    await GenerateQrCodeAsync();
                     return;
                 }
 
