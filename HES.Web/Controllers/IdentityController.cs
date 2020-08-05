@@ -142,6 +142,49 @@ namespace HES.Web.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<TwoFactorInfo>> GetTwoFactorInfo()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var twoFactorInfo = new TwoFactorInfo
+                {
+                    HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
+                    Is2faEnabled = await _userManager.GetTwoFactorEnabledAsync(user),
+                    IsMachineRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
+                    RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
+                };
+
+                return Ok(twoFactorInfo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ForgetTwoFactorClient()
+        {
+            try
+            {
+                await _signInManager.ForgetTwoFactorClientAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
