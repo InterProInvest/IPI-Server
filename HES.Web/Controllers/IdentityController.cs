@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace HES.Web.Controllers
 {
-    [AllowAnonymous]
-    [Route("api/[controller]/[action]")]
+    [Authorize]
     [ApiController]
+    [Route("api/[controller]/[action]")]
     public class IdentityController : ControllerBase
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -27,6 +27,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -95,6 +96,7 @@ namespace HES.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
