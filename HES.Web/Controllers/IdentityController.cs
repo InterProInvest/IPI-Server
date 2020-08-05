@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System;
+using HES.Core.Models.API.Identity;
 
 namespace HES.Web.Controllers
 {
@@ -29,6 +30,8 @@ namespace HES.Web.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApplicationUser>> GetUser(ClaimsPrincipal claimsPrincipal)
         {
             if (claimsPrincipal == null)
@@ -36,11 +39,51 @@ namespace HES.Web.Controllers
 
             try
             {
-                var user = _userManager.GetUserAsync(claimsPrincipal);
+                var user = await  _userManager.GetUserAsync(claimsPrincipal);
                 if (user == null)
                     throw new Exception("User is null");
 
                 return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateProfileInfo(ProfileInfoDto profileInfoDto)
+        {
+            if (profileInfoDto == null)
+                return BadRequest(new { Error = "Arguments is null" });
+
+            try
+            {
+                var user = await _userManager.GetUserAsync(profileInfoDto.ClaimsPrincipal);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                if (profileInfoDto.Email != user.Email)
+                {
+                    var setEmailResult = await _userManager.SetEmailAsync(user, profileInfoDto.Email);
+
+                    if (!setEmailResult.Succeeded)
+                        throw new InvalidOperationException($"Unexpected error occurred setting email for user with ID '{user.Id}'.");
+                }
+
+                if (profileInfoDto.PhoneNumber != user.PhoneNumber)
+                {
+                    var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, profileInfoDto.PhoneNumber);
+
+                    if (!setPhoneResult.Succeeded)
+                        throw new InvalidOperationException($"Unexpected error occurred setting phone number for user with ID '{user.Id}'.");
+                }
+
+                await _signInManager.RefreshSignInAsync(user);
+
+                return Ok();
             }
             catch (Exception ex)
             {
