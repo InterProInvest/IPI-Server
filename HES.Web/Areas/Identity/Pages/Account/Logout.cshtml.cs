@@ -31,7 +31,7 @@ namespace HES.Web.Areas.Identity.Pages.Account
         {
             var user = await _userManager.GetUserAsync(User);
             await _signInManager.SignOutAsync();
-            _logger.LogInformation($"User {user.Email} logged out.");
+            _logger.LogInformation($"User {user?.Email} logged out.");
    
             if (returnUrl != null)
             {

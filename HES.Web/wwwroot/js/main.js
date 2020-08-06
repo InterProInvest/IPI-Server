@@ -71,3 +71,11 @@ function downloadPersonalData(content) {
     link.click();
     document.body.removeChild(link);
 }
+
+function setCookie(cookie) {
+    document.cookie = cookie;
+}
+
+function removeCookie(cookieName) {
+    document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
