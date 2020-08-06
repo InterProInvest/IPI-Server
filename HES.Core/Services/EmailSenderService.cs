@@ -292,21 +292,15 @@ namespace HES.Core.Services
             await SendAsync(mailMessage, emailSettings);
         }
 
-
         private Task<EmailSettings> GetEmailSettingsAsync()
         {
-            //var settings = await _appSettingsService.GetEmailSettingsAsync();
-
-            //if (settings == null)
-            //    throw new SettingsNotSetException("Email settings not set.");
-
             var settings = new EmailSettings()
             {
-                Host = _config.GetValue<string>("EmailSettings:Host"),
-                Port = _config.GetValue<int>("EmailSettings:Port"),
-                EnableSSL = _config.GetValue<bool>("EmailSettings:EnableSSL"),
-                UserName = _config.GetValue<string>("EmailSettings:UserName"),
-                Password = _config.GetValue<string>("EmailSettings:Password")
+                Host = _config.GetValue<string>("EmailSender:Host"),
+                Port = _config.GetValue<int>("EmailSender:Port"),
+                EnableSSL = _config.GetValue<bool>("EmailSender:EnableSSL"),
+                UserName = _config.GetValue<string>("EmailSender:UserName"),
+                Password = _config.GetValue<string>("EmailSender:Password")
             };
 
             return Task.FromResult(settings);
@@ -314,11 +308,6 @@ namespace HES.Core.Services
 
         private Task<ServerSettings> GetServerSettingsAsync()
         {
-            //var settings = await _appSettingsService.GetServerSettingsAsync();
-
-            //if (settings == null)
-            //    throw new SettingsNotSetException("Server settings not set.");
-
             var settings = new ServerSettings()
             {
                 Name = _config.GetValue<string>("ServerSettings:Name"),

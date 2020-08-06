@@ -8,6 +8,9 @@
     </div>
     <div class="text-right">
         <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
-        <input type="submit" class="btn btn-primary" value="Invite" />
+        <button type="submit" class="btn btn-primary">
+            <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+            <span>Invite</span>
+        </button>
     </div>
 </EditForm>

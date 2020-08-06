@@ -19,7 +19,6 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<ApplicationUser> _applicationUserRepository;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
 
         public ApplicationUserService(IAsyncRepository<ApplicationUser> applicationUserRepository,
                                       UserManager<ApplicationUser> userManager)
@@ -33,17 +32,10 @@ namespace HES.Core.Services
             return _applicationUserRepository.Query();
         }
 
-        public async Task DetachUserAsync(ApplicationUser user)
+        public async Task ReloadUserAsync(string userId)
         {
-            await _applicationUserRepository.DetachedAsync(user);
-        }
-
-        public async Task DetachUsersAsync(List<ApplicationUser> users)
-        {
-            foreach (var item in users)
-            {
-                await DetachUserAsync(item);
-            }
+            var user = await _applicationUserRepository.GetByIdAsync(userId);
+            await _applicationUserRepository.ReloadAsync(user);
         }
 
         public async Task<List<ApplicationUser>> GetAdministratorsAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions)
@@ -130,11 +122,10 @@ namespace HES.Core.Services
             return HtmlEncoder.Default.Encode(callbackUrl);
         }
 
-
         public async Task<string> GetCallBackUrl(string email, string domain)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if(user == null)
+            if (user == null)
                 throw new Exception($"User not found.");
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -153,12 +144,14 @@ namespace HES.Core.Services
             if (id == null)
                 throw new ArgumentNullException(nameof(id));
 
-            var applicationUser = await _applicationUserRepository.GetByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id);
 
-            if (applicationUser == null)
+            if (user == null)
                 throw new Exception("User not found");
 
-            return await _applicationUserRepository.DeleteAsync(applicationUser);
+            await _userManager.DeleteAsync(user);
+
+            return user;
         }
 
         public async Task<IList<ApplicationUser>> GetAllAsync()

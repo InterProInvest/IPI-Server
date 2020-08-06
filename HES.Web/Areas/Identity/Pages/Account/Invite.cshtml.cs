@@ -1,8 +1,11 @@
 using HES.Core.Entities;
+using HES.Core.Enums;
+using HES.Core.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
@@ -14,12 +17,17 @@ namespace HES.Web.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IHubContext<RefreshHub> _hubContext;
         private readonly ILogger<InviteModel> _logger;
 
-        public InviteModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<InviteModel> logger)
+        public InviteModel(UserManager<ApplicationUser> userManager,
+                           SignInManager<ApplicationUser> signInManager,
+                           IHubContext<RefreshHub> hubContext,
+                           ILogger<InviteModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _hubContext = hubContext;
             _logger = logger;
         }
 
@@ -83,6 +91,7 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 {
                     user.EmailConfirmed = true;
                     await _userManager.UpdateAsync(user);
+                    await _hubContext.Clients.All.SendAsync(RefreshPage.AdministratorsUpdated, user.Id);
                     _logger.LogInformation($"User {user} accepted the invitation.");         
                     return LocalRedirect("/");
                 }
