@@ -13,6 +13,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
     public partial class TwoFactorAuthenticationPage : ComponentBase
     {
         [Inject] public HttpClient HttpClient { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<TwoFactorAuthenticationPage> Logger { get; set; }
 
@@ -25,6 +26,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
         {
             try
             {
+                await BreadcrumbsService.SetTwoFactorAuthentication();
+
                 var response = await HttpClient.GetAsync("api/Identity/GetTwoFactorInfo");
 
                 if (!response.IsSuccessStatusCode)

@@ -15,6 +15,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
     public partial class ProfilePage : ComponentBase
     {
         [Inject] public HttpClient HttpClient { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<ProfilePage> Logger { get; set; }
 
@@ -29,6 +30,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
         {
             try
             {
+                await BreadcrumbsService.SetProfile();
+
                 var response = await HttpClient.GetAsync("api/Identity/GetUser");
 
                 if (!response.IsSuccessStatusCode)

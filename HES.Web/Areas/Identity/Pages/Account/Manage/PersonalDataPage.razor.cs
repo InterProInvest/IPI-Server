@@ -17,6 +17,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
     public partial class PersonalDataPage : ComponentBase
     {
         [Inject] public HttpClient HttpClient { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IJSRuntime JSRuntime { get; set; }
         [Inject] public ILogger<PersonalDataPage> Logger { get; set; }
@@ -30,6 +31,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
         {
             try
             {
+                await BreadcrumbsService.SetPersonalData();
+
                 var response = await HttpClient.GetAsync("api/Identity/GetUser");
 
                 if (!response.IsSuccessStatusCode)

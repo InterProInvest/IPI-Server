@@ -211,5 +211,95 @@ namespace HES.Core.Services
 
             await OnSet?.Invoke(Breadcrumbs);
         }
+
+        public async Task SetTwoFactorAuthentication()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Two Factor Authentication" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetShowRecoveryCodes()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Show Recovery Codes" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetResetAuthenticator()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Reset Authenticator" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetProfile()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Profile" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetPersonalData()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Personal Data" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetGenerateRecoveryCodes()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Generate Recovery Codes" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetEnableAuthenticator()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Enable Authenticator" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetDisable2fa()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Disable 2FA" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
+        
+        public async Task SetDeletePersonalData()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Delete Personal Data" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
     }
 }

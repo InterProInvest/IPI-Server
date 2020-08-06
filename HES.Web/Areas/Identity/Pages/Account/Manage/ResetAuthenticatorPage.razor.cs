@@ -12,6 +12,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
     {
         [Inject] public HttpClient HttpClient { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<ResetAuthenticatorPage> Logger { get; set; }
 
@@ -23,6 +24,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
         {           
             try
             {
+                await BreadcrumbsService.SetResetAuthenticator();
+
                 var response = await HttpClient.PostAsync("api/Identity/ResetAuthenticatorKey", new StringContent(string.Empty));
 
                 if (!response.IsSuccessStatusCode)

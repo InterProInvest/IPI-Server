@@ -39,7 +39,6 @@ namespace HES.Core.Services
             _getEntities = getEntities;
             _getEntitiesCount = getEntitiesCount;
             _modalDialogService.OnClose += LoadTableDataAsync;
-            _logger.LogDebug($"+= {DataLoadingOptions.Filter.GetType()}");
             DataLoadingOptions.SortedColumn = sortedColumn;
             DataLoadingOptions.SortDirection = sortDirection;
             DataLoadingOptions.EntityId = entityId;
@@ -122,7 +121,6 @@ namespace HES.Core.Services
         public void Dispose()
         {
             _modalDialogService.OnClose -= LoadTableDataAsync;
-            _logger.LogDebug($"-= {DataLoadingOptions.Filter.GetType()}");
         }
     }
 }
