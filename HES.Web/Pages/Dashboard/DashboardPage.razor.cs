@@ -21,11 +21,13 @@ namespace HES.Web.Pages.Dashboard
         public DashboardCard EmployeesCard { get; set; }
         public DashboardCard HardwareVaultsCard { get; set; }
         public DashboardCard WorkstationsCard { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
+                await BreadcrumbsService.SetDashboard();
                 ServerdCard = await DashboardService.GetServerCardAsync();
                 ServerdCard.RightAction = ShowHardwareVaultTaskAsync;
                 if (ServerdCard.Notifications.FirstOrDefault(x => x.Page == "long-pending-tasks") != null)
@@ -33,7 +35,7 @@ namespace HES.Web.Pages.Dashboard
                 EmployeesCard = await DashboardService.GetEmployeesCardAsync();
                 HardwareVaultsCard = await DashboardService.GetHardwareVaultsCardAsync();
                 WorkstationsCard = await DashboardService.GetWorkstationsCardAsync();
-                await BreadcrumbsService.SetDashboard();
+                Initialized = true;
             }
             catch (Exception ex)
             {

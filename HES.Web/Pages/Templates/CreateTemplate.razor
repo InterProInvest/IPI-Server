@@ -6,6 +6,7 @@ else
 {
     <EditForm Model="Template" OnValidSubmit="CreateTemplateAsync">
         <DataAnnotationsValidator />
+        <ValidationErrorMessage @ref="ValidationErrorMessage" />
         <div class="form-group">
             <label class="control-label text-gray">Name</label>
             <InputText @bind-Value="Template.Name" class="form-control text-navyblue" />

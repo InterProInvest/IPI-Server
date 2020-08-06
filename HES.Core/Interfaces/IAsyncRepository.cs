@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IAsyncRepository<T> where T : class
+    public interface IAsyncRepository<T> : IDisposable where T : class
     {
         IQueryable<T> Query();
         IQueryable<T> SqlQuery(string sql);

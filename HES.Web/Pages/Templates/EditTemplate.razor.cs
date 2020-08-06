@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Templates
 
         protected override void OnInitialized()
         {
-            ModalDialogService.OnCancel += CancelAsync;
+            ModalDialogService.OnCancel += OnCancelAsync;
 
             EntityBeingEdited = MemoryCache.TryGetValue(Template.Id, out object _);
             if (!EntityBeingEdited)
@@ -57,18 +57,19 @@ namespace HES.Web.Pages.Templates
             {
                 Logger.LogError(ex.Message, ex);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await CancelAsync();
+                await ModalDialogService.CancelAsync();       
             }
         }
 
-        private async Task CancelAsync()
+        private async Task OnCancelAsync()
         {
             await TemplateService.UnchangedTemplateAsync(Template);
-            ModalDialogService.OnCancel -= CancelAsync;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= OnCancelAsync;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Template.Id);
         }

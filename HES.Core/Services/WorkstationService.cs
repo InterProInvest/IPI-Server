@@ -375,62 +375,62 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<List<WorkstationProximityVault>> GetProximityVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string workstationId)
+        public async Task<List<WorkstationProximityVault>> GetProximityVaultsAsync(DataLoadingOptions<WorkstationDetailsFilter> dataLoadingOptions)
         {
             var query = _workstationProximityVaultRepository
                 .Query()
                 .Include(d => d.HardwareVault.Employee.Department.Company)
-                .Where(d => d.WorkstationId == workstationId)
+                .Where(d => d.WorkstationId == dataLoadingOptions.EntityId)
                 .AsQueryable();
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.HardwareVaultId.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.HardwareVaultId.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             // Sort Direction
-            switch (sortColumn)
+            switch (dataLoadingOptions.SortedColumn)
             {
                 case nameof(WorkstationProximityVault.HardwareVault):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultId) : query.OrderByDescending(x => x.HardwareVaultId);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultId) : query.OrderByDescending(x => x.HardwareVaultId);
                     break;
                 case nameof(WorkstationProximityVault.HardwareVault.Employee):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.FirstName).ThenBy(x => x.HardwareVault.Employee.LastName) : query.OrderByDescending(x => x.HardwareVault.Employee.FirstName).ThenByDescending(x => x.HardwareVault.Employee.LastName);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.FirstName).ThenBy(x => x.HardwareVault.Employee.LastName) : query.OrderByDescending(x => x.HardwareVault.Employee.FirstName).ThenByDescending(x => x.HardwareVault.Employee.LastName);
                     break;
                 case nameof(WorkstationProximityVault.HardwareVault.Employee.Department.Company):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Company.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Company.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Company.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Company.Name);
                     break;
                 case nameof(WorkstationProximityVault.HardwareVault.Employee.Department):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Name);
                     break;
             }
 
-            return await query.Skip(skip).Take(take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
         }
 
-        public async Task<int> GetProximityVaultsCountAsync(string searchText, string workstationId)
+        public async Task<int> GetProximityVaultsCountAsync(DataLoadingOptions<WorkstationDetailsFilter> dataLoadingOptions)
         {
             var query = _workstationProximityVaultRepository
                             .Query()
                             .Include(d => d.HardwareVault.Employee.Department.Company)
-                            .Where(d => d.WorkstationId == workstationId)
+                            .Where(d => d.WorkstationId == dataLoadingOptions.EntityId)
                             .AsQueryable();
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.HardwareVaultId.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.HardwareVaultId.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();

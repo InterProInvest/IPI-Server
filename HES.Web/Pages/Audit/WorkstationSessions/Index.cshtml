@@ -1,9 +1,0 @@
-﻿@page
-@model HES.Web.Pages.Audit.WorkstationSessions.IndexModel
-
-@{
-    ViewData["Title"] = "Sessions";
-    ViewData["ActivePage"] = MenuNavPages.Audit;
-    ViewData["AuditPage"] = AuditNavPages.WorkstationSessions;
-}
-<component type="typeof(WorkstationSessionsPage)" render-mode="Server" param-DashboardFilter="@Model.DashboardFilter"/>

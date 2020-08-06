@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Audit.WorkstationSessions
 {
-    public partial class WorkstationSessionsPage : ComponentBase
+    public partial class WorkstationSessionsPage : ComponentBase, IDisposable
     {
         [Inject] public IMainTableService<WorkstationSession, WorkstationSessionFilter> MainTableService { get; set; }
         [Inject] public IWorkstationAuditService WorkstationAuditService { get; set; }
@@ -33,6 +33,11 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
 
             await BreadcrumbsService.SetAuditWorkstationSessions();
             await MainTableService.InitializeAsync(WorkstationAuditService.GetWorkstationSessionsAsync, WorkstationAuditService.GetWorkstationSessionsCountAsync, StateHasChanged, nameof(WorkstationSession.StartDate), ListSortDirection.Descending);
+        }
+
+        public void Dispose()
+        {
+            MainTableService.Dispose();
         }
     }
 }

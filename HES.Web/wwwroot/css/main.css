@@ -1,4 +1,6 @@
-﻿.invalid {
+﻿/*#region Blazor*/
+
+.invalid {
     border-color: #dc3545;
 }
 
@@ -25,11 +27,13 @@
         top: 0.5rem;
     }
 
+/*#endregion*/
+
 .loading-page {
     position: fixed;
     top: 0;
     left: 250px;
-    z-index: 1051;
+    z-index: 100;
     width: calc(100vw - 250px);
     height: 100%;
     overflow: hidden;
@@ -48,7 +52,7 @@
     position: fixed;
     top: 119px;
     left: 250px;
-    z-index: 1051;
+    z-index: 100;
     width: calc(100vw - 250px);
     height: 100%;
     overflow: hidden;

@@ -33,11 +33,12 @@ namespace HES.Web.Pages.Workstations
 
         protected override async Task OnInitializedAsync()
         {
+            ModalDialogService.OnCancel += OnCancel;
+
             EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
             if (!EntityBeingEdited)
                 MemoryCache.Set(Workstation.Id, Workstation);
 
-            ModalDialogService.OnCancel += OnCancel;
             Companies = await OrgStructureService.GetCompaniesAsync();
 
             if (Workstation.DepartmentId == null)
@@ -79,11 +80,12 @@ namespace HES.Web.Pages.Workstations
         private async Task OnCancel()
         {
             await WorkstationService.UnchangedWorkstationAsync(Workstation);
-            ModalDialogService.OnCancel -= OnCancel;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= OnCancel;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Workstation.Id);
         }

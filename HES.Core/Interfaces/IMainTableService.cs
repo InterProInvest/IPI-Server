@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IMainTableService<TItem, TFilter> where TFilter : class, new()
+    public interface IMainTableService<TItem, TFilter> : IDisposable where TFilter : class, new()
     {
         DataLoadingOptions<TFilter> DataLoadingOptions { get; set; }
         public TItem SelectedEntity { get; set; }

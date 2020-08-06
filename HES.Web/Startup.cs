@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace HES.Web
@@ -106,8 +107,11 @@ namespace HES.Web
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<ILdapService, LdapService>();
             services.AddScoped<ISoftwareVaultService, SoftwareVaultService>();
+            services.AddScoped<IBreadcrumbsService, BreadcrumbsService>();
 
-            services.AddSingleton<IBreadcrumbsService, BreadcrumbsService>();
+            services.AddScoped<HttpClient>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
@@ -171,6 +175,19 @@ namespace HES.Web
             {
                 config.Events = new CookieAuthenticationEvents
                 {
+                    OnRedirectToAccessDenied = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api"))
+                        {
+                            context.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+                        }
+                        else
+                        {
+                            context.Response.Redirect(context.RedirectUri);
+                        }
+
+                        return Task.CompletedTask;
+                    },
                     OnRedirectToLogin = context =>
                     {
                         if (context.Request.Path.StartsWithSegments("/api"))
@@ -192,24 +209,11 @@ namespace HES.Web
                 {
                     options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage", "RequireAdministratorRole");
                     options.Conventions.AuthorizeAreaFolder("Identity", "/Account/External");
-
-                    options.Conventions.AddPageRoute("/Dashboard/Index", "");
-                    options.Conventions.AuthorizeFolder("/Dashboard", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Employees", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Groups", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/HardwareVaults", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/SoftwareVaults", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
                 })
                 .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddControllers();
-            services.AddRazorPages().AddRazorRuntimeCompilation();
+            services.AddRazorPages();
             services.AddServerSideBlazor();
 
             // Localization Options
@@ -284,8 +288,8 @@ namespace HES.Web
                 endpoints.MapHub<AppHub>("/appHub");
                 endpoints.MapHub<RefreshHub>("/refreshHub");
                 endpoints.MapControllers();
-                endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
 
             app.UseCookiePolicy();

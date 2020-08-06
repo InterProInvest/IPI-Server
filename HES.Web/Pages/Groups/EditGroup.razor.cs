@@ -33,12 +33,11 @@ namespace HES.Web.Pages.Groups
             try
             {
                 ModalDialogService.OnCancel += ModalDialogService_OnCancel;
+
                 Group = await GroupService.GetGroupByIdAsync(GroupId);
 
                 if (Group == null)
-                {
                     throw new Exception("Group not found");
-                }
 
                 EntityBeingEdited = MemoryCache.TryGetValue(Group.Id, out object _);
                 if (!EntityBeingEdited)
@@ -56,7 +55,7 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                await GroupService.EditGroupAsync(Group);            
+                await GroupService.EditGroupAsync(Group);
                 ToastService.ShowToast("Group updated.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, Group.Id);
                 await ModalDialogService.CloseAsync();
@@ -76,14 +75,14 @@ namespace HES.Web.Pages.Groups
         private async Task ModalDialogService_OnCancel()
         {
             await GroupService.UnchangedGroupAsync(Group);
-            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Group.Id);
         }
-
     }
 }

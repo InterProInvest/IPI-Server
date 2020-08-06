@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Parameters
 {
-    public partial class Parameters : ComponentBase
+    public partial class Parameters : ComponentBase, IDisposable
     {
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
@@ -26,9 +27,9 @@ namespace HES.Web.Pages.Settings.Parameters
 
         protected override async Task OnInitializedAsync()
         {
+            await InitializeHubAsync();
             await BreadcrumbsService.SetParameters();
             await LoadDataSettingsAsync();
-            await InitializeHubAsync();
             Initialized = true;
         }
 
@@ -107,7 +108,7 @@ namespace HES.Web.Pages.Settings.Parameters
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }

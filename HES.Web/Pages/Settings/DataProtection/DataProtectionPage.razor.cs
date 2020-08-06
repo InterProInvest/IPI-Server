@@ -4,11 +4,12 @@ using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.DataProtection
 {
-    public partial class DataProtectionPage : ComponentBase
+    public partial class DataProtectionPage : ComponentBase, IDisposable
     {
         [Inject] public IDataProtectionService DataProtectionService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
@@ -24,8 +25,8 @@ namespace HES.Web.Pages.Settings.DataProtection
         protected override async Task OnInitializedAsync()
         {
             ProtectionStatus();
-            await BreadcrumbsService.SetDataProtection();
             await InitializeHubAsync();
+            await BreadcrumbsService.SetDataProtection();
         }
 
         private void ProtectionStatus()
@@ -86,6 +87,11 @@ namespace HES.Web.Pages.Settings.DataProtection
             };
 
             await ModalDialogService.ShowAsync("Disable Data Protection", body, ModalDialogSize.Default);
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }

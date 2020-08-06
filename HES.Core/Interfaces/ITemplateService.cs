@@ -12,7 +12,7 @@ namespace HES.Core.Interfaces
     public interface ITemplateService
     {
         IQueryable<Template> Query();
-        Task<Template> GetByIdAsync(dynamic id);
+        Task<Template> GetByIdAsync(string id);
         Task<List<Template>> GetTemplatesAsync();
         Task<List<Template>> GetTemplatesAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions);
         Task ReloadTemplateAsync(string templateId);

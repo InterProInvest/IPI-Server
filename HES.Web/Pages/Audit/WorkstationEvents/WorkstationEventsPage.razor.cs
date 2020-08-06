@@ -2,12 +2,13 @@
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Audit;
 using Microsoft.AspNetCore.Components;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Audit.WorkstationEvents
 {
-    public partial class WorkstationEventsPage : ComponentBase
+    public partial class WorkstationEventsPage : ComponentBase, IDisposable
     {
         [Inject] public IMainTableService<WorkstationEvent, WorkstationEventFilter> MainTableService { get; set; }
         [Inject] public IWorkstationAuditService WorkstationAuditService { get; set; }
@@ -17,6 +18,11 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         {
             await BreadcrumbsService.SetAuditWorkstationEvents();
             await MainTableService.InitializeAsync(WorkstationAuditService.GetWorkstationEventsAsync, WorkstationAuditService.GetWorkstationEventsCountAsync, StateHasChanged, nameof(WorkstationEvent.Date), ListSortDirection.Descending);
+        }
+
+        public void Dispose()
+        {
+            MainTableService.Dispose();
         }
     }
 }

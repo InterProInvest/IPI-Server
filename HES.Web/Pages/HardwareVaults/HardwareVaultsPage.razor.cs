@@ -46,9 +46,9 @@ namespace HES.Web.Pages.HardwareVaults
                     break;
             }
 
+            await InitializeHubAsync();
             await BreadcrumbsService.SetHardwareVaults();
             await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
-            await InitializeHubAsync();
         }
 
         public async Task ImportVaultsAsync()
@@ -175,7 +175,8 @@ namespace HES.Web.Pages.HardwareVaults
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

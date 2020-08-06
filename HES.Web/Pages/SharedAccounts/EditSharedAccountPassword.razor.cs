@@ -29,10 +29,17 @@ namespace HES.Web.Pages.SharedAccounts
 
         protected override void OnInitialized()
         {
+            ModalDialogService.OnCancel += OnCancelAsync;
             EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
             if (!EntityBeingEdited)
                 MemoryCache.Set(Account.Id, Account);
         }
+
+        private async Task OnCancelAsync()
+        {
+            await SharedAccountService.UnchangedAsync(Account);
+        }
+
         private async Task EditAccoountPasswordAsync()
         {
             try
@@ -53,6 +60,8 @@ namespace HES.Web.Pages.SharedAccounts
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= OnCancelAsync;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Account.Id);
         }

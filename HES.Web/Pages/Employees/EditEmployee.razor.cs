@@ -36,11 +36,12 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
+            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
+
             EntityBeingEdited = MemoryCache.TryGetValue(Employee.Id, out object _);
             if (!EntityBeingEdited)
                 MemoryCache.Set(Employee.Id, Employee);
 
-            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
             Companies = await OrgStructureService.GetCompaniesAsync();
 
             if (Employee.DepartmentId == null)
@@ -91,11 +92,12 @@ namespace HES.Web.Pages.Employees
         private async Task ModalDialogService_OnCancel()
         {
             await EmployeeService.UnchangedEmployeeAsync(Employee);
-            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Employee.Id);
         }

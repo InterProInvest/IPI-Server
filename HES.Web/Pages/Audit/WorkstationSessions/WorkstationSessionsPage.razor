@@ -1,4 +1,8 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Audit/WorkstationSessions"
+@page "/Audit/WorkstationSessions/{DashboardFilter}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -108,7 +112,7 @@ else
                     {
                     <span class="badge badge-success">Active</span>
                     }
-            </td>          
+            </td>
             <td>
                 @context.UnlockedBy
             </td>

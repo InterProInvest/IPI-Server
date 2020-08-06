@@ -21,9 +21,9 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
+            await InitializeHubAsync();
             await BreadcrumbsService.SetEmployees();
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
-            await InitializeHubAsync();
         }
 
         private async Task ImportEmployeesFromAdAsync()
@@ -42,7 +42,7 @@ namespace HES.Web.Pages.Employees
         {
             await InvokeAsync(() =>
             {
-                NavigationManager.NavigateTo($"/Employees/Details?id={MainTableService.SelectedEntity.Id}", true);
+                NavigationManager.NavigateTo($"/Employees/Details/{MainTableService.SelectedEntity.Id}");
             });
         }
 
@@ -103,7 +103,8 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

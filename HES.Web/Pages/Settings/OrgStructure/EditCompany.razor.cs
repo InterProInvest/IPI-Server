@@ -62,11 +62,12 @@ namespace HES.Web.Pages.Settings.OrgStructure
         private async Task ModalDialogService_OnCancel()
         {
             await OrgStructureService.UnchangedCompanyAsync(Company);
-            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
         }
 
         public void Dispose()
         {
+            ModalDialogService.OnCancel -= ModalDialogService_OnCancel;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Company.Id);
         }

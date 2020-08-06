@@ -22,9 +22,9 @@ namespace HES.Web.Pages.Templates
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
-            await BreadcrumbsService.SetTemplates();
             await InitializeHubAsync();
+            await BreadcrumbsService.SetTemplates();
+            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
         }
 
         private async Task CreateTemplateAsync()
@@ -75,7 +75,7 @@ namespace HES.Web.Pages.Templates
             {
                 if (templateId != null)
                     await TemplateService.ReloadTemplateAsync(templateId);
-                
+
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -84,8 +84,9 @@ namespace HES.Web.Pages.Templates
         }
 
         public void Dispose()
-        {
-            _ = hubConnection.DisposeAsync();
+        {           
+            _ = hubConnection?.DisposeAsync();
+            MainTableService.Dispose();
         }
     }
 }

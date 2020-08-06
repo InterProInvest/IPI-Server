@@ -4,6 +4,7 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVaults;
+using HES.Core.Models.Web.Workstations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,6 @@ namespace HES.Web.Pages.Workstations
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<AddProximityVault> Logger { get; set; }
         [Inject] IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
         [Parameter] public string WorkstationId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
@@ -60,8 +60,15 @@ namespace HES.Web.Pages.Workstations
                 Filter = filter
             });
 
-            var count = await WorkstationService.GetProximityVaultsCountAsync(string.Empty, WorkstationId);
-            var proximityVaults = await WorkstationService.GetProximityVaultsAsync(0, count, nameof(WorkstationProximityVault.HardwareVaultId), ListSortDirection.Ascending, string.Empty, WorkstationId);
+            var count = await WorkstationService.GetProximityVaultsCountAsync(new DataLoadingOptions<WorkstationDetailsFilter>() { EntityId = WorkstationId });
+            var proximityVaultFilter = new DataLoadingOptions<WorkstationDetailsFilter>()
+            {
+                Take = count,
+                SortedColumn = nameof(WorkstationProximityVault.HardwareVaultId),
+                SortDirection = ListSortDirection.Ascending,
+                EntityId = WorkstationId
+            };
+            var proximityVaults = await WorkstationService.GetProximityVaultsAsync(proximityVaultFilter);
             AlreadyAdded = proximityVaults.Count > 0;
 
             HardwareVaults = HardwareVaults.Where(x => !proximityVaults.Select(s => s.HardwareVaultId).Contains(x.Id)).ToList();
@@ -96,7 +103,6 @@ namespace HES.Web.Pages.Workstations
 
                 await WorkstationService.AddProximityVaultAsync(WorkstationId, SelectedHardwareVault.Id);
                 await RemoteWorkstationConnectionsService.UpdateProximitySettingsAsync(WorkstationId, await WorkstationService.GetProximitySettingsAsync(WorkstationId));
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Vault added", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.WorkstationsDetails, WorkstationId);
                 await ModalDialogService.CloseAsync();

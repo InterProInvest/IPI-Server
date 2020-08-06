@@ -1,20 +1,13 @@
 ﻿$(document).ready(function () {
-    $('.loading').removeClass('d-flex');
-    $('.loading').addClass('d-none');
-
     var toggled = localStorage.getItem('ToggledSidebar');
     if (toggled === 'true') {
         ToggleSidebarClass();
     }
-
-    $('#collapseAudit').on('show.bs.collapse', function () {
-        $('#collapseSettings').collapse('hide');
-    });
-
-    $('#collapseSettings').on('show.bs.collapse', function () {
-        $('#collapseAudit').collapse('hide');
-    });
 });
+
+function collapseHide(elementId) {
+    $('#' + elementId).collapse('hide');
+}
 
 function ToggleSidebar() {
     ToggleSidebarClass();
@@ -31,23 +24,11 @@ function ToggleSidebar() {
 function ToggleSidebarClass() {
     $('.custom-sidebar').toggleClass('toggled');
     $('.page_labels').toggleClass('toggled');
-    $('.sidebar-settings').toggleClass('toggled');
+    $('.sidebar-collapse').toggleClass('toggled');
     $('.icon-arrow').toggleClass('toggled');
     $('.copyright').toggleClass('toggled');
     $('.loading').toggleClass('toggled');
     $('.icon-hideez').toggleClass('toggled');
-}
-
-function createBreadcrumbs(breadcrumbs) {
-    $('#breadcrumb').toggleClass('d-none');
-    for (var i = 0; i < breadcrumbs.length; i++) {
-        if (breadcrumbs[i].active) {
-            $('.breadcrumb').append('<li class="breadcrumb-item active">' + breadcrumbs[i].content + '</li>');
-        }
-        else {
-            $('.breadcrumb').append('<li class="breadcrumb-item"><a href="' + breadcrumbs[i].link + '">' + breadcrumbs[i].content + '</a ></li>');
-        }
-    }
 }
 
 function showSpinner(elementId) {
@@ -58,24 +39,43 @@ function toggleModalDialog(dialogId) {
     $('#' + dialogId).modal('toggle');
 }
 
-function triggerCheckbox(checkboxId) {
-    var chkb = $('#' + checkboxId);
-    chkb.trigger('click');
-}
-
-function toggleCheckbox(checkboxId) {
-    var chkb = $('#' + checkboxId);
-    chkb.attr("checked", !chkb.attr("checked"));
-}
-
-function toggleAllCheckboxes(tableId, state) {
-    $('#' + tableId).find('input[type="checkbox"]').each(function () {
-        $(this).attr('checked', state);
-    });
-}
-
 function copyToClipboard() {
     $("#activationCodeInput").attr("type", "Text").select();
     document.execCommand("copy");
     $("#activationCodeInput").attr("type", "Password").select();
+}
+
+function downloadLog(filename, content) {
+    var link = document.createElement('a');
+    link.download = filename;
+    link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(content)
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function generateQr(text) {
+    new QRCode(document.getElementById("qrCode"),
+        {
+            text: text,
+            width: 150,
+            height: 150
+        });
+}
+
+function downloadPersonalData(content) {
+    var link = document.createElement('a');
+    link.download = "PersonalData.json";
+    link.href = "data:text/json;charset=utf-8," + encodeURIComponent(content)
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function setCookie(cookie) {
+    document.cookie = cookie;
+}
+
+function removeCookie(cookieName) {
+    document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }

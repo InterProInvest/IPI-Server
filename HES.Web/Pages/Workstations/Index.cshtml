@@ -1,9 +1,0 @@
-﻿@page
-@model HES.Web.Pages.Workstations.IndexModel
-
-@{
-    ViewData["Title"] = "Workstations";
-    ViewData["ActivePage"] = MenuNavPages.Workstations;
-}
-
-<component type="typeof(WorkstationPage)" render-mode="Server" param-DashboardFilter="@Model.DashboardFilter" />

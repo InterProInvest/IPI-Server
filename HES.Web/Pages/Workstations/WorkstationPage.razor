@@ -1,4 +1,8 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Workstations"
+@page "/Workstations/{DashboardFilter}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -140,15 +144,15 @@ else
             </td>
             <td>
                 @if (context.IsOnline)
-                {
+                    {
                     <span class="badge badge-success" title="Workstation is online">
                         Online
                     </span>
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     @context.LastSeen.ToLocalTime()
-                }
+                    }
             </td>
             <td>
                 @if (context.RFID)

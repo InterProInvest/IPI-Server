@@ -3,13 +3,14 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.OrgStructure
 {
-    public partial class PositionsTab : ComponentBase
+    public partial class PositionsTab : ComponentBase, IDisposable
     {
         [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
@@ -23,12 +24,11 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         private HubConnection hubConnection;
 
-
         protected override async Task OnInitializedAsync()
         {
-            await LoadPositionsAsync();
             await InitializeHubAsync();
             await BreadcrumbsService.SetOrgStructure();
+            await LoadPositionsAsync();
         }
 
         private string GetSortIcon()
@@ -124,7 +124,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            _ = hubConnection?.DisposeAsync();
         }
     }
 }

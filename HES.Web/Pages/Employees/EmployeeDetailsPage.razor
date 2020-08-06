@@ -1,12 +1,11 @@
-﻿@if (!Initialized)
-{
-    <LoadingPage />
-}
-else
+﻿@page "/Employees/Details/{EmployeeId}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+@if (Initialized)
 {
     <div class="row align-items-center details-card mb-3">
         <div class="col">
-            <h1 class="text-navyblue text-break m-0">@Employee.FullName</h1>
+            <h1 class="text-navyblue text-break m-0">@Employee?.FullName</h1>
         </div>
         @*<div class="col-auto pl-1 pr-1">
                 <ButtonSpinner Class="btn-primary" Text="Add Software Vault" Callback="OpenModalAddSoftwareVaultAsync" />
@@ -276,4 +275,12 @@ else
                         DisplayRecords="MainTableService.Entities.Count" />
         }
     </section>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

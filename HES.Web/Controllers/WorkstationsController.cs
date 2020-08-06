@@ -167,8 +167,14 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<WorkstationProximityVault>>> GetProximityVaults(string id)
         {
-            var count = await _workstationService.GetProximityVaultsCountAsync(searchText: string.Empty, workstationId: id);
-            return await _workstationService.GetProximityVaultsAsync(0, count, nameof(WorkstationProximityVault.HardwareVaultId), ListSortDirection.Ascending, string.Empty, id);
+            var count = await _workstationService.GetProximityVaultsCountAsync(new DataLoadingOptions<WorkstationDetailsFilter>() { EntityId = id });
+            return await _workstationService.GetProximityVaultsAsync(new DataLoadingOptions<WorkstationDetailsFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Employee.FullName),
+                SortDirection = ListSortDirection.Ascending,
+                EntityId = id
+            });
         }
 
         [HttpGet("{id}")]
