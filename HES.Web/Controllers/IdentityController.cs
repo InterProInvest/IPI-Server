@@ -6,10 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -328,6 +331,80 @@ namespace HES.Web.Controllers
                     throw new InvalidOperationException($"Unexpected error occurred disabling 2FA for user '{user.Id}'.");
 
                 _logger.LogInformation($"User '{user.Id}' has disabled 2fa.");
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<HttpResponseMessage> DownloadPersonalData()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                _logger.LogInformation($"User '{user.Id}' asked for their personal data.");
+
+                var personalData = new Dictionary<string, string>();
+                var personalDataProps = typeof(ApplicationUser).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
+                
+                foreach (var prop in personalDataProps)
+                    personalData.Add(prop.Name, prop.GetValue(user)?.ToString() ?? "null");
+
+
+                var result = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(personalData)))
+                };
+                result.Content.Headers.ContentDisposition =
+                    new ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = "PersonalData.json"
+                    };
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/json");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent(ex.Message)
+                };
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeletePersonalData(RequiredPassword requiredPassword)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var requirePassword = await _userManager.HasPasswordAsync(user);
+                if (requirePassword)
+                    if (!await _userManager.CheckPasswordAsync(user, requiredPassword.Password))
+                        throw new Exception("Password not correct.");
+
+                var result = await _userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                    throw new InvalidOperationException($"Unexpected error occurred deleteing user '{user.Id}'.");
+
+                await _signInManager.SignOutAsync();
+
+                _logger.LogInformation($"User '{user.Id}' deleted themselves.");
 
                 return Ok();
             }
