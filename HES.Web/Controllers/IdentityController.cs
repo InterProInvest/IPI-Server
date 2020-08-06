@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -74,7 +75,7 @@ namespace HES.Web.Controllers
                     var setEmailResult = await _userManager.SetEmailAsync(user, profileInfo.Email);
 
                     if (!setEmailResult.Succeeded)
-                        throw new InvalidOperationException($"Unexpected error occurred setting email for user with ID '{user.Id}'.");
+                        throw new InvalidOperationException($"Unexpected error occurred setting email for user '{user.Id}'.");
                 }
 
                 if (profileInfo.PhoneNumber != user.PhoneNumber)
@@ -82,7 +83,7 @@ namespace HES.Web.Controllers
                     var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, profileInfo.PhoneNumber);
 
                     if (!setPhoneResult.Succeeded)
-                        throw new InvalidOperationException($"Unexpected error occurred setting phone number for user with ID '{user.Id}'.");
+                        throw new InvalidOperationException($"Unexpected error occurred setting phone number for user '{user.Id}'.");
                 }
 
                 await _signInManager.RefreshSignInAsync(user);
@@ -240,7 +241,7 @@ namespace HES.Web.Controllers
 
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
 
-                _logger.LogInformation($"User with ID '{user.Id}' has enabled 2FA with an authenticator app.");
+                _logger.LogInformation($"User '{user.Id}' has enabled 2FA with an authenticator app.");
 
                 if (await _userManager.CountRecoveryCodesAsync(user) == 0)
                 {
@@ -251,6 +252,84 @@ namespace HES.Web.Controllers
                 }
 
                 return Ok(verifyTwoFactorInfo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ResetAuthenticatorKey()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                await _userManager.SetTwoFactorEnabledAsync(user, false);
+                await _userManager.ResetAuthenticatorKeyAsync(user);
+
+                _logger.LogInformation($"User '{user.Id}' has reset their authentication app key.");
+
+                await _signInManager.RefreshSignInAsync(user);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<string>>> GenerateNewTwoFactorRecoveryCodes()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var isTwoFactorEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+                if (!isTwoFactorEnabled)
+                    throw new InvalidOperationException($"Cannot generate recovery codes for user '{user.Id}' as they do not have 2FA enabled.");
+
+                var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+
+                _logger.LogInformation($"User '{user.Id}' has generated new 2FA recovery codes.");
+
+                return Ok(recoveryCodes.ToList());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DisableTwoFactor()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                    throw new Exception("User is null");
+
+                var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
+                if (!disable2faResult.Succeeded)
+                    throw new InvalidOperationException($"Unexpected error occurred disabling 2FA for user '{user.Id}'.");
+
+                _logger.LogInformation($"User '{user.Id}' has disabled 2fa.");
+
+                return Ok();
             }
             catch (Exception ex)
             {
