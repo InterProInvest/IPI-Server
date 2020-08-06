@@ -49,8 +49,8 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                LoadFailed = true;
                 ErrorMessage = ex.Message;
+                LoadFailed = true;
             }
         }
 
