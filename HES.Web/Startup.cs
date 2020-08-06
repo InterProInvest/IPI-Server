@@ -209,19 +209,6 @@ namespace HES.Web
                 {
                     options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage", "RequireAdministratorRole");
                     options.Conventions.AuthorizeAreaFolder("Identity", "/Account/External");
-
-                    //options.Conventions.AddPageRoute("/Dashboard/Index", "");
-                    //options.Conventions.AuthorizeFolder("/Dashboard", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Employees", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Groups", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/HardwareVaults", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/SoftwareVaults", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
-                    //options.Conventions.AuthorizeFolder("/Logs", "RequireAdministratorRole");
                 })
                 .AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 

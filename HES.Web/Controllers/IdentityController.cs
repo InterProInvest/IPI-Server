@@ -1,6 +1,7 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppUsers;
+using HES.Core.Models.API.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -447,24 +448,24 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Login(AuthDto authDto)
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            if (authDto == null)
+            if (loginDto == null)
             {
-                _logger.LogWarning($"{nameof(authDto)} is null");
+                _logger.LogWarning($"{nameof(loginDto)} is null");
                 return BadRequest(new { error = "CredentialsNull" });
             }
 
             // Find user
-            var user = await _userManager.FindByEmailAsync(authDto.Email);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
             {
-                _logger.LogWarning($"User {authDto.Email} not found");
+                _logger.LogWarning($"User {loginDto.Email} not found");
                 return Unauthorized(new { error = "Unauthorized" });
             }
 
             // Verify password
-            var passwordResult = await _signInManager.PasswordSignInAsync(authDto.Email, authDto.Password, false, lockoutOnFailure: true);
+            var passwordResult = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, lockoutOnFailure: true);
             if (passwordResult.Succeeded)
             {
                 return Ok();
@@ -473,12 +474,12 @@ namespace HES.Web.Controllers
             // Verify two factor
             if (passwordResult.RequiresTwoFactor)
             {
-                if (string.IsNullOrWhiteSpace(authDto.Otp))
+                if (string.IsNullOrWhiteSpace(loginDto.Otp))
                 {
                     return Unauthorized(new { error = "TwoFactorRequired" });
                 }
 
-                var authenticatorCode = authDto.Otp.Replace(" ", string.Empty).Replace("-", string.Empty);
+                var authenticatorCode = loginDto.Otp.Replace(" ", string.Empty).Replace("-", string.Empty);
 
                 var twoFactorResult = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
 
@@ -517,24 +518,24 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IActionResult> AuthN(AuthDto authDto)
+        public async Task<IActionResult> AuthN(LoginDto loginDto)
         {
-            if (authDto == null)
+            if (loginDto == null)
             {
-                _logger.LogWarning($"{nameof(authDto)} is null");
+                _logger.LogWarning($"{nameof(loginDto)} is null");
                 return BadRequest(new { error = "CredentialsNullException" });
             }
 
             // Find user
-            var user = await _userManager.FindByEmailAsync(authDto.Email);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
             {
-                _logger.LogWarning($"User {authDto.Email} not found");
+                _logger.LogWarning($"User {loginDto.Email} not found");
                 return Unauthorized(new { error = "UserNotFoundException" });
             }
 
             // Verify password
-            var passwordResult = await _userManager.CheckPasswordAsync(user, authDto.Password);
+            var passwordResult = await _userManager.CheckPasswordAsync(user, loginDto.Password);
             if (!passwordResult)
             {
                 _logger.LogWarning($"User {user.Email} verify password failed.");
@@ -544,22 +545,22 @@ namespace HES.Web.Controllers
             // Verify two factor
             if (user.TwoFactorEnabled)
             {
-                if (string.IsNullOrWhiteSpace(authDto.Otp))
+                if (string.IsNullOrWhiteSpace(loginDto.Otp))
                 {
                     return Unauthorized(new { error = "TwoFactorRequiredException" });
                 }
 
-                var authenticatorCode = authDto.Otp.Replace(" ", string.Empty).Replace("-", string.Empty);
+                var authenticatorCode = loginDto.Otp.Replace(" ", string.Empty).Replace("-", string.Empty);
 
                 var tokenResult = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, authenticatorCode);
                 if (!tokenResult)
                 {
-                    _logger.LogWarning($"User {authDto.Email} verify 2fa failed.");
+                    _logger.LogWarning($"User {loginDto.Email} verify 2fa failed.");
                     return Unauthorized(new { error = "InvalidAuthenticatorCodeException" });
                 }
             }
 
-            return Ok(new User()
+            return Ok(new UserDto()
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
@@ -567,20 +568,5 @@ namespace HES.Web.Controllers
                 PhoneNumber = user.PhoneNumber
             });
         }
-    }
-
-    public class AuthDto
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string Otp { get; set; }
-    }
-
-    class User
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
     }
 }
