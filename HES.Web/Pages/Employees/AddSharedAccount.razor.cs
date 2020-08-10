@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Employees
                 SortedColumn = nameof(Employee.FullName),
                 SortDirection = ListSortDirection.Ascending
             });
-            SelectedSharedAccount = SharedAccounts.First();
+            SelectedSharedAccount = SharedAccounts.FirstOrDefault();
         }
 
         private async Task AddSharedAccoountAsync()

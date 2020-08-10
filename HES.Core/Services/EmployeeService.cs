@@ -398,9 +398,12 @@ namespace HES.Core.Services
 
             _dataProtectionService.Validate();
 
-            var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            var employee = await GetEmployeeByIdAsync(employeeId);
             if (employee == null)
                 throw new Exception("Employee not found");
+
+            if (employee.HardwareVaults.Count > 0)
+                throw new Exception("Cannot add more than one hardware vault.");
 
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
             if (vault == null)

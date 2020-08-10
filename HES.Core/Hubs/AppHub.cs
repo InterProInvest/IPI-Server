@@ -179,7 +179,7 @@ namespace HES.Core.Hubs
 
                 await InvokeVaultStateChanged(dto.DeviceSerialNo);
                 await CheckVaultStatusAsync(dto);
-                await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
+                //await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
                 return HesResponse.Ok;
             }
             catch (Exception ex)

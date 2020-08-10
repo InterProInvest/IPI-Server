@@ -10,8 +10,7 @@ namespace HES.Core.Interfaces
     public interface IApplicationUserService
     {
         IQueryable<ApplicationUser> Query();
-        Task DetachUserAsync(ApplicationUser user);
-        Task DetachUsersAsync(List<ApplicationUser> users);
+        Task ReloadUserAsync(string userId);
         Task<List<ApplicationUser>> GetAdministratorsAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions);
         Task<int> GetAdministratorsCountAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions);
         Task<string> InviteAdministratorAsync(string email, string domain);

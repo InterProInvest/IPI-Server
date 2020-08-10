@@ -97,16 +97,16 @@ namespace HES.Core.Services
                     Employee employee = null;
                     employee = await _employeeService.ImportEmployeeAsync(user.Employee);
 
-                    try
-                    {
-                        // The employee may already be in the database, so we get his ID and create an account
-                        user.DomainAccount.EmployeeId = employee.Id;
-                        await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
-                    }
-                    catch (AlreadyExistException)
-                    {
-                        // Ignore if a domain account exists
-                    }
+                    //try
+                    //{
+                    //    // The employee may already be in the database, so we get his ID and create an account
+                    //    user.DomainAccount.EmployeeId = employee.Id;
+                    //    await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
+                    //}
+                    //catch (AlreadyExistException)
+                    //{
+                    //    // Ignore if a domain account exists
+                    //}
 
                     if (createGroups && user.Groups != null)
                     {
@@ -144,7 +144,6 @@ namespace HES.Core.Services
                         }
                 });
             }
-
         }
 
         public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(LdapSettings ldapSettings)

@@ -5,6 +5,7 @@ using HES.Core.Models.Web.Users;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
@@ -42,11 +43,21 @@ namespace HES.Web.Pages.Settings.Administrators
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.Administrators, async () =>
+            hubConnection.On<string>(RefreshPage.Administrators, async (userId) =>
             {
-                await ApplicationUserService.DetachUsersAsync(MainTableService.Entities);
+                if (userId != null)
+                    await ApplicationUserService.ReloadUserAsync(userId);
+
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            hubConnection.On<string>(RefreshPage.AdministratorsUpdated, async (userId) =>
+            {
+                if (userId != null)
+                    await ApplicationUserService.ReloadUserAsync(userId);
+
+                await MainTableService.LoadTableDataAsync();
             });
 
             await hubConnection.StartAsync();

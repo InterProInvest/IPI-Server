@@ -52,11 +52,11 @@ namespace HES.Web
             var email_pwd = configuration["EMAIL_PWD"];
             if (email_host != null && email_port != null && email_ssl != null && email_user != null && email_pwd != null)
             {
-                configuration["EmailSettings:Host"] = email_host;
-                configuration["EmailSettings:Port"] = email_port;
-                configuration["EmailSettings:EnableSSL"] = email_ssl;
-                configuration["EmailSettings:UserName"] = email_user;
-                configuration["EmailSettings:Password"] = email_pwd;
+                configuration["EmailSender:Host"] = email_host;
+                configuration["EmailSender:Port"] = email_port;
+                configuration["EmailSender:EnableSSL"] = email_ssl;
+                configuration["EmailSender:UserName"] = email_user;
+                configuration["EmailSender:Password"] = email_pwd;
             }
 
             var srv_name = configuration["SRV_NAME"];

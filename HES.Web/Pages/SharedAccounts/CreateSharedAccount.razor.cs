@@ -100,7 +100,7 @@ namespace HES.Web.Pages.SharedAccounts
                         await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationSharedAccount);
                         break;
                     case WorkstationAccountType.Domain:
-                        await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationSharedAccount);
+                        await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationDomainSharedAccount);
                         break;
                 }
 
