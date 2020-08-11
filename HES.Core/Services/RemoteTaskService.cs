@@ -21,6 +21,8 @@ namespace HES.Core.Services
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly IDataProtectionService _dataProtectionService;
+        private readonly ILdapService _ldapService;
+        private readonly IAppSettingsService _appSettingsService;
         private readonly ILogger<RemoteTaskService> _logger;
         private readonly IHubContext<RefreshHub> _hubContext;
 
@@ -28,6 +30,8 @@ namespace HES.Core.Services
                                  IHardwareVaultTaskService hardwareVaultTaskService,
                                  IAccountService accountService,
                                  IDataProtectionService dataProtectionService,
+                                 ILdapService ldapService,
+                                 IAppSettingsService appSettingsService,
                                  ILogger<RemoteTaskService> logger,
                                  IHubContext<RefreshHub> hubContext)
         {
@@ -35,6 +39,8 @@ namespace HES.Core.Services
             _hardwareVaultTaskService = hardwareVaultTaskService;
             _accountService = accountService;
             _dataProtectionService = dataProtectionService;
+            _ldapService = ldapService;
+            _appSettingsService = appSettingsService;
             _logger = logger;
             _hubContext = hubContext;
         }
@@ -74,6 +80,7 @@ namespace HES.Core.Services
             // Tasks query 
             var query = _hardwareVaultTaskService
                 .TaskQuery()
+                .Include(t => t.HardwareVault)
                 .Include(t => t.Account)
                 .Where(t => t.HardwareVaultId == vaultId);
 
@@ -106,6 +113,13 @@ namespace HES.Core.Services
             switch (task.Operation)
             {
                 case TaskOperation.Create:
+                    if (task.Account.UpdateInActiveDirectory)
+                    {
+                        var ldapSettings = await _appSettingsService.GetLdapSettingsAsync();
+                        if (ldapSettings?.Password == null)
+                            throw new Exception("ADCredentialsRequired"); // TODO use Communication.dll ex
+                        await _ldapService.SetUserPasswordAsync(task.HardwareVault.EmployeeId, task.Password, ldapSettings);         
+                    }
                     await AddAccountAsync(remoteDevice, task);
                     break;
                 case TaskOperation.Update:

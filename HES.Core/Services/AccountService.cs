@@ -79,6 +79,7 @@ namespace HES.Core.Services
             account.Timestamp = timestamp;
             account.Password = null;
             account.OtpSecret = null;
+            account.UpdateInActiveDirectory = false;
             await _accountRepository.UpdateAsync(account);
         }
 

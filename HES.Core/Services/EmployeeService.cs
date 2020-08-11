@@ -639,6 +639,7 @@ namespace HES.Core.Services
                 OtpUpdatedAt = Validation.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
                 Password = _dataProtectionService.Encrypt(personalAccount.Password),
                 OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
+                UpdateInActiveDirectory = personalAccount.UpdateInActiveDirectory,
                 EmployeeId = personalAccount.EmployeeId,
                 StorageId = new StorageId().Data
             };
@@ -717,7 +718,8 @@ namespace HES.Core.Services
                 Name = workstationAccount.Name,
                 Login = $"{workstationAccount.Domain}\\{workstationAccount.UserName}",
                 Password = workstationAccount.Password,
-                EmployeeId = workstationAccount.EmployeeId
+                EmployeeId = workstationAccount.EmployeeId,
+                UpdateInActiveDirectory = workstationAccount.UpdateInActiveDirectory
             };
 
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
