@@ -169,7 +169,7 @@ namespace HES.Core.Services
                     break;
                 case VaultStatus.Active:
                     await CheckPassphraseAsync(remoteDevice, vault.Id);
-                    await CheckTaskAsync(remoteDevice, vault.Id, primaryAccountOnly);
+                    await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, primaryAccountOnly);
                     await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
                     break;
                 case VaultStatus.Locked:
@@ -225,18 +225,6 @@ namespace HES.Core.Services
             var key = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
 
             await remoteDevice.CheckPassphrase(key);
-        }
-
-        private async Task CheckTaskAsync(RemoteDevice remoteDevice, string deviceId, bool primaryAccountOnly)
-        {
-            if (primaryAccountOnly)
-            {
-                await _remoteTaskService.ExecuteRemoteTasks(deviceId, remoteDevice, TaskOperation.Primary);
-            }
-            else
-            {
-                await _remoteTaskService.ExecuteRemoteTasks(deviceId, remoteDevice, TaskOperation.None);
-            }
         }
 
         #endregion

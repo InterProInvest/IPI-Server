@@ -2,7 +2,6 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
@@ -66,36 +65,20 @@ namespace HES.Core.Services
             await _hardwareVaultTaskService.DeleteTaskAsync(task);
         }
 
-        public async Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, TaskOperation operation)
+        public async Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, bool primaryAccountOnly)
         {
             _dataProtectionService.Validate();
 
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
-            // Execute CRUD tasks only if status Active 
-            if (vault.Status != VaultStatus.Active && (operation == TaskOperation.Create || operation == TaskOperation.Update || operation == TaskOperation.Delete))
-                return;
-
-            // Crete Tasks query 
+            // Tasks query 
             var query = _hardwareVaultTaskService
                 .TaskQuery()
                 .Include(t => t.Account)
                 .Where(t => t.HardwareVaultId == vaultId);
 
-            switch (operation)
-            {
-                // For all task operations
-                case TaskOperation.None:
-                    break;
-                // For setting primary account
-                case TaskOperation.Primary:
-                    query = query.Where(x => x.AccountId == vault.Employee.PrimaryAccountId || x.Operation == TaskOperation.Primary);
-                    break;
-                // For current task operation
-                default:
-                    query = query.Where(x => x.Operation == operation);
-                    break;
-            }
+            if (primaryAccountOnly)
+                query = query.Where(x => x.AccountId == vault.Employee.PrimaryAccountId || x.Operation == TaskOperation.Primary);
 
             query = query.OrderBy(x => x.CreatedAt).AsNoTracking();
 
@@ -109,9 +92,6 @@ namespace HES.Core.Services
                     task.OtpSecret = _dataProtectionService.Decrypt(task.OtpSecret);
                     await ExecuteRemoteTask(remoteDevice, task);
                     await TaskCompleted(task.Id);
-
-                    if (task.Operation == TaskOperation.Wipe)
-                        throw new HideezException(HideezErrorCode.DeviceHasBeenWiped); // Further processing is not possible
                 }
 
                 tasks = await query.ToListAsync();

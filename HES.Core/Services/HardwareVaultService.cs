@@ -74,7 +74,7 @@ namespace HES.Core.Services
                 .Include(d => d.Employee.HardwareVaults)
                 .Include(d => d.Employee.SoftwareVaults)
                 .Include(d => d.HardwareVaultProfile)
-                .FirstOrDefaultAsync(m => m.Id == vaultId);
+                .FirstOrDefaultAsync(d => d.Id == vaultId);
         }
 
         public async Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync()
