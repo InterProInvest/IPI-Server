@@ -8,5 +8,8 @@ namespace HES.Core.Models.Web.Accounts
         public string Domain { get; set; }
 
         public bool UpdateActiveDirectoryPassword { get; set; }
+
+        // Temporary solution, for setting a flag for an account
+        public bool UpdateInActiveDirectory { get; set; }
     }
 }

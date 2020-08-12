@@ -25,6 +25,8 @@ namespace HES.Core.Models.Web.Accounts
 
         public string OtpSecret { get; set; }
 
+        public bool UpdateInActiveDirectory { get; set; }
+
         [Required]
         public string EmployeeId { get; set; }
     }

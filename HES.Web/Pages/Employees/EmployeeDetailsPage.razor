@@ -10,7 +10,6 @@
         @*<div class="col-auto pl-1 pr-1">
                 <ButtonSpinner Class="btn-primary" Text="Add Software Vault" Callback="OpenModalAddSoftwareVaultAsync" />
             </div>*@
-
         <div class="col-auto pl-1 pr-1">
             <button type="button" @onclick="OpenDialogAddHardwareVaultAsync" class="btn btn-primary" title="@(Employee.HardwareVaults.Count > 0 ? "Cannot add more than one hardware vault." : "")" disabled="@(Employee.HardwareVaults.Count > 0)">
                 Add Hardware Vault
@@ -131,6 +130,13 @@
                                 <button type="button" @onclick="OpenDialogEditPersonalAccountOtpAsync" class="btn btn-light border mx-2" title="Edit personal account OTP">
                                     <img class="icon-btn" src="/svg/action/otp.svg" />
                                     Edit OTP
+                                </button>
+                            }
+                            @if (MainTableService.SelectedEntity.Login.Split(@"\")[0].Contains(LdapHost ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                            {
+                                <button type="button" @onclick="OpenDialogGenerateAdPasswordAsync" class="btn btn-light border mx-2" title="Generate Active Directory Password">
+                                    <img class="icon-btn" src="/svg/icon_random.svg" />
+                                    Generate Password
                                 </button>
                             }
                         }
