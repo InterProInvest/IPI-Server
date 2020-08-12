@@ -14,6 +14,7 @@ namespace HES.Web.Pages.Employees
     {
         [Inject] public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
         [Inject] public IEmployeeService EmployeeService { get; set; }
+        [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -25,6 +26,7 @@ namespace HES.Web.Pages.Employees
         public bool Initialized { get; set; }
         public bool LoadFailed { get; set; }
         public string ErrorMessage { get; set; }
+        public string LdapHost { get; set; }
 
         private HubConnection hubConnection;
 
@@ -35,6 +37,7 @@ namespace HES.Web.Pages.Employees
                 await InitializeHubAsync();
                 await LoadEmployeeAsync();
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
+                await LoadLdapSettingsAsync();
                 await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
                 Initialized = true;
             }
@@ -52,6 +55,16 @@ namespace HES.Web.Pages.Employees
             if (Employee == null)
                 throw new Exception("Employee not found.");
             StateHasChanged();
+        }
+
+        private async Task LoadLdapSettingsAsync()
+        {
+            var ldapSettings = await AppSettingsService.GetLdapSettingsAsync();
+
+            if (ldapSettings?.Password != null)
+            {
+                LdapHost = ldapSettings.Host.Split(".")[0];
+            }
         }
 
         #region Dialogs
@@ -174,6 +187,19 @@ namespace HES.Web.Pages.Employees
             };
 
             await MainTableService.ShowModalAsync("Edit account otp", body);
+        }
+
+        private async Task OpenDialogGenerateAdPasswordAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(GenerateAdPassword));
+                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Generate AD Password", body);
         }
 
         private async Task OpenDialogDeleteAccountAsync()
