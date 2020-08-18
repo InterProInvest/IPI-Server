@@ -6,6 +6,7 @@ using HES.Core.Models.Web.Workstations;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,12 +24,18 @@ namespace HES.Web.Controllers
         private readonly IWorkstationService _workstationService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<WorkstationsController> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public WorkstationsController(IWorkstationService workstationService, IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService, ILogger<WorkstationsController> logger)
+        public WorkstationsController(
+            IWorkstationService workstationService, 
+            IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService, 
+            ILogger<WorkstationsController> logger,
+            UserManager<ApplicationUser> userManager)
         {
             _workstationService = workstationService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
+            _userManager = userManager;
         }
 
         #region Workstation
@@ -62,6 +69,24 @@ namespace HES.Web.Controllers
                 SortDirection = ListSortDirection.Ascending,
                 Filter = workstationFilter
             });
+        }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> BlockAllWorkstations()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                await _remoteWorkstationConnectionsService.LockAllWorkstations(user);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]

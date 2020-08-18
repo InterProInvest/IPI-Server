@@ -100,6 +100,41 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task SetAlarmStateAsync(AlarmState alarmState)
+        {
+            if (alarmState == null)
+                throw new ArgumentNullException(nameof(alarmState));
+
+            var json = JsonConvert.SerializeObject(alarmState);
+
+            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Alarm);
+
+            if (appSettings == null)
+            {
+                appSettings = new AppSettings()
+                {
+                    Id = ServerConstants.Alarm,
+                    Value = json
+                };
+                await _appSettingsRepository.AddAsync(appSettings);
+            }
+            else
+            {
+                appSettings.Value = json;
+                await _appSettingsRepository.UpdateAsync(appSettings);
+            }
+        }
+
+        public async Task<AlarmState> GetAlarmStateAsync()
+        {
+            var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Alarm);
+
+            if (server == null)
+                return null;
+
+            return JsonConvert.DeserializeObject<AlarmState>(server.Value);
+        }
+
         public async Task<ServerSettings> GetServerSettingsAsync()
         {
             var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Server);

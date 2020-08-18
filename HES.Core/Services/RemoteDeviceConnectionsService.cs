@@ -14,7 +14,7 @@ namespace HES.Core.Services
 {
     public class RemoteDeviceConnectionsService : IRemoteDeviceConnectionsService
     {
-        static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
+        private static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IEmployeeService _employeeService;

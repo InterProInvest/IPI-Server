@@ -19,6 +19,7 @@ namespace HES.Core.Hubs
     public class AppHub : Hub<IRemoteAppConnection>
     {
         private readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
+        private readonly IAppSettingsService _appSettingsService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
@@ -38,6 +39,7 @@ namespace HES.Core.Hubs
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
                       IHubContext<RefreshHub> hubContext,
+                      IAppSettingsService appSettingsService,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
@@ -49,6 +51,7 @@ namespace HES.Core.Hubs
             _licenseService = licenseService;
             _employeeService = employeeService;
             _hubContext = hubContext;
+            _appSettingsService = appSettingsService;
             _logger = logger;
         }
 
@@ -79,7 +82,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var workstationId = GetWorkstationId();
+                var workstationId = await GetWorkstationId();
 
                 _remoteDeviceConnectionsService.OnAppHubDisconnected(workstationId);
                 await _remoteWorkstationConnectionsService.OnAppHubDisconnectedAsync(workstationId);
@@ -116,7 +119,7 @@ namespace HES.Core.Hubs
         public async Task<HesResponse> SaveClientEvents(WorkstationEventDto[] workstationEventsDto)
         {
             // Workstation not approved
-            if (!await _workstationService.CheckIsApprovedAsync(GetWorkstationId()))
+            if (!await _workstationService.CheckIsApprovedAsync(await GetWorkstationId()))
                 return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
 
             if (workstationEventsDto == null)
@@ -146,8 +149,14 @@ namespace HES.Core.Hubs
             return HesResponse.Ok;
         }
 
-        private string GetWorkstationId()
+        private async Task<string> GetWorkstationId()
         {
+            var alarmState = await _appSettingsService.GetAlarmStateAsync();
+
+            if (alarmState != null && alarmState.IsAlarm)
+                throw new Exception("The server has an alarm enabled.");
+
+
             if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
                 return (string)workstationId;
             else
@@ -161,16 +170,21 @@ namespace HES.Core.Hubs
         // Incoming request
         public async Task<HesResponse> OnDeviceConnected(BleDeviceDto dto)
         {
+            var alarmState = await _appSettingsService.GetAlarmStateAsync();
+
+            if (alarmState != null && alarmState.IsAlarm)
+                return new HesResponse(HideezErrorCode.HesUnknownError, "The server has an alarm enabled.");
+
             try
             {
                 // Workstation not approved
-                if (!await _workstationService.CheckIsApprovedAsync(GetWorkstationId()))
+                if (!await _workstationService.CheckIsApprovedAsync(await GetWorkstationId()))
                     return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved.");
 
                 if (dto?.DeviceSerialNo == null)
                     throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
-                _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
+                _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, await GetWorkstationId(), Clients.Caller);
 
                 await OnDevicePropertiesChanged(dto);
 
@@ -197,7 +211,7 @@ namespace HES.Core.Hubs
                 if (!string.IsNullOrEmpty(vaultId))
                 {
                     await InvokeVaultStateChanged(vaultId);
-                    _remoteDeviceConnectionsService.OnDeviceDisconnected(vaultId, GetWorkstationId());
+                    _remoteDeviceConnectionsService.OnDeviceDisconnected(vaultId, await GetWorkstationId());
                     await _employeeService.UpdateLastSeenAsync(vaultId);
                 }
                 return HesResponse.Ok;
@@ -237,13 +251,13 @@ namespace HES.Core.Hubs
 
             if (vault.Status == VaultStatus.Deactivated || vault.Status == VaultStatus.Compromised ||
                 vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved)
-                await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
+                await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, await GetWorkstationId(), primaryAccountOnly: false);
         }
 
         private async Task InvokeVaultStateChanged(string vaultId)
         {
             await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, vaultId);
-
+            
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
             if (vault != null && vault?.EmployeeId != null)
@@ -343,7 +357,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(deviceId, GetWorkstationId(), primaryAccountOnly: true);
+                await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(deviceId, await GetWorkstationId(), primaryAccountOnly: true);
                 _remoteWorkstationConnectionsService.StartUpdateRemoteDevice(deviceId);
                 return HesResponse.Ok;
             }

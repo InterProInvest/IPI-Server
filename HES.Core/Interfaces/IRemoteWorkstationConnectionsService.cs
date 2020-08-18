@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using HES.Core.Entities;
+using HES.Core.Models.Web.AppSettings;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Workstation;
@@ -10,6 +12,8 @@ namespace HES.Core.Interfaces
     {
         void StartUpdateRemoteDevice(IList<string> vaultIds);
         void StartUpdateRemoteDevice(string vaultId);
+        Task<AlarmState> LockAllWorkstations(ApplicationUser applicationUser);
+        Task UnlockAllWorkstations(ApplicationUser applicationUser);
         Task UpdateRemoteDeviceAsync(string vaultId, string workstationId, bool primaryAccountOnly);
         Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfo workstationInfo);
         Task OnAppHubDisconnectedAsync(string workstationId);
