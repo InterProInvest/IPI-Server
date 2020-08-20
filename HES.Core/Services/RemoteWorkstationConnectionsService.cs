@@ -295,7 +295,7 @@ namespace HES.Core.Services
             await _appSettingsService.SetAlarmStateAsync(alarmState);
 
             foreach (var workstationConnection in _workstationConnections)
-                await workstationConnection.Value.SetAlarmState();
+                await workstationConnection.Value.SetAlarmState(true);
 
             return alarmState;
         }
@@ -313,6 +313,10 @@ namespace HES.Core.Services
             };
 
             await _appSettingsService.SetAlarmStateAsync(alarmState);
+
+
+            foreach (var workstationConnection in _workstationConnections)
+                await workstationConnection.Value.SetAlarmState(false);
         }
 
         public static int WorkstationsOnlineCount()

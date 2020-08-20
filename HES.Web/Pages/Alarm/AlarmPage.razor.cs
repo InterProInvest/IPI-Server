@@ -4,11 +4,12 @@ using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.Workstations;
 using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Alarm
 {
-    public partial class AlarmPage : ComponentBase
+    public partial class AlarmPage : ComponentBase, IDisposable
     {
         [Inject] public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
         [Inject] public IWorkstationService WorkstationService { get; set; }
@@ -53,6 +54,11 @@ namespace HES.Web.Pages.Alarm
             };
 
             await MainTableService.ShowModalAsync("Disable alarm", body);
+        }
+
+        public void Dispose()
+        {
+            MainTableService.Dispose();
         }
     }
 }

@@ -57,7 +57,7 @@ namespace HES.Core.Hubs
 
         #region Workstation
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             try
             {
@@ -75,7 +75,7 @@ namespace HES.Core.Hubs
                 _logger.LogCritical(ex.Message);
             }
 
-            return base.OnConnectedAsync();
+            await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -106,6 +106,9 @@ namespace HES.Core.Hubs
                 if (!await _workstationService.CheckIsApprovedAsync(workstationInfo.Id))
                     return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
 
+                if (await CheckAlarmAsync())
+                    return new HesResponse(HideezErrorCode.HesAlarm, "The server has an alarm enabled.");
+
                 return HesResponse.Ok;
             }
             catch (Exception ex)
@@ -118,6 +121,9 @@ namespace HES.Core.Hubs
         // Incomming request
         public async Task<HesResponse> SaveClientEvents(WorkstationEventDto[] workstationEventsDto)
         {
+            if (await CheckAlarmAsync())
+                return new HesResponse(HideezErrorCode.HesAlarm, "The server has an alarm enabled.");
+
             // Workstation not approved
             if (!await _workstationService.CheckIsApprovedAsync(await GetWorkstationId()))
                 return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
@@ -151,16 +157,16 @@ namespace HES.Core.Hubs
 
         private async Task<string> GetWorkstationId()
         {
-            var alarmState = await _appSettingsService.GetAlarmStateAsync();
-
-            if (alarmState != null && alarmState.IsAlarm)
-                throw new Exception("The server has an alarm enabled.");
-
-
             if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
                 return (string)workstationId;
             else
                 throw new Exception("AppHub does not contain WorkstationId!");
+        }
+
+        private async Task<bool> CheckAlarmAsync()
+        {
+            var alarmState = await _appSettingsService.GetAlarmStateAsync();
+            return alarmState != null ? alarmState.IsAlarm : false;
         }
 
         #endregion
@@ -170,10 +176,8 @@ namespace HES.Core.Hubs
         // Incoming request
         public async Task<HesResponse> OnDeviceConnected(BleDeviceDto dto)
         {
-            var alarmState = await _appSettingsService.GetAlarmStateAsync();
-
-            if (alarmState != null && alarmState.IsAlarm)
-                return new HesResponse(HideezErrorCode.HesUnknownError, "The server has an alarm enabled.");
+            if (await CheckAlarmAsync())
+                return new HesResponse(HideezErrorCode.HesAlarm, "The server has an alarm enabled.");
 
             try
             {
