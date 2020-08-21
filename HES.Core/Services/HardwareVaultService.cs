@@ -499,12 +499,17 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vault.Id} not found");
 
+            vault.LastSynced = DateTime.UtcNow;
+            vault.EmployeeId = null;
+            vault.MasterPassword = null;
+            vault.HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId;
             vault.Status = VaultStatus.Ready;
             vault.StatusReason = VaultStatusReason.None;
             vault.StatusDescription = null;
-            vault.MasterPassword = null;
             vault.HasNewLicense = true;
+            vault.NeedSync = false;
             vault.IsStatusApplied = false;
+            vault.Timestamp = 0;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
