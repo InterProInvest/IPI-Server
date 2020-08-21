@@ -100,6 +100,16 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task<AlarmState> GetAlarmStateAsync()
+        {
+            var alarmState = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Alarm);
+
+            if (alarmState == null)
+                return null;
+
+            return JsonConvert.DeserializeObject<AlarmState>(alarmState.Value);
+        }
+
         public async Task SetAlarmStateAsync(AlarmState alarmState)
         {
             if (alarmState == null)
@@ -123,16 +133,6 @@ namespace HES.Core.Services
                 appSettings.Value = json;
                 await _appSettingsRepository.UpdateAsync(appSettings);
             }
-        }
-
-        public async Task<AlarmState> GetAlarmStateAsync()
-        {
-            var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Alarm);
-
-            if (server == null)
-                return null;
-
-            return JsonConvert.DeserializeObject<AlarmState>(server.Value);
         }
 
         public async Task<ServerSettings> GetServerSettingsAsync()

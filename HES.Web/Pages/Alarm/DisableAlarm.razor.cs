@@ -47,7 +47,7 @@ namespace HES.Web.Pages.Alarm
             try
             {
                 await RemoteWorkstationConnections.UnlockAllWorkstations(ApplicationUser);
-                ToastService.ShowToast("All workstations are successfully unlocked", ToastLevel.Success);
+                ToastService.ShowToast("All workstations are unlocked.", ToastLevel.Success);
 
                 await CallBack.InvokeAsync(this);
                 await ModalDialogService.CloseAsync();
