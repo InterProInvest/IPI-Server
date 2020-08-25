@@ -1,28 +1,30 @@
-﻿using HES.Core.Entities;
-using HES.Core.Interfaces;
+﻿using HES.Core.Interfaces;
+using HES.Core.Models.Web;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.Workstations;
+using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
-using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Alarm
 {
-    public partial class AlarmPage : ComponentBase, IDisposable
+    public partial class AlarmPage : ComponentBase
     {
-        [Inject] public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
         [Inject] public IWorkstationService WorkstationService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
 
         public AlarmState AlarmState { get; set; }
+        public int WorkstationOnline { get; set; }
+        public int WorkstationCount { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await BreadcrumbsService.SetAlarm();
             await GetAlarmState();
-            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, StateHasChanged, nameof(Workstation.IsOnline));
+            WorkstationOnline = RemoteWorkstationConnectionsService.WorkstationsOnlineCount();
+            WorkstationCount = await WorkstationService.GetWorkstationsCountAsync(new DataLoadingOptions<WorkstationFilter>());
         }
 
         private async Task GetAlarmState()
@@ -42,7 +44,7 @@ namespace HES.Web.Pages.Alarm
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Turn on alarm", body);
+            await ModalDialogService.ShowAsync("Turn on alarm", body);
         }
 
         private async Task DisableAlarmAsync()
@@ -54,12 +56,7 @@ namespace HES.Web.Pages.Alarm
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Turn off alarm", body);
-        }
-
-        public void Dispose()
-        {
-            MainTableService.Dispose();
+            await ModalDialogService.ShowAsync("Turn off alarm", body);
         }
     }
 }

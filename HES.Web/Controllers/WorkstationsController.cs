@@ -74,7 +74,7 @@ namespace HES.Web.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> BlockAllWorkstations()
+        public async Task<IActionResult> LockAllWorkstations()
         {
             try
             {

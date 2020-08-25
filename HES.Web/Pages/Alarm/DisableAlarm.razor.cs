@@ -19,7 +19,6 @@ namespace HES.Web.Pages.Alarm
         [Inject] public UserManager<ApplicationUser> UserManager { get; set; }
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnections { get; set; }
-
         [Parameter] public EventCallback CallBack { get; set; }
 
         public string UserConfirmPassword { get; set; }

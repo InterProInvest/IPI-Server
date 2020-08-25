@@ -8,102 +8,89 @@
 }
 else
 {
-    @if (AlarmState.IsAlarm)
-    {
-        <div class="card mb-3">
-            <div class="card-body text-center text-sm-left">
-                <button type="button" @onclick="DisableAlarmAsync" class="btn btn-success" title="Unlock all workstations">
-                    <img src="/svg/icon-lock-open.svg" />
-                    Turn off alarm
-                </button>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-8">
+                <div class="card mb-3">
+                    <div class="card-body text-center">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-md-10 col-xl-8">
+                                <img style="width:120px;" src="/svg/logo-lock.svg" />
+                                <h2>Alarm Button</h2>
+                                <p class="text-muted">
+                                    This button allows you to remotely lock workstations and block the connection of hardware vaults.
+                                </p>
+                                @if (AlarmState.IsAlarm)
+                                {
+                                    <button type="button" @onclick="DisableAlarmAsync" class="btn btn-success" title="Unlock all workstations">
+                                        <img src="/svg/icon-lock-open.svg" />
+                                        Turn Off
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" @onclick="EnableAlarmAsync" class="btn btn-danger" title="Lock all workstations">
+                                        <img src="/svg/icon-lock.svg" />
+                                        Turn On
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">
+                                    Workstations Online
+                                </h6>
+                                <span class="h2 mb-0">
+                                    @WorkstationOnline
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">
+                                    Workstations Count
+                                </h6>
+                                <span class="h2 mb-0">
+                                    @WorkstationCount
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">
+                                    Status
+                                </h6>
+                                <span class="h5 mb-0">
+                                    @if (AlarmState.IsAlarm)
+                                    {
+                                        <span>Enabled by @AlarmState.AdminName @AlarmState.Date.ToLocalTime()</span>
+                                    }
+                                    else
+                                    {
+                                        @if (AlarmState.Date == new DateTime())
+                                        {
+                                            <span>Never used</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Disabled by @AlarmState.AdminName @AlarmState.Date.ToLocalTime()</span>
+                                        }
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h4>The alarm is turned on @AlarmState.DateTime by @AlarmState.AdminName</h4>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="card mb-3">
-            <div class="card-body text-center text-sm-left">
-                <button type="button" @onclick="EnableAlarmAsync" class="btn btn-danger" title="Lock all workstations">
-                    <img src="/svg/icon-lock.svg" />
-                    Turn on alarm
-                </button>
-            </div>
-        </div>
-    }
-    <h4 class="text-navyblue">Workstations</h4>
-    @if (MainTableService.Entities == null)
-    {
-        <LoadingText />
-    }
-    else
-    {
-        <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
-            <TableHeader>
-                <MainTableHeader Title="Status"
-                                 TitleWidth="5"
-                                 SortColumn="@nameof(Workstation.LastSeen)"
-                                 CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
-                                 CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
-                                 SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
-                                 SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-                <MainTableHeader Title="Name"
-                                 TitleWidth="10"
-                                 SortColumn="@nameof(Workstation.Name)"
-                                 CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
-                                 CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
-                                 SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
-                                 SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-                <MainTableHeader Title="Domain"
-                                 TitleWidth="10"
-                                 SortColumn="@nameof(Workstation.Domain)"
-                                 CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
-                                 CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
-                                 SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
-                                 SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-                <MainTableHeader Title="IP"
-                                 TitleWidth="10"
-                                 SortColumn="@nameof(Workstation.IP)"
-                                 CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
-                                 CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
-                                 SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
-                                 SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
-            </TableHeader>
-            <TableRow>
-                <td>
-                    @if (context.IsOnline)
-                            {
-                        <span class="badge badge-success" title="Workstation is online">
-                            Online
-                        </span>
-                            }
-                            else
-                            {
-                        <span class="badge badge-danger" title="Workstation is offline">
-                            Offline
-                        </span>
-                            }
-                </td>
-                <td>
-                    @context.Name
-                </td>
-                <td>
-                    @context.Domain
-                </td>
-                <td>
-                    @context.IP
-                </td>
-            </TableRow>
-        </MainTable>
-        <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
-                    DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
-                    TotalRecords="MainTableService.TotalRecords"
-                    CurrentPage="MainTableService.CurrentPage"
-                    DisplayRows="MainTableService.DataLoadingOptions.Take"
-                    DisplayRecords="MainTableService.Entities.Count" />
-    }
+    </div>
 }

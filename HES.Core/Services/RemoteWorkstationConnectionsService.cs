@@ -289,7 +289,7 @@ namespace HES.Core.Services
             {
                 IsAlarm = true,
                 AdminName = applicationUser.Email,
-                DateTime = DateTime.Now
+                Date = DateTime.UtcNow
             };
 
             await _appSettingsService.SetAlarmStateAsync(alarmState);
@@ -309,7 +309,7 @@ namespace HES.Core.Services
             {
                 IsAlarm = false,
                 AdminName = applicationUser.Email,
-                DateTime = DateTime.Now
+                Date = DateTime.UtcNow
             };
 
             await _appSettingsService.SetAlarmStateAsync(alarmState);
