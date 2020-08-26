@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppSettings;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.PasswordManager;
@@ -39,6 +40,8 @@ namespace HES.Core.Services
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly ILogger<RemoteWorkstationConnectionsService> _logger;
         private readonly IHubContext<RefreshHub> _hubContext;
+        private readonly IAppSettingsService _appSettingsService;
+
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
                       IRemoteTaskService remoteTaskService,
@@ -50,7 +53,8 @@ namespace HES.Core.Services
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger,
-                      IHubContext<RefreshHub> hubContext)
+                      IHubContext<RefreshHub> hubContext,
+                      IAppSettingsService appSettingsService)
         {
             _services = services;
             _remoteTaskService = remoteTaskService;
@@ -62,6 +66,7 @@ namespace HES.Core.Services
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
             _logger = logger;
+            _appSettingsService = appSettingsService;
             _hubContext = hubContext;
         }
 
@@ -273,6 +278,45 @@ namespace HES.Core.Services
         public static bool IsWorkstationConnected(string workstationId)
         {
             return _workstationConnections.ContainsKey(workstationId);
+        }
+
+        public async Task<AlarmState> LockAllWorkstations(ApplicationUser applicationUser)
+        {
+            if (applicationUser == null)
+                throw new ArgumentNullException(nameof(applicationUser));
+
+            var alarmState = new AlarmState
+            {
+                IsAlarm = true,
+                AdminName = applicationUser.Email,
+                Date = DateTime.UtcNow
+            };
+
+            await _appSettingsService.SetAlarmStateAsync(alarmState);
+
+            foreach (var workstationConnection in _workstationConnections)
+                await workstationConnection.Value.SetAlarmState(true);
+
+            return alarmState;
+        }
+
+        public async Task UnlockAllWorkstations(ApplicationUser applicationUser)
+        {
+            if (applicationUser == null)
+                throw new ArgumentNullException(nameof(applicationUser));
+
+            var alarmState = new AlarmState
+            {
+                IsAlarm = false,
+                AdminName = applicationUser.Email,
+                Date = DateTime.UtcNow
+            };
+
+            await _appSettingsService.SetAlarmStateAsync(alarmState);
+
+
+            foreach (var workstationConnection in _workstationConnections)
+                await workstationConnection.Value.SetAlarmState(false);
         }
 
         public static int WorkstationsOnlineCount()

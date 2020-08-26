@@ -301,5 +301,15 @@ namespace HES.Core.Services
 
             await OnSet?.Invoke(Breadcrumbs);
         }
+
+        public async Task SetAlarm()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Alarm" }
+            };
+
+            await OnSet?.Invoke(Breadcrumbs);
+        }
     }
 }

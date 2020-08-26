@@ -12,6 +12,7 @@ namespace HES.Core.Constants
 
         // App Settings keys
         public const string Licensing = "licensing";
+        public const string Alarm = "alarm";
         public const string Domain = "domain";
         public const string Email = "email";
         public const string Server = "server";

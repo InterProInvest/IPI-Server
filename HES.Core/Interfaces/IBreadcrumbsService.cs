@@ -36,5 +36,6 @@ namespace HES.Core.Interfaces
         Task SetEnableAuthenticator();
         Task SetDisable2fa();
         Task SetDeletePersonalData();
+        Task SetAlarm();
     }
 }
