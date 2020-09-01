@@ -11,6 +11,8 @@
 
 #### If the web server is not enabled then use the [official guide](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-2.2#iis-configuration) to enable IIS.
 
+Enabling WebSockets on IIS [guide](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/websockets?view=aspnetcore-3.1#enabling-websockets-on-iis)
+
 You can perform a simple test by opening a web browser and browsing http://localhost You should see a default IIS page.
 
 Download and install [Git](https://git-scm.com/download/win)
@@ -24,7 +26,7 @@ Download and install .NET Core SDK 3.1:
 
 You can download the latest versions of this applications. They can be found at https://dotnet.microsoft.com/download/dotnet-core/3.1
 
-**[Note]**  You MUST have IIS installed before installing Windows Hosting Bundle
+**[Note]  You MUST have IIS installed before installing Windows Hosting Bundle **
 
 
 Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
