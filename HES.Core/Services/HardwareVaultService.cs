@@ -466,9 +466,11 @@ namespace HES.Core.Services
                 await _hardwareVaultRepository.AddRangeAsync(hardwareVaultsToImport);
                 await _licenseService.AddOrderRangeAsync(licenseOrdersToImport);
                 await _licenseService.AddHardwareVaultLicenseRangeAsync(hardwareVaultLicensesToImport);
-                await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
                 transactionScope.Complete();
             }
+
+            // Without transaction
+            await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
         }
 
         public async Task<HardwareVault> UpdateVaultAsync(HardwareVault vault)
@@ -558,7 +560,7 @@ namespace HES.Core.Services
                 vault.Status = VaultStatus.Active;
                 await _hardwareVaultRepository.UpdateAsync(vault);
                 await ChangeVaultActivationStatusAsync(vault.Id, HardwareVaultActivationStatus.Activated);
-            }           
+            }
         }
 
         public async Task SetStatusAppliedAsync(HardwareVault hardwareVault)

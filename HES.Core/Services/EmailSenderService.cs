@@ -1,6 +1,5 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
-using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
@@ -52,19 +51,8 @@ namespace HES.Core.Services
 
         public async Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status)
         {
-            EmailSettings emailSettings;
-            ServerSettings serverSettings;
-
-            try
-            {
-                emailSettings = await GetEmailSettingsAsync();
-                serverSettings = await GetServerSettingsAsync();
-            }
-            catch (SettingsNotSetException ex)
-            {
-                _logger.LogError(ex.Message);
-                return;
-            }
+            EmailSettings emailSettings = await GetEmailSettingsAsync();
+            ServerSettings serverSettings = await GetServerSettingsAsync();
 
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
@@ -87,19 +75,8 @@ namespace HES.Core.Services
 
         public async Task SendHardwareVaultLicenseStatus(List<HardwareVault> vaults)
         {
-            EmailSettings emailSettings;
-            ServerSettings serverSettings;
-
-            try
-            {
-                emailSettings = await GetEmailSettingsAsync();
-                serverSettings = await GetServerSettingsAsync();
-            }
-            catch (SettingsNotSetException ex)
-            {
-                _logger.LogError(ex.Message);
-                return;
-            }
+            EmailSettings emailSettings = await GetEmailSettingsAsync();
+            ServerSettings serverSettings = await GetServerSettingsAsync();
 
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
@@ -148,19 +125,8 @@ namespace HES.Core.Services
 
         public async Task SendActivateDataProtectionAsync()
         {
-            EmailSettings emailSettings;
-            ServerSettings serverSettings;
-
-            try
-            {
-                emailSettings = await GetEmailSettingsAsync();
-                serverSettings = await GetServerSettingsAsync();
-            }
-            catch (SettingsNotSetException ex)
-            {
-                _logger.LogError(ex.Message);
-                return;
-            }
+            EmailSettings emailSettings = await GetEmailSettingsAsync();
+            ServerSettings serverSettings = await GetServerSettingsAsync();
 
             var administrators = await _applicationUserService.GetAdministratorsAsync();
 
