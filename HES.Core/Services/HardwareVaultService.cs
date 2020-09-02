@@ -449,9 +449,11 @@ namespace HES.Core.Services
                 await _hardwareVaultRepository.AddRangeAsync(hardwareVaultsToImport);
                 await _licenseService.AddOrderRangeAsync(licenseOrdersToImport);
                 await _licenseService.AddHardwareVaultLicenseRangeAsync(hardwareVaultLicensesToImport);
-                await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
                 transactionScope.Complete();
             }
+
+            // Without transaction
+            await _licenseService.UpdateHardwareVaultsLicenseStatusAsync();
         }
 
         public async Task<HardwareVault> UpdateVaultAsync(HardwareVault vault)
@@ -482,12 +484,17 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vault.Id} not found");
 
+            vault.LastSynced = DateTime.UtcNow;
+            vault.EmployeeId = null;
+            vault.MasterPassword = null;
+            vault.HardwareVaultProfileId = ServerConstants.DefaulHardwareVaultProfileId;
             vault.Status = VaultStatus.Ready;
             vault.StatusReason = VaultStatusReason.None;
             vault.StatusDescription = null;
-            vault.MasterPassword = null;
             vault.HasNewLicense = true;
+            vault.NeedSync = false;
             vault.IsStatusApplied = false;
+            vault.Timestamp = 0;
 
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -536,7 +543,7 @@ namespace HES.Core.Services
                 vault.Status = VaultStatus.Active;
                 await _hardwareVaultRepository.UpdateAsync(vault);
                 await ChangeVaultActivationStatusAsync(vault.Id, HardwareVaultActivationStatus.Activated);
-            }           
+            }
         }
 
         public async Task SetStatusAppliedAsync(HardwareVault hardwareVault)
