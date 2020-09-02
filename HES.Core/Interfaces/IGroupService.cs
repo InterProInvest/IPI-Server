@@ -2,13 +2,14 @@
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Group;
 using HES.Core.Models.Web.Groups;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IGroupService
+    public interface IGroupService : IDisposable
     {
         IQueryable<Group> Query();
         Task<List<Group>> GetGroupsAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions);

@@ -5,7 +5,6 @@ using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using QRCoder;
 using System;
 using System.Collections.Generic;
@@ -20,22 +19,19 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class EmailSenderService : IEmailSenderService
+    public class EmailSenderService : IEmailSenderService, IDisposable
     {
         private readonly IApplicationUserService _applicationUserService;
         private readonly IHostingEnvironment _env;
         private readonly IConfiguration _config;
-        private readonly ILogger<EmailSenderService> _logger;
 
         public EmailSenderService(IApplicationUserService applicationUserService,
                                   IHostingEnvironment env,
-                                  IConfiguration config,
-                                  ILogger<EmailSenderService> logger)
+                                  IConfiguration config)
         {
             _applicationUserService = applicationUserService;
             _env = env;
             _config = config;
-            _logger = logger;
         }
 
         private async Task SendAsync(MailMessage mailMessage, EmailSettings settings)
@@ -317,6 +313,11 @@ namespace HES.Core.Services
             using MemoryStream stream = new MemoryStream();
             img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             return stream.ToArray();
+        }
+
+        public void Dispose()
+        {
+            _applicationUserService.Dispose();
         }
     }
 }

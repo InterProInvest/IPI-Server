@@ -4,15 +4,16 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeesPage : ComponentBase, IDisposable
+    public partial class EmployeesPage : OwningComponentBase, IDisposable
     {
+        public IEmployeeService EmployeeService { get; set; }
         [Inject] public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -21,6 +22,8 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
+            EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetEmployees();
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
@@ -105,6 +108,7 @@ namespace HES.Web.Pages.Employees
         {
             _ = hubConnection?.DisposeAsync();
             MainTableService.Dispose();
+            EmployeeService.Dispose();
         }
     }
 }

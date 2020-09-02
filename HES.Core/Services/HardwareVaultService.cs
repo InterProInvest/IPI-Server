@@ -23,7 +23,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class HardwareVaultService : IHardwareVaultService
+    public class HardwareVaultService : IHardwareVaultService, IDisposable
     {
         private readonly IAsyncRepository<HardwareVault> _hardwareVaultRepository;
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
@@ -998,5 +998,17 @@ namespace HES.Core.Services
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _hardwareVaultRepository.Dispose();
+            _hardwareVaultActivationRepository.Dispose();
+            _hardwareVaultProfileRepository.Dispose();
+            _licenseService.Dispose();
+            _hardwareVaultTaskService.Dispose();
+            _accountService.Dispose();
+            _workstationService.Dispose();
+            _appSettingsService.Dispose();
+        }
     }
 }

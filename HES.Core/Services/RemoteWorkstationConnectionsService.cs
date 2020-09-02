@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class RemoteWorkstationConnectionsService : IRemoteWorkstationConnectionsService
+    public class RemoteWorkstationConnectionsService : IRemoteWorkstationConnectionsService, IDisposable
     {
         static readonly ConcurrentDictionary<string, IRemoteAppConnection> _workstationConnections
                     = new ConcurrentDictionary<string, IRemoteAppConnection>();
@@ -356,6 +356,18 @@ namespace HES.Core.Services
             {
                 await remoteAppConnection.WorkstationUnapproved();
             }
+        }
+
+        public void Dispose()
+        {
+            _remoteTaskService.Dispose();
+            _remoteDeviceConnectionsService.Dispose();
+            _employeeService.Dispose();
+            _accountService.Dispose();
+            _workstationService.Dispose();
+            _hardwareVaultService.Dispose();       
+            _workstationAuditService.Dispose();     
+            _appSettingsService.Dispose();         
         }
 
         #endregion

@@ -4,24 +4,27 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Templates
 {
-    public partial class TemplatesPage : ComponentBase, IDisposable
+    public partial class TemplatesPage : OwningComponentBase, IDisposable
     {
-        [Inject] public ITemplateService TemplateService { get; set; }
+        public ITemplateService TemplateService { get; set; }
+        public IMainTableService<Template, TemplateFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public IMainTableService<Template, TemplateFilter> MainTableService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Template, TemplateFilter>>();
+            TemplateService = ScopedServices.GetRequiredService<ITemplateService>();
             await InitializeHubAsync();
             await BreadcrumbsService.SetTemplates();
             await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
@@ -84,7 +87,7 @@ namespace HES.Web.Pages.Templates
         }
 
         public void Dispose()
-        {           
+        {
             _ = hubConnection?.DisposeAsync();
             MainTableService.Dispose();
         }

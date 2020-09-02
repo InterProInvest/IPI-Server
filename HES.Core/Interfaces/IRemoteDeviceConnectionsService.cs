@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.Remote;
 
 namespace HES.Core.Interfaces
 {
-    public interface IRemoteDeviceConnectionsService
+    public interface IRemoteDeviceConnectionsService : IDisposable
     {
         void OnDeviceHubConnected(string deviceId, string workstationId, IRemoteCommands caller);
         void OnDeviceHubDisconnected(string deviceId, string workstationId);

@@ -1,12 +1,13 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Models;
 using HES.Core.Models.Web.Dashboard;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IDashboardService
+    public interface IDashboardService/*: IDisposable*/
     {
         Task<DashboardCard> GetServerCardAsync();
         string GetServerVersion();

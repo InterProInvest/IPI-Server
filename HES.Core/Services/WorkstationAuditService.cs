@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class WorkstationAuditService : IWorkstationAuditService
+    public class WorkstationAuditService : IWorkstationAuditService, IDisposable
     {
         private readonly IAsyncRepository<WorkstationEvent> _workstationEventRepository;
         private readonly IAsyncRepository<WorkstationSession> _workstationSessionRepository;
@@ -366,7 +366,7 @@ namespace HES.Core.Services
                 if (dataLoadingOptions.Filter.UnlockedBy != null)
                 {
                     query = query.Where(w => w.UnlockedBy == (SessionSwitchSubject)dataLoadingOptions.Filter.UnlockedBy);
-                }   
+                }
                 if (dataLoadingOptions.Filter.Workstation != null)
                 {
                     query = query.Where(w => w.Workstation.Name.Contains(dataLoadingOptions.Filter.Workstation, StringComparison.OrdinalIgnoreCase));
@@ -424,10 +424,10 @@ namespace HES.Core.Services
             {
                 case nameof(WorkstationSession.StartDate):
                     query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate);
-                    break;    
+                    break;
                 case nameof(WorkstationSession.EndDate):
                     query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.EndDate) : query.OrderByDescending(x => x.EndDate);
-                    break;  
+                    break;
                 case nameof(WorkstationSession.UnlockedBy):
                     query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UnlockedBy) : query.OrderByDescending(x => x.UnlockedBy);
                     break;
@@ -1192,7 +1192,7 @@ namespace HES.Core.Services
                  {having}")
                 .CountAsync();
         }
-         
+
         public async Task<List<SummaryByWorkstations>> GetSummaryByWorkstationsAsync(DataLoadingOptions<SummaryFilter> dataLoadingOptions)
         {
             var having = string.Empty;
@@ -1360,7 +1360,22 @@ namespace HES.Core.Services
                  {having}")
                  .CountAsync();
         }
-                
+
+
         #endregion
+
+        public void Dispose()
+        {
+            _workstationEventRepository.Dispose();
+            _workstationSessionRepository.Dispose();
+            _workstationRepository.Dispose();
+            _hardwareVaultRepository.Dispose();
+            _employeeRepository.Dispose();
+            _accountRepository.Dispose();
+            _summaryByDayAndEmployeeRepository.Dispose();
+            _summaryByEmployeesRepository.Dispose();
+            _summaryByDepartmentsRepository.Dispose();
+            _summaryByWorkstationsRepository.Dispose();
+        }
     }
 }

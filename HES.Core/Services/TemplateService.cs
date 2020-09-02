@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class TemplateService : ITemplateService
+    public class TemplateService : ITemplateService, IDisposable
     {
         private readonly IAsyncRepository<Template> _templateRepository;
 
@@ -184,6 +184,11 @@ namespace HES.Core.Services
         public async Task<bool> ExistAsync(Expression<Func<Template, bool>> predicate)
         {
             return await _templateRepository.ExistAsync(predicate);
+        }
+
+        public void Dispose()
+        {
+            _templateRepository.Dispose();
         }
     }
 }

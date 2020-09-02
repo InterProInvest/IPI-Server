@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class WorkstationService : IWorkstationService
+    public class WorkstationService : IWorkstationService, IDisposable
     {
         private readonly IAsyncRepository<Workstation> _workstationRepository;
         private readonly IAsyncRepository<WorkstationProximityVault> _workstationProximityVaultRepository;
@@ -522,5 +522,11 @@ namespace HES.Core.Services
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _workstationRepository.Dispose();
+            _workstationProximityVaultRepository.Dispose();
+        }
     }
 }

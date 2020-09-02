@@ -1,11 +1,12 @@
 ﻿using HES.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IOrgStructureService
+    public interface IOrgStructureService : IDisposable
     {
         IQueryable<Company> CompanyQuery();
         Task<Company> GetCompanyByIdAsync(string id);

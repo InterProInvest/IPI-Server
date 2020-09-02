@@ -1,9 +1,10 @@
 ﻿using HES.Core.Models.Web.AppSettings;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IAppSettingsService
+    public interface IAppSettingsService : IDisposable
     {
         Task<LicensingSettings> GetLicensingSettingsAsync();
         Task SetLicensingSettingsAsync(LicensingSettings licensing);

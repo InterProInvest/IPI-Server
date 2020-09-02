@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class AccountService : IAccountService
+    public class AccountService : IAccountService, IDisposable
     {
         private readonly IAsyncRepository<Account> _accountRepository;
 
@@ -125,5 +125,9 @@ namespace HES.Core.Services
             return new StorageId(account.StorageId);
         }
 
+        public void Dispose()
+        {
+            _accountRepository.Dispose();
+        }
     }
 }

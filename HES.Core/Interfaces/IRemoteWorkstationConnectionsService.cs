@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HES.Core.Entities;
 using HES.Core.Models.Web.AppSettings;
@@ -8,7 +9,7 @@ using Hideez.SDK.Communication.Workstation;
 
 namespace HES.Core.Interfaces
 {
-    public interface IRemoteWorkstationConnectionsService
+    public interface IRemoteWorkstationConnectionsService : IDisposable
     {
         void StartUpdateRemoteDevice(IList<string> vaultIds);
         void StartUpdateRemoteDevice(string vaultId);

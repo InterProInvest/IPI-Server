@@ -2,7 +2,6 @@
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +13,6 @@ namespace HES.Core.Services
     public class MainTableService<TItem, TFilter> : IDisposable, IMainTableService<TItem, TFilter> where TItem : class where TFilter : class, new()
     {
         private readonly IModalDialogService _modalDialogService;
-        private readonly ILogger<MainTableService<TItem, TFilter>> _logger;
         private Func<DataLoadingOptions<TFilter>, Task<int>> _getEntitiesCount;
         private Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> _getEntities;
         private Action _stateHasChanged;
@@ -26,10 +24,9 @@ namespace HES.Core.Services
         public int CurrentPage { get; set; } = 1;
         public string SyncPropName { get; set; }
 
-        public MainTableService(IModalDialogService modalDialogService, ILogger<MainTableService<TItem, TFilter>> logger)
+        public MainTableService(IModalDialogService modalDialogService)
         {
             _modalDialogService = modalDialogService;
-            _logger = logger;
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 

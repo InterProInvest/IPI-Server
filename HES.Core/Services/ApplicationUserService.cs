@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class ApplicationUserService : IApplicationUserService
+    public class ApplicationUserService : IApplicationUserService, IDisposable
     {
         private readonly IAsyncRepository<ApplicationUser> _applicationUserRepository;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -25,11 +25,6 @@ namespace HES.Core.Services
         {
             _applicationUserRepository = applicationUserRepository;
             _userManager = userManager;
-        }
-
-        public IQueryable<ApplicationUser> Query()
-        {
-            return _applicationUserRepository.Query();
         }
 
         public async Task ReloadUserAsync(string userId)
@@ -134,11 +129,6 @@ namespace HES.Core.Services
             return HtmlEncoder.Default.Encode(callbackUrl);
         }
 
-        public async Task<ApplicationUser> GetUserByIdAsync(string id)
-        {
-            return await _applicationUserRepository.GetByIdAsync(id);
-        }
-
         public async Task<ApplicationUser> DeleteUserAsync(string id)
         {
             if (id == null)
@@ -154,14 +144,15 @@ namespace HES.Core.Services
             return user;
         }
 
-        public async Task<IList<ApplicationUser>> GetAllAsync()
-        {
-            return await _applicationUserRepository.Query().ToListAsync();
-        }
-
         public async Task<IList<ApplicationUser>> GetAdministratorsAsync()
         {
             return await _userManager.GetUsersInRoleAsync("Administrator");
+        }
+
+        public void Dispose()
+        {
+            _applicationUserRepository.Dispose();
+            _userManager.Dispose();
         }
     }
 }
