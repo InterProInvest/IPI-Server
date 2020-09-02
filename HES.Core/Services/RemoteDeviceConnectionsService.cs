@@ -1,7 +1,13 @@
-﻿using HES.Core.Interfaces;
+﻿using HES.Core.Enums;
+using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
+using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
+using Hideez.SDK.Communication.Utils;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -10,6 +16,21 @@ namespace HES.Core.Services
     {
         static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
+        private readonly IHardwareVaultService _hardwareVaultService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IDataProtectionService _dataProtectionService;
+        private readonly ILogger<RemoteDeviceConnectionsService> _logger;
+
+        public RemoteDeviceConnectionsService(IHardwareVaultService hardwareVaultService,
+                                              IEmployeeService employeeService,
+                                              IDataProtectionService dataProtectionService,
+                                              ILogger<RemoteDeviceConnectionsService> logger)
+        {
+            _hardwareVaultService = hardwareVaultService;
+            _employeeService = employeeService;
+            _dataProtectionService = dataProtectionService;
+            _logger = logger;
+        }
 
         static DeviceRemoteConnections GetDeviceRemoteConnections(string deviceId)
         {
@@ -74,6 +95,91 @@ namespace HES.Core.Services
         public RemoteDevice FindRemoteDevice(string deviceId, string workstationId)
         {
             return GetDeviceRemoteConnections(deviceId).GetRemoteDevice(workstationId);
+        }
+
+        public async Task SyncHardwareVaults(string vaultId)
+        {
+            try
+            {
+                var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
+
+                if (vault.Status != VaultStatus.Active || vault.NeedSync || vault.EmployeeId == null)
+                    return;
+
+                var employee = await _employeeService.GetEmployeeByIdAsync(vault.EmployeeId);
+
+                var employeeVaults = employee.HardwareVaults.Where(x => x.Id != vaultId && x.IsOnline && x.Timestamp != vault.Timestamp && x.Status == VaultStatus.Active && !x.NeedSync).ToList();
+                foreach (var employeeVault in employeeVaults)
+                {
+                    var currentVaultSync = vault.Timestamp < employeeVault.Timestamp ? true : false;
+
+                    var firstWorkstationId = GetDeviceRemoteConnections(vault.Id).GetFirstOrDefaultWorkstation();
+                    var secondWorkstationId = GetDeviceRemoteConnections(employeeVault.Id).GetFirstOrDefaultWorkstation();
+
+                    if (firstWorkstationId == null || secondWorkstationId == null)
+                        return;
+
+                    var firstRemoteDeviceTask = ConnectDevice(vault.Id, firstWorkstationId).TimeoutAfter(30_000);
+                    var secondRemoteDeviceTask = ConnectDevice(employeeVault.Id, secondWorkstationId).TimeoutAfter(30_000);
+                    await Task.WhenAll(firstRemoteDeviceTask, secondRemoteDeviceTask);
+
+                    if (firstRemoteDeviceTask.Result == null || secondRemoteDeviceTask.Result == null)
+                        return;
+
+                    var firstVaultKey = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword));
+                    await firstRemoteDeviceTask.Result.CheckPassphrase(firstVaultKey);
+
+                    var secondVaultKey = ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(employeeVault.MasterPassword));
+                    await secondRemoteDeviceTask.Result.CheckPassphrase(secondVaultKey);
+
+                    IRemoteAppConnection appConnection;
+                    string lockedVaultStorage;
+
+                    if (currentVaultSync)
+                    {
+                        appConnection = RemoteWorkstationConnectionsService.FindWorkstationConnection(firstWorkstationId);
+
+                        if (appConnection == null)
+                            return;
+
+                        lockedVaultStorage = vault.Id;
+                    }
+                    else
+                    {
+                        appConnection = RemoteWorkstationConnectionsService.FindWorkstationConnection(secondWorkstationId);
+
+                        if (appConnection == null)
+                            return;
+
+                        lockedVaultStorage = employeeVault.Id;
+                    }
+
+                    await appConnection.LockDeviceStorage(lockedVaultStorage);
+                    try
+                    {
+                        await new DeviceStorageReplicator(firstRemoteDeviceTask.Result, secondRemoteDeviceTask.Result, null).Start();
+                    }
+                    finally
+                    {
+                        await appConnection.LiftDeviceStorageLock(lockedVaultStorage);
+                    }
+
+                    if (vault.Timestamp > employeeVault.Timestamp)
+                    {
+                        employeeVault.Timestamp = vault.Timestamp;
+                        await _hardwareVaultService.UpdateVaultAsync(employeeVault);
+                    }
+                    else
+                    {
+                        vault.Timestamp = employeeVault.Timestamp;
+                        await _hardwareVaultService.UpdateVaultAsync(vault);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug($"Sync Hardware Vaults - {ex.Message}");
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-
+using HES.Core.Enums;
 
 namespace HES.Web.Pages.Audit.WorkstationEvents
 {
@@ -20,7 +20,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly IWorkstationService _workstationService;
         private readonly IEmployeeService _employeeService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _deviceService;
         private readonly IAccountService _deviceAccountService;
         private readonly IOrgStructureService _orgStructureService;
         public IList<WorkstationEvent> WorkstationEvents { get; set; }
@@ -29,7 +29,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         public IndexModel(IWorkstationAuditService workstationAuditService,
                           IWorkstationService workstationService,
                           IEmployeeService employeeService,
-                          IDeviceService deviceService,
+                          IHardwareVaultService deviceService,
                           IAccountService deviceAccountService,
                           IOrgStructureService orgStructureService)
         {
@@ -48,7 +48,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
             ViewData["Events"] = new SelectList(Enum.GetValues(typeof(WorkstationEventType)).Cast<WorkstationEventType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["Severity"] = new SelectList(Enum.GetValues(typeof(WorkstationEventSeverity)).Cast<WorkstationEventSeverity>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             ViewData["Workstations"] = new SelectList(await _workstationService.WorkstationQuery().ToListAsync(), "Id", "Name");
-            ViewData["Devices"] = new SelectList(await _deviceService.DeviceQuery().ToListAsync(), "Id", "Id");
+            ViewData["Devices"] = new SelectList(await _deviceService.VaultQuery().ToListAsync(), "Id", "Id");
             ViewData["Employees"] = new SelectList(await _employeeService.EmployeeQuery().OrderBy(e => e.FirstName).ThenBy(e => e.LastName).ToListAsync(), "Id", "FullName");
             ViewData["Companies"] = new SelectList(await _orgStructureService.CompanyQuery().ToListAsync(), "Id", "Name");
             ViewData["DeviceAccountTypes"] = new SelectList(Enum.GetValues(typeof(AccountType)).Cast<AccountType>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");

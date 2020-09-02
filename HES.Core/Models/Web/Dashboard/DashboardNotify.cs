@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace HES.Core.Models
 {
@@ -10,6 +8,6 @@ namespace HES.Core.Models
         public string Message { get; set; }
         public int Count { get; set; }
         public string Page { get; set; }
-        public string Handler { get; set; }
+        public Func<Task> Action { get; set; }
     }
 }

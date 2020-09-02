@@ -1,0 +1,58 @@
+﻿@if (Filter == null)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License Start Date From</label>
+                <InputDate class="form-control" @bind-Value="Filter.LicenseStartDateStart" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License Start Date To</label>
+                <InputDate class="form-control" @bind-Value="Filter.LicenseStartDateEnd" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License End Date From</label>
+                <InputDate class="form-control" @bind-Value="Filter.LicenseEndDateStart" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">License End Date To</label>
+                <InputDate class="form-control" @bind-Value="Filter.LicenseEndDateEnd" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Order Created At From</label>
+                <DateTimePicker @bind-Value="Filter.CreatedDateStart" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Order Created At To</label>
+                <DateTimePicker @bind-Value="Filter.CreatedDateEnd" />
+            </div>
+
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Contact Email</label>
+                <InputText class="form-control" @bind-Value="Filter.ContactEmail" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Note</label>
+                <InputText class="form-control" @bind-Value="Filter.Note" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="mb-0 text-gray">Prolong License</label>
+                <select @onchange="OnChange_ProlongLicense" class="form-control">
+                    <option selected></option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="col align-self-end text-right form-group">
+                <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                <input type="submit" value="Filter" class="btn btn-primary" />
+            </div>
+        </div>
+    </EditForm>
+}

@@ -1,0 +1,146 @@
+﻿@if (AccessProfile == null)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="AccessProfile" OnValidSubmit="EditProfileAsync">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label class="control-label text-gray">Name</label>
+            <InputText class="form-control" @bind-Value="AccessProfile.Name" />
+            <ValidationMessage For="@(() => AccessProfile.Name)" class="text-danger" />
+        </div>
+        <label class="text-gray">Authorization parameters</label>
+        <table class="table border rounded w-100 disable-selection">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="text-center align-middle px-1">
+                        Bonding
+                    </th>
+                    <th class="text-center align-middle px-1">
+                        Connection
+                    </th>
+                    <th class="text-center align-middle px-1">
+                        New Channel
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Button
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Request the device button confirmation for connecting the device to the computer for the first time.">
+                            <input type="checkbox" class="custom-control-input" disabled checked>
+                            <label class="custom-control-label cursor-default"></label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Request the device button confirmation for connecting the device to the computer that is already bonded with the computer. ">
+                            <input type="checkbox" class="custom-control-input" @bind="AccessProfile.ButtonConnection">
+                            <label class="custom-control-label" @onclick="@(() => AccessProfile.ButtonConnection = !AccessProfile.ButtonConnection)"></label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Request the device button confirmation when an application is getting access to the device’s storage.">
+                            <input type="checkbox" class="custom-control-input" @bind="AccessProfile.ButtonNewChannel">
+                            <label class="custom-control-label" @onclick="@(() => AccessProfile.ButtonNewChannel = !AccessProfile.ButtonNewChannel)"></label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        PIN
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Request the PIN-code for connecting the device to the computer for the first time.">
+                            <input type="checkbox" class="custom-control-input" @bind="AccessProfile.PinBonding">
+                            <label class="custom-control-label" @onclick="@(() => { AccessProfile.PinBonding = AccessProfile.PinConnection == true ? AccessProfile.PinConnection : !AccessProfile.PinBonding; })"></label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Request the PIN-code for connecting the device to the computer that is already bonded with the computer.">
+                            <input type="checkbox" class="custom-control-input" @bind="AccessProfile.PinConnection">
+                            <label class="custom-control-label" @onclick="@(() => {AccessProfile.PinConnection = !AccessProfile.PinConnection; AccessProfile.PinBonding = true;})"></label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Request the PIN-code when an application is getting access to the device’s storage.">
+                            <input type="checkbox" class="custom-control-input" @bind="AccessProfile.PinNewChannel">
+                            <label class="custom-control-label" @onclick="@(() => AccessProfile.PinNewChannel = !AccessProfile.PinNewChannel)"></label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Server Confirmation
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Require the server confirmation for connecting the device to the computer for the first time.">
+                            <input type="checkbox" class="custom-control-input" disabled checked>
+                            <label class="custom-control-label cursor-default"></label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Require the server confirmation for connecting the device to the computer that is already bonded with the computer.">
+                            <input type="checkbox" class="custom-control-input" @bind="AccessProfile.MasterKeyConnection">
+                            <label class="custom-control-label" @onclick="@(() => AccessProfile.MasterKeyConnection = !AccessProfile.MasterKeyConnection)"></label>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="custom-control custom-checkbox" title="Require the server confirmation when an application is getting access to the device’s storage.">
+                            <input type="checkbox" class="custom-control-input" disabled>
+                            <label class="custom-control-label cursor-default"></label>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <label class="text-gray">PIN settings</label>
+        <table class="table border rounded w-100 disable-selection">
+            <thead></thead>
+            <tbody>
+                <tr>
+                    <td>
+                        PIN expiration
+                    </td>
+                    <td class="text-center pl-1 pr-1" title="After PIN code is expired, the device storage will be locked until the user enters the PIN again.">
+                        <input type="range" class="custom-range" min="1" max="107" step="1" value="@InitPinExpirationValue" @oninput="OnInputPinExpiration">
+                    </td>
+                    <td class="text-center pin-settings-value">
+                        <h6>@AccessProfile.PinExpirationString</h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        PIN length
+                    </td>
+                    <td class="text-center pl-1 pr-1">
+                        <input type="range" class="custom-range" min="4" max="8" step="1" value="@InitPinLengthValue" @oninput="OnInputPinLength">
+                    </td>
+                    <td class="text-center pin-settings-value">
+                        <h6>@AccessProfile.PinLength</h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        PIN incorrect entry
+                    </td>
+                    <td class="text-center pl-1 pr-1" title="Maximum number of incorrect PIN code entering. After the number of entries is exceeded, the device is locked.">
+                        <input type="range" class="custom-range" min="3" max="10" step="1" value="@InitPinTryCountValue" @oninput="OnInputPinTryCount">
+                    </td>
+                    <td class="text-center pin-settings-value">
+                        <h6>@AccessProfile.PinTryCount</h6>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="text-right">
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+    </EditForm>
+}

@@ -1,0 +1,10 @@
+﻿@page
+@model HES.Web.Pages.Settings.HardwareVaultAccessProfile.IndexModel
+
+@{
+    ViewData["Title"] = "Vault Access Profiles";
+    ViewData["ActivePage"] = MenuNavPages.Settings;
+    ViewData["SettingsPage"] = SettingsNavPages.DeviceAccessProfiles;
+}
+
+<component type="typeof(HardwareVaultAccessProfilePage)" render-mode="Server" />

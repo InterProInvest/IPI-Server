@@ -4,9 +4,16 @@
 }
 else
 {
-    <TableFilter SearchTextChanged="SearchTextChangedAsync">
-        <VaultFilter FilterChanged="FilterChangedAsync" />
-    </TableFilter>
+    <TableAction>
+        <FilterForm>
+            <VaultFilter FilterChanged="FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="SearchTextChangedAsync" />
+        </FilterButtons>
+    </TableAction>
     <MainTable Items="SoftwareVaults" SelectedItem="@SelectedSoftwareVault" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
         <TableHeader>
             <MainTableHeader Title="OS"
@@ -74,13 +81,13 @@ else
                 @context.LicenseStatus
             </td>
             <td>
-                @context.Employee.FullName
+                @context.Employee?.FullName
             </td>
             <td>
-                @context.Employee.Department.Company.Name
+                @context.Employee?.Department?.Company?.Name
             </td>
             <td>
-                @context.Employee.Department.Name
+                @context.Employee?.Department?.Name
             </td>
         </TableRow>
     </MainTable>

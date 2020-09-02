@@ -8,10 +8,10 @@
 }
 <div class="app">
     <div class="sidebar">
-        <div class="list-group" id="list-tab" role="tablist">
+        <div class="list-group">
             @foreach (string logFile in LogsFiles)
             {
-                <a class="list-group-item list-group-item-action show-log" @onclick="()=> ShowLogAsync(logFile)" data-toggle="list" href="#" role="tab">@logFile</a>
+                <button class="list-group-item list-group-item-action @(logFile == Logs?.First().Name ? "active" : null)" @onclick="()=> ShowLogAsync(logFile)">@logFile</button>
             }
         </div>
     </div>
@@ -19,7 +19,6 @@
         @if (Logs == null)
         {
             <div class="d-flex justify-content-center align-items-center vh-100">
-                <img src="/svg/logs/arrow.svg" />
                 <h5 class="px-3 m-0">Select log file</h5>
             </div>
         }
@@ -27,13 +26,17 @@
         {
             <div class="content-header">
                 <nav class="navbar navbar-light bg-light border-bottom shadow-sm">
-                    <div class="invisible">
-                        <button id="download_btn" class="btn btn-secondary" data-name="" data-toggle="tooltip" data-placement="bottom" title="Download file">
+                    <div class="d-flex align-items-center">
+                        <button id="download_btn" class="btn btn-secondary mr-2" title="Download file" @onclick="DownloadFile">
                             <img src="/svg/logs/download.svg" />
                         </button>
-                        <button id="delete_btn" class="btn btn-secondary" data-name="" data-toggle="tooltip" data-placement="bottom" title="Delete file">
-                            <img src="/svg/logs/delete.svg" />
-                        </button>
+                        @*<button id="delete_btn" class="btn btn-secondary  mr-2" title="Delete file">
+                                <img src="/svg/logs/delete.svg" />
+                            </button>*@
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="localTime" @bind="LocalTime">
+                            <label class="custom-control-label" for="localTime">Local time</label>
+                        </div>
                     </div>
                     <div>
                         <span class="badge badge-success">INFO</span> <span id="infoLabel" class="badge badge-light">@Logs.Select(s => s.Level).Where(x => x == "INFO").Count()</span>
@@ -51,7 +54,7 @@
                 </nav>
             </div>
             <div class="content-body">
-                <table id="logs" class="table table-hover border rounded m-0 w-100" style="table-layout:fixed; margin:0px !important">
+                <table class="table table-hover border rounded m-0 w-100" style="table-layout:fixed; margin:0px !important">
                     <thead>
                         <tr>
                             <th style="width:212px">
@@ -75,16 +78,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Logs.Where(x => x.Date.ToString().Contains(searchText.ToLower().Trim())
-                                                      || x.Level.ToLower().Contains(searchText.ToLower().Trim())
-                                                      || x.Logger.ToLower().Contains(searchText.ToLower().Trim())
-                                                      || x.Message.ToLower().Contains(searchText.ToLower().Trim())
-                                                      || x.Method.ToLower().Contains(searchText.ToLower().Trim())
-                                                      || x.Url.ToLower().Contains(searchText.ToLower().Trim())))
+                        @foreach (var item in Logs.Where(x => x.Date.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                                              || x.Level.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                                              || x.Logger.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                                              || x.Message.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                                              || x.Method.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                                              || x.Url.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
                         {
                             <tr data-toggle="modal" data-target="#modalView" @onclick="@(() => { LogModel = item; })">
                                 <td>
-                                    @item.Date
+                                    @if (LocalTime)
+                                    {
+                                        @DateTime.Parse(item.Date).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.ffff")
+                                    }
+                                    else
+                                    {
+                                        @item.Date
+                                    }
                                 </td>
                                 <td>
                                     @{

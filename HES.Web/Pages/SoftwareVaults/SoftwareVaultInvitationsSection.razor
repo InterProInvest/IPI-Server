@@ -5,18 +5,23 @@
 else
 {
     <TableAction>
-        <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Resend invitation" @onclick="OpenDialogResendInvitationAsync">
-            <img class="icon-btn" src="/svg/action-email.svg" />
-            Resend
-        </button>
-        <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Delete invitation" @onclick="OpenDialogDeleteInvitationAsync">
-            <img class="icon-btn" src="/svg/action/delete.svg" />
-            Delete
-        </button>
+        <FilterForm>
+            <InvitationFilter FilterChanged="FilterChangedAsync" />
+        </FilterForm>
+        <ActionButtons>
+            <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Resend invitation" @onclick="OpenDialogResendInvitationAsync">
+                <img class="icon-btn" src="/svg/action-email.svg" />
+                Resend
+            </button>
+            <button type="button" class="btn btn-light border my-1 mr-2 @(ShowButtons())" title="Delete invitation" @onclick="OpenDialogDeleteInvitationAsync">
+                <img class="icon-btn" src="/svg/action/delete.svg" />
+                Delete
+            </button>
+        </ActionButtons>
+        <FilterButtons>
+            <TableFilter SearchTextChanged="SearchTextChangedAsync" />
+        </FilterButtons>
     </TableAction>
-    <TableFilter SearchTextChanged="SearchTextChangedAsync">
-        <InvitationFilter FilterChanged="FilterChangedAsync" />
-    </TableFilter>
     <MainTable Items="SoftwareVaultInvitations" SelectedItem="@SelectedInvitation" SelecedItemChanged="SelectedItemChangedAsync" SelecedItemDblClick="SelectedItemDblClickAsync">
         <TableHeader>
             <MainTableHeader Title="ID"

@@ -18,6 +18,18 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link @MenuNavPages.HardwareVaultsNavClass(ViewContext)" asp-page="/HardwareVaults/Index">
+                    <img class="icon-devices i-sidebar" />
+                    <span class="page_labels">Hardware Vaults</span>
+                </a>
+            </li>
+            @*<li class="nav-item">
+                    <a class="nav-link @MenuNavPages.SoftwareVaultsNavClass(ViewContext)" asp-page="/SoftwareVaults/Index">
+                        <img class="icon-software-vault i-sidebar" />
+                        <span class="page_labels">Software Vaults</span>
+                    </a>
+                </li>*@
+            <li class="nav-item">
                 <a class="nav-link @MenuNavPages.WorkstationsNavClass(ViewContext)" asp-page="/Workstations/Index">
                     <img class="icon-computers i-sidebar" />
                     <span class="page_labels">Workstations</span>
@@ -41,18 +53,6 @@
                     <span class="page_labels">Templates</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link @MenuNavPages.DevicesNavClass(ViewContext)" asp-page="/Devices/Index">
-                    <img class="icon-devices i-sidebar" />
-                    <span class="page_labels">Devices</span>
-                </a>
-            </li>
-            @*<li class="nav-item">
-                <a class="nav-link @MenuNavPages.SoftwareVaultsNavClass(ViewContext)" asp-page="/SoftwareVaults/Index">
-                    <img class="icon-software-vault i-sidebar" />
-                    <span class="page_labels">Software Vaults</span>
-                </a>
-            </li>*@
             <li class="nav-item">
                 <a class="nav-link collapsed aria-exp @MenuNavPages.AuditNavClass(ViewContext)" data-toggle="collapse" href="#collapseAudit" role="button" aria-expanded="false" aria-controls="collapseAudit">
                     <img class="icon-audit i-sidebar" />
@@ -101,20 +101,15 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link @SettingsNavPages.DeviceAccessProfilesNavClass(ViewContext)" asp-page="/Settings/DeviceAccessProfiles/Index">
-                                    <span>Device Access Profiles</span>
+                                <a class="nav-link @SettingsNavPages.DeviceAccessProfilesNavClass(ViewContext)" asp-page="/Settings/HardwareVaultAccessProfile/Index">
+                                    <span>Vault Access Profiles</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @SettingsNavPages.OrgStructureNavClass(ViewContext)" asp-page="/Settings/OrgStructure/Index">
                                     <span>OrgStructure</span>
                                 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @SettingsNavPages.PositionsNavClass(ViewContext)" asp-page="/Settings/Positions/Index">
-                                    <span>Positions</span>
-                                </a>
-                            </li>
+                            </li>       
                             <li class="nav-item">
                                 <a class="nav-link @SettingsNavPages.LicenseOrdersNavClass(ViewContext)" asp-page="/Settings/LicenseOrders/Index">
                                     <span>License Orders</span>

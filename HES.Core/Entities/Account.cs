@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HES.Core.Enums;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -36,30 +38,28 @@ namespace HES.Core.Entities
         [Display(Name = "OtpUpdated")]
         public DateTime? OtpUpdatedAt { get; set; }
 
+        public string Password { get; set; }
+
+        public string OtpSecret { get; set; }
+
         public bool Deleted { get; set; }
 
-        public ushort IdFromDevice { get; set; }
+        [Required]
+        public byte[] StorageId { get; set; }
+
+        public uint Timestamp { get; set; }
 
         public string EmployeeId { get; set; }
 
         public string SharedAccountId { get; set; }
+
+        public List<WorkstationEvent> WorkstationEvents { get; set; }
+        public List<WorkstationSession> WorkstationSessions { get; set; }
 
         [ForeignKey("EmployeeId")]
         public Employee Employee { get; set; }
 
         [ForeignKey("SharedAccountId")]
         public SharedAccount SharedAccount { get; set; }
-    }
-
-    public enum AccountType
-    {
-        Personal,
-        Shared
-    }
-
-    public enum AccountKind
-    {
-        WebApp,
-        Workstation
     }
 }

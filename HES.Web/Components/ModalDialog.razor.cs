@@ -19,6 +19,7 @@ namespace HES.Web.Components
         {
             ModalDialogService.OnShow += ShowAsync;
             ModalDialogService.OnClose += CloseAsync;
+            ModalDialogService.OnCancel += CancelAsync;
         }
 
         public async Task ShowAsync(string title, RenderFragment body, ModalDialogSize size)
@@ -39,6 +40,11 @@ namespace HES.Web.Components
 
             await JSRuntime.InvokeVoidAsync("toggleModalDialog", "genericModalDialog");
             await InvokeAsync(StateHasChanged);
+        }
+
+        public async Task CancelAsync()
+        {
+            await CloseAsync();
         }
 
         private void SetModalSize(ModalDialogSize size)
@@ -72,6 +78,7 @@ namespace HES.Web.Components
             {
                 ModalDialogService.OnShow -= ShowAsync;
                 ModalDialogService.OnClose -= CloseAsync;
+                ModalDialogService.OnCancel -= CancelAsync;
             }
         }
     }

@@ -1,0 +1,84 @@
+﻿@if (!Initialized)
+{
+    <LoadingPage />
+}
+else
+{
+    <div class="row align-items-center details-card mb-3">
+        <div class="col">
+            <h1 class="text-navyblue text-break m-0">@Workstation.Name</h1>
+        </div>
+        <div class="col-auto pl-1">
+            <ButtonSpinner Class="btn-primary" Text="Add Hardware Vault" Callback="OpenDialogAddHardwareVaultAsync" />
+        </div>
+    </div>
+    <section>
+        @if (WorkstationProximityVaults.Count > 0)
+        {
+            <TableAction>
+                <ActionButtons>
+                    <h4 class="text-navyblue mr-2">Proximity Vaults</h4>
+                    @if (SelectedEntity != null)
+                    {
+                        <button type="button" @onclick="OpenDialogDeleteHardwareVaultAsync" class="btn btn-light border mx-2" title="Delete hardware vault">
+                            <img class="icon-btn" src="/svg/action/delete.svg" />
+                            Delete Hardware Vault
+                        </button>
+                    }
+                </ActionButtons>
+                <FilterButtons>
+                    <TableFilter EnableFilterButton="false" SearchTextChanged="SearchTextChangedAsync" />
+                </FilterButtons>
+            </TableAction>
+
+            <MainTable Items="WorkstationProximityVaults" SelectedItem="@SelectedEntity" SelecedItemChanged="SelectedItemChangedAsync">
+                <TableHeader>
+                    <MainTableHeader Title="Hardware Vault"
+                                     TitleWidth="25"
+                                     SortColumn="@nameof(WorkstationProximityVault.HardwareVault)"
+                                     CurrentSortedColumn="@SortedColumn"
+                                     SortedColumnChanged="SortedColumnChangedAsync"
+                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                    <MainTableHeader Title="Employee"
+                                     TitleWidth="25"
+                                     SortColumn="@nameof(WorkstationProximityVault.HardwareVault.Employee)"
+                                     CurrentSortedColumn="@SortedColumn"
+                                     SortedColumnChanged="SortedColumnChangedAsync"
+                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                    <MainTableHeader Title="Company"
+                                     TitleWidth="25"
+                                     SortColumn="@nameof(WorkstationProximityVault.HardwareVault.Employee.Department.Company)"
+                                     CurrentSortedColumn="@SortedColumn"
+                                     SortedColumnChanged="SortedColumnChangedAsync"
+                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                    <MainTableHeader Title="Department"
+                                     TitleWidth="25"
+                                     SortColumn="@nameof(WorkstationProximityVault.HardwareVault.Employee.Department)"
+                                     CurrentSortedColumn="@SortedColumn"
+                                     SortedColumnChanged="SortedColumnChangedAsync"
+                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                </TableHeader>
+                <TableRow>
+                    <td>
+                        @context.HardwareVaultId
+                    </td>
+                    <td>
+                        @context.HardwareVault.Employee?.FullName
+                    </td>
+                    <td>
+                        @context.HardwareVault.Employee?.Department?.Company?.Name
+                    </td>
+                    <td>
+                        @context.HardwareVault.Employee?.Department?.Name
+                    </td>                    
+                </TableRow>
+            </MainTable>
+            <Pagination CurrentPageChanged="CurrentPageChangedAsync"
+                        DisplayRowsChanged="DisplayRowsChangedAsync"
+                        TotalRecords="TotalRecords"
+                        CurrentPage="CurrentPage"
+                        DisplayRows="DisplayRows"
+                        DisplayRecords="WorkstationProximityVaults.Count" />
+        }
+    </section>
+}

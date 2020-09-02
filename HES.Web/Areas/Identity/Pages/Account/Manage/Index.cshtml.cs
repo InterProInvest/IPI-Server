@@ -150,10 +150,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            await _emailSender.SendUserConfirmEmailAsync(email, HtmlEncoder.Default.Encode(callbackUrl));
 
             SuccessMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

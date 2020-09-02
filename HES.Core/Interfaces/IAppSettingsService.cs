@@ -7,9 +7,11 @@ namespace HES.Core.Interfaces
     {
         Task<LicensingSettings> GetLicensingSettingsAsync();
         Task SetLicensingSettingsAsync(LicensingSettings licensing);
+        Task<EmailSettings> GetEmailSettingsAsync();
+        Task SetEmailSettingsAsync(EmailSettings email);
         Task<ServerSettings> GetServerSettingsAsync();
         Task SetServerSettingsAsync(ServerSettings server);
-        Task<DomainSettings> GetDomainSettingsAsync();
-        Task SetDomainSettingsAsync(DomainSettings domain);
+        Task<LdapSettings> GetLdapSettingsAsync();
+        Task SetLdapSettingsAsync(LdapSettings ldapSettings);
     }
 }

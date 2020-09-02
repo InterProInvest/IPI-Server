@@ -1,9 +1,11 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Exceptions;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -16,7 +18,8 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<CreateGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public Group Group = new Group();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
@@ -26,8 +29,8 @@ namespace HES.Web.Pages.Groups
             try
             {     
                 await GroupService.CreateGroupAsync(Group);
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Group created.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)
@@ -38,7 +41,7 @@ namespace HES.Web.Pages.Groups
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
     }

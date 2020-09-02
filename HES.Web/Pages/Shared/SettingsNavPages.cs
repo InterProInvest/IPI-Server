@@ -9,11 +9,9 @@ namespace HES.Web.Pages
 
         public static string DataProtection => "./DataProtection/Index";
 
-        public static string DeviceAccessProfiles => "./DeviceAccessProfiles/Index";
+        public static string DeviceAccessProfiles => "./HardwareVaultAccessProfile/Index";
 
         public static string OrgStructure => "./OrgStructure/Index";
-
-        public static string Positions => "./Positions/Index";
 
         public static string LicenseOrders => "./LicenseOrders/Index";
 
@@ -27,8 +25,6 @@ namespace HES.Web.Pages
         public static string DeviceAccessProfilesNavClass(ViewContext viewContext) => PageNavClass(viewContext, DeviceAccessProfiles);
 
         public static string OrgStructureNavClass(ViewContext viewContext) => PageNavClass(viewContext, OrgStructure);
-
-        public static string PositionsNavClass(ViewContext viewContext) => PageNavClass(viewContext, Positions);
 
         public static string LicenseOrdersNavClass(ViewContext viewContext) => PageNavClass(viewContext, LicenseOrders);
 

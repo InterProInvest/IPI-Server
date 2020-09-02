@@ -2,6 +2,8 @@
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.API.Group;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.Group;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,8 +34,13 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
-            var groupsCount = await _groupService.GetCountAsync(searchText: string.Empty, groupFilter: null);
-            return await _groupService.GetAllGroupsAsync(skip: 0, take: groupsCount, sortColumn: nameof(Group.Name), sortDirection: ListSortDirection.Ascending, searchText: string.Empty, groupFilter: null);
+            var count = await _groupService.GetGroupsCountAsync(new DataLoadingOptions<GroupFilter>());
+            return await _groupService.GetGroupsAsync(new DataLoadingOptions<GroupFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Group.Name),
+                SortDirection = ListSortDirection.Ascending
+            });
         }
 
         [HttpGet("{id}")]

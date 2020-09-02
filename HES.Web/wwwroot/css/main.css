@@ -64,6 +64,32 @@
     }
 }
 
+.table-fixed-header {
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+    .table-fixed-header td:first-child,
+    .table-fixed-header th:first-child {
+        max-width: 1%;
+    }
+
+    .table-fixed-header td:not(:first-child),
+    .table-fixed-header th:not(:first-child) {
+        width: 100%;
+    }
+
+    .table-fixed-header thead tr {
+        display: block;
+        position: relative;
+    }
+
+    .table-fixed-header tbody {
+        display: block;
+        overflow: auto;
+        width: 100%;
+    }
+
 .table-scrollable {
     overflow-y: auto;
     max-height: 60vh;
@@ -88,6 +114,7 @@
 
 .table-sort-arrow {
     cursor: pointer;
+    width: 18px;
 }
 
 .table-sort-arrow-up {
@@ -99,32 +126,7 @@
     transform: rotate(180deg);
 }
 
-.table-fixed {
-    width: 100%;
-}
-
-    .table-fixed tbody {
-        overflow-y: auto;
-        width: 100%;
-    }
-
-    .table-fixed thead,
-    .table-fixed tbody,
-    .table-fixed tr,
-    .table-fixed td,
-    .table-fixed th {
-        display: block;
-    }
-
-        .table-fixed tbody td {
-            float: left;
-        }
-
-        .table-fixed thead tr th {
-            float: left;
-        }
-
-.button-min-width {
+.btn-min-w {
     min-width: 74px;
 }
 
@@ -170,4 +172,25 @@ div.collapsed > img.icon-collapse-arrow {
     background-repeat: no-repeat;
     background-position: right calc(.375em + .1875rem) center;
     background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+}
+
+.max-50-vh {
+    max-height: 50vh;
+}
+
+.max-55vh {
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
 }

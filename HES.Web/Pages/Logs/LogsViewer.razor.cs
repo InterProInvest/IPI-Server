@@ -16,23 +16,29 @@ namespace HES.Web.Pages.Logs
         public List<string> LogsFiles { get; set; }
         public List<LogModel> Logs { get; set; }
         public LogModel LogModel { get; set; }
+        public bool LocalTime { get; set; }
 
         private bool isBusy;
-        public string searchText = string.Empty;
+        private string searchText = string.Empty;
+        private string _selectedFile;
 
         protected override void OnInitialized()
         {
             LogsFiles = LogsViewerService.GetFiles();
         }
 
+        private async Task DownloadFile()
+        {
+            await LogsViewerService.DownloadLogAsync(_selectedFile);
+        }
+
         private async Task ShowLogAsync(string name)
         {
             if (isBusy)
-            {
                 return;
-            }
 
             isBusy = true;
+            _selectedFile = name;
 
             try
             {

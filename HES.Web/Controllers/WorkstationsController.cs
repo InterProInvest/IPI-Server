@@ -1,7 +1,8 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.API;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.Workstations;
 using HES.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Controllers
@@ -19,11 +21,13 @@ namespace HES.Web.Controllers
     public class WorkstationsController : ControllerBase
     {
         private readonly IWorkstationService _workstationService;
+        private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly ILogger<WorkstationsController> _logger;
 
-        public WorkstationsController(IWorkstationService workstationService, ILogger<WorkstationsController> logger)
+        public WorkstationsController(IWorkstationService workstationService, IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService, ILogger<WorkstationsController> logger)
         {
             _workstationService = workstationService;
+            _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _logger = logger;
         }
 
@@ -33,14 +37,31 @@ namespace HES.Web.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Workstation>>> GetWorkstations()
         {
-            return await _workstationService.GetWorkstationsAsync();
+            var count = await _workstationService.GetWorkstationsCountAsync(new DataLoadingOptions<WorkstationFilter>());
+            return await _workstationService.GetWorkstationsAsync(new DataLoadingOptions<WorkstationFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Employee.FullName),
+                SortDirection = ListSortDirection.Ascending
+            });
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Workstation>>> GetFilteredWorkstations(WorkstationFilter workstationFilter)
         {
-            return await _workstationService.GetFilteredWorkstationsAsync(workstationFilter);
+            var count = await _workstationService.GetWorkstationsCountAsync(new DataLoadingOptions<WorkstationFilter>
+            {
+                Filter = workstationFilter
+            });
+
+            return await _workstationService.GetWorkstationsAsync(new DataLoadingOptions<WorkstationFilter>
+            {
+                Take = count,
+                SortedColumn = nameof(Workstation.Name),
+                SortDirection = ListSortDirection.Ascending,
+                Filter = workstationFilter
+            });
         }
 
         [HttpGet("{id}")]
@@ -80,7 +101,7 @@ namespace HES.Web.Controllers
                 workstation.RFID = workstationDto.RfidEnabled;
 
                 await _workstationService.EditWorkstationAsync(workstation);
-                await _workstationService.UpdateRfidStateAsync(workstation.Id);
+                await _remoteWorkstationConnectionsService.UpdateRfidStateAsync(workstation.Id, workstation.RFID);
             }
             catch (Exception ex)
             {
@@ -104,13 +125,13 @@ namespace HES.Web.Controllers
             try
             {
                 var workstation = await _workstationService.GetWorkstationByIdAsync(workstationDto.Id);
-                
+
                 workstation.DepartmentId = workstationDto.DepartmentId;
                 workstation.RFID = workstationDto.RfidEnabled;
                 workstation.Approved = true;
-     
+
                 await _workstationService.ApproveWorkstationAsync(workstation);
-                await _workstationService.UpdateRfidStateAsync(workstation.Id);
+                await _remoteWorkstationConnectionsService.UpdateRfidStateAsync(workstation.Id, workstation.RFID);
             }
             catch (Exception ex)
             {
@@ -140,39 +161,41 @@ namespace HES.Web.Controllers
 
         #endregion
 
-        #region Proximity Device
+        #region Proximity
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<ProximityDevice>>> GetProximityDevices(string id)
+        public async Task<ActionResult<IEnumerable<WorkstationProximityVault>>> GetProximityVaults(string id)
         {
-            return await _workstationService.GetProximityDevicesAsync(id);
+            var count = await _workstationService.GetProximityVaultsCountAsync(searchText: string.Empty, workstationId: id);
+            return await _workstationService.GetProximityVaultsAsync(0, count, nameof(WorkstationProximityVault.HardwareVaultId), ListSortDirection.Ascending, string.Empty, id);
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProximityDevice>> GetProximityDeviceById(string id)
+        public async Task<ActionResult<WorkstationProximityVault>> GetProximityVaultById(string id)
         {
-            var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
+            var proximityVault = await _workstationService.GetProximityVaultByIdAsync(id);
 
-            if (proximityDevice == null)
+            if (proximityVault == null)
             {
                 return NotFound();
             }
 
-            return proximityDevice;
+            return proximityVault;
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> AddProximityDevice(AddProximityDeviceDto proximityDeviceDto)
+        public async Task<IActionResult> AddProximityVault(AddProximityVaultDto proximityVaultDto)
         {
-            IList<ProximityDevice> proximityDevices;
+            WorkstationProximityVault proximityDevice;
             try
             {
-                proximityDevices = await _workstationService.AddProximityDevicesAsync(proximityDeviceDto.WorkstationId, new string[] { proximityDeviceDto.DeviceId });
-                await _workstationService.UpdateProximitySettingsAsync(proximityDeviceDto.WorkstationId);
+                proximityDevice = await _workstationService.AddProximityVaultAsync(proximityVaultDto.WorkstationId, proximityVaultDto.HardwareVaultId);
+                await _remoteWorkstationConnectionsService.UpdateProximitySettingsAsync(proximityVaultDto.WorkstationId, await _workstationService.GetProximitySettingsAsync(proximityVaultDto.WorkstationId));
+
             }
             catch (Exception ex)
             {
@@ -180,15 +203,15 @@ namespace HES.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
 
-            return CreatedAtAction("GetProximityDeviceById", new { id = proximityDevices[0].Id }, proximityDevices[0]);
+            return CreatedAtAction("GetProximityDeviceById", new { id = proximityDevice.Id }, proximityDevice);
         }
 
         [HttpPost("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProximityDevice>> DeleteProximityDevice(string id)
+        public async Task<ActionResult<WorkstationProximityVault>> DeleteProximityDevice(string id)
         {
-            var proximityDevice = await _workstationService.GetProximityDeviceByIdAsync(id);
+            var proximityDevice = await _workstationService.GetProximityVaultByIdAsync(id);
             if (proximityDevice == null)
             {
                 return NotFound();
@@ -196,7 +219,7 @@ namespace HES.Web.Controllers
 
             try
             {
-                await _workstationService.DeleteProximityDeviceAsync(id);
+                await _workstationService.DeleteProximityVaultAsync(id);
             }
             catch (Exception ex)
             {

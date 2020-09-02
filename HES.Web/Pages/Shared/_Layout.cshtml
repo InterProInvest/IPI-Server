@@ -30,6 +30,7 @@
                     <img src="~/svg/action/menu.svg" />
                 </button>
                 <!-- breadcrumbs -->
+                <component type="typeof(Breadcrumbs)" render-mode="Server" />
                 <nav id="breadcrumb" aria-label="breadcrumb" class="d-none">
                     <ol class="breadcrumb"></ol>
                 </nav>
@@ -59,9 +60,8 @@
             </nav>
             <!-- Main -->
             <div class="custom-content p-4">
-                <component type="typeof(ModalDialog)" render-mode="ServerPrerendered" />
-                <component type="typeof(Toast)" render-mode="ServerPrerendered" />
-                <partial name="_SpinnerPartial" />
+                <component type="typeof(ModalDialog)" render-mode="Server" />
+                <component type="typeof(Toast)" render-mode="Server" />
                 @RenderBody()
             </div>
         </div>
@@ -86,7 +86,6 @@
     <!-- DatePicker JS -->
     <script src="~/lib/air-datepicker/datepicker.min.js"></script>
     <!-- Main JS -->
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>

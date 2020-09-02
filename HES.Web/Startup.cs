@@ -1,3 +1,4 @@
+using HES.Core.Constants;
 using HES.Core.Entities;
 using HES.Core.HostedServices;
 using HES.Core.Hubs;
@@ -57,6 +58,14 @@ namespace HES.Web
                 configuration["EmailSender:Password"] = email_pwd;
             }
 
+            var srv_name = configuration["SRV_NAME"];
+            var srv_url = configuration["SRV_URL"];
+            if (srv_name != null && srv_url != null)
+            {
+                configuration["ServerSettings:Name"] = srv_name;
+                configuration["ServerSettings:Url"] = srv_url;
+            }
+
             var dataprotectoin_pwd = configuration["DATAPROTECTION_PWD"];
             if (dataprotectoin_pwd != null)
             {
@@ -73,10 +82,11 @@ namespace HES.Web
         {
             // Add Services
             services.AddScoped(typeof(IAsyncRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IMainTableService<,>), typeof(MainTableService<,>));
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IDeviceService, DeviceService>();
-            services.AddScoped<IDeviceTaskService, DeviceTaskService>();
+            services.AddScoped<IHardwareVaultService, HardwareVaultService>();
+            services.AddScoped<IHardwareVaultTaskService, HardwareVaultTaskService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IWorkstationService, WorkstationService>();
             services.AddScoped<IWorkstationAuditService, WorkstationAuditService>();
@@ -97,6 +107,7 @@ namespace HES.Web
             services.AddScoped<ILdapService, LdapService>();
             services.AddScoped<ISoftwareVaultService, SoftwareVaultService>();
 
+            services.AddSingleton<IBreadcrumbsService, BreadcrumbsService>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddHostedService<RemoveLogsHostedService>();
@@ -188,7 +199,7 @@ namespace HES.Web
                     options.Conventions.AuthorizeFolder("/Workstations", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SharedAccounts", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Templates", "RequireAdministratorRole");
-                    options.Conventions.AuthorizeFolder("/Devices", "RequireAdministratorRole");
+                    options.Conventions.AuthorizeFolder("/HardwareVaults", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/SoftwareVaults", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Audit", "RequireAdministratorRole");
                     options.Conventions.AuthorizeFolder("/Settings", "RequireAdministratorRole");
@@ -270,7 +281,7 @@ namespace HES.Web
             {
                 endpoints.MapHub<DeviceHub>("/deviceHub");
                 endpoints.MapHub<AppHub>("/appHub");
-                endpoints.MapHub<EmployeeDetailsHub>("/employeeDetailsHub");
+                endpoints.MapHub<RefreshHub>("/refreshHub");
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
@@ -280,7 +291,7 @@ namespace HES.Web
 
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var logger = scope.ServiceProvider.GetService<ILogger<Startup>>();
-            logger.LogInformation("Server started");
+            logger.LogInformation($"Server started {ServerConstants.Version}");
         }
     }
 }

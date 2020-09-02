@@ -1,9 +1,11 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,49 +22,39 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<AddGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public List<ActiveDirectoryGroup> Groups { get; set; }
-        public DomainSettings Domain { get; set; }
+        public LdapSettings LdapSettings { get; set; }
         public string WarningMessage { get; set; }
 
-        private ActiveDirectoryCredential _credentials = new ActiveDirectoryCredential();
-        private bool _createEmployees;
         private bool _isBusy;
         private string _searchText = string.Empty;
         private bool _isSortedAscending = true;
         private string _currentSortColumn = nameof(Group.Name);
+        private bool _createEmployees;
+        private bool _initialized;
+
 
         protected override async Task OnInitializedAsync()
         {
-            Domain = await AppSettingsService.GetDomainSettingsAsync();
-
-            if (Domain != null)
-                _credentials.Host = Domain.Host;
-        }
-
-        private async Task Connect()
-        {
-            if (_isBusy)
-            {
-                return;
-            }
-
-            _isBusy = true;
-
             try
             {
-                Groups = await LdapService.GetGroupsAsync(_credentials);
+                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
+
+                if (LdapSettings != null)
+                {
+                    Groups = await LdapService.GetGroupsAsync(LdapSettings);
+                }
+
+                _initialized = true;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
+                await ModalDialogService.CancelAsync();
             }
         }
 
@@ -84,15 +76,15 @@ namespace HES.Web.Pages.Groups
                 _isBusy = true;
 
                 await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), _createEmployees);
-                await Refresh.InvokeAsync(this);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
             finally
             {

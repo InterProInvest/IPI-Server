@@ -1,72 +1,83 @@
 ﻿using HES.Core.Enums;
+using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
-using HES.Core.Models.Web.Breadcrumb;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Parameters
 {
     public partial class Parameters : ComponentBase
     {
-        [Inject] private IAppSettingsService AppSettingsService { get; set; }
-        [Inject] private ILogger<Parameters> Logger { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] IJSRuntime JSRuntime { get; set; }
+        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        [Inject] public ILogger<Parameters> Logger { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
 
-        private LicensingSettings licensing = new LicensingSettings();
-        private ServerSettings server = new ServerSettings();
-        private DomainSettings domain = new DomainSettings();
-        private bool licensingIsBusy;
-        private bool serverIsBusy;
-        private bool domainIsBusy;
+        private HubConnection hubConnection;
+
+        private LicensingSettings _licensing;
+        //private EmailSettings _email;
+        //private ServerSettings _server;
+        private DomainHost _domain;
+        private bool _licensingIsBusy;
+        //private bool _emailIsBusy;
+        //private bool _serverIsBusy;
+        private bool _initialized;
+
+        class DomainHost
+        {
+            [Required]
+            public string Host { get; set; }
+        }
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadLicensingSettingsAsync();
-            await LoadServerSettingsAsync();
-            await LoadDomainSettingsAsync();
+            await BreadcrumbsService.SetParameters();
+            await InitializeHubAsync();
+            await LoadDataSettingsAsync();
+
+            _initialized = true;
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        private async Task LoadDataSettingsAsync()
         {
-            if (firstRender)
-            {
-                await CreateBreadcrumbs();
-            }
+            _licensing = await LoadLicensingSettingsAsync();
+            //_email = await LoadEmailSettingsAsync();
+            //_server = await LoadServerSettingsAsync();
+            _domain = await LoadDomainSettingsAsync();
         }
 
-        private async Task CreateBreadcrumbs()
+        private async Task<LicensingSettings> LoadLicensingSettingsAsync()
         {
-            var list = new List<Breadcrumb>() {
-                new Breadcrumb () { Active = true, Content = "Settings" },
-                new Breadcrumb () { Active = true, Content = "Parameters" }
-            };
+            var licensingSettings = await AppSettingsService.GetLicensingSettingsAsync();
 
-            await JSRuntime.InvokeVoidAsync("createBreadcrumbs", list);
-        }
+            if (licensingSettings == null)
+                return new LicensingSettings();
 
-        private async Task LoadLicensingSettingsAsync()
-        {
-            licensing = await AppSettingsService.GetLicensingSettingsAsync();
+            return licensingSettings;
         }
 
         private async Task UpdateLicensingSettingsAsync()
         {
             try
             {
-                if (licensingIsBusy)
-                {
+                if (_licensingIsBusy)
                     return;
-                }
 
-                licensingIsBusy = true;
-                await AppSettingsService.SetLicensingSettingsAsync(licensing);
+                _licensingIsBusy = true;
+                await AppSettingsService.SetLicensingSettingsAsync(_licensing);
+                _licensing = await LoadLicensingSettingsAsync();
                 ToastService.ShowToast("License settings updated.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);         
             }
             catch (Exception ex)
             {
@@ -75,66 +86,122 @@ namespace HES.Web.Pages.Settings.Parameters
             }
             finally
             {
-                licensingIsBusy = false;
+                _licensingIsBusy = false;
             }
         }
 
-        private async Task LoadServerSettingsAsync()
-        {
-            server = await AppSettingsService.GetServerSettingsAsync();
-        }
+        //private async Task<EmailSettings> LoadEmailSettingsAsync()
+        //{
+        //    var sttings = await AppSettingsService.GetEmailSettingsAsync();
 
-        private async Task UpdateServerSettingsAsync()
-        {
-            try
-            {
-                if (serverIsBusy)
-                {
-                    return;
-                }
+        //    if (sttings == null)
+        //        return new EmailSettings();
 
-                serverIsBusy = true;
-                await AppSettingsService.SetServerSettingsAsync(server);
-                ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                serverIsBusy = false;
-            }
-        }
+        //    return sttings;
+        //}
 
-        private async Task LoadDomainSettingsAsync()
+        //private async Task UpdateEmailSettingsAsync()
+        //{
+        //    try
+        //    {
+        //        if (_emailIsBusy)
+        //            return;
+
+        //        _emailIsBusy = true;
+
+        //        await AppSettingsService.SetEmailSettingsAsync(_email);
+        //        ToastService.ShowToast("Email settings updated.", ToastLevel.Success);
+        //        await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.LogError(ex.Message);
+        //        ToastService.ShowToast(ex.Message, ToastLevel.Error);
+        //    }
+        //    finally
+        //    {
+        //        _emailIsBusy = false;
+        //    }
+        //}
+
+        //private async Task<ServerSettings> LoadServerSettingsAsync()
+        //{
+        //    var serverSettings = await AppSettingsService.GetServerSettingsAsync();
+
+        //    if (serverSettings == null)
+        //        return new ServerSettings();
+
+        //    return serverSettings;
+        //}
+
+        //private async Task UpdateServerSettingsAsync()
+        //{
+        //    try
+        //    {
+        //        if (_serverIsBusy)
+        //        {
+        //            return;
+        //        }
+
+        //        _serverIsBusy = true;
+        //        await AppSettingsService.SetServerSettingsAsync(_server);
+        //        ToastService.ShowToast("Server settings updated.", ToastLevel.Success);
+        //        await HubContext.Clients.AllExcept(hubConnection.ConnectionId).SendAsync(RefreshPage.Parameters);
+                  
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.LogError(ex.Message);
+        //        ToastService.ShowToast(ex.Message, ToastLevel.Error);
+        //    }
+        //    finally
+        //    {
+        //        _serverIsBusy = false;
+        //    }
+        //}
+
+        private async Task<DomainHost> LoadDomainSettingsAsync()
         {
-            domain = await AppSettingsService.GetDomainSettingsAsync();
+            var domainSettings = await AppSettingsService.GetLdapSettingsAsync();
+
+            if (domainSettings == null)
+                return new DomainHost();
+
+            return new DomainHost() { Host = domainSettings.Host };
         }
 
         private async Task UpdateDomainSettingsAsync()
         {
-            try
+            RenderFragment body = (builder) =>
             {
-                if (domainIsBusy)
-                {
-                    return;
-                }
+                builder.OpenComponent(0, typeof(LdapCredentials));
+                builder.AddAttribute(1, "Host", _domain.Host);
+                builder.CloseComponent();
+            };
 
-                domainIsBusy = true;
-                await AppSettingsService.SetDomainSettingsAsync(domain);
-                ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                domainIsBusy = false;
-            }
+            await ModalDialogService.ShowAsync("Active Directory", body);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On(RefreshPage.Parameters, async () =>
+            {           
+                await LoadDataSettingsAsync();
+                StateHasChanged();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            await hubConnection.StartAsync();
+        }
+
+        public void Dispose()
+        {
+            _ = hubConnection.DisposeAsync();
         }
     }
 }

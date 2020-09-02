@@ -1,0 +1,27 @@
+﻿@if (NewPassword == null)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="NewPassword" OnValidSubmit="EnableDataProtectionAsync">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label class="control-label text-gray">Password</label>
+            <InputText @bind-Value="NewPassword.Password" type="password" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => NewPassword.Password)" class="text-danger" />
+        </div>
+        <div class="form-group">
+            <label class="control-label text-gray">Confirm password</label>
+            <InputText @bind-Value="NewPassword.ConfirmPassword" type="password" class="form-control text-navyblue" />
+            <ValidationMessage For="@(() => NewPassword.ConfirmPassword)" class="text-danger" />
+        </div>
+        <div class="text-right">
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                <span>Enable</span>
+            </button>
+        </div>
+    </EditForm>
+}

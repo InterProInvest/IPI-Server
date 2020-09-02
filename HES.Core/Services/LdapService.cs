@@ -2,6 +2,8 @@
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
+using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.AppSettings;
 using LdapForNet;
 using System;
 using System.Collections.Generic;
@@ -23,16 +25,17 @@ namespace HES.Core.Services
             _groupService = groupService;
         }
 
-        public async Task<List<ActiveDirectoryUser>> GetUsersAsync(ActiveDirectoryCredential credentials)
+        public async Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings)
         {
             var users = new List<ActiveDirectoryUser>();
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(credentials.Host);
-                await connection.BindAsync(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
+                connection.Connect(ldapSettings.Host, 389);
+                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
-                var dn = GetDnFromHost(credentials.Host);
+                var dn = GetDnFromHost(ldapSettings.Host);
+
                 var filter = "(&(objectCategory=user)(givenName=*))";
                 var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
@@ -42,11 +45,18 @@ namespace HES.Core.Services
                     {
                         Employee = new Employee()
                         {
-                            Id = GetAttributeGUID(entity),
+                            Id = Guid.NewGuid().ToString(),
+                            ActiveDirectoryGuid = GetAttributeGUID(entity),
                             FirstName = TryGetAttribute(entity, "givenName"),
                             LastName = TryGetAttribute(entity, "sn"),
                             Email = TryGetAttribute(entity, "mail"),
                             PhoneNumber = TryGetAttribute(entity, "telephoneNumber")
+                        },
+                        DomainAccount = new WorkstationDomain()
+                        {
+                            Name = "Domain Account",
+                            Domain = GetFirstDnFromHost(ldapSettings.Host),
+                            UserName = TryGetAttribute(entity, "sAMAccountName")
                         }
                     };
 
@@ -85,15 +95,18 @@ namespace HES.Core.Services
                 foreach (var user in users)
                 {
                     Employee employee = null;
-                    try
-                    {
-                        employee = await _employeeService.CreateEmployeeAsync(user.Employee);
-                    }
-                    catch (AlreadyExistException)
-                    {
-                        // If user exist
-                        employee = await _employeeService.GetEmployeeByFullNameAsync(user.Employee);
-                    }
+                    employee = await _employeeService.ImportEmployeeAsync(user.Employee);
+
+                    //try
+                    //{
+                    //    // The employee may already be in the database, so we get his ID and create an account
+                    //    user.DomainAccount.EmployeeId = employee.Id;
+                    //    await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
+                    //}
+                    //catch (AlreadyExistException)
+                    //{
+                    //    // Ignore if a domain account exists
+                    //}
 
                     if (createGroups && user.Groups != null)
                     {
@@ -105,17 +118,17 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SetUserPasswordAsync(string employeeId, string password, ActiveDirectoryCredential credentials)
+        public async Task SetUserPasswordAsync(string employeeId, string password, LdapSettings ldapSettings)
         {
+            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+
             using (var connection = new LdapConnection())
             {
-                connection.Connect(new Uri($"ldaps://{credentials.Host}:636"));
-                connection.Bind(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
+                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
-                var dn = GetDnFromHost(credentials.Host);
-                var objectGUID = GetObjectGuid(employeeId);
-                var filter = $"(&(objectCategory=user)(objectGUID={objectGUID}))";
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry
                 {
@@ -133,16 +146,17 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(ActiveDirectoryCredential credentials)
+        public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(LdapSettings ldapSettings)
         {
             var groups = new List<ActiveDirectoryGroup>();
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(credentials.Host);
-                await connection.BindAsync(LdapAuthType.Simple, new LdapCredential() { UserName = @$"{GetFirstDnFromHost(credentials.Host)}\{credentials.UserName}", Password = credentials.Password });
+                connection.Connect(ldapSettings.Host, 389);
+                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
-                var dn = GetDnFromHost(credentials.Host);
+                var dn = GetDnFromHost(ldapSettings.Host);
+
                 var filter = "(objectCategory=group)";
                 var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
@@ -167,7 +181,8 @@ namespace HES.Core.Services
                     {
                         employees.Add(new Employee()
                         {
-                            Id = GetAttributeGUID(member),
+                            Id = Guid.NewGuid().ToString(),
+                            ActiveDirectoryGuid = GetAttributeGUID(member),
                             FirstName = TryGetAttribute(member, "givenName"),
                             LastName = TryGetAttribute(member, "sn"),
                             Email = TryGetAttribute(member, "mail"),
@@ -204,17 +219,8 @@ namespace HES.Core.Services
                     {
                         foreach (var employee in group.Employees)
                         {
-                            Employee currentEmployee = null;
-                            try
-                            {
-                                currentEmployee = await _employeeService.CreateEmployeeAsync(employee);
-                            }
-                            catch (AlreadyExistException)
-                            {
-                                // If user exist
-                                currentEmployee = await _employeeService.GetEmployeeByFullNameAsync(employee);
-                                employee.Id = currentEmployee.Id;
-                            }
+                            var imported = await _employeeService.ImportEmployeeAsync(employee);
+                            employee.Id = imported.Id;
                         }
                         await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), currentGroup.Id);
                     }
@@ -224,6 +230,11 @@ namespace HES.Core.Services
         }
 
         #region Utils
+
+        private LdapCredential CreateLdapCredential(LdapSettings ldapSettings)
+        {
+            return new LdapCredential() { UserName = @$"{GetFirstDnFromHost(ldapSettings.Host)}\{ldapSettings.UserName}", Password = ldapSettings.Password };
+        }
 
         private string GetAttributeGUID(DirectoryEntry entry)
         {

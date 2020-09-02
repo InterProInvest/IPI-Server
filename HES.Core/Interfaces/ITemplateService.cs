@@ -1,4 +1,6 @@
 ﻿using HES.Core.Entities;
+using HES.Core.Models.Web;
+using HES.Core.Models.Web.Accounts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,11 @@ namespace HES.Core.Interfaces
         IQueryable<Template> Query();
         Task<Template> GetByIdAsync(dynamic id);
         Task<List<Template>> GetTemplatesAsync();
+        Task<List<Template>> GetTemplatesAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions);
+        Task DetachTemplateAsync(Template template);
+        Task DetachTemplatesAsync(List<Template> templates);
+        Task UnchangedTemplateAsync(Template template);
+        Task<int> GetTemplatesCountAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions);
         Task<Template> CreateTmplateAsync(Template entity);
         Task EditTemplateAsync(Template template);
         Task DeleteTemplateAsync(string id);

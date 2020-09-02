@@ -12,7 +12,7 @@ namespace HES.Core.Entities
         public string Id { get; set; }
         [Required]
         public string EmployeeId { get; set; }
-        public InviteVaultStatus Status { get; set; }
+        public SoftwareVaultInvitationStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ValidTo { get; set; }
         public DateTime? AcceptedAt { get; set; }

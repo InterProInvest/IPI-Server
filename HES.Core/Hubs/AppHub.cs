@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HES.Core.Constants;
-using HES.Core.Entities;
+﻿using HES.Core.Entities;
+using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.Client;
@@ -13,6 +9,10 @@ using Hideez.SDK.Communication.Workstation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HES.Core.Hubs
 {
@@ -21,28 +21,34 @@ namespace HES.Core.Hubs
         private readonly IRemoteDeviceConnectionsService _remoteDeviceConnectionsService;
         private readonly IRemoteWorkstationConnectionsService _remoteWorkstationConnectionsService;
         private readonly IWorkstationAuditService _workstationAuditService;
-        private readonly IDeviceService _deviceService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IWorkstationService _workstationService;
+        private readonly IHardwareVaultService _hardwareVaultService;
+        private readonly IHardwareVaultTaskService _deviceTaskService;
         private readonly ILicenseService _licenseService;
         private readonly IEmployeeService _employeeService;
+        private readonly IHubContext<RefreshHub> _hubContext;
         private readonly ILogger<AppHub> _logger;
 
         public AppHub(IRemoteDeviceConnectionsService remoteDeviceConnectionsService,
                       IRemoteWorkstationConnectionsService remoteWorkstationConnectionsService,
                       IWorkstationAuditService workstationAuditService,
-                      IDeviceService deviceService,
-                      IDeviceTaskService deviceTaskService,
+                      IWorkstationService workstationService,
+                      IHardwareVaultService hardwareVaultService,
+                      IHardwareVaultTaskService deviceTaskService,
                       ILicenseService licenseService,
                       IEmployeeService employeeService,
+                      IHubContext<RefreshHub> hubContext,
                       ILogger<AppHub> logger)
         {
             _remoteDeviceConnectionsService = remoteDeviceConnectionsService;
             _remoteWorkstationConnectionsService = remoteWorkstationConnectionsService;
             _workstationAuditService = workstationAuditService;
-            _deviceService = deviceService;
+            _workstationService = workstationService;
+            _hardwareVaultService = hardwareVaultService;
             _deviceTaskService = deviceTaskService;
             _licenseService = licenseService;
             _employeeService = employeeService;
+            _hubContext = hubContext;
             _logger = logger;
         }
 
@@ -86,20 +92,17 @@ namespace HES.Core.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        private string GetWorkstationId()
-        {
-            if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
-                return (string)workstationId;
-            else
-                throw new Exception("AppHub does not contain WorkstationId!");
-        }
-
         // Incomming request
         public async Task<HesResponse> RegisterWorkstationInfo(WorkstationInfo workstationInfo)
         {
             try
             {
                 await _remoteWorkstationConnectionsService.RegisterWorkstationInfoAsync(Clients.Caller, workstationInfo);
+
+                // Workstation not approved
+                if (!await _workstationService.CheckIsApprovedAsync(workstationInfo.Id))
+                    return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
+
                 return HesResponse.Ok;
             }
             catch (Exception ex)
@@ -112,16 +115,12 @@ namespace HES.Core.Hubs
         // Incomming request
         public async Task<HesResponse> SaveClientEvents(WorkstationEventDto[] workstationEventsDto)
         {
+            // Workstation not approved
+            if (!await _workstationService.CheckIsApprovedAsync(GetWorkstationId()))
+                return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
+
             if (workstationEventsDto == null)
                 return new HesResponse(new ArgumentNullException(nameof(workstationEventsDto)));
-
-            // Ignore not approved workstation
-            //var workstationId = workstationEventsDto.FirstOrDefault().WorkstationId;
-            //var workstaton = await _workstationService.GetByIdAsync(workstationId);
-            //if (workstaton.Approved == false)
-            //{
-            //    return new HideezErrorInfo(HideezErrorCode.HesWorkstationNotApproved, $"{workstationId}");
-            //}
 
             foreach (var eventDto in workstationEventsDto)
             {
@@ -131,7 +130,7 @@ namespace HES.Core.Hubs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[AddEventDtoAsync] {ex.Message}");
+                    _logger.LogError($"[Add Event] {ex.Message}");
                 }
 
                 try
@@ -140,11 +139,19 @@ namespace HES.Core.Hubs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[AddOrUpdateWorkstationSession] {ex.Message}");
+                    _logger.LogError($"[Add/Update Session] {ex.Message}");
                 }
             }
 
             return HesResponse.Ok;
+        }
+
+        private string GetWorkstationId()
+        {
+            if (Context.Items.TryGetValue("WorkstationId", out object workstationId))
+                return (string)workstationId;
+            else
+                throw new Exception("AppHub does not contain WorkstationId!");
         }
 
         #endregion
@@ -156,8 +163,23 @@ namespace HES.Core.Hubs
         {
             try
             {
-                await OnDevicePropertiesChanged(dto);
+                // Workstation not approved
+                if (!await _workstationService.CheckIsApprovedAsync(GetWorkstationId()))
+                    return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved.");
+
+                if (dto?.DeviceSerialNo == null)
+                    throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
+
                 _remoteDeviceConnectionsService.OnDeviceConnected(dto.DeviceSerialNo, GetWorkstationId(), Clients.Caller);
+
+                await OnDevicePropertiesChanged(dto);
+
+                if (dto.LicenseInfo == 0)
+                    return HesResponse.Ok;
+
+                await InvokeVaultStateChanged(dto.DeviceSerialNo);
+                await CheckVaultStatusAsync(dto);
+                //await _remoteDeviceConnectionsService.SyncHardwareVaults(dto.DeviceSerialNo);
                 return HesResponse.Ok;
             }
             catch (Exception ex)
@@ -168,20 +190,21 @@ namespace HES.Core.Hubs
         }
 
         // Incoming request
-        public async Task<HesResponse> OnDeviceDisconnected(string deviceId)
+        public async Task<HesResponse> OnDeviceDisconnected(string vaultId)
         {
             try
             {
-                if (!string.IsNullOrEmpty(deviceId))
+                if (!string.IsNullOrEmpty(vaultId))
                 {
-                    _remoteDeviceConnectionsService.OnDeviceDisconnected(deviceId, GetWorkstationId());
-                    await _employeeService.UpdateLastSeenAsync(deviceId);
+                    await InvokeVaultStateChanged(vaultId);
+                    _remoteDeviceConnectionsService.OnDeviceDisconnected(vaultId, GetWorkstationId());
+                    await _employeeService.UpdateLastSeenAsync(vaultId);
                 }
                 return HesResponse.Ok;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[{deviceId}] {ex.Message}");
+                _logger.LogError($"[{vaultId}] {ex.Message}");
                 return new HesResponse(ex);
             }
         }
@@ -191,40 +214,11 @@ namespace HES.Core.Hubs
         {
             try
             {
-                if (dto == null || dto.DeviceSerialNo == null)
-                    throw new ArgumentNullException(nameof(dto));
+                if (dto.DeviceSerialNo == null)
+                    throw new ArgumentNullException(nameof(dto.DeviceSerialNo));
 
-                var exist = await _deviceService
-                    .DeviceQuery()
-                    .AsNoTracking()
-                    .Where(d => d.Id == dto.DeviceSerialNo)
-                    .AnyAsync();
+                await _hardwareVaultService.UpdateHardwareVaultInfoAsync(dto);
 
-                if (exist)
-                {
-                    // Update Battery, Firmware, IsLocked, LastSynced         
-                    await _deviceService.UpdateDeviceInfoAsync(dto.DeviceSerialNo, dto.Battery, dto.FirmwareVersion, dto.IsLocked);
-                }
-                else
-                {
-                    if (dto.Mac != null)
-                    {
-                        // Add device
-                        var device = new Device()
-                        {
-                            Id = dto.DeviceSerialNo,
-                            MAC = dto.Mac,
-                            Model = dto.DeviceSerialNo.Substring(0, 5),
-                            RFID = dto.Mac.Replace(":", "").Substring(0, 10),
-                            Battery = dto.Battery,
-                            Firmware = dto.FirmwareVersion,
-                            AcceessProfileId = ServerConstants.DefaulAccessProfileId,
-                            ImportedAt = DateTime.UtcNow,
-                            LastSynced = DateTime.UtcNow
-                        };
-                        await _deviceService.AddDeviceAsync(device);
-                    }
-                }
                 return HesResponse.Ok;
             }
             catch (Exception ex)
@@ -234,13 +228,35 @@ namespace HES.Core.Hubs
             }
         }
 
+        private async Task CheckVaultStatusAsync(BleDeviceDto dto)
+        {
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(dto.DeviceSerialNo);
+
+            if (vault == null)
+                return;
+
+            if (vault.Status == VaultStatus.Deactivated || vault.Status == VaultStatus.Compromised ||
+                vault.Status == VaultStatus.Suspended || vault.Status == VaultStatus.Reserved)
+                await _remoteWorkstationConnectionsService.UpdateRemoteDeviceAsync(dto.DeviceSerialNo, GetWorkstationId(), primaryAccountOnly: false);
+        }
+
+        private async Task InvokeVaultStateChanged(string vaultId)
+        {
+            await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
+
+            var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
+
+            if (vault != null && vault?.EmployeeId != null)
+                await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
+        }
+
         // Incomming request
         public async Task<HesResponse<DeviceInfoDto>> GetInfoByRfid(string rfid)
         {
             try
             {
-                var device = await _deviceService
-                    .DeviceQuery()
+                var device = await _hardwareVaultService
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.RFID == rfid);
@@ -260,8 +276,8 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var device = await _deviceService
-                    .DeviceQuery()
+                var device = await _hardwareVaultService
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.MAC == mac);
@@ -281,8 +297,8 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var device = await _deviceService
-                    .DeviceQuery()
+                var device = await _hardwareVaultService
+                    .VaultQuery()
                     .Include(d => d.Employee)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(d => d.Id == deviceId);
@@ -297,14 +313,14 @@ namespace HES.Core.Hubs
             }
         }
 
-        private async Task<DeviceInfoDto> GetDeviceInfo(Device device)
+        private async Task<DeviceInfoDto> GetDeviceInfo(HardwareVault device)
         {
             if (device == null)
                 return null;
 
             bool needUpdate = await _deviceTaskService
                 .TaskQuery()
-                .Where(t => t.DeviceId == device.Id)
+                .Where(t => t.HardwareVaultId == device.Id)
                 .AsNoTracking()
                 .AnyAsync();
 
@@ -315,7 +331,8 @@ namespace HES.Core.Hubs
                 DeviceMac = device.MAC,
                 DeviceSerialNo = device.Id,
                 NeedUpdate = needUpdate,
-                HasNewLicense = device.HasNewLicense
+                HasNewLicense = device.HasNewLicense,
+                DeviceCompromised = device.Status == VaultStatus.Compromised ? true : false
             };
 
             return info;
@@ -342,7 +359,7 @@ namespace HES.Core.Hubs
         {
             try
             {
-                var licenses = await _licenseService.GetDeviceLicensesByDeviceIdAsync(deviceId);
+                var licenses = await _licenseService.GetNotAppliedLicensesByHardwareVaultIdAsync(deviceId);
 
                 var deviceLicenseDto = new List<DeviceLicenseDTO>();
 
@@ -351,7 +368,7 @@ namespace HES.Core.Hubs
                     deviceLicenseDto.Add(new DeviceLicenseDTO
                     {
                         Id = license.Id,
-                        DeviceId = license.DeviceId,
+                        DeviceId = license.HardwareVaultId,
                         ImportedAt = license.ImportedAt,
                         AppliedAt = license.AppliedAt,
                         EndDate = license.EndDate,
@@ -374,13 +391,45 @@ namespace HES.Core.Hubs
         {
             try
             {
-                await _licenseService.SetDeviceLicenseAppliedAsync(deviceId, licenseId);
+                await _licenseService.ChangeLicenseAppliedAsync(deviceId, licenseId);
                 return HesResponse.Ok;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"[{deviceId}] {ex.Message}");
                 return new HesResponse(ex);
+            }
+        }
+
+        // Incoming request
+        public async Task<HesResponse<IList<DeviceLicenseDTO>>> GetDeviceLicenses(string deviceId)
+        {
+            try
+            {
+                var licenses = await _licenseService.GetActiveLicensesAsync(deviceId);
+
+                var deviceLicenseDto = new List<DeviceLicenseDTO>();
+
+                foreach (var license in licenses)
+                {
+                    deviceLicenseDto.Add(new DeviceLicenseDTO
+                    {
+                        Id = license.Id,
+                        DeviceId = license.HardwareVaultId,
+                        ImportedAt = license.ImportedAt,
+                        AppliedAt = license.AppliedAt,
+                        EndDate = license.EndDate,
+                        LicenseOrderId = license.LicenseOrderId,
+                        Data = license.Data,
+                    });
+                }
+
+                return new HesResponse<IList<DeviceLicenseDTO>>(deviceLicenseDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[{deviceId}] {ex.Message}");
+                return new HesResponse<IList<DeviceLicenseDTO>>(ex);
             }
         }
 

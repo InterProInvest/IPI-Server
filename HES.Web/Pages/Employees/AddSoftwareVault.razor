@@ -1,12 +1,12 @@
-﻿@if (ServerSettings == null)
+﻿@if (!_initialized)
 {
     <LoadingText />
 }
 else
 {
-    if (ServerSettings.Url == null)
+    if (ServerSettings == null)
     {
-        <Alert Message="To send an invitation, a server address is required, please add it in the parameters page." />
+        <Alert Message="To send an invitation, a server name and address is required, please add it in the parameters page." />
         <div class="text-right mt-3">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Close</button>
         </div>

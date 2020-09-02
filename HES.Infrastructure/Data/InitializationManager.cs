@@ -29,10 +29,10 @@ namespace HES.Infrastructure.Data
             using (var scope = host.Services.CreateScope())
             {
                 InitializeRoleAndAdmin(scope).Wait();
-                InitializeDeviceAccessProfile(scope).Wait();
+                InitializeHardwareVaultProfile(scope).Wait();
                 InitializeDataProtection(scope).Wait();
             }
-         
+
             return host;
         }
 
@@ -58,15 +58,15 @@ namespace HES.Infrastructure.Data
             }
         }
 
-        private static async Task InitializeDeviceAccessProfile(IServiceScope scope)
+        private static async Task InitializeHardwareVaultProfile(IServiceScope scope)
         {
             using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            var profile = await context.DeviceAccessProfiles.FindAsync("default");
+            var profile = await context.HardwareVaultProfiles.FindAsync("default");
 
             if (profile == null)
             {
-                await context.DeviceAccessProfiles.AddAsync(new DeviceAccessProfile
+                await context.HardwareVaultProfiles.AddAsync(new HardwareVaultProfile
                 {
                     Id = "default",
                     Name = "Default",
@@ -85,8 +85,19 @@ namespace HES.Infrastructure.Data
                     PinTryCount = 10,
                 });
 
-                await context.SaveChangesAsync();
             }
+            else
+            {
+                var profiles = await context.HardwareVaultProfiles.ToListAsync();
+                foreach (var item in profiles)
+                {
+                    item.ButtonBonding = true;
+                    item.MasterKeyBonding = true;
+                    item.MasterKeyNewChannel = false;
+                }
+            }
+
+            await context.SaveChangesAsync();
         }
 
         private static async Task InitializeDataProtection(IServiceScope scope)

@@ -1,5 +1,4 @@
 ﻿using HES.Core.Enums;
-using HES.Core.Interfaces;
 using HES.Core.Models.Web.SoftwareVault;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,9 +10,6 @@ namespace HES.Web.Pages.SoftwareVaults
 {
     public partial class VaultFilter : ComponentBase
     {
-        [Inject] public ISoftwareVaultService SoftwareVaultService { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
-        [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Parameter] public Func<SoftwareVaultFilter, Task> FilterChanged { get; set; }
 
         SoftwareVaultFilter Filter { get; set; } = new SoftwareVaultFilter();
@@ -24,11 +20,11 @@ namespace HES.Web.Pages.SoftwareVaults
         protected override void OnInitialized()
         {
             StatusList = new SelectList(Enum.GetValues(typeof(VaultStatus)).Cast<VaultStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
-            LicenseStatusList = new SelectList(Enum.GetValues(typeof(LicenseStatus)).Cast<LicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
+            LicenseStatusList = new SelectList(Enum.GetValues(typeof(VaultLicenseStatus)).Cast<VaultLicenseStatus>().ToDictionary(t => (int)t, t => t.ToString()), "Key", "Value");
             Initialized = true;
         }
 
-        private async Task FilterdAsync()
+        private async Task FilterAsync()
         {
             await FilterChanged.Invoke(Filter);
         }

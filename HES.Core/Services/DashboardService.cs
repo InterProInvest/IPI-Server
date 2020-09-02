@@ -3,6 +3,7 @@ using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models;
+using HES.Core.Models.Web.Dashboard;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,21 +16,21 @@ namespace HES.Core.Services
     {
         private readonly IEmployeeService _employeeService;
         private readonly IWorkstationAuditService _workstationAuditService;
-        private readonly IDeviceTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IWorkstationService _workstationService;
-        private readonly IDeviceService _deviceService;
+        private readonly IHardwareVaultService _hardwareVaultService;
 
         public DashboardService(IEmployeeService employeeService,
                                 IWorkstationAuditService workstationAuditService,
-                                IDeviceTaskService deviceTaskService,
+                                IHardwareVaultTaskService hardwareVaultTaskService,
                                 IWorkstationService workstationService,
-                                IDeviceService deviceService)
+                                IHardwareVaultService hardwareVaultService)
         {
             _employeeService = employeeService;
             _workstationAuditService = workstationAuditService;
-            _deviceTaskService = deviceTaskService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
             _workstationService = workstationService;
-            _deviceService = deviceService;
+            _hardwareVaultService = hardwareVaultService;
         }
 
         #region Server
@@ -39,20 +40,20 @@ namespace HES.Core.Services
             return ServerConstants.Version;
         }
 
-        public async Task<int> GetDeviceTasksCount()
+        public async Task<int> GetHardwareVaultTasksCount()
         {
-            return await _deviceTaskService.TaskQuery().CountAsync();
+            return await _hardwareVaultTaskService.TaskQuery().CountAsync();
         }
 
-        public async Task<List<DeviceTask>> GetDeviceTasks()
+        public async Task<List<HardwareVaultTask>> GetVaultTasks()
         {
-            return await _deviceTaskService.TaskQuery().ToListAsync();
+            return await _hardwareVaultTaskService.TaskQuery().ToListAsync();
         }
 
         public async Task<List<DashboardNotify>> GetServerNotifyAsync()
         {
             var list = new List<DashboardNotify>();
-            var longPendingTasksCount = await _deviceTaskService.TaskQuery().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
+            var longPendingTasksCount = await _hardwareVaultTaskService.TaskQuery().Where(d => d.CreatedAt <= DateTime.UtcNow.AddDays(-1)).CountAsync();
 
             if (longPendingTasksCount > 0)
             {
@@ -60,12 +61,27 @@ namespace HES.Core.Services
                 {
                     Message = "Long pending tasks",
                     Count = longPendingTasksCount,
-                    Page = "./DeviceTasks",
-                    Handler = "LongPending"
+                    Page = "long-pending-tasks"
                 });
             }
 
             return list;
+        }
+
+        public async Task<DashboardCard> GetServerCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Hideez Enterprise Server",
+                CardLogo = "/svg/dashboard/server.svg",
+                LeftText = "HES version",
+                LeftValue = $"{GetServerVersion()}",
+                LeftLink = "https://github.com/HideezGroup/HES",
+                RightText = "Hardware Vault Tasks",
+                RightValue = $"{await GetHardwareVaultTasksCount()}",
+                RightLink = "#",
+                Notifications = await GetServerNotifyAsync()
+            };
         }
 
         #endregion
@@ -100,8 +116,7 @@ namespace HES.Core.Services
                 {
                     Message = "Non-hideez unlock (24h)",
                     Count = nonHideezUnlock,
-                    Page = "/Audit/WorkstationSessions/Index",
-                    Handler = "NonHideezUnlock"
+                    Page = "/Audit/WorkstationSessions?handler=NonHideezUnlock"         
                 });
             }
 
@@ -116,34 +131,49 @@ namespace HES.Core.Services
                 {
                     Message = "Long open session (>12h)",
                     Count = longOpenSession,
-                    Page = "/Audit/WorkstationSessions/Index",
-                    Handler = "LongOpenSession"
+                    Page = "/Audit/WorkstationSessions?handler=LongOpenSession"              
                 });
             }
 
             return list;
         }
 
+        public async Task<DashboardCard> GetEmployeesCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Employees",
+                CardLogo = "/svg/dashboard/employees.svg",
+                LeftText = "Registered",
+                LeftValue = $"{await GetEmployeesCountAsync()}",
+                LeftLink = "/Employees",
+                RightText = "Opened Sessions",
+                RightValue = $"{await GetEmployeesOpenedSessionsCountAsync()}",
+                RightLink = "/Audit/WorkstationSessions?handler=OpenedSessions",
+                Notifications = await GetEmployeesNotifyAsync()
+            };
+        }
+
         #endregion
 
-        #region Devices
+        #region Hardware Vaults
 
-        public async Task<int> GetDevicesCountAsync()
+        public async Task<int> GetHardwareVaultsCountAsync()
         {
-            return await _deviceService.DeviceQuery().CountAsync();
+            return await _hardwareVaultService.VaultQuery().CountAsync();
         }
 
-        public async Task<int> GetFreeDevicesCountAsync()
+        public async Task<int> GetReadyHardwareVaultsCountAsync()
         {
-            return await _deviceService.DeviceQuery().Where(d => d.EmployeeId == null).CountAsync();
+            return await _hardwareVaultService.VaultQuery().Where(d => d.EmployeeId == null).CountAsync();
         }
 
-        public async Task<List<DashboardNotify>> GetDevicesNotifyAsync()
+        public async Task<List<DashboardNotify>> GetHardwareVaultsNotifyAsync()
         {
             var list = new List<DashboardNotify>();
 
-            var lowBattery = await _deviceService
-                .DeviceQuery()
+            var lowBattery = await _hardwareVaultService
+                .VaultQuery()
                 .Where(d => d.Battery <= 30)
                 .CountAsync();
 
@@ -153,46 +183,28 @@ namespace HES.Core.Services
                 {
                     Message = "Low battery",
                     Count = lowBattery,
-                    Page = "/Devices/Index",
-                    Handler = "LowBattery"
+                    Page = "/HardwareVaults?handler=LowBattery"
                 });
             }
 
-            var deviceLock = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.State == DeviceState.Locked)
+            var vaultLocked = await _hardwareVaultService
+                .VaultQuery()
+                .Where(d => d.Status == VaultStatus.Locked)
                 .CountAsync();
 
-            if (deviceLock > 0)
+            if (vaultLocked > 0)
             {
                 list.Add(new DashboardNotify()
                 {
-                    Message = "Device lock",
-                    Count = deviceLock,
-                    Page = "/Devices/Index",
-                    Handler = "DeviceLocked"
+                    Message = "Vault locked",
+                    Count = vaultLocked,
+                    Page = "/HardwareVaults?handler=VaultLocked"       
                 });
             }
 
-            var deviceError = await _deviceService
-               .DeviceQuery()
-               .Where(d => d.State == DeviceState.Error)
-               .CountAsync();
-
-            if (deviceError > 0)
-            {
-                list.Add(new DashboardNotify()
-                {
-                    Message = "Device error",
-                    Count = deviceError,
-                    Page = "/Devices/Index",
-                    Handler = "DeviceError"
-                });
-            }
-
-            var licenseWarning = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.Warning)
+            var licenseWarning = await _hardwareVaultService
+                .VaultQuery()
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.Warning)
                 .AsTracking()
                 .CountAsync();
 
@@ -202,14 +214,13 @@ namespace HES.Core.Services
                 {
                     Message = "License warning",
                     Count = licenseWarning,
-                    Page = "/Devices/Index",
-                    Handler = "LicenseWarning"
+                    Page = "/HardwareVaults?handler=LicenseWarning"
                 });
             }
 
-            var licenseCritical = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.Critical)
+            var licenseCritical = await _hardwareVaultService
+                .VaultQuery()
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.Critical)
                 .AsTracking()
                 .CountAsync();
 
@@ -219,14 +230,13 @@ namespace HES.Core.Services
                 {
                     Message = "License critical",
                     Count = licenseCritical,
-                    Page = "/Devices/Index",
-                    Handler = "LicenseCritical"
+                    Page = "/HardwareVaults?handler=LicenseCritical"          
                 });
             }
 
-            var licenseExpired = await _deviceService
-                .DeviceQuery()
-                .Where(d => d.LicenseStatus == LicenseStatus.Expired)
+            var licenseExpired = await _hardwareVaultService
+                .VaultQuery()
+                .Where(d => d.LicenseStatus == VaultLicenseStatus.Expired)
                 .AsTracking()
                 .CountAsync();
 
@@ -236,12 +246,27 @@ namespace HES.Core.Services
                 {
                     Message = "License expired",
                     Count = licenseExpired,
-                    Page = "/Devices/Index",
-                    Handler = "LicenseExpired"
+                    Page = "/HardwareVaults?handler=LicenseExpired"
                 });
             }
-            
+
             return list;
+        }
+
+        public async Task<DashboardCard> GetHardwareVaultsCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Hardware Vaults",
+                CardLogo = "/svg/dashboard/hardware-vaults.svg",
+                LeftText = "Registered",
+                LeftValue = $"{await GetHardwareVaultsCountAsync()}",
+                LeftLink = "/HardwareVaults",
+                RightText = "Ready",
+                RightValue = $"{await GetReadyHardwareVaultsCountAsync()}",
+                RightLink = "/HardwareVaults?handler=VaultReady",
+                Notifications = await GetHardwareVaultsNotifyAsync()
+            };
         }
 
         #endregion
@@ -273,12 +298,27 @@ namespace HES.Core.Services
                 {
                     Message = "Waiting for approval",
                     Count = notApproved,
-                    Page = "/Workstations/Index",
-                    Handler = "NotApproved"
+                    Page = "/Workstations?handler=NotApproved"             
                 });
             }
 
             return list;
+        }
+
+        public async Task<DashboardCard> GetWorkstationsCardAsync()
+        {
+            return new DashboardCard()
+            {
+                CardTitle = "Workstations",
+                CardLogo = "/svg/dashboard/workstations.svg",
+                LeftText = "Registered",
+                LeftValue = $"{await GetWorkstationsCountAsync()}",
+                LeftLink = "/Workstations",
+                RightText = "Online",
+                RightValue = $"{await GetWorkstationsOnlineCountAsync()}",
+                RightLink = "/Workstations?handler=Online",
+                Notifications = await GetWorkstationsNotifyAsync()
+            };
         }
 
         #endregion

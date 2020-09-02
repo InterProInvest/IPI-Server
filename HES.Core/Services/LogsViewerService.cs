@@ -1,4 +1,5 @@
 ﻿using HES.Core.Interfaces;
+using Microsoft.JSInterop;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,14 +11,24 @@ namespace HES.Core.Services
     {
         private readonly string _folderPath;
 
-        public LogsViewerService()
+        private readonly IJSRuntime _jSRuntime;
+
+        public LogsViewerService(IJSRuntime jSRuntime)
         {
+            _jSRuntime = jSRuntime;
             _folderPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "logs");
         }
 
         public List<string> GetFiles()
         {
             return new DirectoryInfo(_folderPath).GetFiles("*.log").Select(s => s.Name).OrderByDescending(x => x).ToList();
+        }
+
+        public async Task DownloadLogAsync(string name)
+        {
+            var path = Path.Combine(_folderPath, name);
+            var content = File.ReadAllText(path);
+            await _jSRuntime.InvokeVoidAsync("downloadLog", name, content);
         }
 
         public async Task<List<LogModel>> GetLogAsync(string name)
@@ -33,7 +44,7 @@ namespace HES.Core.Services
             {
                 if (item != "")
                 {
-                    list.Add(new LogModel { Date = separator + " " + item.Split("|")[0], Level = item.Split("|")[1], Logger = item.Split("|")[2], Message = item.Split("|")[3], Method = item.Split("|")[4], Url = item.Split("|")[5] });
+                    list.Add(new LogModel { Name = name, Date = separator + " " + item.Split("|")[0], Level = item.Split("|")[1], Logger = item.Split("|")[2], Message = item.Split("|")[3], Method = item.Split("|")[4], Url = item.Split("|")[5] });
                 }
             }
 
@@ -54,6 +65,7 @@ namespace HES.Core.Services
 
     public class LogModel
     {
+        public string Name { get; set; }
         public string Date { get; set; }
         public string Level { get; set; }
         public string Logger { get; set; }

@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Linq;
+using System.ComponentModel;
 using System.Linq.Expressions;
 
 namespace HES.Core.Utilities
 {
     public static class LinqExtensions
     {
-        public static IQueryable<T> OrderByDynamic<T>(this IQueryable<T> query, string sortColumn, bool descending = false)
+        public static IQueryable<T> OrderByDynamic<T>(this IQueryable<T> query, string sortColumn, ListSortDirection sortDirection)
         {
             const string OrderBy = "OrderBy";
             const string OrderByDesc = "OrderByDescending";
 
             var parameter = Expression.Parameter(typeof(T));
 
-            string command = !descending ? OrderBy : OrderByDesc;
+            string command = sortDirection == ListSortDirection.Ascending ? OrderBy : OrderByDesc;
 
             if (string.IsNullOrWhiteSpace(sortColumn))
                 throw new ArgumentNullException(nameof(sortColumn));

@@ -1,0 +1,160 @@
+﻿@if (!_initialized)
+{
+    <LoadingText />
+}
+else
+{
+    @if (!LicenseOrder.ProlongExistingLicenses)
+    {
+        <EditForm Model="_newLicenseOrder" OnValidSubmit="EditNewLicenseOrderAsync">
+            <DataAnnotationsValidator />
+            <ValidationErrorMessage @ref="ValidationErrorMessage" />
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label class="control-label text-gray">Contact Email</label>
+                        <InputText @bind-Value="_newLicenseOrder.ContactEmail" class="form-control text-navyblue" />
+                        <ValidationMessage For="@(() => _newLicenseOrder.ContactEmail)" class="text-danger" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label text-gray">Note</label>
+                        <InputTextArea @bind-Value="_newLicenseOrder.Note" class="form-control text-navyblue" rows="3" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label text-gray">Start Date</label>
+                        <InputDate class="form-control" @bind-Value="_newLicenseOrder.StartDate" />
+                        <ValidationMessage For="@(() => _newLicenseOrder.StartDate)" class="text-danger" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label text-gray">End Date</label>
+                        <InputDate class="form-control" @bind-Value="_newLicenseOrder.EndDate" />
+                        <ValidationMessage For="@(() => _newLicenseOrder.EndDate)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <input type="text" @bind-value="_newLicenseOrder.SearchText" @bind-value:event="oninput" class="form-control is-search mb-2" placeholder="Search" />
+                    <div style="max-height:344px;overflow:auto" class="border">
+                        <table class="table table-hover w-100 disable-selection mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="table-col-menu">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="newLicenseOrderCheckAll" @onchange="@((e) => { _newLicenseOrder.HardwareVaults.ForEach(x => x.Checked = (bool)e.Value); })">
+                                            <label class="custom-control-label" for="newLicenseOrderCheckAll"></label>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        Serial Number
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var hardwareVault in _newLicenseOrder.HardwareVaults.Where(x => x.Id.Contains(_newLicenseOrder.SearchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
+                                {
+                                    <tr @key="hardwareVault.Id" @onclick="@(() => { hardwareVault.Checked = !hardwareVault.Checked; })">
+                                        <td class="table-col-menu">
+                                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                                                <input type="checkbox" class="custom-control-input" @bind="hardwareVault.Checked" id="newLicenseOrder_@hardwareVault.Id">
+                                                <label class="custom-control-label" for="newLicenseOrder_@hardwareVault.Id"></label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @hardwareVault.Id
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <ValidationMessage For="@(() => _newLicenseOrder.HardwareVaults)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col text-right">
+                    <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+                        <span>Save</span>
+                    </button>
+                </div>
+            </div>
+        </EditForm>
+    }
+    else
+    {
+        <EditForm Model="_renewLicenseOrder" OnValidSubmit="EditRenewLicenseOrderAsync">
+            <DataAnnotationsValidator />
+            <ValidationErrorMessage @ref="ValidationErrorMessage" />
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label class="control-label text-gray">Contact Email</label>
+                        <InputText @bind-Value="_renewLicenseOrder.ContactEmail" class="form-control text-navyblue" />
+                        <ValidationMessage For="@(() => _renewLicenseOrder.ContactEmail)" class="text-danger" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label text-gray">Note</label>
+                        <InputTextArea @bind-Value="_renewLicenseOrder.Note" class="form-control text-navyblue" rows="3" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label text-gray">End Date</label>
+                        <InputDate class="form-control" @bind-Value="_renewLicenseOrder.EndDate" />
+                        <ValidationMessage For="@(() => _renewLicenseOrder.EndDate)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <input type="text" @bind-value="_renewLicenseOrder.SearchText" @bind-value:event="oninput" class="form-control is-search mb-2" placeholder="Search" />
+                    <div style="max-height:344px;overflow:auto" class="border">
+                        <table class="table table-hover w-100 disable-selection mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="table-col-menu">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="renewLicenseOrderCheckAll" @onchange="@((e) => { _renewLicenseOrder.HardwareVaults.ForEach(x => x.Checked = (bool)e.Value); })">
+                                            <label class="custom-control-label" for="renewLicenseOrderCheckAll"></label>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        Serial Number
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var hardwareVault in _renewLicenseOrder.HardwareVaults.Where(x => x.Id.Contains(_renewLicenseOrder.SearchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
+                                {
+                                    <tr @key="hardwareVault.Id" @onclick="@(() => { hardwareVault.Checked = !hardwareVault.Checked; })">
+                                        <td class="table-col-menu">
+                                            <div class="custom-control custom-checkbox" @onclick:stopPropagation="true">
+                                                <input type="checkbox" class="custom-control-input" @bind="hardwareVault.Checked" id="renewLicenseOrder_@hardwareVault.Id">
+                                                <label class="custom-control-label" for="renewLicenseOrder_@hardwareVault.Id"></label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                @hardwareVault.Id<span class="badge badge-secondary">Valid to @hardwareVault.LicenseEndDate.Value.ToShortDateString()</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <ValidationMessage For="@(() => _renewLicenseOrder.HardwareVaults)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col text-right">
+                    <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
+                        <span>Save</span>
+                    </button>
+                </div>
+            </div>
+        </EditForm>
+    }
+}

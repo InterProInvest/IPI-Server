@@ -1,0 +1,46 @@
+﻿<div class="d-flex justify-content-between mb-2">
+    <div class="d-flex align-items-center flex-wrap">
+        @CompanyBody
+    </div>
+    <div class="d-flex align-items-end flex-nowrap">
+        <input type="text" @bind-value="SearchText" @bind-value:event="oninput" class="form-control is-search" placeholder="Search">
+    </div>
+</div>
+<div class="table-responsive mb-3">
+    <table class="table table-hover border rounded mb-0 disable-selection">
+        <thead>
+            <tr>
+                <th @onclick="@(() => SortTable())">
+                    <span class="w-100">
+                        Departments
+                    </span>
+                    <img class="table-sort-arrow @GetSortIcon()" />
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var department in Departments.Where(x => x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)))
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex align-items-center flex-wrap">
+                                @department.Name
+                            </div>
+                            <div class="d-flex align-items-center flex-nowrap">
+                                <button type="button" class="btn btn-light border mx-1" title="Edit department" @onclick="@(async () => await EditDepartmentDialog.Invoke(department))">
+                                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-light border mx-1" title="Delete department" @onclick="@(async () => await DeleteDepartmentDialog.Invoke(department))">
+                                    <img class="icon-btn" src="/svg/action/delete.svg" />
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

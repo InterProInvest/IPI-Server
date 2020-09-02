@@ -1,4 +1,5 @@
-﻿using HES.Core.Interfaces;
+﻿using Dasync.Collections;
+using HES.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -53,16 +54,20 @@ namespace HES.Infrastructure
             return entity;
         }
 
-        public async Task UpdateAsync(T entity)
+        public async Task<T> UpdateAsync(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+
+            return entity;
         }
 
-        public Task Unchanged(T entity)
+        public async Task<IList<T>> UpdatRangeAsync(IList<T> entity)
         {
-            _context.Entry(entity).State = EntityState.Unchanged;
-            return Task.CompletedTask;
+            _context.Set<T>().UpdateRange(entity);
+            await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         public async Task UpdateOnlyPropAsync(T entity, string[] properties)
@@ -105,6 +110,33 @@ namespace HES.Infrastructure
         public async Task<bool> ExistAsync(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().Where(predicate).AnyAsync();
+        }
+
+        public Task UnchangedAsync(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Unchanged;
+            return Task.CompletedTask;
+        }
+
+        public Task DetachedAsync(T entity)
+        {
+            _context.Entry(entity).State = EntityState.Detached;
+
+            foreach (var collectionEntry in _context.Entry(entity).Collections)
+            {
+                if (collectionEntry.CurrentValue != null)
+                {
+                    foreach (var current in collectionEntry.CurrentValue)
+                        collectionEntry.EntityEntry.Context.Entry(current).State = EntityState.Detached;
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public async Task ReloadAsync(T entity)
+        {
+            await _context.Entry(entity).ReloadAsync();
         }
     }
 }

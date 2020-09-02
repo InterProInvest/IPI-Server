@@ -1,0 +1,27 @@
+﻿@if (Filter == null)
+{
+    <LoadingText />
+}
+else
+{
+    <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="text-gray">Name</label>
+                <InputText class="form-control" @bind-Value="Filter.Name" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="text-gray">Urls</label>
+                <InputText class="form-control" @bind-Value="Filter.Urls" />
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                <label class="text-gray">Apps</label>
+                <InputText class="form-control" @bind-Value="Filter.Apps" />
+            </div>
+            <div class="col align-self-end text-right form-group">
+                <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                <input type="submit" value="Filter" class="btn btn-primary" />
+            </div>
+        </div>
+    </EditForm>
+}

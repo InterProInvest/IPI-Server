@@ -9,10 +9,13 @@ namespace HES.Core.Interfaces
 {
     public interface IEmailSenderService
     {
-        Task SendEmailAsync(string email, string subject, string htmlMessage);
-        Task SendLicenseChangedAsync(DateTime createdAt, OrderStatus status);
-        Task SendDeviceLicenseStatus(List<Device> devices);
+        Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status);
+        Task SendHardwareVaultLicenseStatus(List<HardwareVault> vaults);
         Task SendActivateDataProtectionAsync();
+        Task SendUserInvitationAsync(string email, string callbackUrl);
+        Task SendUserResetPasswordAsync(string email, string callbackUrl);
+        Task SendUserConfirmEmailAsync(string email, string callbackUrl);
         Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo);
+        Task SendHardwareVaultActivationCodeAsync(Employee employee, string code);
     }
 }
