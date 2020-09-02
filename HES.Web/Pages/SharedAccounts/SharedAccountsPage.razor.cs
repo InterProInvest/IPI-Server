@@ -4,16 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.SharedAccounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class SharedAccountsPage : ComponentBase, IDisposable
+    public partial class SharedAccountsPage : OwningComponentBase, IDisposable
     {
+        public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IMainTableService<SharedAccount, SharedAccountsFilter> MainTableService { get; set; }
-        [Inject] public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -22,6 +23,8 @@ namespace HES.Web.Pages.SharedAccounts
 
         protected override async Task OnInitializedAsync()
         {
+            SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetSharedAccounts();
             await MainTableService.InitializeAsync(SharedAccountService.GetSharedAccountsAsync, SharedAccountService.GetSharedAccountsCountAsync, StateHasChanged, nameof(SharedAccount.Name), ListSortDirection.Ascending);
@@ -112,6 +115,7 @@ namespace HES.Web.Pages.SharedAccounts
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            SharedAccountService.Dispose();
             MainTableService.Dispose();
         }
     }

@@ -59,7 +59,7 @@ namespace HES.Web.Pages.Dashboard
 
         public void Dispose()
         {
-            //DashboardService.Dispose();
+            DashboardService.Dispose();
         }
     }
 }

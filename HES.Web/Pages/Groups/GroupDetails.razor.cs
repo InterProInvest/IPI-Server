@@ -4,16 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Groups;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class GroupDetails : ComponentBase, IDisposable
+    public partial class GroupDetails : OwningComponentBase, IDisposable
     {
+        public IGroupService GroupService { get; set; }
         [Inject] public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
-        [Inject] public IGroupService GroupService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -32,6 +33,8 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
+                GroupService = ScopedServices.GetRequiredService<IGroupService>();
+
                 await InitializeHubAsync();
                 await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
@@ -99,6 +102,7 @@ namespace HES.Web.Pages.Groups
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            GroupService.Dispose();
             MainTableService.Dispose();
         }
     }

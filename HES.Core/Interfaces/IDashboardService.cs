@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IDashboardService/*: IDisposable*/
+    public interface IDashboardService : IDisposable
     {
         Task<DashboardCard> GetServerCardAsync();
         string GetServerVersion();

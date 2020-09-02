@@ -4,17 +4,18 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeeDetailsPage : ComponentBase, IDisposable
+    public partial class EmployeeDetailsPage : OwningComponentBase, IDisposable
     {
+        public IEmployeeService EmployeeService { get; set; }
+        public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -34,6 +35,9 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
+                EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+                AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+
                 await InitializeHubAsync();
                 await LoadEmployeeAsync();
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
@@ -322,6 +326,8 @@ namespace HES.Web.Pages.Employees
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            EmployeeService.Dispose();
+            AppSettingsService.Dispose();
             MainTableService.Dispose();
         }
     }

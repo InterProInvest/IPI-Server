@@ -4,16 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class HardwareVaultsPage : ComponentBase, IDisposable
+    public partial class HardwareVaultsPage : OwningComponentBase, IDisposable
     {
+        public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<HardwareVaultsPage> Logger { get; set; }
@@ -24,6 +25,8 @@ namespace HES.Web.Pages.HardwareVaults
 
         protected override async Task OnInitializedAsync()
         {
+            HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
             switch (DashboardFilter)
             {
                 case "LowBattery":
@@ -176,6 +179,7 @@ namespace HES.Web.Pages.HardwareVaults
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            HardwareVaultService.Dispose();
             MainTableService.Dispose();
         }
     }

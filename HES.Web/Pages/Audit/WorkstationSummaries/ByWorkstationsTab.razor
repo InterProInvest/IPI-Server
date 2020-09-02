@@ -1,4 +1,6 @@
-﻿@using HES.Core.Models.Web.Audit
+﻿@inherits OwningComponentBase
+@using HES.Core.Models.Web.Audit
+
 @if (MainTableService.Entities == null)
 {
     <LoadingTab />

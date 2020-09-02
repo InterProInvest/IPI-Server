@@ -4,15 +4,17 @@ using HES.Core.Models.Web.AppSettings;
 using HES.Core.Models.Web.Workstations;
 using HES.Core.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Alarm
 {
-    public partial class AlarmPage : ComponentBase
+    public partial class AlarmPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IWorkstationService WorkstationService { get; set; }
+        public IWorkstationService WorkstationService { get; set; }
+        public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
 
         public AlarmState AlarmState { get; set; }
@@ -21,6 +23,9 @@ namespace HES.Web.Pages.Alarm
 
         protected override async Task OnInitializedAsync()
         {
+            WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
+            AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+
             await BreadcrumbsService.SetAlarm();
             await GetAlarmState();
             WorkstationOnline = RemoteWorkstationConnectionsService.WorkstationsOnlineCount();
@@ -57,6 +62,12 @@ namespace HES.Web.Pages.Alarm
             };
 
             await ModalDialogService.ShowAsync("Turn off alarm", body);
+        }
+
+        public void Dispose()
+        {
+            WorkstationService.Dispose();
+            AppSettingsService.Dispose();
         }
     }
 }

@@ -4,24 +4,27 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 {
-    public partial class HardwareVaultAccessProfilePage : ComponentBase, IDisposable
+    public partial class HardwareVaultAccessProfilePage : OwningComponentBase, IDisposable
     {
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter> MainTableService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
+            HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
             await InitializeHubAsync();
             await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
             await BreadcrumbsService.SetHardwareVaultProfiles();
@@ -99,6 +102,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            HardwareVaultService.Dispose();
             MainTableService.Dispose();
         }
     }

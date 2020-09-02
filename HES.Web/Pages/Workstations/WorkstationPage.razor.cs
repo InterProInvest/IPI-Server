@@ -4,15 +4,16 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Workstations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Workstations
 {
-    public partial class WorkstationPage : ComponentBase, IDisposable
+    public partial class WorkstationPage : OwningComponentBase, IDisposable
     {
+        public IWorkstationService WorkstationService { get; set; }
         [Inject] public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
-        [Inject] public IWorkstationService WorkstationService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -22,6 +23,8 @@ namespace HES.Web.Pages.Workstations
 
         protected override async Task OnInitializedAsync()
         {
+            WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
+
             switch (DashboardFilter)
             {
                 case "NotApproved":
@@ -114,6 +117,7 @@ namespace HES.Web.Pages.Workstations
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
+            WorkstationService.Dispose();
             MainTableService.Dispose();
         }
     }

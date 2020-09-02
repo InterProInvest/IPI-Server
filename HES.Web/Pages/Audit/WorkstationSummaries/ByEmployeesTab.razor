@@ -1,4 +1,6 @@
-﻿@using HES.Core.Models.Web.Audit
+﻿@inherits OwningComponentBase
+@using HES.Core.Models.Web.Audit
+
 @if (MainTableService.Entities == null)
 {
     <LoadingTab />
@@ -104,7 +106,7 @@ else
             </td>
             <td>
                 @context.WorkingDaysCount
-            </td>           
+            </td>
             <td>
                 @context.TotalSessionsCount
             </td>
@@ -130,7 +132,7 @@ else
             </td>
             <td>
                 @Math.Round(context.AvgSessionsCountPerDay, 1)
-            </td>  
+            </td>
             <td>
                 @if (context.AvgWorkingHoursPerDay.Days != 0)
                     {

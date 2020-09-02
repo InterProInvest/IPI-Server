@@ -1,6 +1,7 @@
 ﻿@page "/Workstations"
 @page "/Workstations/{DashboardFilter}"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (MainTableService.Entities == null)
 {

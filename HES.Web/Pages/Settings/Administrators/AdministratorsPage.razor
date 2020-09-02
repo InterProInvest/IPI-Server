@@ -1,5 +1,6 @@
 ﻿@page "/Settings/Administrators"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (MainTableService.Entities == null)
 {

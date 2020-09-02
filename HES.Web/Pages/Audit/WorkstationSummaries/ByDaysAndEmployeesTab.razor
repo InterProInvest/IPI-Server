@@ -1,4 +1,6 @@
-﻿@using HES.Core.Models.Web.Audit
+﻿@inherits OwningComponentBase
+@using HES.Core.Models.Web.Audit
+
 @if (MainTableService.Entities == null)
 {
     <LoadingTab />
@@ -7,7 +9,7 @@ else
 {
     <TableAction>
         <FilterForm>
-            <SummaryFilterComponent FilterChanged="MainTableService.FilterChangedAsync" TabName="@nameof(ByDaysAndEmployeesTab)"/>
+            <SummaryFilterComponent FilterChanged="MainTableService.FilterChangedAsync" TabName="@nameof(ByDaysAndEmployeesTab)" />
         </FilterForm>
         <ActionButtons>
             <h2 class="text-navyblue mb-0">Summary</h2>
@@ -91,28 +93,28 @@ else
             <td>
                 @context.WorkstationsCount
             </td>
-            <td>           
+            <td>
                 @if (context.AvgSessionsDuration.Days != 0)
-                {
+                    {
                     @context.AvgSessionsDuration.ToString("%d") <span>day(s)</span> @context.AvgSessionsDuration.ToString("hh\\:mm\\:ss")
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     @context.AvgSessionsDuration.ToString("hh\\:mm\\:ss")
-                }
+                    }
             </td>
             <td>
                 @context.SessionsCount
             </td>
             <td>
                 @if (context.TotalSessionsDuration.Days != 0)
-                {
+                    {
                     @context.TotalSessionsDuration.ToString("%d") <span>day(s)</span> @context.TotalSessionsDuration.ToString("hh\\:mm\\:ss")
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     @context.TotalSessionsDuration.ToString("hh\\:mm\\:ss")
-                }
+                    }
             </td>
         </TableRow>
     </MainTable>

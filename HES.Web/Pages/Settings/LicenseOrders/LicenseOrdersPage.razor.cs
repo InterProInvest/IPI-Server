@@ -4,24 +4,27 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class LicenseOrdersPage : ComponentBase, IDisposable
+    public partial class LicenseOrdersPage : OwningComponentBase, IDisposable
     {
-        [Inject] public ILicenseService LicenseService { get; set; }
-        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        public ILicenseService LicenseService { get; set; }
         [Inject] public IMainTableService<LicenseOrder, LicenseOrderFilter> MainTableService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; } 
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
+            LicenseService = ScopedServices.GetRequiredService<ILicenseService>();
+
             await InitializeHubAsync();
             await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
             await BreadcrumbsService.SetLicenseOrders();
@@ -111,6 +114,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         public void Dispose()
         {
             _ = hubConnection.DisposeAsync();
+            LicenseService.Dispose();
             MainTableService.Dispose();
         }
     }

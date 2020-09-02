@@ -107,8 +107,8 @@ namespace HES.Web.Pages.Employees
         public void Dispose()
         {
             _ = hubConnection?.DisposeAsync();
-            MainTableService.Dispose();
             EmployeeService.Dispose();
+            MainTableService.Dispose();
         }
     }
 }
