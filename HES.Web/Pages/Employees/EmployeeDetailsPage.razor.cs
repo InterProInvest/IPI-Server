@@ -15,7 +15,7 @@ namespace HES.Web.Pages.Employees
     {
         public IEmployeeService EmployeeService { get; set; }
         public IAppSettingsService AppSettingsService { get; set; }
-        [Inject] public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
+        public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -37,12 +37,13 @@ namespace HES.Web.Pages.Employees
             {
                 EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
                 AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Account, AccountFilter>>();
 
                 await InitializeHubAsync();
                 await LoadEmployeeAsync();
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
                 await LoadLdapSettingsAsync();
-                await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
+                await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, ModalDialogService, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
                 Initialized = true;
             }
             catch (Exception ex)

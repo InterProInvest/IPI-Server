@@ -14,7 +14,8 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
     public partial class HardwareVaultAccessProfilePage : OwningComponentBase, IDisposable
     {
         public IHardwareVaultService HardwareVaultService { get; set; }
-        [Inject] public IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter> MainTableService { get; set; }
+        public IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -24,9 +25,10 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         protected override async Task OnInitializedAsync()
         {
             HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter>>();
 
             await InitializeHubAsync();
-            await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
+            await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
             await BreadcrumbsService.SetHardwareVaultProfiles();
         }
 

@@ -14,7 +14,8 @@ namespace HES.Web.Pages.Templates
     public partial class TemplatesPage : OwningComponentBase, IDisposable
     {
         public ITemplateService TemplateService { get; set; }
-        [Inject] public IMainTableService<Template, TemplateFilter> MainTableService { get; set; }
+        public IMainTableService<Template, TemplateFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -24,10 +25,11 @@ namespace HES.Web.Pages.Templates
         protected override async Task OnInitializedAsync()
         {
             TemplateService = ScopedServices.GetRequiredService<ITemplateService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Template, TemplateFilter>>();
 
             await InitializeHubAsync();
             await BreadcrumbsService.SetTemplates();
-            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
+            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, ModalDialogService, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
         }
 
         private async Task CreateTemplateAsync()

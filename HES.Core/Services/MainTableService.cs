@@ -12,7 +12,7 @@ namespace HES.Core.Services
 {
     public class MainTableService<TItem, TFilter> : IDisposable, IMainTableService<TItem, TFilter> where TItem : class where TFilter : class, new()
     {
-        private readonly IModalDialogService _modalDialogService;
+        private IModalDialogService _modalDialogService;
         private Func<DataLoadingOptions<TFilter>, Task<int>> _getEntitiesCount;
         private Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> _getEntities;
         private Action _stateHasChanged;
@@ -24,17 +24,17 @@ namespace HES.Core.Services
         public int CurrentPage { get; set; } = 1;
         public string SyncPropName { get; set; }
 
-        public MainTableService(IModalDialogService modalDialogService)
+        public MainTableService()
         {
-            _modalDialogService = modalDialogService;
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
-        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id", string entityId = null)
+        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, IModalDialogService modalDialogService, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id", string entityId = null)
         {
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
             _getEntitiesCount = getEntitiesCount;
+            _modalDialogService = modalDialogService;
             _modalDialogService.OnClose += LoadTableDataAsync;
             DataLoadingOptions.SortedColumn = sortedColumn;
             DataLoadingOptions.SortDirection = sortDirection;
@@ -74,7 +74,7 @@ namespace HES.Core.Services
 
         public async Task DisplayRowsChangedAsync(int displayRows)
         {
-            DataLoadingOptions.Take = displayRows;   
+            DataLoadingOptions.Take = displayRows;
             SetCurrentPage();
             await LoadTableDataAsync();
         }

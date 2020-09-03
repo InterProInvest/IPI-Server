@@ -10,12 +10,14 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
     public partial class ByDaysAndEmployeesTab : OwningComponentBase, IDisposable
     {
         public IWorkstationAuditService WorkstationAuditService { get; set; }
-        [Inject] public IMainTableService<SummaryByDayAndEmployee, SummaryFilter> MainTableService { get; set; }
+        public IMainTableService<SummaryByDayAndEmployee, SummaryFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             WorkstationAuditService = ScopedServices.GetRequiredService<IWorkstationAuditService>();
-            await MainTableService.InitializeAsync(WorkstationAuditService.GetSummaryByDayAndEmployeesAsync, WorkstationAuditService.GetSummaryByDayAndEmployeesCountAsync, StateHasChanged, nameof(SummaryByDayAndEmployee.Date), syncPropName: "Date");
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<SummaryByDayAndEmployee, SummaryFilter>>();
+            await MainTableService.InitializeAsync(WorkstationAuditService.GetSummaryByDayAndEmployeesAsync, WorkstationAuditService.GetSummaryByDayAndEmployeesCountAsync, ModalDialogService, StateHasChanged, nameof(SummaryByDayAndEmployee.Date), syncPropName: "Date");
         }
 
         public void Dispose()

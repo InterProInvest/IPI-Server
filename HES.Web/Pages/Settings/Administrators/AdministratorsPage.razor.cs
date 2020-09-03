@@ -18,8 +18,9 @@ namespace HES.Web.Pages.Settings.Administrators
     {
         public IApplicationUserService ApplicationUserService { get; set; }
         public IEmailSenderService EmailSenderService { get; set; }
+        public IMainTableService<ApplicationUser, ApplicationUserFilter> MainTableService { get; set; }
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-        [Inject] public IMainTableService<ApplicationUser, ApplicationUserFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<AdministratorsPage> Logger { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
@@ -34,11 +35,12 @@ namespace HES.Web.Pages.Settings.Administrators
         {
             ApplicationUserService = ScopedServices.GetRequiredService<IApplicationUserService>();
             EmailSenderService = ScopedServices.GetRequiredService<IEmailSenderService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<ApplicationUser, ApplicationUserFilter>>();
 
             await InitializeHubAsync();
             AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             await BreadcrumbsService.SetAdministrators();
-            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
+            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, ModalDialogService, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
         }
 
         private async Task InitializeHubAsync()

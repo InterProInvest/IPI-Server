@@ -14,7 +14,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
     public partial class LicenseOrdersPage : OwningComponentBase, IDisposable
     {
         public ILicenseService LicenseService { get; set; }
-        [Inject] public IMainTableService<LicenseOrder, LicenseOrderFilter> MainTableService { get; set; }
+        public IMainTableService<LicenseOrder, LicenseOrderFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; } 
@@ -24,9 +25,10 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         protected override async Task OnInitializedAsync()
         {
             LicenseService = ScopedServices.GetRequiredService<ILicenseService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<LicenseOrder, LicenseOrderFilter>>();
 
             await InitializeHubAsync();
-            await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
+            await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, ModalDialogService, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
             await BreadcrumbsService.SetLicenseOrders();
         }
 

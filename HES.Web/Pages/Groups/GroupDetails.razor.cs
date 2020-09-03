@@ -14,9 +14,9 @@ namespace HES.Web.Pages.Groups
     public partial class GroupDetails : OwningComponentBase, IDisposable
     {
         public IGroupService GroupService { get; set; }
-        [Inject] public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
-        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<GroupDetails> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -38,7 +38,7 @@ namespace HES.Web.Pages.Groups
                 await InitializeHubAsync();
                 await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
-                await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
+                await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, ModalDialogService, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
                 Initialized = true;
             }
             catch (Exception ex)

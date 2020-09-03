@@ -13,13 +13,15 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
     public partial class WorkstationSessionsPage : OwningComponentBase, IDisposable
     {
         public IWorkstationAuditService WorkstationAuditService { get; set; }
-        [Inject] public IMainTableService<WorkstationSession, WorkstationSessionFilter> MainTableService { get; set; }
+        public IMainTableService<WorkstationSession, WorkstationSessionFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             WorkstationAuditService = ScopedServices.GetRequiredService<IWorkstationAuditService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<WorkstationSession, WorkstationSessionFilter>>();
 
             switch (DashboardFilter)
             {
@@ -35,7 +37,7 @@ namespace HES.Web.Pages.Audit.WorkstationSessions
             }
 
             await BreadcrumbsService.SetAuditWorkstationSessions();
-            await MainTableService.InitializeAsync(WorkstationAuditService.GetWorkstationSessionsAsync, WorkstationAuditService.GetWorkstationSessionsCountAsync, StateHasChanged, nameof(WorkstationSession.StartDate), ListSortDirection.Descending);
+            await MainTableService.InitializeAsync(WorkstationAuditService.GetWorkstationSessionsAsync, WorkstationAuditService.GetWorkstationSessionsCountAsync, ModalDialogService, StateHasChanged, nameof(WorkstationSession.StartDate), ListSortDirection.Descending);
         }
 
         public void Dispose()

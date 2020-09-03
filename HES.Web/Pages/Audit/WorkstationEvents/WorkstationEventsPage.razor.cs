@@ -12,15 +12,17 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
     public partial class WorkstationEventsPage : OwningComponentBase, IDisposable
     {
         public IWorkstationAuditService WorkstationAuditService { get; set; }
-        [Inject] public IMainTableService<WorkstationEvent, WorkstationEventFilter> MainTableService { get; set; }
+        public IMainTableService<WorkstationEvent, WorkstationEventFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             WorkstationAuditService = ScopedServices.GetRequiredService<IWorkstationAuditService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<WorkstationEvent, WorkstationEventFilter>>();
 
             await BreadcrumbsService.SetAuditWorkstationEvents();
-            await MainTableService.InitializeAsync(WorkstationAuditService.GetWorkstationEventsAsync, WorkstationAuditService.GetWorkstationEventsCountAsync, StateHasChanged, nameof(WorkstationEvent.Date), ListSortDirection.Descending);
+            await MainTableService.InitializeAsync(WorkstationAuditService.GetWorkstationEventsAsync, WorkstationAuditService.GetWorkstationEventsCountAsync, ModalDialogService, StateHasChanged, nameof(WorkstationEvent.Date), ListSortDirection.Descending);
         }
 
         public void Dispose()

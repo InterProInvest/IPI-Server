@@ -10,12 +10,14 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
     public partial class ByDepartmentsTab : OwningComponentBase, IDisposable
     {
         public IWorkstationAuditService WorkstationAuditService { get; set; }
-        [Inject] public IMainTableService<SummaryByDepartments, SummaryFilter> MainTableService { get; set; }
+        public IMainTableService<SummaryByDepartments, SummaryFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             WorkstationAuditService = ScopedServices.GetRequiredService<IWorkstationAuditService>();
-            await MainTableService.InitializeAsync(WorkstationAuditService.GetSummaryByDepartmentsAsync, WorkstationAuditService.GetSummaryByDepartmentsCountAsync, StateHasChanged, nameof(SummaryByDepartments.Company), syncPropName: "Company");
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<SummaryByDepartments, SummaryFilter>>();
+            await MainTableService.InitializeAsync(WorkstationAuditService.GetSummaryByDepartmentsAsync, WorkstationAuditService.GetSummaryByDepartmentsCountAsync, ModalDialogService, StateHasChanged, nameof(SummaryByDepartments.Company), syncPropName: "Company");
         }
 
         public void Dispose()

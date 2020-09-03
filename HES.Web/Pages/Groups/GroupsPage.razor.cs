@@ -14,7 +14,7 @@ namespace HES.Web.Pages.Groups
     public partial class GroupsPage : OwningComponentBase, IDisposable
     {
         public IGroupService GroupService { get; set; }
-        [Inject] public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
+        public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -26,10 +26,11 @@ namespace HES.Web.Pages.Groups
         protected override async Task OnInitializedAsync()
         {
             GroupService = ScopedServices.GetRequiredService<IGroupService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Group, GroupFilter>>();
 
             await InitializeHubAsync();
             await BreadcrumbsService.SetGroups();
-            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, StateHasChanged, nameof(Group.Name));
+            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, ModalDialogService, StateHasChanged, nameof(Group.Name));
         }
 
         private Task NavigateToGroupDetails()

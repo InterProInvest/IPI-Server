@@ -14,7 +14,8 @@ namespace HES.Web.Pages.SharedAccounts
     public partial class SharedAccountsPage : OwningComponentBase, IDisposable
     {
         public ISharedAccountService SharedAccountService { get; set; }
-        [Inject] public IMainTableService<SharedAccount, SharedAccountsFilter> MainTableService { get; set; }
+        public IMainTableService<SharedAccount, SharedAccountsFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -24,10 +25,11 @@ namespace HES.Web.Pages.SharedAccounts
         protected override async Task OnInitializedAsync()
         {
             SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<SharedAccount, SharedAccountsFilter>>();
 
             await InitializeHubAsync();
             await BreadcrumbsService.SetSharedAccounts();
-            await MainTableService.InitializeAsync(SharedAccountService.GetSharedAccountsAsync, SharedAccountService.GetSharedAccountsCountAsync, StateHasChanged, nameof(SharedAccount.Name), ListSortDirection.Ascending);
+            await MainTableService.InitializeAsync(SharedAccountService.GetSharedAccountsAsync, SharedAccountService.GetSharedAccountsCountAsync, ModalDialogService, StateHasChanged, nameof(SharedAccount.Name), ListSortDirection.Ascending);
         }
 
         private async Task CreateSharedAccountAsync()
