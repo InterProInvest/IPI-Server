@@ -15,6 +15,7 @@ namespace HES.Core.Interfaces
         public List<TItem> Entities { get; set; }
         public int CurrentPage { get; set; }
         public int TotalRecords { get; set; }
+        public bool Loading { get; }
         Task ShowModalAsync(string modalTitle, RenderFragment modalBody, ModalDialogSize modalSize = ModalDialogSize.Default);
         Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, IModalDialogService modalDialogService, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id", string entityId = null);
         Task LoadTableDataAsync();

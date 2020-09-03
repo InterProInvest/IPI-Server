@@ -23,6 +23,7 @@ namespace HES.Core.Services
         public int TotalRecords { get; set; }
         public int CurrentPage { get; set; } = 1;
         public string SyncPropName { get; set; }
+        public bool Loading { get; private set; }
 
         public MainTableService()
         {
@@ -45,12 +46,25 @@ namespace HES.Core.Services
 
         public async Task LoadTableDataAsync()
         {
-            TotalRecords = await _getEntitiesCount.Invoke(DataLoadingOptions);
-            SetCurrentPage();
-            DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
-            Entities = await _getEntities.Invoke(DataLoadingOptions);
-            SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
-            _stateHasChanged?.Invoke();
+            if (Loading)
+                return;
+
+            try
+            {
+                Loading = true;
+                _stateHasChanged?.Invoke();
+       
+                TotalRecords = await _getEntitiesCount.Invoke(DataLoadingOptions);
+                SetCurrentPage();
+                DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
+                Entities = await _getEntities.Invoke(DataLoadingOptions);
+                SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
+            }
+            finally
+            {
+                Loading = false;
+                _stateHasChanged?.Invoke();
+            }
         }
 
         public Task SelectedItemChangedAsync(TItem item)
