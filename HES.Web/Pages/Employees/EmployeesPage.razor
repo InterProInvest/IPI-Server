@@ -41,7 +41,7 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="EmployeeDetailsAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="EmployeeDetailsAsync" Loading="MainTableService.Loading">
         <TableHeader>
             <MainTableHeader Title="Name"
                              TitleWidth="12.5"
