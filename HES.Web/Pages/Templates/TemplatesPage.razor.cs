@@ -90,7 +90,9 @@ namespace HES.Web.Pages.Templates
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             TemplateService.Dispose();
             MainTableService.Dispose();
         }

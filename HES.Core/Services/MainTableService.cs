@@ -117,7 +117,8 @@ namespace HES.Core.Services
 
         public void Dispose()
         {
-            _modalDialogService.OnClose -= LoadTableDataAsync;
+            if(_modalDialogService != null)
+                _modalDialogService.OnClose -= LoadTableDataAsync;
         }
     }
 }

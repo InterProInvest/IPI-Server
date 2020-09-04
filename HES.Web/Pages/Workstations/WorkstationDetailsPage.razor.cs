@@ -104,7 +104,9 @@ namespace HES.Web.Pages.Workstations
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             WorkstationService.Dispose();   
             MainTableService.Dispose();
         }

@@ -326,7 +326,9 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             EmployeeService.Dispose();
             AppSettingsService.Dispose();
             MainTableService.Dispose();

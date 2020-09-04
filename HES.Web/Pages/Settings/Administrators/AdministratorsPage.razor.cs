@@ -122,7 +122,9 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             ApplicationUserService.Dispose();
             EmailSenderService.Dispose();
             MainTableService.Dispose();

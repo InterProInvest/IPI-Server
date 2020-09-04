@@ -111,7 +111,9 @@ namespace HES.Web.Pages.Settings.Parameters
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             AppSettingsService.Dispose();
         }
     }
