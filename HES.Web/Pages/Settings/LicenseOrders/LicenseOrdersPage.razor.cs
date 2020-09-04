@@ -115,10 +115,9 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         public void Dispose()
         {
-            if (hubConnection.State == HubConnectionState.Connected)
+            if (hubConnection?.State == HubConnectionState.Connected)
                 hubConnection.DisposeAsync();
 
-            LicenseService.Dispose();
             MainTableService.Dispose();
         }
     }

@@ -103,10 +103,9 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
         public void Dispose()
         {
-            if (hubConnection.State == HubConnectionState.Connected)
+            if (hubConnection?.State == HubConnectionState.Connected)
                 hubConnection.DisposeAsync();
 
-            HardwareVaultService.Dispose();
             MainTableService.Dispose();
         }
     }

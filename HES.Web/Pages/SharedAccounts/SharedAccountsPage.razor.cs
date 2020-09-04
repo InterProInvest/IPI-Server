@@ -116,10 +116,9 @@ namespace HES.Web.Pages.SharedAccounts
 
         public void Dispose()
         {
-            if (hubConnection.State == HubConnectionState.Connected)
+            if (hubConnection?.State == HubConnectionState.Connected)
                 hubConnection.DisposeAsync();
 
-            SharedAccountService.Dispose();
             MainTableService.Dispose();
         }
     }

@@ -108,11 +108,10 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            if (hubConnection.State == HubConnectionState.Connected)
+            if (hubConnection?.State == HubConnectionState.Connected)
                 hubConnection.DisposeAsync();
 
             MainTableService.Dispose();
-            EmployeeService.Dispose();
         }
     }
 }

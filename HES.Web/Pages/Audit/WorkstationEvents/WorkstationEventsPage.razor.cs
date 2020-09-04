@@ -27,7 +27,6 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
 
         public void Dispose()
         {
-            WorkstationAuditService.Dispose();
             MainTableService.Dispose();
         }
     }

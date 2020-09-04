@@ -66,8 +66,7 @@ namespace HES.Web.Pages.Alarm
 
         public void Dispose()
         {
-            WorkstationService.Dispose();
-            AppSettingsService.Dispose();
+
         }
     }
 }

@@ -101,10 +101,9 @@ namespace HES.Web.Pages.Groups
 
         public void Dispose()
         {
-            if (hubConnection.State == HubConnectionState.Connected)
+            if (hubConnection?.State == HubConnectionState.Connected)
                 hubConnection.DisposeAsync();
 
-            GroupService.Dispose();
             MainTableService.Dispose();
         }
     }

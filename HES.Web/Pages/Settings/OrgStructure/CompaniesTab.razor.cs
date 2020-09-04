@@ -141,9 +141,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
         public void Dispose()
         {
             if (hubConnection.State == HubConnectionState.Connected)
-                hubConnection.DisposeAsync();
-
-            OrgStructureService.Dispose();
+                hubConnection?.DisposeAsync();
         }
     }
 }

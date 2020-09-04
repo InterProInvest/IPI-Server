@@ -91,7 +91,7 @@ namespace HES.Web.Pages.Settings.DataProtection
 
         public void Dispose()
         {
-            if (hubConnection.State == HubConnectionState.Connected)
+            if (hubConnection?.State == HubConnectionState.Connected)
                 hubConnection.DisposeAsync();
         }
     }

@@ -22,7 +22,6 @@ namespace HES.Web.Pages.Audit.WorkstationSummaries
 
         public void Dispose()
         {
-            WorkstationAuditService.Dispose();
             MainTableService.Dispose();
         }
     }
