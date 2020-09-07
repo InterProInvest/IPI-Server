@@ -1,5 +1,6 @@
 ﻿@page "/Alarm"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (AlarmState == null)
 {

@@ -13,6 +13,7 @@ namespace HES.Web.Components
         [Parameter] public TItem SelectedItem { get; set; }
         [Parameter] public Func<TItem, Task> SelecedItemChanged { get; set; }
         [Parameter] public Func<Task> SelecedItemDblClick { get; set; }
+        [Parameter] public bool Loading { get; set; }
 
         private async Task OnRowSelectedAsync(TItem item)
         {

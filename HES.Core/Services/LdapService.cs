@@ -14,7 +14,7 @@ using static LdapForNet.Native.Native;
 
 namespace HES.Core.Services
 {
-    public class LdapService : ILdapService
+    public class LdapService : ILdapService, IDisposable
     {
         private readonly IEmployeeService _employeeService;
         private readonly IGroupService _groupService;
@@ -285,5 +285,11 @@ namespace HES.Core.Services
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _employeeService.Dispose();
+            _groupService.Dispose();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿@page "/Workstations"
 @page "/Workstations/{DashboardFilter}"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (MainTableService.Entities == null)
 {
@@ -47,7 +48,7 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="WorkstationDetailsAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="WorkstationDetailsAsync" Loading="MainTableService.Loading">
         <TableHeader>
             <MainTableHeader Title="Name"
                              TitleWidth="10"

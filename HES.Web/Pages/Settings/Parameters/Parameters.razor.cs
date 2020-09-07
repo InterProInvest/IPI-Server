@@ -4,21 +4,22 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Parameters
 {
-    public partial class Parameters : ComponentBase, IDisposable
+    public partial class Parameters : OwningComponentBase, IDisposable
     {
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
-        [Inject] public ILogger<Parameters> Logger { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public ILogger<Parameters> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
         public string ApiAddress { get; set; }
         public string DomainHost { get; set; }
         public bool Initialized { get; set; }
@@ -27,6 +28,8 @@ namespace HES.Web.Pages.Settings.Parameters
 
         protected override async Task OnInitializedAsync()
         {
+            AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetParameters();
             await LoadDataSettingsAsync();
@@ -38,7 +41,7 @@ namespace HES.Web.Pages.Settings.Parameters
             ApiAddress = await LoadLicensingSettingsAsync();
             DomainHost = await LoadDomainSettingsAsync();
         }
-        
+
         private async Task<string> LoadLicensingSettingsAsync()
         {
             var licensingSettings = await AppSettingsService.GetLicensingSettingsAsync();
@@ -57,7 +60,7 @@ namespace HES.Web.Pages.Settings.Parameters
 
             await ModalDialogService.ShowAsync("License Settings", body);
         }
-                
+
         private async Task<string> LoadDomainSettingsAsync()
         {
             var domainSettings = await AppSettingsService.GetLdapSettingsAsync();
@@ -108,7 +111,8 @@ namespace HES.Web.Pages.Settings.Parameters
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
         }
     }
 }

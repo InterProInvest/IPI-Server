@@ -19,7 +19,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class EmployeeService : IEmployeeService
+    public class EmployeeService : IEmployeeService, IDisposable
     {
         private readonly IAsyncRepository<Employee> _employeeRepository;
         private readonly IHardwareVaultService _hardwareVaultService;
@@ -511,7 +511,7 @@ namespace HES.Core.Services
         #region Account
 
         public async Task ReloadAccountAsync(string accountId)
-        {       
+        {
             await _accountService.ReloadAccountAsync(accountId);
         }
 
@@ -1061,5 +1061,16 @@ namespace HES.Core.Services
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _employeeRepository.Dispose();
+            _hardwareVaultService.Dispose();
+            _hardwareVaultTaskService.Dispose();
+            _softwareVaultService.Dispose();
+            _accountService.Dispose();
+            _sharedAccountService.Dispose();
+            _workstationService.Dispose();            
+        }
     }
 }

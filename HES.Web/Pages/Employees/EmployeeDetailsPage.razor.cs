@@ -4,17 +4,18 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeeDetailsPage : ComponentBase, IDisposable
+    public partial class EmployeeDetailsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        public IEmployeeService EmployeeService { get; set; }
+        public IAppSettingsService AppSettingsService { get; set; }
+        public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -34,11 +35,15 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
+                EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+                AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Account, AccountFilter>>();
+
                 await InitializeHubAsync();
                 await LoadEmployeeAsync();
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
                 await LoadLdapSettingsAsync();
-                await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
+                await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, ModalDialogService, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
                 Initialized = true;
             }
             catch (Exception ex)
@@ -321,7 +326,9 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

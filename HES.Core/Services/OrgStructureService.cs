@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class OrgStructureService : IOrgStructureService
+    public class OrgStructureService : IOrgStructureService, IDisposable
     {
         private readonly IAsyncRepository<Company> _companyRepository;
         private readonly IAsyncRepository<Department> _departmentRepository;
@@ -242,5 +242,11 @@ namespace HES.Core.Services
 
         #endregion
 
+        public void Dispose()
+        {
+            _companyRepository.Dispose();
+            _departmentRepository.Dispose();
+            _positionRepository.Dispose();
+        }
     }
 }

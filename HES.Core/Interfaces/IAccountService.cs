@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IAccountService
+    public interface IAccountService : IDisposable
     {
         IQueryable<Account> Query();
         Task ReloadAccountAsync(string accountId);

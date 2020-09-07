@@ -4,16 +4,18 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class HardwareVaultsPage : ComponentBase, IDisposable
+    public partial class HardwareVaultsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
+        public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<HardwareVaultsPage> Logger { get; set; }
@@ -24,6 +26,9 @@ namespace HES.Web.Pages.HardwareVaults
 
         protected override async Task OnInitializedAsync()
         {
+            HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVault, HardwareVaultFilter>>();
+
             switch (DashboardFilter)
             {
                 case "LowBattery":
@@ -48,7 +53,7 @@ namespace HES.Web.Pages.HardwareVaults
 
             await InitializeHubAsync();
             await BreadcrumbsService.SetHardwareVaults();
-            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
+            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVault.Id));
         }
 
         public async Task ImportVaultsAsync()
@@ -151,7 +156,7 @@ namespace HES.Web.Pages.HardwareVaults
             hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
-     
+
             hubConnection.On<string>(RefreshPage.HardwareVaults, async (hardwareVaultId) =>
             {
                 if (hardwareVaultId != null)
@@ -161,7 +166,7 @@ namespace HES.Web.Pages.HardwareVaults
 
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
-       
+
             hubConnection.On<string>(RefreshPage.HardwareVaultStateChanged, async (hardwareVaultId) =>
             {
                 if (hardwareVaultId != null)
@@ -175,7 +180,9 @@ namespace HES.Web.Pages.HardwareVaults
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

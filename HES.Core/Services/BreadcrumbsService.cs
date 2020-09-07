@@ -19,7 +19,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Data Protection" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetDashboard()
@@ -29,7 +30,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Dashboard" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetAdministrators()
@@ -39,7 +41,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Administrators" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetEmployees()
@@ -49,7 +52,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Employees" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetTemplates()
@@ -59,7 +63,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Templates" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetEmployeeDetails(string name)
@@ -70,7 +75,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = name}
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetHardwareVaults()
@@ -80,7 +86,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Hardware Vaults" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetGroups()
@@ -90,7 +97,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Groups" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetGroupDetails(string name)
@@ -101,7 +109,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = name}
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetLicenseOrders()
@@ -112,7 +121,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "License Orders" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetHardwareVaultProfiles()
@@ -123,7 +133,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Hardware Vault Access Profiles" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetSharedAccounts()
@@ -133,7 +144,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Shared Accounts" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetAuditWorkstationEvents()
@@ -144,7 +156,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Workstation Events" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetAuditWorkstationSessions()
@@ -155,7 +168,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Workstation Sessions" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetAuditSummaries()
@@ -166,7 +180,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Summaries" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetParameters()
@@ -177,7 +192,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Parameters" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetOrgStructure()
@@ -188,7 +204,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "OrgStructure" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetWorkstations()
@@ -198,7 +215,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Workstations" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetWorkstationDetails(string name)
@@ -209,7 +227,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = name}
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetTwoFactorAuthentication()
@@ -219,7 +238,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Two Factor Authentication" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetShowRecoveryCodes()
@@ -229,7 +249,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Show Recovery Codes" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetResetAuthenticator()
@@ -239,7 +260,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Reset Authenticator" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetProfile()
@@ -249,7 +271,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Profile" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetPersonalData()
@@ -259,7 +282,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Personal Data" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetGenerateRecoveryCodes()
@@ -269,7 +293,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Generate Recovery Codes" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetEnableAuthenticator()
@@ -279,7 +304,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Enable Authenticator" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetDisable2fa()
@@ -289,9 +315,10 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Disable 2FA" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
-        
+
         public async Task SetDeletePersonalData()
         {
             Breadcrumbs = new List<Breadcrumb>()
@@ -299,7 +326,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Delete Personal Data" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
         public async Task SetAlarm()
@@ -309,7 +337,8 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Alarm" }
             };
 
-            await OnSet?.Invoke(Breadcrumbs);
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
     }
 }

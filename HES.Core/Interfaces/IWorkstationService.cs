@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IWorkstationService
+    public interface IWorkstationService : IDisposable
     {
         IQueryable<Workstation> WorkstationQuery();
         Task<Workstation> GetWorkstationByIdAsync(string id);

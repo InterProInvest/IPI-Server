@@ -10,7 +10,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class HardwareVaultTaskService : IHardwareVaultTaskService
+    public class HardwareVaultTaskService : IHardwareVaultTaskService, IDisposable
     {
         private readonly IAsyncRepository<HardwareVaultTask> _hardwareVaultTaskRepository;
 
@@ -158,6 +158,11 @@ namespace HES.Core.Services
                 .ToListAsync();
 
             await _hardwareVaultTaskRepository.DeleteRangeAsync(tasks);
+        }
+
+        public void Dispose()
+        {
+            _hardwareVaultTaskRepository.Dispose();
         }
     }
 }

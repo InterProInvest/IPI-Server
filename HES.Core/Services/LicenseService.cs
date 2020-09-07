@@ -19,7 +19,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class LicenseService : ILicenseService
+    public class LicenseService : ILicenseService, IDisposable
     {
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<HardwareVaultLicense> _hardwareVaultLicenseRepository;
@@ -584,5 +584,13 @@ namespace HES.Core.Services
         }
 
         #endregion
+        public void Dispose()
+        {
+            _licenseOrderRepository.Dispose();
+            _hardwareVaultLicenseRepository.Dispose();
+            _hardwareVaultRepository.Dispose();
+            _appSettingsService.Dispose();
+            _emailSenderService.Dispose();
+        }
     }
 }

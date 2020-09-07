@@ -1,5 +1,6 @@
 ﻿@page "/Employees/Details/{EmployeeId}"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (Initialized)
 {
@@ -150,7 +151,7 @@
                     <TableFilter EnableFilterButton="false" SearchTextChanged="MainTableService.SearchTextChangedAsync" />
                 </FilterButtons>
             </TableAction>
-            <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+            <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" Loading="MainTableService.Loading">
                 <TableHeader>
                     <MainTableHeader Title="Name"
                                      TitleWidth="7.1"

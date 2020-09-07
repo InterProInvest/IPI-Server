@@ -14,7 +14,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class GroupService : IGroupService
+    public class GroupService : IGroupService, IDisposable
     {
         private readonly IAsyncRepository<Group> _groupRepository;
         private readonly IAsyncRepository<GroupMembership> _groupMembershipRepository;
@@ -389,6 +389,13 @@ namespace HES.Core.Services
             }
 
             return await _groupMembershipRepository.DeleteAsync(groupMembership);
+        }
+
+        public void Dispose()
+        {
+            _groupRepository.Dispose();
+            _groupMembershipRepository.Dispose();
+            _employeeRepository.Dispose();
         }
     }
 }

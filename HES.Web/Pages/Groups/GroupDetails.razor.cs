@@ -4,18 +4,19 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Groups;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class GroupDetails : ComponentBase, IDisposable
+    public partial class GroupDetails : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
-        [Inject] public IGroupService GroupService { get; set; }
-        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
+        public IGroupService GroupService { get; set; }
+        public IMainTableService<GroupMembership, GroupMembershipFilter> MainTableService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<GroupDetails> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -32,10 +33,12 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
+                GroupService = ScopedServices.GetRequiredService<IGroupService>();
+
                 await InitializeHubAsync();
                 await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
-                await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
+                await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, ModalDialogService, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
                 Initialized = true;
             }
             catch (Exception ex)
@@ -98,7 +101,9 @@ namespace HES.Web.Pages.Groups
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

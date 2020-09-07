@@ -1,14 +1,15 @@
 ﻿using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Parameters
 {
-    public partial class LdapCredentials : ComponentBase
+    public partial class LdapCredentials : OwningComponentBase, IDisposable
     {
-        [Inject] public IAppSettingsService AppSettingsService { get; set; }
+        public IAppSettingsService AppSettingsService { get; set; }
         [Parameter] public Func<LdapSettings, Task> LoadEntities { get; set; }
         [Parameter] public EventCallback CancelRequested { get; set; }
         [Parameter] public string Host { get; set; }
@@ -18,6 +19,7 @@ namespace HES.Web.Pages.Settings.Parameters
 
         protected override void OnInitialized()
         {
+            AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
             LdapSettings = new LdapSettings() { Host = Host };
         }
 
@@ -27,6 +29,11 @@ namespace HES.Web.Pages.Settings.Parameters
                 await AppSettingsService.SetLdapSettingsAsync(LdapSettings);
 
             await LoadEntities.Invoke(LdapSettings);
+        }
+
+        public void Dispose()
+        {    
+            AppSettingsService.Dispose();
         }
     }
 }

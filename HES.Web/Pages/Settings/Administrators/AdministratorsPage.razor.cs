@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
@@ -13,12 +14,13 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.Administrators
 {
-    public partial class AdministratorsPage : ComponentBase, IDisposable
+    public partial class AdministratorsPage : OwningComponentBase, IDisposable
     {
+        public IApplicationUserService ApplicationUserService { get; set; }
+        public IEmailSenderService EmailSenderService { get; set; }
+        public IMainTableService<ApplicationUser, ApplicationUserFilter> MainTableService { get; set; }
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-        [Inject] public IApplicationUserService ApplicationUserService { get; set; }
-        [Inject] public IMainTableService<ApplicationUser, ApplicationUserFilter> MainTableService { get; set; }
-        [Inject] public IEmailSenderService EmailSenderService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<AdministratorsPage> Logger { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
@@ -31,10 +33,14 @@ namespace HES.Web.Pages.Settings.Administrators
 
         protected override async Task OnInitializedAsync()
         {
+            ApplicationUserService = ScopedServices.GetRequiredService<IApplicationUserService>();
+            EmailSenderService = ScopedServices.GetRequiredService<IEmailSenderService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<ApplicationUser, ApplicationUserFilter>>();
+
             await InitializeHubAsync();
             AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             await BreadcrumbsService.SetAdministrators();
-            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
+            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, ModalDialogService, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
         }
 
         private async Task InitializeHubAsync()
@@ -116,7 +122,9 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

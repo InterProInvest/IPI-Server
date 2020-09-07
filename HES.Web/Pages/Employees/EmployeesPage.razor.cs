@@ -4,15 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeesPage : ComponentBase, IDisposable
+    public partial class EmployeesPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
+        public IEmployeeService EmployeeService { get; set; }
+        public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -21,9 +23,12 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
+            EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Employee, EmployeeFilter>>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetEmployees();
-            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
+            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, ModalDialogService, StateHasChanged, nameof(Employee.FullName));
         }
 
         private async Task ImportEmployeesFromAdAsync()
@@ -103,7 +108,9 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

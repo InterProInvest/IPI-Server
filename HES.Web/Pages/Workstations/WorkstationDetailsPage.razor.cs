@@ -4,16 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Workstations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Workstations
 {
-    public partial class WorkstationDetailsPage : ComponentBase, IDisposable
+    public partial class WorkstationDetailsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<WorkstationProximityVault, WorkstationDetailsFilter> MainTableService { get; set; }
-        [Inject] public IWorkstationService WorkstationService { get; set; }
+        public IMainTableService<WorkstationProximityVault, WorkstationDetailsFilter> MainTableService { get; set; }
+        public IWorkstationService WorkstationService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -32,10 +33,13 @@ namespace HES.Web.Pages.Workstations
         {
             try
             {
+                WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<WorkstationProximityVault, WorkstationDetailsFilter>>();
+
                 await InitializeHubAsync();
                 await LoadWorkstationAsync();
                 await BreadcrumbsService.SetWorkstationDetails(Workstation.Name);
-                await MainTableService.InitializeAsync(WorkstationService.GetProximityVaultsAsync, WorkstationService.GetProximityVaultsCountAsync, StateHasChanged, nameof(WorkstationProximityVault.HardwareVaultId), entityId: WorkstationId);
+                await MainTableService.InitializeAsync(WorkstationService.GetProximityVaultsAsync, WorkstationService.GetProximityVaultsCountAsync, ModalDialogService, StateHasChanged, nameof(WorkstationProximityVault.HardwareVaultId), entityId: WorkstationId);
                 Initialized = true;
             }
             catch (Exception ex)
@@ -100,7 +104,9 @@ namespace HES.Web.Pages.Workstations
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

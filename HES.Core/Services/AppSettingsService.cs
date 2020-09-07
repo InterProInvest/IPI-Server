@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class AppSettingsService : IAppSettingsService
+    public class AppSettingsService : IAppSettingsService, IDisposable
     {
         private readonly IAsyncRepository<AppSettings> _appSettingsRepository;
         private readonly IDataProtectionService _dataProtectionService;
@@ -208,6 +208,11 @@ namespace HES.Core.Services
                 appSettings.Value = json;
                 await _appSettingsRepository.UpdateAsync(appSettings);
             }
+        }
+
+        public void Dispose()
+        {
+            _appSettingsRepository.Dispose();
         }
     }
 }

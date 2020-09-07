@@ -3,13 +3,14 @@ using HES.Core.Enums;
 using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Accounts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IEmployeeService
+    public interface IEmployeeService: IDisposable    
     {
         IQueryable<Employee> EmployeeQuery();
         Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);

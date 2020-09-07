@@ -4,16 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Group;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class GroupsPage : ComponentBase, IDisposable
+    public partial class GroupsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
-        [Inject] public IGroupService GroupService { get; set; }
+        public IGroupService GroupService { get; set; }
+        public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -24,9 +25,12 @@ namespace HES.Web.Pages.Groups
 
         protected override async Task OnInitializedAsync()
         {
+            GroupService = ScopedServices.GetRequiredService<IGroupService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Group, GroupFilter>>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetGroups();
-            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, StateHasChanged, nameof(Group.Name));
+            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, ModalDialogService, StateHasChanged, nameof(Group.Name));
         }
 
         private Task NavigateToGroupDetails()
@@ -105,7 +109,9 @@ namespace HES.Web.Pages.Groups
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

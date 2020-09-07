@@ -4,16 +4,18 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.SharedAccounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class SharedAccountsPage : ComponentBase, IDisposable
+    public partial class SharedAccountsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<SharedAccount, SharedAccountsFilter> MainTableService { get; set; }
-        [Inject] public ISharedAccountService SharedAccountService { get; set; }
+        public ISharedAccountService SharedAccountService { get; set; }
+        public IMainTableService<SharedAccount, SharedAccountsFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -22,9 +24,12 @@ namespace HES.Web.Pages.SharedAccounts
 
         protected override async Task OnInitializedAsync()
         {
+            SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<SharedAccount, SharedAccountsFilter>>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetSharedAccounts();
-            await MainTableService.InitializeAsync(SharedAccountService.GetSharedAccountsAsync, SharedAccountService.GetSharedAccountsCountAsync, StateHasChanged, nameof(SharedAccount.Name), ListSortDirection.Ascending);
+            await MainTableService.InitializeAsync(SharedAccountService.GetSharedAccountsAsync, SharedAccountService.GetSharedAccountsCountAsync, ModalDialogService, StateHasChanged, nameof(SharedAccount.Name), ListSortDirection.Ascending);
         }
 
         private async Task CreateSharedAccountAsync()
@@ -111,7 +116,9 @@ namespace HES.Web.Pages.SharedAccounts
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

@@ -5,13 +5,14 @@ using HES.Core.Models.Web.HardwareVaults;
 using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IHardwareVaultService
+    public interface IHardwareVaultService : IDisposable
     {
         IQueryable<HardwareVault> VaultQuery();
         Task<HardwareVault> GetVaultByIdAsync(string id);

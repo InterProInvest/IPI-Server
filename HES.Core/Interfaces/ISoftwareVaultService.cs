@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface ISoftwareVaultService
+    public interface ISoftwareVaultService: IDisposable
     {
         IQueryable<SoftwareVault> SoftwareVaultQuery();
         Task<List<SoftwareVault>> GetSoftwareVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, SoftwareVaultFilter filter);

@@ -1,5 +1,6 @@
 ﻿@page "/Groups"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (MainTableService.Entities == null)
 {
@@ -35,7 +36,7 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="NavigateToGroupDetails">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="NavigateToGroupDetails" Loading="MainTableService.Loading">
         <TableHeader>
             <MainTableHeader Title="Name"
                              TitleWidth="70"

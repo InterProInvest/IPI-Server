@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface ITemplateService
+    public interface ITemplateService : IDisposable
     {
         IQueryable<Template> Query();
         Task<Template> GetByIdAsync(string id);

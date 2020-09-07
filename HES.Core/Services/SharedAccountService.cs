@@ -16,21 +16,21 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class SharedAccountService : ISharedAccountService
+    public class SharedAccountService : ISharedAccountService, IDisposable
     {
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
         private readonly IAccountService _accountService;
-        private readonly IHardwareVaultTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IDataProtectionService _dataProtectionService;
 
         public SharedAccountService(IAsyncRepository<SharedAccount> sharedAccountRepository,
-                                    IAccountService deviceAccountService,
-                                    IHardwareVaultTaskService deviceTaskService,
+                                    IAccountService accountService,
+                                    IHardwareVaultTaskService hardwareVaultTaskService,
                                     IDataProtectionService dataProtectionService)
         {
             _sharedAccountRepository = sharedAccountRepository;
-            _accountService = deviceAccountService;
-            _deviceTaskService = deviceTaskService;
+            _accountService = accountService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
             _dataProtectionService = dataProtectionService;
         }
 
@@ -292,7 +292,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Name), nameof(SharedAccount.Urls), nameof(SharedAccount.Apps), nameof(SharedAccount.Login) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Name), nameof(Account.Urls), nameof(Account.Apps), nameof(Account.Login), nameof(Account.UpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -344,7 +344,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Password), nameof(SharedAccount.PasswordChangedAt) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.UpdatedAt), nameof(Account.PasswordUpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -398,7 +398,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.OtpSecret), nameof(SharedAccount.OtpSecretChangedAt) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.UpdatedAt), nameof(Account.OtpUpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -449,7 +449,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Deleted) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted), nameof(Account.UpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -460,6 +460,13 @@ namespace HES.Core.Services
         {
             var sharedAccount = await _sharedAccountRepository.GetByIdAsync(sharedAccountId);
             await _sharedAccountRepository.ReloadAsync(sharedAccount);
+        }
+
+        public void Dispose()
+        {
+            _sharedAccountRepository.Dispose();
+            _accountService.Dispose();
+            _hardwareVaultTaskService.Dispose();
         }
     }
 }

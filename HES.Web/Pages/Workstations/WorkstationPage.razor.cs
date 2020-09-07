@@ -4,15 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Workstations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Workstations
 {
-    public partial class WorkstationPage : ComponentBase, IDisposable
+    public partial class WorkstationPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
-        [Inject] public IWorkstationService WorkstationService { get; set; }
+        public IWorkstationService WorkstationService { get; set; }
+        public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -22,6 +24,9 @@ namespace HES.Web.Pages.Workstations
 
         protected override async Task OnInitializedAsync()
         {
+            WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Workstation, WorkstationFilter>>();
+
             switch (DashboardFilter)
             {
                 case "NotApproved":
@@ -33,7 +38,7 @@ namespace HES.Web.Pages.Workstations
             }
 
             await BreadcrumbsService.SetWorkstations();
-            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, StateHasChanged, nameof(Workstation.Name));
+            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, ModalDialogService, StateHasChanged, nameof(Workstation.Name));
             await InitializeHubAsync();
         }
 
@@ -103,7 +108,7 @@ namespace HES.Web.Pages.Workstations
             {
                 if (WorkstationId != null)
                     await WorkstationService.ReloadWorkstationAsync(WorkstationId);
-          
+
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -113,7 +118,9 @@ namespace HES.Web.Pages.Workstations
 
         public void Dispose()
         {
-            _ = hubConnection?.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
             MainTableService.Dispose();
         }
     }

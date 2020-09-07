@@ -1,5 +1,6 @@
 ﻿@page "/Settings/LicenseOrders"
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
 
 @if (MainTableService.Entities == null)
 {
@@ -42,7 +43,7 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" Loading="MainTableService.Loading">
         <TableHeader>
             <MainTableHeader Title="Contact Email"
                              TitleWidth="16"

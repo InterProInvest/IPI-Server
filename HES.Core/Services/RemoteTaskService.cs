@@ -7,7 +7,6 @@ using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Text;
@@ -15,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class RemoteTaskService : IRemoteTaskService
+    public class RemoteTaskService : IRemoteTaskService, IDisposable
     {
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
@@ -23,7 +22,6 @@ namespace HES.Core.Services
         private readonly IDataProtectionService _dataProtectionService;
         private readonly ILdapService _ldapService;
         private readonly IAppSettingsService _appSettingsService;
-        private readonly ILogger<RemoteTaskService> _logger;
         private readonly IHubContext<RefreshHub> _hubContext;
 
         public RemoteTaskService(IHardwareVaultService hardwareVaultService,
@@ -32,7 +30,6 @@ namespace HES.Core.Services
                                  IDataProtectionService dataProtectionService,
                                  ILdapService ldapService,
                                  IAppSettingsService appSettingsService,
-                                 ILogger<RemoteTaskService> logger,
                                  IHubContext<RefreshHub> hubContext)
         {
             _hardwareVaultService = hardwareVaultService;
@@ -41,7 +38,6 @@ namespace HES.Core.Services
             _dataProtectionService = dataProtectionService;
             _ldapService = ldapService;
             _appSettingsService = appSettingsService;
-            _logger = logger;
             _hubContext = hubContext;
         }
 
@@ -210,6 +206,15 @@ namespace HES.Core.Services
                 await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword)));
 
             await _hardwareVaultService.UpdateAfterWipeAsync(vault.Id);
+        }
+
+        public void Dispose()
+        {
+            _hardwareVaultService.Dispose();
+            _hardwareVaultTaskService.Dispose();
+            _accountService.Dispose();
+            _ldapService.Dispose();
+            _appSettingsService.Dispose();           
         }
     }
 }
