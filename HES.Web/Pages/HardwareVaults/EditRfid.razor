@@ -10,6 +10,7 @@ else
     }
     else
     {
+        <Alert Message="The RFID will not change on the hardware vault." />
         <EditForm Model="@HardwareVault" OnValidSubmit="EditAsync">
             <DataAnnotationsValidator />
             <div class="form-group">
