@@ -37,6 +37,11 @@ namespace HES.Web.Pages.Workstations
         {
             try
             {
+                Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
+
+                if (Workstation == null)
+                    throw new Exception("Workstation not found.");
+
                 EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
                 if (!EntityBeingEdited)
                     MemoryCache.Set(Workstation.Id, Workstation);
@@ -44,11 +49,6 @@ namespace HES.Web.Pages.Workstations
                 ModalDialogService.OnCancel += OnCancel;
                 Companies = await OrgStructureService.GetCompaniesAsync();
                 Departments = new List<Department>();
-
-                Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
-
-                if (Workstation == null)
-                    throw new Exception("Workstation not found.");
 
                 Initialized = true;
             }

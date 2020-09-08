@@ -49,7 +49,7 @@ namespace HES.Web.Pages.Templates
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditTemplate));
-                builder.AddAttribute(1, nameof(EditTemplate.Template), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(EditTemplate.TemplateId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(EditTemplate.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -62,7 +62,7 @@ namespace HES.Web.Pages.Templates
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteTemplate));
-                builder.AddAttribute(1, nameof(DeleteTemplate.Template), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(DeleteTemplate.TemplateId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(DeleteTemplate.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
