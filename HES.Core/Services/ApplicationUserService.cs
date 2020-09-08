@@ -33,6 +33,11 @@ namespace HES.Core.Services
             await _applicationUserRepository.ReloadAsync(user);
         }
 
+        public async Task<ApplicationUser> GetByIdAsync(string userId)
+        {
+            return await _applicationUserRepository.GetByIdAsync(userId);
+        }
+
         public async Task<List<ApplicationUser>> GetAdministratorsAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions)
         {
             var query = _applicationUserRepository.Query();

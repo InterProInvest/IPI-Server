@@ -10,6 +10,7 @@ namespace HES.Core.Interfaces
     public interface IApplicationUserService : IDisposable
     {
         Task ReloadUserAsync(string userId);
+        Task<ApplicationUser> GetByIdAsync(string userId);
         Task<List<ApplicationUser>> GetAdministratorsAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions);
         Task<int> GetAdministratorsCountAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions);
         Task<string> InviteAdministratorAsync(string email, string domain);

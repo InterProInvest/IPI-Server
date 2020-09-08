@@ -112,7 +112,7 @@ namespace HES.Web.Pages.Settings.Administrators
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteAdministrator));
-                builder.AddAttribute(1, nameof(DeleteAdministrator.ApplicationUser), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(DeleteAdministrator.ApplicationUserId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(DeleteAdministrator.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
