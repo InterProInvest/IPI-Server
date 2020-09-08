@@ -23,20 +23,39 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public SharedAccount Account { get; set; }
+        [Parameter] public string AccountId { get; set; }
 
+
+        public SharedAccount Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
+        public bool Initialised { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += OnCancelAsync;
+            try
+            {
+                Account = await SharedAccountService.GetSharedAccountByIdAsync(AccountId);
 
-            EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Account.Id, Account);
+                if (Account == null)
+                    throw new Exception("Account not found");
 
-            Account.ConfirmPassword = Account.Password;
+                ModalDialogService.OnCancel += OnCancelAsync;
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Account.Id, Account);
+
+                Account.ConfirmPassword = Account.Password;
+
+                Initialised = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditAccountAsync()
