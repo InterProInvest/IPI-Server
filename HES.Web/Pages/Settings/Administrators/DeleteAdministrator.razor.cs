@@ -42,7 +42,7 @@ namespace HES.Web.Pages.Settings.Administrators
             {
                 await ApplicationUserService.DeleteUserAsync(ApplicationUserId);
                 ToastService.ShowToast("Administrator deleted.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators, ApplicationUserId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

@@ -56,12 +56,6 @@ namespace HES.Core.Services
             return _employeeRepository.Query();
         }
 
-        public async Task ReloadEmployeeAsync(string employeeId)
-        {
-            var employee = await _employeeRepository.GetByIdAsync(employeeId);
-            await _employeeRepository.ReloadAsync(employee);
-        }
-
         public async Task<Employee> GetEmployeeByIdAsync(string id, bool asNoTracking = false)
         {
             var query = _employeeRepository
@@ -409,8 +403,6 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vault} not found");
 
-            await _hardwareVaultService.ReloadHardwareVault(vaultId);
-
             if (vault.Status != VaultStatus.Ready)
                 throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
 
@@ -459,9 +451,7 @@ namespace HES.Core.Services
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
-
-            await _hardwareVaultService.ReloadHardwareVault(vaultId);
-
+               
             if (vault.Status != VaultStatus.Reserved &&
                 vault.Status != VaultStatus.Active &&
                 vault.Status != VaultStatus.Locked &&
@@ -528,7 +518,7 @@ namespace HES.Core.Services
         {
             var query = _accountService
                 .Query()
-                .Include(x => x.Employee.HardwareVaults)
+                .Include(x => x.Employee.HardwareVaults)              
                 .Include(x => x.SharedAccount)
                 .Where(x => x.EmployeeId == dataLoadingOptions.EntityId && x.Deleted == false)
                 .AsQueryable();
@@ -575,7 +565,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetAccountsCountAsync(DataLoadingOptions<AccountFilter> dataLoadingOptions)

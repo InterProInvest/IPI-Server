@@ -43,32 +43,6 @@ namespace HES.Web.Pages.Settings.Administrators
             await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, ModalDialogService, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
         }
 
-        private async Task InitializeHubAsync()
-        {
-            hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
-            .Build();
-
-            hubConnection.On<string>(RefreshPage.Administrators, async (userId) =>
-            {
-                if (userId != null)
-                    await ApplicationUserService.ReloadUserAsync(userId);
-
-                await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-            });
-
-            hubConnection.On<string>(RefreshPage.AdministratorsUpdated, async (userId) =>
-            {
-                if (userId != null)
-                    await ApplicationUserService.ReloadUserAsync(userId);
-
-                await MainTableService.LoadTableDataAsync();
-            });
-
-            await hubConnection.StartAsync();
-        }
-
         private async Task InviteAdminAsync()
         {
             RenderFragment body = (builder) =>
@@ -118,6 +92,26 @@ namespace HES.Web.Pages.Settings.Administrators
             };
 
             await MainTableService.ShowModalAsync("Delete Administrator", body, ModalDialogSize.Default);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On(RefreshPage.Administrators, async () =>
+            {
+                await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            hubConnection.On(RefreshPage.AdministratorsUpdated, async () =>
+            {
+                await MainTableService.LoadTableDataAsync();
+            });
+
+            await hubConnection.StartAsync();
         }
 
         public void Dispose()

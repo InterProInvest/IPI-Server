@@ -456,12 +456,6 @@ namespace HES.Core.Services
             return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
 
-        public async Task ReloadSharedAccountAsync(string sharedAccountId)
-        {
-            var sharedAccount = await _sharedAccountRepository.GetByIdAsync(sharedAccountId);
-            await _sharedAccountRepository.ReloadAsync(sharedAccount);
-        }
-
         public void Dispose()
         {
             _sharedAccountRepository.Dispose();

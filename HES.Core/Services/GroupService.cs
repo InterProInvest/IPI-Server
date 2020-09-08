@@ -183,12 +183,6 @@ namespace HES.Core.Services
             return _groupRepository.UnchangedAsync(group);
         }
 
-        public async Task ReloadGroupAsync(string groupId)
-        {
-            var group = await _groupRepository.GetByIdAsync(groupId);
-            await _groupRepository.ReloadAsync(group);
-        }
-
         public async Task<Group> DeleteGroupAsync(string groupId)
         {
             if (groupId == null)

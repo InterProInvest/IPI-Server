@@ -15,7 +15,6 @@ namespace HES.Core.Interfaces
         Task<Template> GetByIdAsync(string id);
         Task<List<Template>> GetTemplatesAsync();
         Task<List<Template>> GetTemplatesAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions);
-        Task ReloadTemplateAsync(string templateId);
         Task UnchangedTemplateAsync(Template template);
         Task<int> GetTemplatesCountAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions);
         Task<Template> CreateTmplateAsync(Template entity);

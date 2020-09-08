@@ -101,11 +101,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Licenses, async (licenseOrderId) =>
-            {
-                if (licenseOrderId != null)
-                    await LicenseService.ReloadLicenseOrder(licenseOrderId);
-
+            hubConnection.On(RefreshPage.Licenses, async () =>
+            {               
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

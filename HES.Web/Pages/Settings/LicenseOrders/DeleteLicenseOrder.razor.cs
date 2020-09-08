@@ -50,7 +50,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             try
             {
                 await LicenseService.DeleteOrderAsync(LicenseOrder);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses, LicenseOrder.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
                 ToastService.ShowToast("License order deleted.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

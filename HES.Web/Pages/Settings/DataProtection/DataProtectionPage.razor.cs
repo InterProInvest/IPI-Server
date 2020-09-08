@@ -20,6 +20,7 @@ namespace HES.Web.Pages.Settings.DataProtection
 
         public ProtectionStatus Status { get; set; }
 
+
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
@@ -33,21 +34,6 @@ namespace HES.Web.Pages.Settings.DataProtection
         {
             Status = DataProtectionService.Status();
             StateHasChanged();
-        }
-
-        private async Task InitializeHubAsync()
-        {
-            hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
-            .Build();
-
-            hubConnection.On(RefreshPage.DataProtection, () =>
-            {
-                ProtectionStatus();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-            });
-
-            await hubConnection.StartAsync();
         }
 
         private async Task EnableDataProtectionAsync()
@@ -87,6 +73,21 @@ namespace HES.Web.Pages.Settings.DataProtection
             };
 
             await ModalDialogService.ShowAsync("Disable Data Protection", body, ModalDialogSize.Default);
+        }
+
+        private async Task InitializeHubAsync()
+        {
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
+            .Build();
+
+            hubConnection.On(RefreshPage.DataProtection, () =>
+            {
+                ProtectionStatus();
+                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+            });
+
+            await hubConnection.StartAsync();
         }
 
         public void Dispose()

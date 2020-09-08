@@ -94,11 +94,8 @@ namespace HES.Web.Pages.Employees
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Employees, async (employeeId) =>
+            hubConnection.On(RefreshPage.Employees, async () =>
             {
-                if (employeeId != null)
-                    await EmployeeService.ReloadEmployeeAsync(employeeId);
-
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

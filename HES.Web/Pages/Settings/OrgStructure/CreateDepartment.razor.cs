@@ -38,7 +38,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.CreateDepartmentAsync(Department);
                 ToastService.ShowToast("Department created.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies, CompanyId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

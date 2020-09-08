@@ -104,11 +104,8 @@ namespace HES.Web.Pages.Workstations
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Workstations, async (WorkstationId) =>
+            hubConnection.On(RefreshPage.Workstations, async () =>
             {
-                if (WorkstationId != null)
-                    await WorkstationService.ReloadWorkstationAsync(WorkstationId);
-
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

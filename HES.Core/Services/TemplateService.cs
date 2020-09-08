@@ -115,12 +115,6 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task ReloadTemplateAsync(string templateId)
-        {
-            var template = await _templateRepository.GetByIdAsync(templateId);
-            await _templateRepository.ReloadAsync(template);
-        }
-
         public async Task<List<Template>> GetTemplatesAsync()
         {
             return await _templateRepository.Query().ToListAsync();

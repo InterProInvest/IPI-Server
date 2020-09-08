@@ -63,7 +63,7 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 await HardwareVaultService.ChangeVaultProfileAsync(HardwareVault.Id, SelectedVaultProfileId);
                 ToastService.ShowToast("Vault profile updated", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults, HardwareVault.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
                 await CloseAsync();
             }
             catch (Exception ex)

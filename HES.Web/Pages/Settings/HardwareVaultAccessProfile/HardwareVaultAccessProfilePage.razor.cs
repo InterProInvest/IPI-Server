@@ -89,11 +89,8 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.HardwareVaultProfiles, async (profileId) =>
+            hubConnection.On(RefreshPage.HardwareVaultProfiles, async () =>
             {
-                if (profileId != null)
-                    await HardwareVaultService.ReloadProfileAsync(profileId);
-
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

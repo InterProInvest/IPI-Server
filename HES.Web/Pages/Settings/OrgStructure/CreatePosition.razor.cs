@@ -32,7 +32,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.CreatePositionAsync(Position);
                 ToastService.ShowToast("Position created.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

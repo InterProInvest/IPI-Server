@@ -109,7 +109,7 @@
                     <h4 class="text-navyblue mr-2">Accounts</h4>
                     @if (MainTableService.SelectedEntity != null)
                     {
-                        @if (Employee.PrimaryAccountId != MainTableService.SelectedEntity.Id)
+                        @if (MainTableService.SelectedEntity.Employee.PrimaryAccountId != MainTableService.SelectedEntity.Id)
                         {
                             <button type="button" @onclick="OpenDialogSetAsWorkstationAccountAsync" class="btn btn-light border" title="Set as primary account">
                                 <img class="icon-btn" src="/svg/action/star.svg" />
@@ -220,7 +220,7 @@
                     <td style="vertical-align:middle">
                         @if (context.Employee.PrimaryAccountId == context.Id)
                                 {
-                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Workstation account">
+                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Primary account">
                                 @context.Name
                             </span>
                                 }

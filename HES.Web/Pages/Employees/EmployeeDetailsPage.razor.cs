@@ -147,7 +147,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(SetAsWorkstationAccount));
-                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
+                builder.AddAttribute(1, "AccountId", MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -275,7 +275,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(HardwareVaults.ShowActivationCode));
-                builder.AddAttribute(1, nameof(HardwareVaults.ShowActivationCode.HardwareVault), hardwareVault);
+                builder.AddAttribute(1, nameof(HardwareVaults.ShowActivationCode.HardwareVaultId), hardwareVault.Id);
                 builder.CloseComponent();
             };
 
@@ -290,16 +290,12 @@ namespace HES.Web.Pages.Employees
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string, string>(RefreshPage.EmployeesDetails, async (employeeId, accountId) =>
+            hubConnection.On<string>(RefreshPage.EmployeesDetails, async (employeeId) =>
              {
                  if (employeeId != EmployeeId)
                      return;
 
                  await LoadEmployeeAsync();
-
-                 if (accountId != null)
-                     await EmployeeService.ReloadAccountAsync(accountId);
-
                  await MainTableService.LoadTableDataAsync();
                  ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
              });

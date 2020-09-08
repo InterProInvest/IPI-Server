@@ -57,7 +57,7 @@ namespace HES.Web.Pages.Groups
             {
                 await GroupService.EditGroupAsync(Group);
                 ToastService.ShowToast("Group updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, Group.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

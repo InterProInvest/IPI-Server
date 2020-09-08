@@ -76,11 +76,8 @@ namespace HES.Web.Pages.Templates
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Templates, async (templateId) =>
+            hubConnection.On(RefreshPage.Templates, async () =>
             {
-                if (templateId != null)
-                    await TemplateService.ReloadTemplateAsync(templateId);
-
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

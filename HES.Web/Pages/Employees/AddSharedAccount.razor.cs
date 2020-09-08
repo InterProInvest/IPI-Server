@@ -50,7 +50,7 @@ namespace HES.Web.Pages.Employees
                 var employee = await EmployeeService.GetEmployeeByIdAsync(account.EmployeeId);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(employee.HardwareVaults.Select(x => x.Id).ToArray());
                 ToastService.ShowToast("Account added and will be recorded when the device is connected to the server.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

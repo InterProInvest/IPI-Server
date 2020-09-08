@@ -379,12 +379,6 @@ namespace HES.Core.Services
                 .ToListAsync();
         }
 
-        public async Task ReloadLicenseOrder(string licenseOrderId)
-        {
-            var licenseOrder = await _licenseOrderRepository.GetByIdAsync(licenseOrderId);
-            await _licenseOrderRepository.ReloadAsync(licenseOrder);
-        }
-
         #endregion
 
         #region License

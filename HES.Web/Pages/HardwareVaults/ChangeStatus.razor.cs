@@ -72,7 +72,7 @@ namespace HES.Web.Pages.HardwareVaults
                         ToastService.ShowToast("Vault compromised.", ToastLevel.Success);
                         break;
                 }
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults, HardwareVault.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(HardwareVault.Id);
                 await ModalDialogService.CloseAsync();
             }

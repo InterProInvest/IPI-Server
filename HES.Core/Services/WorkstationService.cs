@@ -345,17 +345,10 @@ namespace HES.Core.Services
             return true;
         }
 
-        public async Task ReloadWorkstationAsync(string workstationId)
-        {
-            var workstation = await _workstationRepository.GetByIdAsync(workstationId);
-            await _workstationRepository.ReloadAsync(workstation);
-        }
-
         public async Task UnchangedWorkstationAsync(Workstation workstation)
         {
             await _workstationRepository.UnchangedAsync(workstation);
         }
-
 
         #endregion
 

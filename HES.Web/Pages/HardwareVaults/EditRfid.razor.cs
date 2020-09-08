@@ -55,7 +55,7 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 await HardwareVaultService.UpdateVaultAsync(HardwareVault);
                 ToastService.ShowToast("RFID updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults, HardwareVault.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

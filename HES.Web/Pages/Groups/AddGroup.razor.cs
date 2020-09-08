@@ -101,7 +101,7 @@ namespace HES.Web.Pages.Groups
 
                 await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), CreateEmployees);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

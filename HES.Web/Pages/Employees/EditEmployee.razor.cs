@@ -89,7 +89,7 @@ namespace HES.Web.Pages.Employees
             {
                 await EmployeeService.EditEmployeeAsync(Employee);
                 ToastService.ShowToast("Employee updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, Employee.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

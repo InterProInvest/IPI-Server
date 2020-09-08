@@ -34,6 +34,7 @@ namespace HES.Web.Pages.Groups
             try
             {
                 GroupService = ScopedServices.GetRequiredService<IGroupService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<GroupMembership, GroupMembershipFilter>>();
 
                 await InitializeHubAsync();
                 await LoadGroupAsync();

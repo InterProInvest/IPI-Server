@@ -91,7 +91,7 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 {
                     user.EmailConfirmed = true;
                     await _userManager.UpdateAsync(user);
-                    await _hubContext.Clients.All.SendAsync(RefreshPage.AdministratorsUpdated, user.Id);
+                    await _hubContext.Clients.All.SendAsync(RefreshPage.AdministratorsUpdated);
                     _logger.LogInformation($"User {user} accepted the invitation.");         
                     return LocalRedirect("/");
                 }

@@ -85,13 +85,6 @@ namespace HES.Core.Services
             await _companyRepository.DeleteAsync(company);
         }
 
-        public async Task ReloadCompanyAsync(string companyId)
-        {
-            var company = await _companyRepository.GetByIdAsync(companyId);
-            // With detach reloaded include entity
-            await _companyRepository.DetachedAsync(company);
-        }
-
         #endregion
 
         #region Department
@@ -234,12 +227,6 @@ namespace HES.Core.Services
                 throw new Exception("Position does not exist.");
 
             await _positionRepository.DeleteAsync(position);
-        }
-
-        public async Task ReloadPositionAsync(string positionId)
-        {
-            var position = await _positionRepository.GetByIdAsync(positionId);
-            await _positionRepository.ReloadAsync(position);
         }
 
         #endregion

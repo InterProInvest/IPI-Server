@@ -60,7 +60,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.EditPositionAsync(Position);
                 ToastService.ShowToast("Position updated.", ToastLevel.Success);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions, Position.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

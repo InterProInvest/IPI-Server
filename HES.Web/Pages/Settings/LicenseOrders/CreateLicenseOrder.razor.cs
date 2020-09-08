@@ -83,7 +83,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                 var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                 await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
@@ -139,7 +139,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 };
 
                 await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

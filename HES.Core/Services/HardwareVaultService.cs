@@ -701,12 +701,6 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ReloadHardwareVault(string hardwareVaultId)
-        {
-            var hardwareVault = await _hardwareVaultRepository.GetByIdAsync(hardwareVaultId);
-            await _hardwareVaultRepository.ReloadAsync(hardwareVault);
-        }
-
         #endregion
 
         #region Vault Profile
@@ -786,7 +780,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions)
@@ -989,12 +983,6 @@ namespace HES.Core.Services
         public async Task UnchangedProfileAsync(HardwareVaultProfile profile)
         {
             await _hardwareVaultProfileRepository.UnchangedAsync(profile);
-        }
-
-        public async Task ReloadProfileAsync(string profileId)
-        {
-            var profile = await _hardwareVaultProfileRepository.GetByIdAsync(profileId);
-            await _hardwareVaultProfileRepository.ReloadAsync(profile);
         }
 
         #endregion

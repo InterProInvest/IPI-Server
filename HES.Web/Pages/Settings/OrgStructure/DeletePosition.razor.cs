@@ -56,7 +56,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             {
                 await OrgStructureService.DeletePositionAsync(Position.Id);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions, Position.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
                 ToastService.ShowToast("Position removed.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

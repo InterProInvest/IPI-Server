@@ -95,11 +95,8 @@ namespace HES.Web.Pages.Groups
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.Groups, async (groupId) =>
+            hubConnection.On(RefreshPage.Groups, async () =>
             {
-                if (groupId != null)
-                    await GroupService.ReloadGroupAsync(groupId);
-
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });

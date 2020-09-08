@@ -56,8 +56,8 @@ namespace HES.Web.Pages.Employees
                 await EmployeeService.SetAsWorkstationAccountAsync(Account.Employee.Id, Account.Id);
                 var employee = await EmployeeService.GetEmployeeByIdAsync(Account.Employee.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(employee.Id));
-                ToastService.ShowToast("Account changed.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId, Account.Id);
+                ToastService.ShowToast("Account setted as primary.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

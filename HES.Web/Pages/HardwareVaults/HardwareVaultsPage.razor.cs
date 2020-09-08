@@ -157,22 +157,16 @@ namespace HES.Web.Pages.HardwareVaults
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On<string>(RefreshPage.HardwareVaults, async (hardwareVaultId) =>
+            hubConnection.On(RefreshPage.HardwareVaults, async () =>
             {
-                if (hardwareVaultId != null)
-                    await HardwareVaultService.ReloadHardwareVault(hardwareVaultId);
-
                 await MainTableService.LoadTableDataAsync();
-
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
             hubConnection.On<string>(RefreshPage.HardwareVaultStateChanged, async (hardwareVaultId) =>
-            {
-                if (hardwareVaultId != null)
-                    await HardwareVaultService.ReloadHardwareVault(hardwareVaultId);
-
+            {  
                 await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast($"Hardware Vault {hardwareVaultId} state changed.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();

@@ -27,12 +27,6 @@ namespace HES.Core.Services
             _userManager = userManager;
         }
 
-        public async Task ReloadUserAsync(string userId)
-        {
-            var user = await _applicationUserRepository.GetByIdAsync(userId);
-            await _applicationUserRepository.ReloadAsync(user);
-        }
-
         public async Task<ApplicationUser> GetByIdAsync(string userId)
         {
             return await _applicationUserRepository.GetByIdAsync(userId);

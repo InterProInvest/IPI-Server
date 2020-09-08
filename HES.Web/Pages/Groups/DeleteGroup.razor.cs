@@ -52,7 +52,7 @@ namespace HES.Web.Pages.Groups
             try
             {
                 await GroupService.DeleteGroupAsync(GroupId);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 ToastService.ShowToast("Group deleted.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

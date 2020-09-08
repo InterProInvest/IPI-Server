@@ -13,8 +13,8 @@ namespace HES.Web.Pages.Workstations
 {
     public partial class WorkstationDetailsPage : OwningComponentBase, IDisposable
     {
-        public IMainTableService<WorkstationProximityVault, WorkstationDetailsFilter> MainTableService { get; set; }
         public IWorkstationService WorkstationService { get; set; }
+        public IMainTableService<WorkstationProximityVault, WorkstationDetailsFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }

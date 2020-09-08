@@ -20,7 +20,6 @@ namespace HES.Core.Interfaces
         Task CreateGroupRangeAsync(List<Group> groups);
         Task EditGroupAsync(Group group);
         Task UnchangedGroupAsync(Group group);
-        Task ReloadGroupAsync(string groupId);
         Task<Group> DeleteGroupAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(DataLoadingOptions<GroupMembershipFilter> dataLoadingOptions);

@@ -56,7 +56,7 @@ namespace HES.Web.Pages.Employees
             try
             {
                 await EmployeeService.DeleteEmployeeAsync(Employee.Id);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees, Employee.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 ToastService.ShowToast("Employee removed.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

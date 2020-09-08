@@ -55,7 +55,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             {
                 await OrgStructureService.DeleteDepartmentAsync(Department.Id);
                 await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies, Department.CompanyId);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
                 ToastService.ShowToast("Department removed.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
