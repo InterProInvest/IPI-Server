@@ -94,7 +94,7 @@ namespace HES.Web.Pages.Employees
             {
                 builder.OpenComponent(0, typeof(DeleteHardwareVault));
                 builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadEmployeeAsync));
-                builder.AddAttribute(2, "HardwareVault", hardwareVault);
+                builder.AddAttribute(2, "HardwareVaultId", hardwareVault.Id);
                 builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -160,8 +160,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPersonalAccount));
-                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(EditPersonalAccount.AccountId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(EditPersonalAccount.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -173,7 +173,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPersonalAccountPwd));
-                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
+                builder.AddAttribute(1, "AccountId", MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -186,7 +186,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPersonalAccountOtp));
-                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
+                builder.AddAttribute(1, "AccountId", MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -199,8 +199,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(GenerateAdPassword));
-                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(GenerateAdPassword.AccountId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(GenerateAdPassword.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -212,8 +212,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteAccount));
-                builder.AddAttribute(1, "Account", MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(DeleteAccount.AccountId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(DeleteAccount.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 

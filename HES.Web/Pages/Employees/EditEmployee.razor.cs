@@ -24,9 +24,10 @@ namespace HES.Web.Pages.Employees
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditEmployee> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Employee Employee { get; set; }
+        [Parameter] public string EmployeeId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Employee Employee { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public List<Company> Companies { get; set; }
         public List<Department> Departments { get; set; }
@@ -36,25 +37,39 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
-
-            EntityBeingEdited = MemoryCache.TryGetValue(Employee.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Employee.Id, Employee);
-
-            Companies = await OrgStructureService.GetCompaniesAsync();
-
-            if (Employee.DepartmentId == null)
+            try
             {
-                Departments = new List<Department>();
-            }
-            else
-            {
-                Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(Employee.Department.CompanyId);
-            }
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;
 
-            Positions = await OrgStructureService.GetPositionsAsync();
-            Initialized = true;
+                Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+                if (Employee == null)
+                    throw new Exception("Employee not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Employee.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Employee.Id, Employee);
+
+                Companies = await OrgStructureService.GetCompaniesAsync();
+
+                if (Employee.DepartmentId == null)
+                {
+                    Departments = new List<Department>();
+                }
+                else
+                {
+                    Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(Employee.Department.CompanyId);
+                }
+
+                Positions = await OrgStructureService.GetPositionsAsync();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         public async Task OnCompanyChangeAsync(ChangeEventArgs args)

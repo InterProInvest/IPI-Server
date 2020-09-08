@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Employees
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Employee Employee { get; set; }
+        [Parameter] public Employee Employee { get; set; } // TODO change to id
         [Parameter] public string ConnectionId { get; set; }
 
         public ServerSettings ServerSettings { get; set; }

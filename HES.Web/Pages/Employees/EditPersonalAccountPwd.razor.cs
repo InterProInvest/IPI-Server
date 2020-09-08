@@ -25,9 +25,10 @@ namespace HES.Web.Pages.Employees
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditPersonalAccountPwd> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Account Account { get; set; }
+        [Parameter] public string AccountId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Account Account { get; set; }
         public LdapSettings LdapSettings { get; set; }
         public bool EntityBeingEdited { get; set; }
 
@@ -37,13 +38,27 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
-            EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Account.Id, Account);
+            try
+            {
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;
 
-            LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
-            _initialized = true;
+                Account = await EmployeeService.GetAccountByIdAsync(AccountId);
+                if (Account == null)
+                    throw new Exception("Account not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Account.Id, Account);
+
+                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
+                _initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditAccountPasswordAsync()

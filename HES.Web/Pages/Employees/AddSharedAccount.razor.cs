@@ -24,12 +24,11 @@ namespace HES.Web.Pages.Employees
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] ILogger<AddSharedAccount> Logger { get; set; }
         [Inject] IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string EmployeeId { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
 
         public List<SharedAccount> SharedAccounts { get; set; }
         public SharedAccount SelectedSharedAccount { get; set; }
-
-        [Parameter] public string EmployeeId { get; set; }
-        [Parameter] public string ConnectionId { get; set; }
 
         protected override async Task OnInitializedAsync()
         {

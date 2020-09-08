@@ -19,17 +19,31 @@ namespace HES.Web.Pages.Employees
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<DeleteEmployee> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Employee Employee { get; set; }
+        [Parameter] public string EmployeeId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+        public Employee Employee { get; set; }
 
         public bool EmployeeHasVault { get; set; }
         public bool EntityBeingEdited { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Employee.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Employee.Id, Employee);
+            try
+            {
+                Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+                if (Employee == null)
+                    throw new Exception("Employee not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Employee.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Employee.Id, Employee);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         protected override void OnParametersSet()
@@ -59,6 +73,5 @@ namespace HES.Web.Pages.Employees
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Employee.Id);
         }
-
     }
 }

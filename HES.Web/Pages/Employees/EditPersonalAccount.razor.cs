@@ -22,20 +22,35 @@ namespace HES.Web.Pages.Employees
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<EditPersonalAccount> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Account Account { get; set; }
+        [Parameter] public string AccountId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+
+        public Account Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
 
         private bool _isBusy;
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += OnCancelAsync;
+            try
+            {
+                ModalDialogService.OnCancel += OnCancelAsync;
 
-            EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Account.Id, Account);
+                Account = await EmployeeService.GetAccountByIdAsync(AccountId);
+                if (Account == null)
+                    throw new Exception("Account not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Account.Id, Account);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditAccountAsync()
@@ -72,7 +87,7 @@ namespace HES.Web.Pages.Employees
                 _isBusy = false;
             }
         }
-             
+
         private async Task OnCancelAsync()
         {
             await EmployeeService.UnchangedPersonalAccountAsync(Account);

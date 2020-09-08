@@ -20,15 +20,29 @@ namespace HES.Web.Pages.Employees
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<DeleteAccount> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Account Account { get; set; }
+        [Parameter] public string AccountId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+        public Account Account { get; set; }
         public bool EntityBeingEdited { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Account.Id, Account);
+            try
+            {
+                Account = await EmployeeService.GetAccountByIdAsync(AccountId);
+                if (Account == null)
+                    throw new Exception("Account not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Account.Id, Account);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task DeleteAccoountAsync()
@@ -45,7 +59,7 @@ namespace HES.Web.Pages.Employees
             {
                 Logger.LogError(ex.Message, ex);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 
