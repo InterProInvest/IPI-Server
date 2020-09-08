@@ -31,14 +31,14 @@ namespace HES.Web.Pages.Workstations
         {
             try
             {
-                EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
-                if (!EntityBeingEdited)
-                    MemoryCache.Set(Workstation.Id, Workstation);
-
                 Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
 
                 if (Workstation == null)
                     throw new Exception("Workstation not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Workstation.Id, Workstation);
 
                 Initialized = true;
             }

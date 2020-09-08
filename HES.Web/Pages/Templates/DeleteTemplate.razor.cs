@@ -20,15 +20,33 @@ namespace HES.Web.Pages.Templates
         [Inject] public ILogger<DeleteTemplate> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public Template Template { get; set; }
+        [Parameter] public string TemplateId { get; set; }
 
+        public Template Template { get; set; }
         public bool EntityBeingEdited { get; set; }
+        public bool Initialized { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Template.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Template.Id, Template);
+            try
+            {
+                Template = await TemplateService.GetByIdAsync(TemplateId);
+
+                if (Template == null)
+                    throw new Exception("Template not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Template.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Template.Id, Template);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task DeleteTemplateAsync()
