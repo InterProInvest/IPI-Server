@@ -38,7 +38,7 @@ namespace HES.Core.Services
 
         public async Task<List<Company>> GetCompaniesAsync()
         {
-            return await _companyRepository.Query().Include(x => x.Departments).OrderBy(c => c.Name).ToListAsync();
+            return await _companyRepository.Query().Include(x => x.Departments).OrderBy(c => c.Name).AsNoTracking().ToListAsync();
         }
 
         public async Task<Company> CreateCompanyAsync(Company company)
@@ -107,6 +107,7 @@ namespace HES.Core.Services
                 .Query()
                 .Include(d => d.Company)
                 .OrderBy(c => c.Name)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -183,6 +184,7 @@ namespace HES.Core.Services
             return await _positionRepository
                 .Query()
                 .OrderBy(p => p.Name)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
