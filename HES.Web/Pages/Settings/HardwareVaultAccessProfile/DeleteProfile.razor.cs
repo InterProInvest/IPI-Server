@@ -19,16 +19,30 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<DeleteProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string HardwareVaultProfileId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public HardwareVaultProfile AccessProfile { get; set; }
 
+        public HardwareVaultProfile AccessProfile { get; set; }
         public bool EntityBeingEdited { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(AccessProfile.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(AccessProfile.Id, AccessProfile);
+            try
+            {
+                AccessProfile = await HardwareVaultService.GetProfileByIdAsync(HardwareVaultProfileId);
+                if (AccessProfile == null)
+                    throw new Exception("Hardware Vault Profile not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(AccessProfile.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(AccessProfile.Id, AccessProfile);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task DeleteProfileAsync()
