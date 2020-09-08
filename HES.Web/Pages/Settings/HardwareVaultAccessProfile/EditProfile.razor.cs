@@ -19,8 +19,9 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         [Inject] public ILogger<EditProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Parameter] public string HardwareVaultProfileId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public HardwareVaultProfile AccessProfile { get; set; }
+        public HardwareVaultProfile AccessProfile { get; set; }
 
         public bool EntityBeingEdited { get; set; }
         public int InitPinExpirationValue { get; set; }
@@ -28,17 +29,30 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         public int InitPinTryCountValue { get; set; }
 
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += OnCancelAsync;
+            try
+            {
+                ModalDialogService.OnCancel += OnCancelAsync;
 
-            InitPinExpirationValue = AccessProfile.PinExpirationConverted;
-            InitPinLengthValue = AccessProfile.PinLength;
-            InitPinTryCountValue = AccessProfile.PinTryCount;
+                AccessProfile = await HardwareVaultService.GetProfileByIdAsync(HardwareVaultProfileId);
+                if (AccessProfile == null)
+                    throw new Exception("Hardware Vault Profile not found.");
 
-            EntityBeingEdited = MemoryCache.TryGetValue(AccessProfile.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(AccessProfile.Id, AccessProfile);
+                InitPinExpirationValue = AccessProfile.PinExpirationConverted;
+                InitPinLengthValue = AccessProfile.PinLength;
+                InitPinTryCountValue = AccessProfile.PinTryCount;
+
+                EntityBeingEdited = MemoryCache.TryGetValue(AccessProfile.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(AccessProfile.Id, AccessProfile);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditProfileAsync()

@@ -51,7 +51,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             {
                 builder.OpenComponent(0, typeof(EditProfile));
                 builder.AddAttribute(1, nameof(EditProfile.ConnectionId), hubConnection?.ConnectionId);
-                builder.AddAttribute(2, nameof(EditProfile.AccessProfile), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, nameof(EditProfile.HardwareVaultProfileId), MainTableService.SelectedEntity.Id);
                 builder.CloseComponent();
             };
 
@@ -64,7 +64,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             {
                 builder.OpenComponent(0, typeof(DeleteProfile));
                 builder.AddAttribute(1, nameof(DeleteProfile.ConnectionId), hubConnection?.ConnectionId);
-                builder.AddAttribute(2, nameof(DeleteProfile.AccessProfile), MainTableService.SelectedEntity);
+                builder.AddAttribute(2, nameof(DeleteProfile.HardwareVaultProfileId), MainTableService.SelectedEntity.Id);
                 builder.CloseComponent();
             };
 
