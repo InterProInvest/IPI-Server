@@ -19,17 +19,34 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<DeleteDepartment> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Department Department { get; set; }
+        [Parameter] public string DepartmentId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
+        public Department Department { get; set; }
         public bool EntityBeingEdited { get; set; }
+        public bool Initialized { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Department.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Department.Id, Department);
+            try
+            {
+                Department = await OrgStructureService.GetDepartmentByIdAsync(DepartmentId);
+                if (Department == null)
+                    throw new Exception("Department not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Department.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Department.Id, Department);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         public async Task DeleteAsync()
