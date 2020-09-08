@@ -20,17 +20,34 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<DeletePosition> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Position Position { get; set; }
+        [Parameter] public string PositionId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
 
+        public Position Position { get; set; }
         public bool EntityBeingEdited { get; set; }
+        public bool Initialized { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Position.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Position.Id, Position);
+            try
+            {
+                Position = await OrgStructureService.GetPositionByIdAsync(PositionId);
+                if (Position == null)
+                    throw new Exception("Position not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Position.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Position.Id, Position);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         public async Task DeleteAsync()

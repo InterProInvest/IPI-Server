@@ -21,20 +21,36 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<EditCompany> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Company Company { get; set; }
+        [Parameter] public string CompanyId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public EventCallback Refresh { get; set; }
-           
+
+        public Company Company { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
-
-        protected override void OnInitialized()
+        public bool Initialized { get; set; }
+        protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += ModalDialogService_OnCancel;
+            try
+            {
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;
 
-            EntityBeingEdited = MemoryCache.TryGetValue(Company.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Company.Id, Company);
+                Company = await OrgStructureService.GetCompanyByIdAsync(CompanyId);
+                if (Company == null)
+                    throw new Exception("Company not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Company.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Company.Id, Company);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditAsync()

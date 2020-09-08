@@ -55,7 +55,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditCompany));
-                builder.AddAttribute(1, nameof(EditCompany.Company), company);
+                builder.AddAttribute(1, nameof(EditCompany.CompanyId), company.Id);
                 builder.AddAttribute(2, nameof(EditCompany.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(EditCompany.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -69,7 +69,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteCompany));
-                builder.AddAttribute(1, nameof(DeleteCompany.Company), company);
+                builder.AddAttribute(1, nameof(DeleteCompany.CompanyId), company.Id);
                 builder.AddAttribute(2, nameof(DeleteCompany.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(DeleteCompany.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -97,7 +97,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditDepartment));
-                builder.AddAttribute(1, nameof(EditDepartment.Department), department);
+                builder.AddAttribute(1, nameof(EditDepartment.DepartmentId), department.Id);
                 builder.AddAttribute(2, nameof(EditDepartment.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(EditDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -111,7 +111,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteDepartment));
-                builder.AddAttribute(1, nameof(DeleteDepartment.Department), department);
+                builder.AddAttribute(1, nameof(DeleteDepartment.DepartmentId), department.Id);
                 builder.AddAttribute(2, nameof(DeleteDepartment.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(DeleteDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();

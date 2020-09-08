@@ -84,7 +84,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPosition));
-                builder.AddAttribute(1, nameof(EditPosition.Position), position);
+                builder.AddAttribute(1, nameof(EditPosition.PositionId), position.Id);
                 builder.AddAttribute(2, nameof(EditPosition.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(EditPosition.Refresh), EventCallback.Factory.Create(this, LoadPositionsAsync));
                 builder.CloseComponent();
@@ -98,7 +98,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeletePosition));
-                builder.AddAttribute(1, nameof(DeletePosition.Position), position);
+                builder.AddAttribute(1, nameof(DeletePosition.PositionId), position.Id);
                 builder.AddAttribute(2, nameof(DeletePosition.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(DeletePosition.Refresh), EventCallback.Factory.Create(this, LoadPositionsAsync));
                 builder.CloseComponent();
