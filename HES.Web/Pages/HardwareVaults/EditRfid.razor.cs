@@ -20,8 +20,9 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
-        [Parameter] public HardwareVault HardwareVault { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+        public HardwareVault HardwareVault { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
@@ -30,8 +31,12 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
-                ModalDialogService.OnCancel += ModalDialogService_OnCancel;      
-                
+                ModalDialogService.OnCancel += ModalDialogService_OnCancel;
+
+                HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
+                if (HardwareVault == null)
+                    throw new Exception("HardwareVault not found.");
+
                 EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
                 if (!EntityBeingEdited)
                     MemoryCache.Set(HardwareVault.Id, HardwareVault);

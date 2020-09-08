@@ -20,21 +20,35 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] IToastService ToastService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
-        [Parameter] public HardwareVault HardwareVault { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
         [Parameter] public VaultStatus VaultStatus { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public HardwareVault HardwareVault { get; set; }
         public string StatusDescription { get; set; }
         public VaultStatusReason StatusReason { get; set; } = VaultStatusReason.Lost;
         public string CompromisedConfirmText { get; set; } = string.Empty;
         public bool CompromisedIsDisabled { get; set; } = true;
         public bool EntityBeingEdited { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(HardwareVault.Id, HardwareVault);
+            try
+            {
+                HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
+                if (HardwareVault == null)
+                    throw new Exception("HardwareVault not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(HardwareVault.Id, HardwareVault);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task ChangeStatusAsync()

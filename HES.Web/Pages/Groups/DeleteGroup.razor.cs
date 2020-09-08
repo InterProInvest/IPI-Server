@@ -25,7 +25,6 @@ namespace HES.Web.Pages.Groups
         public Group Group { get; set; }
         public bool EntityBeingEdited { get; set; }
 
-
         protected override async Task OnInitializedAsync()
         {
             try
