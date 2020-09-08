@@ -252,6 +252,7 @@ namespace HES.Core.Services
         {
             return await _licenseOrderRepository
                 .Query()
+                .Include(x => x.HardwareVaultLicenses)
                 .FirstOrDefaultAsync(x => x.Id == orderId);
         }
 

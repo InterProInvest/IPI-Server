@@ -24,7 +24,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] public ILogger<EditLicenseOrder> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public LicenseOrder LicenseOrder { get; set; }
+        [Parameter] public string LicenseOrderId { get; set; }
+         public LicenseOrder LicenseOrder { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
@@ -36,35 +37,48 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
-
-            if (!LicenseOrder.ProlongExistingLicenses)
-            {          
-                _newLicenseOrder = new NewLicenseOrder()
-                {
-                    ContactEmail = LicenseOrder.ContactEmail,
-                    Note = LicenseOrder.Note,
-                    StartDate = LicenseOrder.StartDate.Value,
-                    EndDate = LicenseOrder.EndDate,
-                    HardwareVaults = await HardwareVaultService.GetVaultsWithoutLicenseAsync()
-                };
-                _newLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
-            }
-            else
+            try
             {
-                _renewLicenseOrder = new RenewLicenseOrder()
-                {
-                    ContactEmail = LicenseOrder.ContactEmail,
-                    Note = LicenseOrder.Note,
-                    EndDate = LicenseOrder.EndDate,
-                    HardwareVaults = await HardwareVaultService.GetVaultsWithLicenseAsync()
-                };
-                _renewLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
-            }
+                LicenseOrder = await LicenseService.GetLicenseOrderByIdAsync(LicenseOrderId);
+                if (LicenseOrder == null)
+                    throw new Exception("License Order not found.");
 
-            _initialized = true;
+                EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
+
+                if (!LicenseOrder.ProlongExistingLicenses)
+                {
+                    _newLicenseOrder = new NewLicenseOrder()
+                    {
+                        ContactEmail = LicenseOrder.ContactEmail,
+                        Note = LicenseOrder.Note,
+                        StartDate = LicenseOrder.StartDate.Value,
+                        EndDate = LicenseOrder.EndDate,
+                        HardwareVaults = await HardwareVaultService.GetVaultsWithoutLicenseAsync()
+                    };
+                    _newLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
+                }
+                else
+                {
+                    _renewLicenseOrder = new RenewLicenseOrder()
+                    {
+                        ContactEmail = LicenseOrder.ContactEmail,
+                        Note = LicenseOrder.Note,
+                        EndDate = LicenseOrder.EndDate,
+                        HardwareVaults = await HardwareVaultService.GetVaultsWithLicenseAsync()
+                    };
+                    _renewLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
+                }
+
+                _initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditNewLicenseOrderAsync()

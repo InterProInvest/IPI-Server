@@ -18,7 +18,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
-        [Inject] public NavigationManager NavigationManager { get; set; } 
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
         private HubConnection hubConnection;
 
@@ -74,8 +74,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditLicenseOrder));
-                builder.AddAttribute(1, nameof(EditLicenseOrder.LicenseOrder), MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(EditLicenseOrder.LicenseOrderId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(EditLicenseOrder.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -87,8 +87,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteLicenseOrder));
-                builder.AddAttribute(1, nameof(DeleteLicenseOrder.LicenseOrder), MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(DeleteLicenseOrder.LicenseOrderId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(DeleteLicenseOrder.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
