@@ -24,9 +24,10 @@ namespace HES.Web.Pages.Workstations
         [Inject] public ILogger<ApproveWorkstation> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
-        [Parameter] public Workstation Workstation { get; set; }
+        [Parameter] public string WorkstationId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Workstation Workstation { get; set; }
         public List<Company> Companies { get; set; }
         public List<Department> Departments { get; set; }
         public bool Initialized { get; set; }
@@ -34,14 +35,29 @@ namespace HES.Web.Pages.Workstations
 
         protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Workstation.Id, Workstation);
+            try
+            {
+                EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Workstation.Id, Workstation);
 
-            ModalDialogService.OnCancel += OnCancel;
-            Companies = await OrgStructureService.GetCompaniesAsync();
-            Departments = new List<Department>();
-            Initialized = true;
+                ModalDialogService.OnCancel += OnCancel;
+                Companies = await OrgStructureService.GetCompaniesAsync();
+                Departments = new List<Department>();
+
+                Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
+
+                if (Workstation == null)
+                    throw new Exception("Workstation not found.");
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task ApproveAsync()

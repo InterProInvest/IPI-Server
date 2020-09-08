@@ -23,9 +23,10 @@ namespace HES.Web.Pages.Workstations
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<ApproveWorkstation> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Workstation Workstation { get; set; }
+        [Parameter] public string WorkstationId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Workstation Workstation { get; set; }
         public List<Company> Companies { get; set; }
         public List<Department> Departments { get; set; }
         public bool Initialized { get; set; }
@@ -33,24 +34,38 @@ namespace HES.Web.Pages.Workstations
 
         protected override async Task OnInitializedAsync()
         {
-            ModalDialogService.OnCancel += OnCancel;
-
-            EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Workstation.Id, Workstation);
-
-            Companies = await OrgStructureService.GetCompaniesAsync();
-
-            if (Workstation.DepartmentId == null)
+            try
             {
-                Departments = new List<Department>();
+                ModalDialogService.OnCancel += OnCancel;
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Workstation.Id, Workstation);
+
+                Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
+
+                if (Workstation == null)
+                    throw new Exception("Workstation not found.");
+
+                Companies = await OrgStructureService.GetCompaniesAsync();
+
+                if (Workstation.DepartmentId == null)
+                {
+                    Departments = new List<Department>();
+                }
+                else
+                {
+                    Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(Workstation.Department.CompanyId);
+                }
+
+                Initialized = true;
             }
-            else
+            catch (Exception ex)
             {
-                Departments = await OrgStructureService.GetDepartmentsByCompanyIdAsync(Workstation.Department.CompanyId);
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
             }
-         
-            Initialized = true;
         }
 
         private async Task EditAsync()

@@ -47,7 +47,7 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ApproveWorkstation));
-                builder.AddAttribute(1, nameof(ApproveWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ApproveWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ApproveWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -59,7 +59,7 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(UnapproveWorkstation));
-                builder.AddAttribute(1, nameof(UnapproveWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(UnapproveWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(UnapproveWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -71,7 +71,7 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteWorkstation));
-                builder.AddAttribute(1, nameof(DeleteWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(DeleteWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(DeleteWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -91,8 +91,8 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditWorkstation));
-                builder.AddAttribute(1, nameof(UnapproveWorkstation.Workstation), MainTableService.SelectedEntity);
-                builder.AddAttribute(2, nameof(UnapproveWorkstation.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(EditWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(EditWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
             await MainTableService.ShowModalAsync("Edit Workstation", body);

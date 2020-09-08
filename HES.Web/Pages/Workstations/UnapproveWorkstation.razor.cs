@@ -20,16 +20,34 @@ namespace HES.Web.Pages.Workstations
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<UnapproveWorkstation> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public Workstation Workstation { get; set; }
+        [Parameter] public string WorkstationId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Workstation Workstation { get; set; }
         public bool EntityBeingEdited { get; set; }
+        public bool Initialized { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(Workstation.Id, Workstation);
+            try
+            {
+                EntityBeingEdited = MemoryCache.TryGetValue(Workstation.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Workstation.Id, Workstation);
+
+                Workstation = await WorkstationService.GetWorkstationByIdAsync(WorkstationId);
+
+                if (Workstation == null)
+                    throw new Exception("Workstation not found.");
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task UnapproveAsync()
