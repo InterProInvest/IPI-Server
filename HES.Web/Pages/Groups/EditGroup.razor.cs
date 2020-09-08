@@ -47,7 +47,7 @@ namespace HES.Web.Pages.Groups
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 

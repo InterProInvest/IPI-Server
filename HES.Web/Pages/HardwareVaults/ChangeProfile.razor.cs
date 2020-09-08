@@ -21,21 +21,35 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] public IMemoryCache MemoryCache { get; set; }
-        [Parameter] public HardwareVault HardwareVault { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public HardwareVault HardwareVault { get; set; }
         public SelectList VaultProfiles { get; set; }
         public string SelectedVaultProfileId { get; set; }
         public bool EntityBeingEdited { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(HardwareVault.Id, HardwareVault);
+            try
+            {
+                HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
+                if (HardwareVault == null)
+                    throw new Exception("HardwareVault not found.");
 
-            VaultProfiles = new SelectList(await HardwareVaultService.GetProfilesAsync(), nameof(HardwareVaultProfile.Id), nameof(HardwareVaultProfile.Name));
-            SelectedVaultProfileId = VaultProfiles.First().Value;
+                EntityBeingEdited = MemoryCache.TryGetValue(HardwareVault.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(HardwareVault.Id, HardwareVault);
+
+                VaultProfiles = new SelectList(await HardwareVaultService.GetProfilesAsync(), nameof(HardwareVaultProfile.Id), nameof(HardwareVaultProfile.Name));
+                SelectedVaultProfileId = VaultProfiles.First().Value;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }     
         }
 
         private async Task CloseAsync()

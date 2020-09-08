@@ -76,7 +76,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditRfid));
-                builder.AddAttribute(1, nameof(EditRfid.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(EditRfid.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(EditRfid.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
@@ -89,7 +89,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Suspended);
                 builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
@@ -103,7 +103,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Active);
                 builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
@@ -117,7 +117,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeStatus));
-                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ChangeStatus.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeStatus.VaultStatus), VaultStatus.Compromised);
                 builder.AddAttribute(3, nameof(ChangeStatus.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
@@ -131,7 +131,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ShowActivationCode));
-                builder.AddAttribute(1, nameof(ShowActivationCode.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ShowActivationCode.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.CloseComponent();
             };
 
@@ -143,7 +143,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ChangeProfile));
-                builder.AddAttribute(1, nameof(ChangeProfile.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ChangeProfile.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ChangeProfile.ConnectionId), hubConnection.ConnectionId);
                 builder.CloseComponent();
             };

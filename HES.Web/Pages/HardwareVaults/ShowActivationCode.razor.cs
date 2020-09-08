@@ -17,7 +17,8 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<ShowActivationCode> Logger { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
-        [Parameter] public HardwareVault HardwareVault { get; set; }
+        [Parameter] public string HardwareVaultId { get; set; }
+        public HardwareVault HardwareVault { get; set; }
 
         public string Code { get; set; }
         public string InputType { get; private set; }
@@ -26,6 +27,10 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
+                if (HardwareVault == null)
+                    throw new Exception("HardwareVault not found.");
+
                 Code = await HardwareVaultService.GetVaultActivationCodeAsync(HardwareVault.Id);
                 InputType = "Password";
             }
@@ -33,7 +38,7 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 
