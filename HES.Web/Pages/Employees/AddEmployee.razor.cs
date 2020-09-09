@@ -82,13 +82,13 @@ namespace HES.Web.Pages.Employees
 
         private async Task AddAsync()
         {
+            if (IsBusy)
+                return;
+
+            IsBusy = true;
+
             try
             {
-                if (IsBusy)
-                    return;
-
-                IsBusy = true;
-
                 if (!Users.Any(x => x.Checked))
                 {
                     WarningMessage = "Please select at least one user.";

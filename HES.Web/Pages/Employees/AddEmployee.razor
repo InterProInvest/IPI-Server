@@ -17,6 +17,9 @@ else
             break;
         case ActiveDirectoryInitialization.Loaded:
             <Alert Message="@WarningMessage" />
+            <div class="alert alert-secondary px-3 py-2" role="alert">
+                Selected @Users.Where(x => x.Checked).Count() of @Users.Count() users.
+            </div>
             <div class="has-search-right my-2">
                 <div class="form-control-feedback">
                     <img class="img-size" src="/svg/action/search.svg" />
@@ -35,13 +38,13 @@ else
                             </th>
                             <th @onclick="@(() => SortTable(nameof(Employee.FullName)))">
                                 <span class="w-100">
-                                    @nameof(Group.Name)
+                                    Name
                                 </span>
                                 <img class="table-sort-arrow @GetSortIcon(nameof(Employee.FullName))" />
                             </th>
                         </tr>
                     </thead>
-                    <tbody style="max-height:55vh;">
+                    <tbody style="max-height:48vh;">
                         @foreach (var user in Users.Where(x => x.Employee.FullName.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
                         {
                             <tr @key="user.Employee.Id" @onclick="@(() => { user.Checked = !user.Checked; })">
@@ -58,12 +61,16 @@ else
                         }
                     </tbody>
                 </table>
+            </div>            
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="createGroup" @bind="CreateGroups" />
+                        <label class="custom-control-label disable-selection" for="createGroup">Create groups for selected users</label>
+                    </div>
+                </div>
             </div>
-            <div class="mb-2 mx-1 custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" id="createGroup" @bind="CreateGroups" />
-                <label class="custom-control-label disable-selection" for="createGroup">Create groups for selected users</label>
-            </div>
-            <div class="text-right">
+            <div class="text-right mt-3">
                 <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
                 <button type="button" class="btn btn-primary btn-min-w" @onclick="@(async () => await AddAsync())">
                     <span class="spinner-border spinner-border-sm @(IsBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>

@@ -31,15 +31,48 @@ namespace HES.Core.Services
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(ldapSettings.Host, 389);
+                connection.Connect(ldapSettings.Host, 3268);
                 await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
 
                 var filter = "(&(objectCategory=user)(givenName=*))";
-                var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var pageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
+                {
+                    AttributesOnly = false,
+                    TimeLimit = TimeSpan.Zero,
+                    Controls = { pageResultRequestControl }
+                };
 
-                foreach (var entity in response.Entries)
+                var entries = new List<DirectoryEntry>();
+
+                while (true)
+                {
+                    var response = (SearchResponse)connection.SendRequest(searchRequest);
+           
+                    foreach (var control in response.Controls)
+                    {
+                        if (control is PageResultResponseControl)
+                        {
+                            // Update the cookie for next set
+                            pageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                            break;
+                        }
+                    }
+                    
+                    // Add them to our collection
+                    foreach (var sre in response.Entries)
+                    {
+                        entries.Add(sre);
+                    }
+
+                    // Our exit condition is when our cookie is empty
+                    if (pageResultRequestControl.Cookie.Length == 0)
+                        break;
+                }
+
+                foreach (var entity in entries)
                 {
                     var activeDirectoryUser = new ActiveDirectoryUser()
                     {
@@ -57,12 +90,13 @@ namespace HES.Core.Services
                             Name = "Domain Account",
                             Domain = GetFirstDnFromHost(ldapSettings.Host),
                             UserName = TryGetAttribute(entity, "sAMAccountName"),
-                            Password = Guid.NewGuid().ToString(), // TODO generate password from Communication.dll
+                            Password = GeneratePassword(),
                             UpdateInActiveDirectory = true
                         }
                     };
 
                     List<Group> groups = new List<Group>();
+
                     var groupNames = TryGetAttributeArray(entity, "memberOf");
                     if (groupNames != null)
                     {
@@ -71,7 +105,7 @@ namespace HES.Core.Services
                             var name = GetNameFromDn(groupName);
                             var filterGroup = $"(&(objectCategory=group)(name={name}))";
                             var groupResponse = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterGroup, LdapSearchScope.LDAP_SCOPE_SUBTREE));
-
+          
                             groups.Add(new Group()
                             {
                                 Id = GetAttributeGUID(groupResponse.Entries.First()),
@@ -81,6 +115,7 @@ namespace HES.Core.Services
                             });
                         }
                     }
+
                     activeDirectoryUser.Groups = groups.Count > 0 ? groups : null;
 
                     users.Add(activeDirectoryUser);
@@ -102,7 +137,7 @@ namespace HES.Core.Services
                     try
                     {
                         // The employee may already be in the database, so we get his ID and create an account
-                        user.DomainAccount.EmployeeId = employee.Id;                
+                        user.DomainAccount.EmployeeId = employee.Id;
                         await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
                     }
                     catch (AlreadyExistException)
@@ -154,15 +189,48 @@ namespace HES.Core.Services
 
             using (var connection = new LdapConnection())
             {
-                connection.Connect(ldapSettings.Host, 389);
+                connection.Connect(ldapSettings.Host, 3268);
                 await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
 
                 var filter = "(objectCategory=group)";
-                var response = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var pageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
+                {
+                    AttributesOnly = false,
+                    TimeLimit = TimeSpan.Zero,
+                    Controls = { pageResultRequestControl }
+                };
 
-                foreach (var entity in response.Entries)
+                var entries = new List<DirectoryEntry>();
+
+                while (true)
+                {
+                    var response = (SearchResponse)connection.SendRequest(searchRequest);
+
+                    foreach (var control in response.Controls)
+                    {
+                        if (control is PageResultResponseControl)
+                        {
+                            // Update the cookie for next set
+                            pageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                            break;
+                        }
+                    }
+
+                    // Add them to our collection
+                    foreach (var entry in response.Entries)
+                    {
+                        entries.Add(entry);
+                    }
+
+                    // Our exit condition is when our cookie is empty
+                    if (pageResultRequestControl.Cookie.Length == 0)
+                        break;
+                }
+
+                foreach (var entity in entries)
                 {
                     var activeDirectoryGroup = new ActiveDirectoryGroup()
                     {
@@ -175,24 +243,68 @@ namespace HES.Core.Services
                         }
                     };
 
-                    List<Employee> employees = new List<Employee>();
-                    var filterMembers = $"(&(objectCategory=user)(memberOf={entity.Dn})(givenName=*))";
-                    var members = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterMembers, LdapSearchScope.LDAP_SCOPE_SUBTREE));
-
-                    foreach (var member in members.Entries)
+                    List<ActiveDirectoryGroupMembers> groupMembers = new List<ActiveDirectoryGroupMembers>();
+                    var membersFilter = $"(&(objectCategory=user)(memberOf={entity.Dn})(givenName=*))";
+                    var membersPageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                    var membersSearchRequest = new SearchRequest(dn, membersFilter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
                     {
-                        employees.Add(new Employee()
+                        AttributesOnly = false,
+                        TimeLimit = TimeSpan.Zero,
+                        Controls = { membersPageResultRequestControl }
+                    };
+
+                    var members = new List<DirectoryEntry>();
+
+                    while (true)
+                    {
+                        var response = (SearchResponse)connection.SendRequest(membersSearchRequest);
+
+                        foreach (var control in response.Controls)
                         {
-                            Id = Guid.NewGuid().ToString(),
-                            ActiveDirectoryGuid = GetAttributeGUID(member),
-                            FirstName = TryGetAttribute(member, "givenName"),
-                            LastName = TryGetAttribute(member, "sn"),
-                            Email = TryGetAttribute(member, "mail"),
-                            PhoneNumber = TryGetAttribute(member, "telephoneNumber")
+                            if (control is PageResultResponseControl)
+                            {
+                                // Update the cookie for next set
+                                pageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                                break;
+                            }
+                        }
+
+                        // Add them to our collection
+                        foreach (var entry in response.Entries)
+                        {
+                            members.Add(entry);
+                        }
+
+                        // Our exit condition is when our cookie is empty
+                        if (pageResultRequestControl.Cookie.Length == 0)
+                            break;
+                    }
+
+                    foreach (var member in members)
+                    {
+                        groupMembers.Add(new ActiveDirectoryGroupMembers()
+                        {
+                            Employee = new Employee()
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                ActiveDirectoryGuid = GetAttributeGUID(member),
+                                FirstName = TryGetAttribute(member, "givenName"),
+                                LastName = TryGetAttribute(member, "sn"),
+                                Email = TryGetAttribute(member, "mail"),
+                                PhoneNumber = TryGetAttribute(member, "telephoneNumber")
+                            },
+                            DomainAccount = new WorkstationDomain()
+                            {
+                                Name = "Domain Account",
+                                Domain = GetFirstDnFromHost(ldapSettings.Host),
+                                UserName = TryGetAttribute(member, "sAMAccountName"),
+                                Password = GeneratePassword(), 
+                                UpdateInActiveDirectory = true
+                            }
                         });
                     }
 
-                    activeDirectoryGroup.Employees = employees.Count > 0 ? employees : null;
+                    activeDirectoryGroup.Members = groupMembers.Count > 0 ? groupMembers : null;
                     groups.Add(activeDirectoryGroup);
                 }
             }
@@ -217,21 +329,33 @@ namespace HES.Core.Services
                         currentGroup = await _groupService.GetGroupByNameAsync(group.Group);
                     }
 
-                    if (createEmployees && group.Employees != null)
+                    if (createEmployees && group.Members != null)
                     {
-                        foreach (var employee in group.Employees)
+                        foreach (var member in group.Members)
                         {
-                            var imported = await _employeeService.ImportEmployeeAsync(employee);
-                            employee.Id = imported.Id;
+                            var employee = await _employeeService.ImportEmployeeAsync(member.Employee);
+                            member.Employee.Id = employee.Id;
+
+                            try
+                            {
+                                // The employee may already be in the database, so we get his ID and create an account
+                                member.DomainAccount.EmployeeId = employee.Id;
+                                await _employeeService.CreateWorkstationAccountAsync(member.DomainAccount);
+                            }
+                            catch (AlreadyExistException)
+                            {
+                                // Ignore if a domain account exists
+                            }
                         }
-                        await _groupService.AddEmployeesToGroupAsync(group.Employees.Select(s => s.Id).ToList(), currentGroup.Id);
+
+                        await _groupService.AddEmployeesToGroupAsync(group.Members.Select(s => s.Employee.Id).ToList(), currentGroup.Id);
                     }
                 }
                 transactionScope.Complete();
             }
         }
 
-        #region Utils
+        #region Helpers
 
         private LdapCredential CreateLdapCredential(LdapSettings ldapSettings)
         {
@@ -282,6 +406,11 @@ namespace HES.Core.Services
             var ba = new Guid(guid).ToByteArray();
             var hex = BitConverter.ToString(ba).Insert(0, @"\").Replace("-", @"\");
             return hex;
+        }
+        // TODO generate password from Communication.dll
+        private string GeneratePassword()
+        {
+            return Guid.NewGuid().ToString();
         }
 
         #endregion

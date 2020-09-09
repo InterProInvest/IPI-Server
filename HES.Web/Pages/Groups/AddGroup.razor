@@ -17,6 +17,9 @@ else
             break;
         case ActiveDirectoryInitialization.Loaded:
             <Alert Message="@WarningMessage" />
+            <div class="alert alert-secondary px-3 py-2" role="alert">
+                Selected @Groups.Where(x => x.Checked).Count() of @Groups.Count() groups.
+            </div>
             <div class="has-search-right my-2">
                 <div class="form-control-feedback">
                     <img class="img-size" src="/svg/action/search.svg" />
@@ -39,7 +42,7 @@ else
                             </th>
                         </tr>
                     </thead>
-                    <tbody style="max-height:55vh;">
+                    <tbody style="max-height:48vh;">
                         @foreach (var group in Groups.Where(x => x.Group.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || x.Checked))
                         {
                             <tr @key="group.Group.Id" @onclick="@(() => { group.Checked = !group.Checked; })">
@@ -57,11 +60,15 @@ else
                     </tbody>
                 </table>
             </div>
-            <div class="mb-2 mx-2 custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" id="createEmployees" @bind="CreateEmployees" />
-                <label class="custom-control-label disable-selection" for="createEmployees">Create employees for selected groups</label>
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="createEmployees" @bind="CreateEmployees" />
+                        <label class="custom-control-label disable-selection" for="createEmployees">Create employees for selected groups</label>
+                    </div>
+                </div>
             </div>
-            <div class="text-right">
+            <div class="text-right mt-3">
                 <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
                 <button type="button" @onclick="AddAsync" class="btn btn-primary btn-min-w">
                     <span class="spinner-border spinner-border-sm @(IsBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>

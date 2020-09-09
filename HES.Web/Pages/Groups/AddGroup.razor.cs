@@ -54,7 +54,7 @@ namespace HES.Web.Pages.Groups
                 {
                     await GetGroups(LdapSettings);
                 }
-                
+
                 Initialized = true;
             }
             catch (Exception ex)
@@ -84,6 +84,13 @@ namespace HES.Web.Pages.Groups
 
         private async Task AddAsync()
         {
+            if (IsBusy)
+            {
+                return;
+            }
+
+            IsBusy = true;
+
             try
             {
                 if (!Groups.Any(x => x.Checked))
@@ -91,13 +98,6 @@ namespace HES.Web.Pages.Groups
                     WarningMessage = "Please select at least one group.";
                     return;
                 }
-
-                if (IsBusy)
-                {
-                    return;
-                }
-
-                IsBusy = true;
 
                 await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), CreateEmployees);
                 ToastService.ShowToast("Groups added.", ToastLevel.Success);
