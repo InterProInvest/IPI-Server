@@ -1,4 +1,4 @@
-﻿@if (!Initialised)
+﻿@if (!Initialized)
 {
     <LoadingText />
 }
@@ -6,7 +6,7 @@ else
 {
     if (EntityBeingEdited)
     {
-        <EditedByAnother EntityName="group" CloseAction="ModalDialogService.CancelAsync" />
+        <EditedByAnother EntityName="shared account" CloseAction="ModalDialogService.CancelAsync" />
     }
     else
     {

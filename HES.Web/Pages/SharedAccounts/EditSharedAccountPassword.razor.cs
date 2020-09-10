@@ -19,7 +19,7 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
-        [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
+        [Inject] public ILogger<EditSharedAccountPassword> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string AccountId { get; set; }
@@ -27,7 +27,7 @@ namespace HES.Web.Pages.SharedAccounts
         public SharedAccount Account { get; set; }
         public AccountPassword AccountPassword { get; set; } = new AccountPassword();
         public bool EntityBeingEdited { get; set; }
-        public bool Initialised { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -43,7 +43,7 @@ namespace HES.Web.Pages.SharedAccounts
                 if (!EntityBeingEdited)
                     MemoryCache.Set(Account.Id, Account);
 
-                Initialised = true;
+                Initialized = true;
             }
             catch (Exception ex)
             {

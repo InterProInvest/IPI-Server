@@ -20,27 +20,25 @@ namespace HES.Web.Pages.SharedAccounts
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IMemoryCache MemoryCache { get; set; }
-        [Inject] public ILogger<EditSharedAccountOtp> Logger { get; set; }
+        [Inject] public ILogger<EditSharedAccount> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string AccountId { get; set; }
 
-
         public SharedAccount Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
-        public bool Initialised { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
-                Account = await SharedAccountService.GetSharedAccountByIdAsync(AccountId);
+                ModalDialogService.OnCancel += OnCancelAsync;
 
+                Account = await SharedAccountService.GetSharedAccountByIdAsync(AccountId);
                 if (Account == null)
                     throw new Exception("Account not found");
-
-                ModalDialogService.OnCancel += OnCancelAsync;
 
                 EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
                 if (!EntityBeingEdited)
@@ -48,7 +46,7 @@ namespace HES.Web.Pages.SharedAccounts
 
                 Account.ConfirmPassword = Account.Password;
 
-                Initialised = true;
+                Initialized = true;
             }
             catch (Exception ex)
             {
@@ -75,7 +73,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (IncorrectUrlException ex)
             {
                 ValidationErrorMessage.DisplayError(nameof(SharedAccount.Urls), ex.Message);
-            }  
+            }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);

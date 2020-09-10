@@ -30,7 +30,7 @@ namespace HES.Web.Pages.SharedAccounts
         public AccountOtp AccountOtp { get; set; } = new AccountOtp();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public bool EntityBeingEdited { get; set; }
-        public bool Initialised { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -47,7 +47,7 @@ namespace HES.Web.Pages.SharedAccounts
                 if (!EntityBeingEdited)
                     MemoryCache.Set(Account.Id, Account);
 
-                Initialised = true;
+                Initialized = true;
             }
             catch (Exception ex)
             {
