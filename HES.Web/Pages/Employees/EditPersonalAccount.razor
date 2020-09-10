@@ -38,10 +38,7 @@ else
             }
             <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Save</span>
-                </button>
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Save" Class="btn btn-primary" />
             </div>
         </EditForm>
     }

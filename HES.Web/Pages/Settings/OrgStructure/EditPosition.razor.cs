@@ -27,8 +27,10 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public Position Position { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
         public bool Initialized { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             try
@@ -57,11 +59,14 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             try
             {
-                await OrgStructureService.EditPositionAsync(Position);
-                ToastService.ShowToast("Position updated.", ToastLevel.Success);
-                await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await OrgStructureService.EditPositionAsync(Position);
+                    ToastService.ShowToast("Position updated.", ToastLevel.Success);
+                    await Refresh.InvokeAsync(this);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {

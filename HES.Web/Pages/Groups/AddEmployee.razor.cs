@@ -26,7 +26,6 @@ namespace HES.Web.Pages.Groups
 
         private bool _notSelected { get; set; }
         private bool _isSelectedAll { get; set; }
-        private bool _isBusy { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -53,12 +52,6 @@ namespace HES.Web.Pages.Groups
                     return;
                 }
 
-                if (_isBusy)
-                {
-                    return;
-                }
-
-                _isBusy = true;
                 var employeeIds = Employees.Where(x => x.Value).Select(x => x.Key.Id).ToList();
 
                 await GroupService.AddEmployeesToGroupAsync(employeeIds, GroupId);
@@ -71,10 +64,6 @@ namespace HES.Web.Pages.Groups
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 

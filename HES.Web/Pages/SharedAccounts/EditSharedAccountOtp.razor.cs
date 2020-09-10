@@ -29,6 +29,7 @@ namespace HES.Web.Pages.SharedAccounts
         public SharedAccount Account { get; set; }
         public AccountOtp AccountOtp { get; set; } = new AccountOtp();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
         public bool Initialized { get; set; }
 
@@ -66,11 +67,14 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
-                var vaults = await SharedAccountService.EditSharedAccountOtpAsync(Account, AccountOtp);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
-                ToastService.ShowToast("Account otp updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    var vaults = await SharedAccountService.EditSharedAccountOtpAsync(Account, AccountOtp);
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
+                    ToastService.ShowToast("Account otp updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (IncorrectOtpException ex)
             {
@@ -87,6 +91,7 @@ namespace HES.Web.Pages.SharedAccounts
         public void Dispose()
         {
             ModalDialogService.OnCancel -= OnCancelAsync;
+
             if (!EntityBeingEdited)
                 MemoryCache.Remove(Account.Id);
         }

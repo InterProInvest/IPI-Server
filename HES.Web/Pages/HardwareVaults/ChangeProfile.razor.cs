@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
@@ -49,12 +50,7 @@ namespace HES.Web.Pages.HardwareVaults
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }     
-        }
-
-        private async Task CloseAsync()
-        {
-            await ModalDialogService.CloseAsync();
+            }
         }
 
         private async Task ChangeProfileAsync()
@@ -64,7 +60,7 @@ namespace HES.Web.Pages.HardwareVaults
                 await HardwareVaultService.ChangeVaultProfileAsync(HardwareVault.Id, SelectedVaultProfileId);
                 ToastService.ShowToast("Vault profile updated", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
-                await CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {

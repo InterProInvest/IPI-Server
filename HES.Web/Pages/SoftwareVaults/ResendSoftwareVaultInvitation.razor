@@ -25,7 +25,7 @@ else
         <h5 class="mb-4">You want to resend invitation to @SoftwareVaultInvitation.Employee.FullName?</h5>
         <div class="form-group text-right mb-0">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-            <ButtonSpinner Class="btn-primary" Callback="SendAsync" Text="Send" />
+            <ButtonSpinner Class="btn btn-primary" Callback="SendAsync" Text="Send" />
         </div>
     }
 }

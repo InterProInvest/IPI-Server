@@ -24,7 +24,7 @@ else
         <input type="date" class="form-control" @bind="ValidTo" />
         <div class="form-group text-right mt-3 mb-0">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-            <ButtonSpinner Text="Send" Class="btn-primary" Callback="SendAsync" />
+            <ButtonSpinner Text="Send" Class="btn btn-primary" Callback="SendAsync" />
         </div>
     }
 

@@ -27,9 +27,8 @@ namespace HES.Web.Pages.Employees
 
         public Account Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
-
-        private bool _isBusy;
 
         protected override async Task OnInitializedAsync()
         {
@@ -57,16 +56,14 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                await EmployeeService.EditPersonalAccountAsync(Account);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
-                ToastService.ShowToast("Account updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await EmployeeService.EditPersonalAccountAsync(Account);
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
+                    ToastService.ShowToast("Account updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -81,11 +78,7 @@ namespace HES.Web.Pages.Employees
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }
-            finally
-            {
-                _isBusy = false;
-            }
+            }   
         }
 
         private async Task OnCancelAsync()

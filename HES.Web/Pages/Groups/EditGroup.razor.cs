@@ -26,6 +26,7 @@ namespace HES.Web.Pages.Groups
 
         public Group Group { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -55,10 +56,13 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
-                await GroupService.EditGroupAsync(Group);
-                ToastService.ShowToast("Group updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await GroupService.EditGroupAsync(Group);
+                    ToastService.ShowToast("Group updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
