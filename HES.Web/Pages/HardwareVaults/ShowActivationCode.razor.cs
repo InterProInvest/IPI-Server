@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System;
@@ -9,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class ShowActivationCode : ComponentBase
+    public partial class ShowActivationCode : OwningComponentBase
     {
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IEmailSenderService EmailSenderService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -27,12 +28,15 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
+                InputType = "Password";
+
                 HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
                 if (HardwareVault == null)
                     throw new Exception("HardwareVault not found.");
 
                 Code = await HardwareVaultService.GetVaultActivationCodeAsync(HardwareVault.Id);
-                InputType = "Password";
             }
             catch (Exception ex)
             {

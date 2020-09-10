@@ -6,6 +6,7 @@ using HES.Core.Models.Web;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,9 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class AddHardwareVault : ComponentBase
+    public partial class AddHardwareVault : OwningComponentBase
     {
-        [Inject] IEmployeeService EmployeeService { get; set; }
+        IEmployeeService EmployeeService { get; set; }
         [Inject] IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
@@ -33,6 +34,8 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
+            EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+
             SearchText = string.Empty;
             await LoadDataAsync();
         }
@@ -49,8 +52,8 @@ namespace HES.Web.Pages.Employees
                 Filter = filter
             });
 
-            HardwareVaults = await HardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter> 
-            { 
+            HardwareVaults = await HardwareVaultService.GetVaultsAsync(new DataLoadingOptions<HardwareVaultFilter>
+            {
                 Take = TotalRecords,
                 SortedColumn = nameof(HardwareVault.Id),
                 SortDirection = ListSortDirection.Ascending,
@@ -90,7 +93,7 @@ namespace HES.Web.Pages.Employees
                 await EmployeeService.AddHardwareVaultAsync(EmployeeId, SelectedHardwareVault.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Vault added", ToastLevel.Success);      
+                ToastService.ShowToast("Vault added", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                 await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, SelectedHardwareVault.Id);
                 await ModalDialogService.CloseAsync();

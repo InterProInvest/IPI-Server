@@ -5,15 +5,16 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class DeleteHardwareVault : ComponentBase, IDisposable
+    public partial class DeleteHardwareVault : OwningComponentBase, IDisposable
     {
-        [Inject] IEmployeeService EmployeeService { get; set; }
+        IEmployeeService EmployeeService { get; set; }
         [Inject] IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
@@ -34,6 +35,8 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
+                EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+
                 HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
                 if (HardwareVault == null)
                     throw new Exception("HardwareVault not found.");
