@@ -24,6 +24,7 @@ else
         </div>
         <div class="text-right">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+            <ButtonSubmitSpinner @ref="ButtonSubmitSpinner" Text="Create" Class="btn-primary" />
             <input type="submit" value="Create" class="btn btn-primary" />
         </div>
     </EditForm>
