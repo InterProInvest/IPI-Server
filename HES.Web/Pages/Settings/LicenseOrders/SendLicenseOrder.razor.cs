@@ -19,16 +19,30 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] public ILogger<SendLicenseOrder> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string LicenseOrderId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public LicenseOrder LicenseOrder { get; set; }
 
+        public LicenseOrder LicenseOrder { get; set; }
         public bool EntityBeingEdited { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
-            if (!EntityBeingEdited)
-                MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
+            try
+            {
+                LicenseOrder = await LicenseService.GetLicenseOrderByIdAsync(LicenseOrderId);
+                if (LicenseOrder == null)
+                    throw new Exception("License Order not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task SendOrderAsync()
