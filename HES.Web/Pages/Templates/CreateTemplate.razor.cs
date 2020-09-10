@@ -3,7 +3,6 @@ using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using HES.Core.Utilities;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
@@ -21,24 +20,22 @@ namespace HES.Web.Pages.Templates
         [Inject] ILogger<CreateTemplate> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        ButtonSpinnerService _spinner = new ButtonSpinnerService();
-        public ButtonSubmitSpinner ButtonSubmitSpinner { get; set; }
+
         public Template Template { get; set; } = new Template();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
-
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task CreateTemplateAsync()
         {
             try
             {                
-                await _spinner.SpinAsync(async () =>
-                {
-                    await Task.Delay(30000);
+                await ButtonSpinner.SpinAsync(async () =>
+                {                 
                     await TemplateService.CreateTmplateAsync(Template);
-                    ToastService.ShowToast("Template created.", ToastLevel.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
+                    ToastService.ShowToast("Template created.", ToastLevel.Success);
                     await ModalDialogService.CloseAsync();
-                }, ButtonSubmitSpinner);
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -54,6 +51,6 @@ namespace HES.Web.Pages.Templates
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
             }
-        }
+        }        
     }
 }
