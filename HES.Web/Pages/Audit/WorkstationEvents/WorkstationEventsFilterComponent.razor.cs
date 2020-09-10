@@ -1,5 +1,6 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Models.Web.Audit;
+using HES.Web.Components;
 using Hideez.SDK.Communication;
 using Microsoft.AspNetCore.Components;
 using System;
@@ -17,6 +18,7 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
         public List<string> EventTypes { get; set; }
         public List<string> EventSeverities { get; set; }
         public List<string> AccountTypes { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -28,7 +30,10 @@ namespace HES.Web.Pages.Audit.WorkstationEvents
 
         private async Task FilteredAsync()
         {
-            await FilterChanged.Invoke(Filter);
+            await ButtonSpinner.SpinAsync(async () =>
+            {
+                await FilterChanged.Invoke(Filter);
+            });
         }
 
         private async Task ClearAsync()

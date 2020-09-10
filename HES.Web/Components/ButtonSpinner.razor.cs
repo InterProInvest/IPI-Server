@@ -6,10 +6,12 @@ namespace HES.Web.Components
 {
     public partial class ButtonSpinner : ComponentBase
     {
+        [Parameter] public RenderFragment Image { get; set; }
+        [Parameter] public EventCallback Callback { get; set; }
         [Parameter] public string Text { get; set; } = "Button";
         [Parameter] public string Class { get; set; } = string.Empty;
         [Parameter] public bool Submit { get; set; } = false;
-        [Parameter] public EventCallback Callback { get; set; }
+        [Parameter] public bool Disabled { get; set; } = false;
 
         private bool _busy;
 

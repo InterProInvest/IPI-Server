@@ -1,5 +1,6 @@
 ﻿using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace HES.Web.Pages.Employees
         [Parameter] public Func<EmployeeFilter, Task> FilterChanged { get; set; }
 
         public EmployeeFilter Filter { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -19,7 +21,10 @@ namespace HES.Web.Pages.Employees
 
         private async Task FilteredAsync()
         {
-            await FilterChanged.Invoke(Filter);
+            await ButtonSpinner.SpinAsync(async () =>
+            {
+                await FilterChanged.Invoke(Filter);
+            });
         }
 
         private async Task ClearAsync()

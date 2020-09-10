@@ -1,6 +1,7 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
@@ -19,6 +20,7 @@ namespace HES.Web.Pages.HardwareVaults
         public HardwareVaultFilter Filter { get; set; }
         public SelectList VaultStatusList { get; set; }
         public SelectList LicenseStatusList { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -29,7 +31,10 @@ namespace HES.Web.Pages.HardwareVaults
 
         private async Task FilteredAsync()
         {
-            await FilterChanged.Invoke(Filter);
+            await ButtonSpinner.SpinAsync(async () =>
+            {
+                await FilterChanged.Invoke(Filter);
+            });
         }
 
         private async Task ClearAsync()

@@ -14,7 +14,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 {
     public partial class CreateCompany : ComponentBase
     {
-        [Inject] public IOrgStructureService OrgStructureService  { get; set; }
+        [Inject] public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<CreateCompany> Logger { get; set; }
@@ -24,16 +24,20 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public Company Company { get; set; } = new Company();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task CreateAsync()
         {
             try
             {
-                await OrgStructureService.CreateCompanyAsync(Company);
-                ToastService.ShowToast("Company created.", ToastLevel.Success);
-                await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await OrgStructureService.CreateCompanyAsync(Company);
+                    ToastService.ShowToast("Company created.", ToastLevel.Success);
+                    await Refresh.InvokeAsync(this);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {

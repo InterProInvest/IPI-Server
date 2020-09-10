@@ -3,6 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
@@ -28,6 +29,7 @@ namespace HES.Web.Pages.SharedAccounts
         public AccountPassword AccountPassword { get; set; } = new AccountPassword();
         public bool EntityBeingEdited { get; set; }
         public bool Initialised { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -62,11 +64,14 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
-                var vaults = await SharedAccountService.EditSharedAccountPwdAsync(Account, AccountPassword);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
-                ToastService.ShowToast("Account password updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    var vaults = await SharedAccountService.EditSharedAccountPwdAsync(Account, AccountPassword);
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
+                    ToastService.ShowToast("Account password updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {

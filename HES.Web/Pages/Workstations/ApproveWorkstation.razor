@@ -43,7 +43,7 @@ else
             </ul>
             <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-                <input type="submit" value="Approve" class="btn btn-primary" />
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Approve" Class="btn btn-primary" />
             </div>
         </EditForm>
     }

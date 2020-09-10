@@ -25,6 +25,7 @@ namespace HES.Web.Pages.HardwareVaults
         public HardwareVault HardwareVault { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -53,10 +54,13 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
-                await HardwareVaultService.UpdateVaultAsync(HardwareVault);
-                ToastService.ShowToast("RFID updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await HardwareVaultService.UpdateVaultAsync(HardwareVault);
+                    ToastService.ShowToast("RFID updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {

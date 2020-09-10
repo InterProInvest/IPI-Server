@@ -25,9 +25,9 @@ namespace HES.Web.Pages.SharedAccounts
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string AccountId { get; set; }
 
-
         public SharedAccount Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
         public bool Initialised { get; set; }
 
@@ -62,11 +62,14 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
-                var vaults = await SharedAccountService.EditSharedAccountAsync(Account);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
-                ToastService.ShowToast("Shared account updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    var vaults = await SharedAccountService.EditSharedAccountAsync(Account);
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
+                    ToastService.ShowToast("Shared account updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -75,7 +78,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (IncorrectUrlException ex)
             {
                 ValidationErrorMessage.DisplayError(nameof(SharedAccount.Urls), ex.Message);
-            }  
+            }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);

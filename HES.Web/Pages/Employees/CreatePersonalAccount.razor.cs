@@ -38,6 +38,8 @@ namespace HES.Web.Pages.Employees
         public WorkstationDomain WorkstationDomain { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
         public LdapSettings LdapSettings { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
+        public ButtonSpinner ButtonSpinnerWorkstationAccount { get; set; }
 
         private bool _isBusy;
 
@@ -55,17 +57,15 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                await EmployeeService.CreatePersonalAccountAsync(PersonalAccount);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
-                await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await EmployeeService.CreatePersonalAccountAsync(PersonalAccount);
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
+                    await Refresh.InvokeAsync(this);
+                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -76,10 +76,6 @@ namespace HES.Web.Pages.Employees
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 
@@ -87,31 +83,29 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                switch (WorkstationType)
+                await ButtonSpinnerWorkstationAccount.SpinAsync(async () =>
                 {
-                    case WorkstationAccountType.Local:
-                    case WorkstationAccountType.Microsoft:
-                    case WorkstationAccountType.AzureAD:
-                        WorkstationAccount.Type = WorkstationType;
-                        await EmployeeService.CreateWorkstationAccountAsync(WorkstationAccount);
-                        break;
-                    case WorkstationAccountType.Domain:
-                        await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
-                        if (WorkstationDomain.UpdateActiveDirectoryPassword)
-                            await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, LdapSettings);
-                        break;
-                }
+                    switch (WorkstationType)
+                    {
+                        case WorkstationAccountType.Local:
+                        case WorkstationAccountType.Microsoft:
+                        case WorkstationAccountType.AzureAD:
+                            WorkstationAccount.Type = WorkstationType;
+                            await EmployeeService.CreateWorkstationAccountAsync(WorkstationAccount);
+                            break;
+                        case WorkstationAccountType.Domain:
+                            await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
+                            if (WorkstationDomain.UpdateActiveDirectoryPassword)
+                                await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, LdapSettings);
+                            break;
+                    }
 
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
-                await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
-                await ModalDialogService.CloseAsync();
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
+                    await Refresh.InvokeAsync(this);
+                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -122,10 +116,6 @@ namespace HES.Web.Pages.Employees
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 
