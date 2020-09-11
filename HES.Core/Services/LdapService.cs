@@ -164,8 +164,9 @@ namespace HES.Core.Services
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
+                var dn = GetDnFromHost(ldapSettings.Host);
                 var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry
                 {
