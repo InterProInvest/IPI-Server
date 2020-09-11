@@ -312,6 +312,23 @@ namespace HES.Core.Services
             return groups.OrderBy(x => x.Group.Name).ToList();
         }
 
+        public async Task ChangePasswordWhenExpiredAsync(string employeeId, LdapSettings ldapSettings)
+        {
+            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
+
+            using (var connection = new LdapConnection())
+            {
+                //389
+                //3268
+                connection.Connect(ldapSettings.Host, 389);
+                connection.Bind(LdapAuthType.ExternalAd, CreateLdapCredential(ldapSettings));
+
+                var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(GetDnFromHost(ldapSettings.Host), $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+            }
+        }
+
         public async Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
