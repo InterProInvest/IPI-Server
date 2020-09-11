@@ -96,21 +96,17 @@ namespace HES.Core.Hubs
         }
 
         // Incomming request
-        public async Task<HesResponse> RegisterWorkstationInfo(WorkstationInfoDto workstationInfo)
+        public async Task<HesResponse> RegisterWorkstationInfo(WorkstationInfo workstationInfo)
         {
             try
             {
-                var alarmTurnOn = await IsAlarmTurnOnAsync();
-                if (workstationInfo.IsAlarmTurnOn && !alarmTurnOn)
-                    await Clients.Caller.SetAlarmState(false);
-
                 await _remoteWorkstationConnectionsService.RegisterWorkstationInfoAsync(Clients.Caller, workstationInfo);
 
                 // Workstation not approved
                 if (!await _workstationService.CheckIsApprovedAsync(workstationInfo.Id))
                     return new HesResponse(HideezErrorCode.HesWorkstationNotApproved, $"Workstation not approved");
 
-                if (await IsAlarmTurnOnAsync())
+                if (await CheckAlarmAsync())
                     return new HesResponse(HideezErrorCode.HesAlarm, "The server has an alarm enabled.");
 
                 return HesResponse.Ok;
@@ -125,7 +121,7 @@ namespace HES.Core.Hubs
         // Incomming request
         public async Task<HesResponse> SaveClientEvents(WorkstationEventDto[] workstationEventsDto)
         {
-            if (await IsAlarmTurnOnAsync())
+            if (await CheckAlarmAsync())
                 return new HesResponse(HideezErrorCode.HesAlarm, "The server has an alarm enabled.");
 
             // Workstation not approved
@@ -167,7 +163,7 @@ namespace HES.Core.Hubs
                 throw new Exception("AppHub does not contain WorkstationId!");
         }
 
-        private async Task<bool> IsAlarmTurnOnAsync()
+        private async Task<bool> CheckAlarmAsync()
         {
             var alarmState = await _appSettingsService.GetAlarmStateAsync();
             return alarmState != null ? alarmState.IsAlarm : false;
@@ -180,7 +176,7 @@ namespace HES.Core.Hubs
         // Incoming request
         public async Task<HesResponse> OnDeviceConnected(BleDeviceDto dto)
         {
-            if (await IsAlarmTurnOnAsync())
+            if (await CheckAlarmAsync())
                 return new HesResponse(HideezErrorCode.HesAlarm, "The server has an alarm enabled.");
 
             try

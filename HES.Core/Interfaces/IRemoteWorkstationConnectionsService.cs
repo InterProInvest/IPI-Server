@@ -13,10 +13,10 @@ namespace HES.Core.Interfaces
     {
         void StartUpdateRemoteDevice(IList<string> vaultIds);
         void StartUpdateRemoteDevice(string vaultId);
-        Task<AlarmState> LockAllWorkstationsAsync(ApplicationUser applicationUser);
-        Task UnlockAllWorkstationsAsync(ApplicationUser applicationUser);
+        Task<AlarmState> LockAllWorkstations(ApplicationUser applicationUser);
+        Task UnlockAllWorkstations(ApplicationUser applicationUser);
         Task UpdateRemoteDeviceAsync(string vaultId, string workstationId, bool primaryAccountOnly);
-        Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfoDto workstationInfo);
+        Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfo workstationInfo);
         Task OnAppHubDisconnectedAsync(string workstationId);
         Task UpdateProximitySettingsAsync(string workstationId, IReadOnlyList<DeviceProximitySettingsDto> proximitySettings);
         Task UpdateRfidStateAsync(string workstationId, bool isEnabled);
