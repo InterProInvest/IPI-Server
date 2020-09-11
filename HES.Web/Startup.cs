@@ -116,6 +116,7 @@ namespace HES.Web
 
             services.AddHostedService<RemoveLogsHostedService>();
             services.AddHostedService<LicenseHostedService>();
+            services.AddHostedService<ActiveDirectoryHostedService>();
 
             services.AddHttpClient().RemoveAll<IHttpMessageHandlerBuilderFilter>();
             services.AddSignalR();
