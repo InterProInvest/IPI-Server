@@ -1,0 +1,29 @@
+﻿@page "/Settings/DataProtection/Activate"
+@layout EmptyLayout
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+<div class="container-fluid vh-100">
+    <div class="content-centered">
+        <div class="custom-card">
+            <div class="text-center m-3">
+                <img src="/svg/hes-logo.svg" />
+            </div>
+            <EditForm Model="Input" OnValidSubmit="ActivateAsync">
+                <DataAnnotationsValidator />
+                <ValidationErrorMessage @ref="ValidationErrorMessage" />
+                <h4 class="text-navyblue text-center my-4">Enter encryption password</h4>
+                <div class="form-group">
+                    <label class="text-gray">Password</label>
+                    <InputText @bind-Value="Input.Password" class="form-control" type="password" />
+                    <ValidationMessage For="@(() => Input.Password)" class="text-danger" />
+                </div>
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
+                        <span>Next</span>
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>

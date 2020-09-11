@@ -274,8 +274,6 @@ namespace HES.Web
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<DataProtectionMiddeware>();
-
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
