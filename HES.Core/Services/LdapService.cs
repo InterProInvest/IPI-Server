@@ -50,7 +50,7 @@ namespace HES.Core.Services
                 while (true)
                 {
                     var response = (SearchResponse)connection.SendRequest(searchRequest);
-           
+
                     foreach (var control in response.Controls)
                     {
                         if (control is PageResultResponseControl)
@@ -60,7 +60,7 @@ namespace HES.Core.Services
                             break;
                         }
                     }
-                    
+
                     // Add them to our collection
                     foreach (var sre in response.Entries)
                     {
@@ -105,7 +105,7 @@ namespace HES.Core.Services
                             var name = GetNameFromDn(groupName);
                             var filterGroup = $"(&(objectCategory=group)(name={name}))";
                             var groupResponse = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterGroup, LdapSearchScope.LDAP_SCOPE_SUBTREE));
-          
+
                             groups.Add(new Group()
                             {
                                 Id = GetAttributeGUID(groupResponse.Entries.First()),
@@ -298,7 +298,7 @@ namespace HES.Core.Services
                                 Name = "Domain Account",
                                 Domain = GetFirstDnFromHost(ldapSettings.Host),
                                 UserName = TryGetAttribute(member, "sAMAccountName"),
-                                Password = GeneratePassword(), 
+                                Password = GeneratePassword(),
                                 UpdateInActiveDirectory = true
                             }
                         });
@@ -318,14 +318,16 @@ namespace HES.Core.Services
 
             using (var connection = new LdapConnection())
             {
-                //389
-                //3268
-                connection.Connect(ldapSettings.Host, 389);
-                connection.Bind(LdapAuthType.ExternalAd, CreateLdapCredential(ldapSettings));
+                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
+                var dn = GetDnFromHost(ldapSettings.Host);
                 var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest(GetDnFromHost(ldapSettings.Host), $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
+                var value = TryGetAttribute(user.Entries.First(), "pwdLastSet");
+                var intVal = Int64.Parse(value);
+                DateTime pwdLastSet = DateTime.FromFileTimeUtc(intVal);
             }
         }
 

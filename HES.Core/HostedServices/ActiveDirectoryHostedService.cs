@@ -24,7 +24,7 @@ namespace HES.Core.HostedServices
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(120));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
             return Task.CompletedTask;
         }
 
@@ -42,7 +42,7 @@ namespace HES.Core.HostedServices
                 if (ldapSettings == null)
                     throw new Exception("AD settings is null");
 
-                await ldapService.ChangePasswordWhenExpiredAsync("dfa5d5b8-ab5f-47fd-98b2-7ffd34b8930e", ldapSettings);
+                await ldapService.ChangePasswordWhenExpiredAsync("20f85e3d-0ea7-4ab5-87fc-035d99d6ef55", ldapSettings);
             }
             catch (Exception ex)
             {
