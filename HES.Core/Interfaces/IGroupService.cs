@@ -29,5 +29,6 @@ namespace HES.Core.Interfaces
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
         Task<GroupMembership> RemoveEmployeeFromGroupAsync(string groupMembershipId);
+        Task<List<Employee>> GetEmployeesWithPasswordChangeEnabled();
     }
 }

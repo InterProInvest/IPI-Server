@@ -3,8 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,14 +33,19 @@ namespace HES.Core.HostedServices
                 using var scope = _serviceProvider.CreateScope();
                 var ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
                 var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+                var groupService = scope.ServiceProvider.GetRequiredService<IGroupService>();
 
+                // Get enable or disable auto password change flag
+                // If disable -> return
 
                 var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
-
                 if (ldapSettings == null)
-                    throw new Exception("AD settings is null");
+                {
+                    _logger.LogWarning("Active Directory credentials no set");
+                    return;
+                }
 
-                await ldapService.ChangePasswordWhenExpiredAsync("20f85e3d-0ea7-4ab5-87fc-035d99d6ef55", ldapSettings);
+                await ldapService.ChangePasswordWhenExpiredAsync(ldapSettings);
             }
             catch (Exception ex)
             {

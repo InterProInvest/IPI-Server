@@ -183,6 +183,35 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task ChangePasswordWhenExpiredAsync(LdapSettings ldapSettings)
+        {
+            var employees = await _groupService.GetEmployeesWithPasswordChangeEnabled();
+
+            if (employees.Count == 0)
+                return;
+
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+
+                foreach (var employee in employees)
+                {
+                    var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
+                    var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+
+                    DateTime pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(user.Entries.First(), "pwdLastSet")));
+
+                    // DateTimeNowUtc diff pwdLastSet
+                    // Change password
+                    // Create update primary acc task
+                    // Send notify email
+                }
+            }
+        }
+
         public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(LdapSettings ldapSettings)
         {
             var groups = new List<ActiveDirectoryGroup>();
@@ -310,25 +339,6 @@ namespace HES.Core.Services
             }
 
             return groups.OrderBy(x => x.Group.Name).ToList();
-        }
-
-        public async Task ChangePasswordWhenExpiredAsync(string employeeId, LdapSettings ldapSettings)
-        {
-            var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
-
-            using (var connection = new LdapConnection())
-            {
-                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
-                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
-
-                var dn = GetDnFromHost(ldapSettings.Host);
-                var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
-
-                var value = TryGetAttribute(user.Entries.First(), "pwdLastSet");
-                var intVal = Int64.Parse(value);
-                DateTime pwdLastSet = DateTime.FromFileTimeUtc(intVal);
-            }
         }
 
         public async Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees)

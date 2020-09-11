@@ -385,6 +385,30 @@ namespace HES.Core.Services
             return await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
+        public async Task<List<Employee>> GetEmployeesWithPasswordChangeEnabled()
+        {
+            var groups = await _groupRepository
+                .Query()
+                .Include(x => x.GroupMemberships)
+                .Where(x => x.ChangePasswordWhenExpired == true)
+                .ToListAsync();
+
+            var employees = new HashSet<Employee>();
+
+            foreach (var group in groups)
+            {
+                foreach (var member in group.GroupMemberships)
+                {
+                    if (member.Employee.ActiveDirectoryGuid != null)
+                    {
+                        employees.Add(member.Employee);
+                    }
+                }
+            }
+
+            return employees.ToList();
+        }
+
         public void Dispose()
         {
             _groupRepository.Dispose();
