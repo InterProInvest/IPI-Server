@@ -5,7 +5,6 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
 using HES.Infrastructure;
-using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
