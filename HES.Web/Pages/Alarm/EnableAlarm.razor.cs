@@ -28,7 +28,7 @@ namespace HES.Web.Pages.Alarm
 
             try
             {
-                await RemoteWorkstationConnections.LockAllWorkstations(applicationUser);
+                await RemoteWorkstationConnections.LockAllWorkstationsAsync(applicationUser);
                 ToastService.ShowToast("All workstations are locked.", ToastLevel.Success);
                 
                 await CallBack.InvokeAsync(this);
