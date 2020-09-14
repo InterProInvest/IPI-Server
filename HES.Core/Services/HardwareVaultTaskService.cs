@@ -56,6 +56,13 @@ namespace HES.Core.Services
 
         public async Task AddPrimaryAsync(string vaultId, string accountId)
         {
+            var previousTask = await _hardwareVaultTaskRepository
+                .Query()
+                .FirstOrDefaultAsync(x => x.HardwareVaultId == vaultId && x.Operation == TaskOperation.Primary);
+
+            if (previousTask != null)
+                await _hardwareVaultTaskRepository.DeleteAsync(previousTask);
+
             var task = new HardwareVaultTask()
             {
                 Operation = TaskOperation.Primary,
@@ -64,6 +71,7 @@ namespace HES.Core.Services
                 HardwareVaultId = vaultId,
                 AccountId = accountId
             };
+
             await _hardwareVaultTaskRepository.AddAsync(task);
         }
 
