@@ -5,6 +5,7 @@ using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.AppSettings;
 using LdapForNet;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,13 +21,19 @@ namespace HES.Core.Services
         private readonly IAccountService _accountService;
         private readonly IGroupService _groupService;
         private readonly IEmailSenderService _emailSenderService;
+        private readonly ILogger<LdapService> _logger;
 
-        public LdapService(IEmployeeService employeeService, IGroupService groupService, IEmailSenderService emailSenderService, IAccountService accountService)
+        public LdapService(IEmployeeService employeeService,
+                           IGroupService groupService,
+                           IEmailSenderService emailSenderService,
+                           IAccountService accountService,
+                           ILogger<LdapService> logger)
         {
             _employeeService = employeeService;
             _groupService = groupService;
             _emailSenderService = emailSenderService;
             _accountService = accountService;
+            _logger = logger;
         }
 
         public async Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings)
@@ -194,7 +201,8 @@ namespace HES.Core.Services
             if (employees.Count == 0)
                 return;
 
-            int changePwdInterval = 30;//days
+            // Number of days after which the password will be changed
+            int changePwdInterval = 28;
 
             using (var connection = new LdapConnection())
             {
@@ -217,29 +225,37 @@ namespace HES.Core.Services
                         if (string.IsNullOrWhiteSpace(employee.PrimaryAccountId))
                             continue;
 
-                        //TODO From communication dll
-                        var password = Guid.NewGuid().ToString();
+                        try
+                        {
+                            //TODO From communication dll
+                            var password = Guid.NewGuid().ToString();
 
-                        //Set password
-                        await connection.ModifyAsync(new LdapModifyEntry
-                        {
-                            Dn = user.Entries.First().Dn,
-                            Attributes = new List<LdapModifyAttribute>
-                        {
-                            new LdapModifyAttribute
+                            // Set password
+                            await connection.ModifyAsync(new LdapModifyEntry
                             {
-                                LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
-                                Type = "userPassword",
-                                Values = new List<string> { password }
-                            }
+                                Dn = user.Entries.First().Dn,
+                                Attributes = new List<LdapModifyAttribute>
+                                {
+                                    new LdapModifyAttribute
+                                    {
+                                        LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                        Type = "userPassword",
+                                        Values = new List<string> { password }
+                                    }
+                                }
+                            });
+
+                            // Create password update task for hardware vault
+                            var primaryAccount = await _accountService.GetAccountByIdAsync(employee.PrimaryAccountId);
+                            await _employeeService.EditPersonalAccountPwdAsync(primaryAccount, new AccountPassword { Password = password });
+
+                            // Send notification when pasword changed
+                            await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
                         }
-                        });
-
-                        //Create password update task 
-                        var primaryAccount = await _accountService.GetAccountByIdAsync(employee.PrimaryAccountId);
-                        await _employeeService.EditPersonalAccountPwdAsync(primaryAccount, new AccountPassword { Password = password });
-
-                        await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error in changing password with employee {employee.FullName}, ex:{ex.Message}");
+                        }
                     }
                 }
             }
