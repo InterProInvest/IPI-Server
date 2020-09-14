@@ -10,6 +10,7 @@ namespace HES.Core.HostedServices
 {
     public class ActiveDirectoryHostedService : IHostedService, IDisposable
     {
+        private readonly int _intervalInHours = 12;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ActiveDirectoryHostedService> _logger;
         private Timer _timer;
@@ -22,7 +23,7 @@ namespace HES.Core.HostedServices
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(_intervalInHours));
             return Task.CompletedTask;
         }
 
@@ -30,22 +31,26 @@ namespace HES.Core.HostedServices
         {
             try
             {
-                using var scope = _serviceProvider.CreateScope();
-                var ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
-                var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
-                var groupService = scope.ServiceProvider.GetRequiredService<IGroupService>();
-
-                // Get enable or disable auto password change flag
-                // If disable -> return
-
-                var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
-                if (ldapSettings == null)
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    _logger.LogWarning("Active Directory credentials no set");
-                    return;
-                }
+                    var groupService = scope.ServiceProvider.GetRequiredService<IGroupService>();
 
-                await ldapService.ChangePasswordWhenExpiredAsync(ldapSettings);
+                    var status = await groupService.GetAutoPasswordChangeStatusAsync();
+                    if (!status)
+                        return;
+
+                    var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+
+                    var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
+                    if (ldapSettings == null)
+                    {
+                        _logger.LogWarning("Active Directory credentials no set");
+                        return;
+                    }
+
+                    var ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
+                    await ldapService.ChangePasswordWhenExpiredAsync(ldapSettings);
+                }
             }
             catch (Exception ex)
             {

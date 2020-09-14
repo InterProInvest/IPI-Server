@@ -17,12 +17,16 @@ namespace HES.Core.Services
     public class LdapService : ILdapService, IDisposable
     {
         private readonly IEmployeeService _employeeService;
+        private readonly IAccountService _accountService;
         private readonly IGroupService _groupService;
+        private readonly IEmailSenderService _emailSenderService;
 
-        public LdapService(IEmployeeService employeeService, IGroupService groupService)
+        public LdapService(IEmployeeService employeeService, IGroupService groupService, IEmailSenderService emailSenderService, IAccountService accountService)
         {
             _employeeService = employeeService;
             _groupService = groupService;
+            _emailSenderService = emailSenderService;
+            _accountService = accountService;
         }
 
         public async Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings)
@@ -190,6 +194,8 @@ namespace HES.Core.Services
             if (employees.Count == 0)
                 return;
 
+            int changePwdInterval = 30;//days
+
             using (var connection = new LdapConnection())
             {
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
@@ -204,10 +210,37 @@ namespace HES.Core.Services
 
                     DateTime pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(user.Entries.First(), "pwdLastSet")));
 
-                    // DateTimeNowUtc diff pwdLastSet
-                    // Change password
-                    // Create update primary acc task
-                    // Send notify email
+                    // Check account password age
+                    var delta = DateTime.UtcNow.Subtract(pwdLastSet).TotalDays;
+                    if (delta >= changePwdInterval)
+                    {
+                        if (string.IsNullOrWhiteSpace(employee.PrimaryAccountId))
+                            continue;
+
+                        //TODO From communication dll
+                        var password = Guid.NewGuid().ToString();
+
+                        //Set password
+                        await connection.ModifyAsync(new LdapModifyEntry
+                        {
+                            Dn = user.Entries.First().Dn,
+                            Attributes = new List<LdapModifyAttribute>
+                        {
+                            new LdapModifyAttribute
+                            {
+                                LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                Type = "userPassword",
+                                Values = new List<string> { password }
+                            }
+                        }
+                        });
+
+                        //Create password update task 
+                        var primaryAccount = await _accountService.GetAccountByIdAsync(employee.PrimaryAccountId);
+                        await _employeeService.EditPersonalAccountPwdAsync(primaryAccount, new AccountPassword { Password = password });
+
+                        await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
+                    }
                 }
             }
         }

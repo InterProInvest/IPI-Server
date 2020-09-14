@@ -17,5 +17,6 @@ namespace HES.Core.Interfaces
         Task SendUserConfirmEmailAsync(string email, string callbackUrl);
         Task SendSoftwareVaultInvitationAsync(Employee employee, SoftwareVaultActivation activation, DateTime validTo);
         Task SendHardwareVaultActivationCodeAsync(Employee employee, string code);
+        Task NotifyWhenPasswordAutoChangedAsync(Employee employee);
     }
 }

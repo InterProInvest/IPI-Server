@@ -34,6 +34,11 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
+        public async Task<bool> GetAutoPasswordChangeStatusAsync()
+        {
+            return await _groupRepository.Query().AnyAsync(x => x.ChangePasswordWhenExpired == true);
+        }
+
         public async Task<List<Group>> GetGroupsAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions)
         {
             var query = _groupRepository
