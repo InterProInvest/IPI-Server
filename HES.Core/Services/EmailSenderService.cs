@@ -254,6 +254,27 @@ namespace HES.Core.Services
             await SendAsync(mailMessage, emailSettings);
         }
 
+        public async Task NotifyWhenPasswordAutoChangedAsync(Employee employee)
+        {
+            if (string.IsNullOrWhiteSpace(employee?.Email))
+                return;
+
+            var emailSettings = await GetEmailSettingsAsync();
+            var serverSettings = await GetServerSettingsAsync();
+
+            var htmlMessage = GetTemplate("mail-password-auto-changed");
+            htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FullName);
+
+            MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
+            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            mailMessage.AlternateViews.Add(htmlView);
+            mailMessage.IsBodyHtml = true;
+            mailMessage.Subject = $"Password Auto Changed - Hideez Enterprise Server - {serverSettings.Name}";
+
+            await SendAsync(mailMessage, emailSettings);
+        }
+
         private Task<EmailSettings> GetEmailSettingsAsync()
         {
             var settings = new EmailSettings()
