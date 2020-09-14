@@ -18,8 +18,8 @@ namespace HES.Core.Interfaces
         Task<List<Workstation>> GetWorkstationsAsync(DataLoadingOptions<WorkstationFilter> dataLoadingOptions);
         Task<int> GetWorkstationsCountAsync(DataLoadingOptions<WorkstationFilter> dataLoadingOptions);
         Task<bool> ExistAsync(Expression<Func<Workstation, bool>> predicate);
-        Task AddWorkstationAsync(WorkstationInfo workstationInfo);
-        Task UpdateWorkstationInfoAsync(WorkstationInfo workstationInfo);
+        Task AddWorkstationAsync(WorkstationInfoDto workstationInfoDto);
+        Task UpdateWorkstationInfoAsync(WorkstationInfoDto workstationInfoDto);
         Task EditWorkstationAsync(Workstation workstation);
         Task ApproveWorkstationAsync(Workstation workstation);
         Task UnapproveWorkstationAsync(string workstationId);

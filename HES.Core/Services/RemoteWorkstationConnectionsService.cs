@@ -8,7 +8,6 @@ using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
-using Hideez.SDK.Communication.Workstation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -236,30 +235,30 @@ namespace HES.Core.Services
 
         #region Workstation
 
-        public async Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfo workstationInfo)
+        public async Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfoDto workstationInfoDto)
         {
-            if (workstationInfo == null)
-                throw new ArgumentNullException(nameof(workstationInfo));
+            if (workstationInfoDto == null)
+                throw new ArgumentNullException(nameof(workstationInfoDto));
 
-            _workstationConnections.AddOrUpdate(workstationInfo.Id, remoteAppConnection, (id, oldConnection) =>
+            _workstationConnections.AddOrUpdate(workstationInfoDto.Id, remoteAppConnection, (id, oldConnection) =>
             {
                 return remoteAppConnection;
             });
 
-            if (await _workstationService.ExistAsync(w => w.Id == workstationInfo.Id))
+            if (await _workstationService.ExistAsync(w => w.Id == workstationInfoDto.Id))
             {
                 // Workstation exists, update information
-                await _workstationService.UpdateWorkstationInfoAsync(workstationInfo);
+                await _workstationService.UpdateWorkstationInfoAsync(workstationInfoDto);
             }
             else
             {
                 // Workstation does not exist or name + domain was changed, create new
-                await _workstationService.AddWorkstationAsync(workstationInfo);
-                _logger.LogInformation($"New workstation {workstationInfo.MachineName} was added");
+                await _workstationService.AddWorkstationAsync(workstationInfoDto);
+                _logger.LogInformation($"New workstation {workstationInfoDto.MachineName} was added");
             }
 
-            await UpdateProximitySettingsAsync(workstationInfo.Id, await _workstationService.GetProximitySettingsAsync(workstationInfo.Id));
-            await UpdateRfidStateAsync(workstationInfo.Id, await _workstationService.GetRfidStateAsync(workstationInfo.Id));
+            await UpdateProximitySettingsAsync(workstationInfoDto.Id, await _workstationService.GetProximitySettingsAsync(workstationInfoDto.Id));
+            await UpdateRfidStateAsync(workstationInfoDto.Id, await _workstationService.GetRfidStateAsync(workstationInfoDto.Id));
         }
 
         public async Task OnAppHubDisconnectedAsync(string workstationId)
@@ -280,8 +279,13 @@ namespace HES.Core.Services
             return _workstationConnections.ContainsKey(workstationId);
         }
 
-        public async Task<AlarmState> LockAllWorkstations(ApplicationUser applicationUser)
+        public async Task LockAllWorkstationsAsync(ApplicationUser applicationUser)
         {
+            var state = await _appSettingsService.GetAlarmStateAsync();
+            if (state.IsAlarm)
+                return;
+
+
             if (applicationUser == null)
                 throw new ArgumentNullException(nameof(applicationUser));
 
@@ -296,13 +300,15 @@ namespace HES.Core.Services
 
             foreach (var workstationConnection in _workstationConnections)
                 await workstationConnection.Value.SetAlarmState(true);
-
-            return alarmState;
         }
 
-        public async Task UnlockAllWorkstations(ApplicationUser applicationUser)
+        public async Task UnlockAllWorkstationsAsync(ApplicationUser applicationUser)
         {
-            if (applicationUser == null)
+            var state = await _appSettingsService.GetAlarmStateAsync();
+            if (!state.IsAlarm)
+                return;
+
+                if (applicationUser == null)
                 throw new ArgumentNullException(nameof(applicationUser));
 
             var alarmState = new AlarmState

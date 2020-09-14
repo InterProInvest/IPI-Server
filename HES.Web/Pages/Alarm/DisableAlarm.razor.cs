@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using HES.Core.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HES.Web.Pages.Alarm
 {
@@ -19,6 +21,8 @@ namespace HES.Web.Pages.Alarm
         [Inject] public UserManager<ApplicationUser> UserManager { get; set; }
         [Inject] public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnections { get; set; }
+        [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string ConnectionId { get; set; }
         [Parameter] public EventCallback CallBack { get; set; }
 
         public string UserConfirmPassword { get; set; }
@@ -45,8 +49,9 @@ namespace HES.Web.Pages.Alarm
 
             try
             {
-                await RemoteWorkstationConnections.UnlockAllWorkstations(ApplicationUser);
+                await RemoteWorkstationConnections.UnlockAllWorkstationsAsync(ApplicationUser);
                 ToastService.ShowToast("All workstations are unlocked.", ToastLevel.Success);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
 
                 await CallBack.InvokeAsync(this);
                 await ModalDialogService.CloseAsync();

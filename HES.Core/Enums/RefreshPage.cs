@@ -2,6 +2,7 @@
 {
     public class RefreshPage
     {
+        public const string Alarm = "Alarm";
         public const string Templates = "Templates";
         public const string Employees = "Employees";
         public const string HardwareVaults = "HardwareVaults";

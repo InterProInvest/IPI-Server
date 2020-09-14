@@ -229,21 +229,21 @@ namespace HES.Core.Services
             return await _workstationRepository.ExistAsync(predicate);
         }
 
-        public async Task AddWorkstationAsync(WorkstationInfo workstationInfo)
+        public async Task AddWorkstationAsync(WorkstationInfoDto workstationInfoDto)
         {
-            if (workstationInfo == null)
+            if (workstationInfoDto == null)
             {
-                throw new ArgumentNullException(nameof(workstationInfo));
+                throw new ArgumentNullException(nameof(workstationInfoDto));
             }
 
             var workstation = new Workstation()
             {
-                Id = workstationInfo.Id,
-                Name = workstationInfo.MachineName,
-                Domain = workstationInfo.Domain,
-                OS = workstationInfo.OsName,
-                ClientVersion = workstationInfo.AppVersion,
-                IP = workstationInfo.IP,
+                Id = workstationInfoDto.Id,
+                Name = workstationInfoDto.MachineName,
+                Domain = workstationInfoDto.Domain,
+                OS = workstationInfoDto.OsName,
+                ClientVersion = workstationInfoDto.AppVersion,
+                IP = workstationInfoDto.IP,
                 LastSeen = DateTime.UtcNow,
                 DepartmentId = null
             };
@@ -251,22 +251,22 @@ namespace HES.Core.Services
             await _workstationRepository.AddAsync(workstation);
         }
 
-        public async Task UpdateWorkstationInfoAsync(WorkstationInfo workstationInfo)
+        public async Task UpdateWorkstationInfoAsync(WorkstationInfoDto workstationInfoDto)
         {
-            if (workstationInfo == null)
+            if (workstationInfoDto == null)
             {
-                throw new ArgumentNullException(nameof(workstationInfo));
+                throw new ArgumentNullException(nameof(workstationInfoDto));
             }
 
-            var workstation = await GetWorkstationByIdAsync(workstationInfo.Id);
+            var workstation = await GetWorkstationByIdAsync(workstationInfoDto.Id);
             if (workstation == null)
             {
                 throw new Exception($"Workstation not found.");
             }
 
-            workstation.ClientVersion = workstationInfo.AppVersion;
-            workstation.OS = workstationInfo.OsName;
-            workstation.IP = workstationInfo.IP;
+            workstation.ClientVersion = workstationInfoDto.AppVersion;
+            workstation.OS = workstationInfoDto.OsName;
+            workstation.IP = workstationInfoDto.IP;
             workstation.LastSeen = DateTime.UtcNow;
 
             string[] properties = { "ClientVersion", "OS", "IP", "LastSeen" };
