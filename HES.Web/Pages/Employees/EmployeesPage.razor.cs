@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Import from AD", body);
+            await MainTableService.ShowModalAsync("Import from AD", body, ModalDialogSize.Large);
         }
 
         private async Task EmployeeDetailsAsync()

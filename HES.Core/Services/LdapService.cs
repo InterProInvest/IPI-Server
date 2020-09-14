@@ -50,7 +50,7 @@ namespace HES.Core.Services
                 while (true)
                 {
                     var response = (SearchResponse)connection.SendRequest(searchRequest);
-           
+
                     foreach (var control in response.Controls)
                     {
                         if (control is PageResultResponseControl)
@@ -60,7 +60,7 @@ namespace HES.Core.Services
                             break;
                         }
                     }
-                    
+
                     // Add them to our collection
                     foreach (var sre in response.Entries)
                     {
@@ -105,7 +105,7 @@ namespace HES.Core.Services
                             var name = GetNameFromDn(groupName);
                             var filterGroup = $"(&(objectCategory=group)(name={name}))";
                             var groupResponse = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterGroup, LdapSearchScope.LDAP_SCOPE_SUBTREE));
-          
+
                             groups.Add(new Group()
                             {
                                 Id = GetAttributeGUID(groupResponse.Entries.First()),
@@ -125,24 +125,26 @@ namespace HES.Core.Services
             return users.OrderBy(x => x.Employee.FullName).ToList();
         }
 
-        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
+        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createAccounts, bool createGroups)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 foreach (var user in users)
                 {
-                    Employee employee = null;
-                    employee = await _employeeService.ImportEmployeeAsync(user.Employee);
+                    var employee = await _employeeService.ImportEmployeeAsync(user.Employee);
 
-                    try
+                    if (createAccounts)
                     {
-                        // The employee may already be in the database, so we get his ID and create an account
-                        user.DomainAccount.EmployeeId = employee.Id;
-                        await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
-                    }
-                    catch (AlreadyExistException)
-                    {
-                        // Ignore if a domain account exists
+                        try
+                        {
+                            // The employee may already be in the database, so we get his ID and create an account
+                            user.DomainAccount.EmployeeId = employee.Id;
+                            await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
+                        }
+                        catch (AlreadyExistException)
+                        {
+                            // Ignore if a domain account exists
+                        }
                     }
 
                     if (createGroups && user.Groups != null)
@@ -299,7 +301,7 @@ namespace HES.Core.Services
                                 Name = "Domain Account",
                                 Domain = GetFirstDnFromHost(ldapSettings.Host),
                                 UserName = TryGetAttribute(member, "sAMAccountName"),
-                                Password = GeneratePassword(), 
+                                Password = GeneratePassword(),
                                 UpdateInActiveDirectory = true
                             }
                         });

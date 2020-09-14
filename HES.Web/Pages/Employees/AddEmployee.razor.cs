@@ -32,6 +32,7 @@ namespace HES.Web.Pages.Employees
         public string SearchText { get; set; } = string.Empty;
         public bool IsSortedAscending { get; set; } = true;
         public string CurrentSortColumn { get; set; } = nameof(Employee.FullName);
+        public bool CreateAccounts { get; set; }
         public bool CreateGroups { get; set; }
         public bool Initialized { get; set; }
 
@@ -95,7 +96,7 @@ namespace HES.Web.Pages.Employees
                     return;
                 }
 
-                await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), CreateGroups);
+                await LdapService.AddUsersAsync(Users.Where(x => x.Checked).ToList(), CreateAccounts, CreateGroups);
                 ToastService.ShowToast("Employee imported.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 await ModalDialogService.CloseAsync();
