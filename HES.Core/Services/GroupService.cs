@@ -390,6 +390,7 @@ namespace HES.Core.Services
             var groups = await _groupRepository
                 .Query()
                 .Include(x => x.GroupMemberships)
+                .ThenInclude(x => x.Employee)
                 .Where(x => x.ChangePasswordWhenExpired == true)
                 .ToListAsync();
 

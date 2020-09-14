@@ -16,7 +16,17 @@
         <InputTextArea @bind-Value="Group.Description" class="form-control text-navyblue" rows="3" />
         <ValidationMessage For="@(() => Group.Description)" class="text-danger" />
     </div>
-    <div class="form-group text-right mb-0">
+    <label class="control-label text-gray">Group settings</label>
+    <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Auto AD password change when expired
+            <div class="custom-control custom-switch">
+                <input id="autoPwdChange" type="checkbox" class="custom-control-input" @bind="Group.ChangePasswordWhenExpired">
+                <label class="custom-control-label" for="autoPwdChange"></label>
+            </div>
+        </li>
+    </ul>
+    <div class="text-right mt-4">
         <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
         <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Create" Class="btn btn-primary" />
     </div>
