@@ -308,7 +308,7 @@ namespace HES.Core.Services
                     }
 
                     // Add them to our collection
-                    foreach (var entry in response.Entries)
+                    foreach (var entry in membersResponse.Entries)
                     {
                         members.Add(entry);
                     }
