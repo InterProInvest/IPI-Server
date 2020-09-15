@@ -22,7 +22,6 @@ namespace HES.Web.Pages.Alarm
         [Inject] public ILogger<EnableAlarm> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-
         [Parameter] public EventCallback CallBack { get; set; }
 
         private async Task EnableAlarmAsync()
@@ -33,10 +32,9 @@ namespace HES.Web.Pages.Alarm
             try
             {
                 await RemoteWorkstationConnections.LockAllWorkstationsAsync(applicationUser);
-                ToastService.ShowToast("All workstations are locked.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
-
                 await CallBack.InvokeAsync(this);
+                ToastService.ShowToast("All workstations are locked.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

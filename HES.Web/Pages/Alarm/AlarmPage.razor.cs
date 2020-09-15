@@ -53,6 +53,7 @@ namespace HES.Web.Pages.Alarm
             {
                 builder.OpenComponent(0, typeof(EnableAlarm));
                 builder.AddAttribute(1, nameof(EnableAlarm.CallBack), EventCallback.Factory.Create(this, GetAlarmStateAsync));
+                builder.AddAttribute(2, nameof(EnableAlarm.ConnectionId), _hubConnection.ConnectionId);
                 builder.CloseComponent();
             };
 

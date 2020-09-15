@@ -282,9 +282,8 @@ namespace HES.Core.Services
         public async Task LockAllWorkstationsAsync(ApplicationUser applicationUser)
         {
             var state = await _appSettingsService.GetAlarmStateAsync();
-            if (state.IsAlarm)
+            if (state != null && state.IsAlarm)
                 return;
-
 
             if (applicationUser == null)
                 throw new ArgumentNullException(nameof(applicationUser));
@@ -305,10 +304,10 @@ namespace HES.Core.Services
         public async Task UnlockAllWorkstationsAsync(ApplicationUser applicationUser)
         {
             var state = await _appSettingsService.GetAlarmStateAsync();
-            if (!state.IsAlarm)
+            if (state != null && !state.IsAlarm)
                 return;
 
-                if (applicationUser == null)
+            if (applicationUser == null)
                 throw new ArgumentNullException(nameof(applicationUser));
 
             var alarmState = new AlarmState
@@ -371,9 +370,9 @@ namespace HES.Core.Services
             _employeeService.Dispose();
             _accountService.Dispose();
             _workstationService.Dispose();
-            _hardwareVaultService.Dispose();       
-            _workstationAuditService.Dispose();     
-            _appSettingsService.Dispose();         
+            _hardwareVaultService.Dispose();
+            _workstationAuditService.Dispose();
+            _appSettingsService.Dispose();
         }
 
         #endregion

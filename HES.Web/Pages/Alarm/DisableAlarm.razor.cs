@@ -50,10 +50,9 @@ namespace HES.Web.Pages.Alarm
             try
             {
                 await RemoteWorkstationConnections.UnlockAllWorkstationsAsync(ApplicationUser);
-                ToastService.ShowToast("All workstations are unlocked.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
-
                 await CallBack.InvokeAsync(this);
+                ToastService.ShowToast("All workstations are unlocked.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
