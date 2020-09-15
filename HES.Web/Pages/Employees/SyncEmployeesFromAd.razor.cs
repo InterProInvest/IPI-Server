@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                await LdapService.SynchronizationUsersAsync(LdapSettings);
+                await LdapService.SyncUsersAsync(LdapSettings);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 await ModalDialogService.CloseAsync();
             }

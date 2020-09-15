@@ -263,7 +263,7 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task SynchronizationUsersAsync(LdapSettings ldapSettings)
+        public async Task SyncUsersAsync(LdapSettings ldapSettings)
         {
             using (var connection = new LdapConnection())
             {

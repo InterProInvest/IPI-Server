@@ -28,7 +28,7 @@ namespace HES.Core.HostedServices
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _changePassworTimer = new Timer(async (object state) => await ChangePasswordAsync(), null, TimeSpan.Zero, TimeSpan.FromHours(_changePasswordIntervalInHours));
-            _synchronizationUsersTimer = new Timer(async (object state) => await SynchronizationUsersAsync(), null, TimeSpan.Zero, TimeSpan.FromHours(_synchronizationUsersIntervalInHours));
+            _synchronizationUsersTimer = new Timer(async (object state) => await SyncUsersAsync(), null, TimeSpan.Zero, TimeSpan.FromHours(_synchronizationUsersIntervalInHours));
             return Task.CompletedTask;
         }
 
@@ -63,7 +63,7 @@ namespace HES.Core.HostedServices
             }
         }
 
-        private async Task SynchronizationUsersAsync()
+        private async Task SyncUsersAsync()
         {
             try
             {
@@ -72,14 +72,11 @@ namespace HES.Core.HostedServices
                     var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
 
                     var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
-                    if (ldapSettings == null)
-                    {
-                        _logger.LogWarning("Active Directory credentials no set");
+                    if (ldapSettings?.Password == null)
                         return;
-                    }
 
                     var ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
-                    await ldapService.SynchronizationUsersAsync(ldapSettings);
+                    await ldapService.SyncUsersAsync(ldapSettings);
                 }
             }
             catch (Exception ex)

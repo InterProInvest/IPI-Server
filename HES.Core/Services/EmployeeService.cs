@@ -363,13 +363,14 @@ namespace HES.Core.Services
                     .Query()
                     .Include(x => x.HardwareVaults)
                     .Where(x => x.ActiveDirectoryGuid != null && x.HardwareVaults.Count > 0)
+                    .AsNoTracking()
                     .ToListAsync();
 
                 // Get employees whose access to possession of keys was taken away in the active dirictory
                 var impotedEmployeesGuids = impotedEmployees.Select(d => d.ActiveDirectoryGuid).ToList();
                 currentEmployees.RemoveAll(x => impotedEmployeesGuids.Contains(x.ActiveDirectoryGuid));
 
-                // Remove hardwawre vauls from an employee
+                // Removal of employee hardware values from which access was taken away
                 foreach (var employee in currentEmployees)
                     foreach (var hardwareVault in employee.HardwareVaults)
                         await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
