@@ -17,6 +17,8 @@ namespace HES.Core.Services
 {
     public class LdapService : ILdapService, IDisposable
     {
+        private const string _syncGroupName = "Hideez Key Owners";
+
         private readonly IEmployeeService _employeeService;
         private readonly IAccountService _accountService;
         private readonly IGroupService _groupService;
@@ -261,6 +263,78 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task SynchronizationUsersAsync(LdapSettings ldapSettings)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(ldapSettings.Host, 3268);
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+                var filter = $"(&(objectCategory=group)(name={_syncGroupName}))";
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE);
+
+                var response = (SearchResponse)connection.SendRequest(searchRequest);
+
+                if (response.Entries.Count == 0)
+                    return;
+
+                var groupDn = response.Entries.FirstOrDefault().Dn;
+
+                List<Employee> employees = new List<Employee>();
+                var membersFilter = $"(&(objectCategory=user)(memberOf={groupDn})(givenName=*))";
+                var membersPageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                var membersSearchRequest = new SearchRequest(dn, membersFilter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
+                {
+                    AttributesOnly = false,
+                    TimeLimit = TimeSpan.Zero,
+                    Controls = { membersPageResultRequestControl }
+                };
+
+                var members = new List<DirectoryEntry>();
+
+                while (true)
+                {
+                    var membersResponse = (SearchResponse)connection.SendRequest(membersSearchRequest);
+
+                    foreach (var control in membersResponse.Controls)
+                    {
+                        if (control is PageResultResponseControl)
+                        {
+                            // Update the cookie for next set
+                            membersPageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                            break;
+                        }
+                    }
+
+                    // Add them to our collection
+                    foreach (var entry in response.Entries)
+                    {
+                        members.Add(entry);
+                    }
+
+                    // Our exit condition is when our cookie is empty
+                    if (membersPageResultRequestControl.Cookie.Length == 0)
+                        break;
+                }
+
+                foreach (var member in members)
+                {
+                    employees.Add(new Employee()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ActiveDirectoryGuid = GetAttributeGUID(member),
+                        FirstName = TryGetAttribute(member, "givenName"),
+                        LastName = TryGetAttribute(member, "sn"),
+                        Email = TryGetAttribute(member, "mail"),
+                        PhoneNumber = TryGetAttribute(member, "telephoneNumber")
+                    });
+                }
+
+                await _employeeService.SyncEmployeeAsync(employees);
+            }
+        }
+
         public async Task<List<ActiveDirectoryGroup>> GetGroupsAsync(LdapSettings ldapSettings)
         {
             var groups = new List<ActiveDirectoryGroup>();
@@ -342,7 +416,7 @@ namespace HES.Core.Services
                             if (control is PageResultResponseControl)
                             {
                                 // Update the cookie for next set
-                                pageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                                membersPageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
                                 break;
                             }
                         }
@@ -354,7 +428,7 @@ namespace HES.Core.Services
                         }
 
                         // Our exit condition is when our cookie is empty
-                        if (pageResultRequestControl.Cookie.Length == 0)
+                        if (membersPageResultRequestControl.Cookie.Length == 0)
                             break;
                     }
 

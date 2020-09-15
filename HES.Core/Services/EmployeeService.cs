@@ -295,6 +295,89 @@ namespace HES.Core.Services
             return await _employeeRepository.AddAsync(employee);
         }
 
+        public async Task SyncEmployeeAsync(List<Employee> impotedEmployees)
+        {
+            if (impotedEmployees == null)
+                throw new ArgumentNullException(nameof(impotedEmployees));
+
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                foreach (var impotedEmployee in impotedEmployees)
+                {
+                    // If the field is NULL then the unique check does not work, therefore we write empty field
+                    impotedEmployee.LastName ??= string.Empty;
+
+                    var employeeByGuid = await _employeeRepository.Query().FirstOrDefaultAsync(x => x.ActiveDirectoryGuid == impotedEmployee.ActiveDirectoryGuid);
+                    if (employeeByGuid != null)
+                    {
+                        var modified = false;
+
+                        if (employeeByGuid.FirstName != impotedEmployee.FirstName)
+                        {
+                            employeeByGuid.FirstName = impotedEmployee.FirstName;
+                            modified = true;
+                        }
+
+                        if (employeeByGuid.LastName != impotedEmployee.LastName)
+                        {
+                            employeeByGuid.LastName = impotedEmployee.LastName;
+                            modified = true;
+                        }
+
+                        if (employeeByGuid.Email != impotedEmployee.Email)
+                        {
+                            employeeByGuid.Email = impotedEmployee.Email;
+                            modified = true;
+                        }
+
+                        if (employeeByGuid.PhoneNumber != impotedEmployee.PhoneNumber)
+                        {
+                            employeeByGuid.PhoneNumber = impotedEmployee.PhoneNumber;
+                            modified = true;
+                        }
+
+                        if (modified)
+                        {
+                            await _employeeRepository.UpdateAsync(employeeByGuid);
+                        }
+
+                        continue;
+                    }
+
+                    var employeeByName = await _employeeRepository.Query().FirstOrDefaultAsync(x => x.FirstName == impotedEmployee.FirstName && x.LastName == impotedEmployee.LastName);
+                    if (employeeByName != null)
+                    {
+                        employeeByName.ActiveDirectoryGuid = impotedEmployee.ActiveDirectoryGuid;
+                        employeeByName.Email = impotedEmployee.Email;
+                        employeeByName.PhoneNumber = impotedEmployee.PhoneNumber;
+
+                        await _employeeRepository.UpdateAsync(employeeByName);
+                        continue;
+                    }
+
+                    await _employeeRepository.AddAsync(impotedEmployee);
+                }
+
+                // Get all current employees which are imported and have hardwawre vauls
+                var currentEmployees = await _employeeRepository
+                    .Query()
+                    .Include(x => x.HardwareVaults)
+                    .Where(x => x.ActiveDirectoryGuid != null && x.HardwareVaults.Count > 0)
+                    .ToListAsync();
+
+                // Get employees whose access to possession of keys was taken away in the active dirictory
+                var impotedEmployeesGuids = impotedEmployees.Select(d => d.ActiveDirectoryGuid).ToList();
+                currentEmployees.RemoveAll(x => impotedEmployeesGuids.Contains(x.ActiveDirectoryGuid));
+
+                // Remove hardwawre vauls from an employee
+                foreach (var employee in currentEmployees)
+                    foreach (var hardwareVault in employee.HardwareVaults)
+                        await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
+
+                transactionScope.Complete();
+            }
+        }
+
         public async Task EditEmployeeAsync(Employee employee)
         {
             if (employee == null)
@@ -451,7 +534,7 @@ namespace HES.Core.Services
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
-               
+
             if (vault.Status != VaultStatus.Reserved &&
                 vault.Status != VaultStatus.Active &&
                 vault.Status != VaultStatus.Locked &&
@@ -518,7 +601,7 @@ namespace HES.Core.Services
         {
             var query = _accountService
                 .Query()
-                .Include(x => x.Employee.HardwareVaults)              
+                .Include(x => x.Employee.HardwareVaults)
                 .Include(x => x.SharedAccount)
                 .Where(x => x.EmployeeId == dataLoadingOptions.EntityId && x.Deleted == false)
                 .AsQueryable();
@@ -1060,7 +1143,7 @@ namespace HES.Core.Services
             _softwareVaultService.Dispose();
             _accountService.Dispose();
             _sharedAccountService.Dispose();
-            _workstationService.Dispose();            
+            _workstationService.Dispose();
         }
     }
 }
