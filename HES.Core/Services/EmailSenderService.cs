@@ -254,7 +254,7 @@ namespace HES.Core.Services
             await SendAsync(mailMessage, emailSettings);
         }
 
-        public async Task NotifyWhenPasswordAutoChangedAsync(Employee employee)
+        public async Task NotifyWhenPasswordAutoChangedAsync(Employee employee, string accountName)
         {
             if (string.IsNullOrWhiteSpace(employee?.Email))
                 return;
@@ -262,8 +262,11 @@ namespace HES.Core.Services
             var emailSettings = await GetEmailSettingsAsync();
             var serverSettings = await GetServerSettingsAsync();
 
+            var employeeVaults = string.Join(",", employee.HardwareVaults.Select(x => x.Id).ToList());
             var htmlMessage = GetTemplate("mail-password-auto-changed");
-            htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FullName);
+            htmlMessage = htmlMessage.Replace("{{employeeName}}", employee.FullName)
+                .Replace("{{employeeVaults}}", employeeVaults)
+                .Replace("{{accountName}}", accountName);
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
             AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);

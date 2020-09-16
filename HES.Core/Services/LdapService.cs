@@ -200,8 +200,7 @@ namespace HES.Core.Services
         public async Task ChangePasswordWhenExpiredAsync(LdapSettings ldapSettings)
         {
             using (var connection = new LdapConnection())
-            {
-                //connection.Connect(ldapSettings.Host, 3268);
+            {         
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
@@ -304,7 +303,7 @@ namespace HES.Core.Services
                         }
 
                         // Send notification when pasword changed
-                        await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
+                        await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee, memberLogonName);
                     }
                     else
                     {
@@ -341,7 +340,7 @@ namespace HES.Core.Services
                             }
 
                             // Send notification when pasword changed
-                            await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
+                            await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee, memberLogonName);
                         }
                     }
                 }           
