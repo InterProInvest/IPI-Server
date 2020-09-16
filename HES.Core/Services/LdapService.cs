@@ -73,9 +73,9 @@ namespace HES.Core.Services
                     }
 
                     // Add them to our collection
-                    foreach (var sre in response.Entries)
+                    foreach (var entry in response.Entries)
                     {
-                        entries.Add(sre);
+                        entries.Add(entry);
                     }
 
                     // Our exit condition is when our cookie is empty
@@ -200,7 +200,7 @@ namespace HES.Core.Services
         public async Task ChangePasswordWhenExpiredAsync(LdapSettings ldapSettings)
         {
             using (var connection = new LdapConnection())
-            {         
+            {
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
@@ -308,8 +308,7 @@ namespace HES.Core.Services
                     else
                     {
                         int maxPwdAge = ldapSettings.MaxPasswordAge;
-
-                        DateTime pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(member, "pwdLastSet")));
+                        var pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(member, "pwdLastSet")));
                         var currentPwdAge = DateTime.UtcNow.Subtract(pwdLastSet).TotalDays;
 
                         if (currentPwdAge >= maxPwdAge)
@@ -319,7 +318,7 @@ namespace HES.Core.Services
                             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                             {
                                 // Create domain account
-                                await _employeeService.EditPersonalAccountPwdAsync(domainAccount, new AccountPassword() {Password = password });
+                                await _employeeService.EditPersonalAccountPwdAsync(domainAccount, new AccountPassword() { Password = password });
 
                                 // Update password in active directory
                                 await connection.ModifyAsync(new LdapModifyEntry
@@ -343,7 +342,7 @@ namespace HES.Core.Services
                             await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee, memberLogonName);
                         }
                     }
-                }           
+                }
             }
         }
 
@@ -655,6 +654,7 @@ namespace HES.Core.Services
         {
             _employeeService.Dispose();
             _groupService.Dispose();
+            _emailSenderService.Dispose();
         }
     }
 }

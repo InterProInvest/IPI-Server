@@ -113,7 +113,7 @@ namespace HES.Core.Services
                     {
                         var ldapSettings = await _appSettingsService.GetLdapSettingsAsync();
                         if (ldapSettings?.Password == null)
-                            throw new Exception("ADCredentialsRequired"); // TODO use Communication.dll ex
+                            throw new Exception("Active Directory Credentials Required"); // TODO use Communication.dll ex
                         await _ldapService.SetUserPasswordAsync(task.HardwareVault.EmployeeId, task.Password, ldapSettings);         
                     }
                     await AddAccountAsync(remoteDevice, task);

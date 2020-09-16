@@ -69,8 +69,8 @@ namespace HES.Web.Pages.Employees
 
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    await LdapService.SetUserPasswordAsync(Account.EmployeeId, accountPassword.Password, LdapSettings);
                     await EmployeeService.EditPersonalAccountPwdAsync(Account, accountPassword);
+                    await LdapService.SetUserPasswordAsync(Account.EmployeeId, accountPassword.Password, LdapSettings);
                     transactionScope.Complete();
                 }
 

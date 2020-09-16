@@ -21,12 +21,21 @@ namespace HES.Web.Pages.Employees
         [Parameter] public string ConnectionId { get; set; }
 
         public LdapSettings LdapSettings { get; set; }
+        public bool CredentialsNotSet { get; set; }
+        public bool Initialized { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
-                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();               
+                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
+
+                if (LdapSettings?.UserName == null && LdapSettings?.Password == null)
+                {
+                    CredentialsNotSet = true;
+                }
+
+                Initialized = true;
             }
             catch (Exception ex)
             {
@@ -43,6 +52,7 @@ namespace HES.Web.Pages.Employees
                 await LdapService.SyncUsersAsync(LdapSettings);
                 await LdapService.ChangePasswordWhenExpiredAsync(LdapSettings);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
+                ToastService.ShowToast("Users synced.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
