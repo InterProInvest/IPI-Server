@@ -37,7 +37,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(CreateLicenseOrder));
-                builder.AddAttribute(1, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(CreateLicenseOrder.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -49,7 +49,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(SendLicenseOrder));
-                builder.AddAttribute(1, nameof(SendLicenseOrder.LicenseOrderId), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(SendLicenseOrder.LicenseOrderId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(SendLicenseOrder.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };

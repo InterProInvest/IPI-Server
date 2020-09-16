@@ -138,24 +138,26 @@ namespace HES.Core.Services
             return users.OrderBy(x => x.Employee.FullName).ToList();
         }
 
-        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
+        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createAccounts, bool createGroups)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 foreach (var user in users)
                 {
-                    Employee employee = null;
-                    employee = await _employeeService.ImportEmployeeAsync(user.Employee);
+                    var employee = await _employeeService.ImportEmployeeAsync(user.Employee);
 
-                    try
+                    if (createAccounts)
                     {
-                        // The employee may already be in the database, so we get his ID and create an account
-                        user.DomainAccount.EmployeeId = employee.Id;
-                        await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
-                    }
-                    catch (AlreadyExistException)
-                    {
-                        // Ignore if a domain account exists
+                        try
+                        {
+                            // The employee may already be in the database, so we get his ID and create an account
+                            user.DomainAccount.EmployeeId = employee.Id;
+                            await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
+                        }
+                        catch (AlreadyExistException)
+                        {
+                            // Ignore if a domain account exists
+                        }
                     }
 
                     if (createGroups && user.Groups != null)
@@ -177,8 +179,9 @@ namespace HES.Core.Services
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
+                var dn = GetDnFromHost(ldapSettings.Host);
                 var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry
                 {
