@@ -56,7 +56,7 @@ namespace HES.Core.Services
             return _employeeRepository.Query();
         }
 
-        public async Task<Employee> GetEmployeeByIdAsync(string id, bool asNoTracking = false)
+        public async Task<Employee> GetEmployeeByIdAsync(string id, bool asNoTracking = false, bool byActiveDirectoryGuid = false)
         {
             var query = _employeeRepository
                 .Query()
@@ -66,12 +66,20 @@ namespace HES.Core.Services
                 .Include(e => e.SoftwareVaultInvitations)
                 .Include(e => e.HardwareVaults)
                 .ThenInclude(e => e.HardwareVaultProfile)
+                .Include(e => e.Accounts)
                 .AsQueryable();
 
             if (asNoTracking)
                 query = query.AsNoTracking();
 
-            return await query.FirstOrDefaultAsync(e => e.Id == id);
+            if (!byActiveDirectoryGuid)
+            {
+                return await query.FirstOrDefaultAsync(e => e.Id == id);
+            }
+            else
+            {
+                return await query.FirstOrDefaultAsync(e => e.ActiveDirectoryGuid == id);
+            }
         }
 
         public Task UnchangedEmployeeAsync(Employee employee)

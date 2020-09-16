@@ -38,16 +38,10 @@ namespace HES.Core.HostedServices
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var groupService = scope.ServiceProvider.GetRequiredService<IGroupService>();
-
-                    var status = await groupService.GetAutoPasswordChangeStatusAsync();
-                    if (!status)
-                        return;
-
                     var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
 
                     var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
-                    if (ldapSettings == null)
+                    if (ldapSettings?.Password == null)
                     {
                         _logger.LogWarning("Active Directory credentials no set");
                         return;

@@ -34,11 +34,6 @@ namespace HES.Core.Services
             return _groupRepository.Query();
         }
 
-        public async Task<bool> GetAutoPasswordChangeStatusAsync()
-        {
-            return await _groupRepository.Query().AnyAsync(x => x.ChangePasswordWhenExpired == true);
-        }
-
         public async Task<List<Group>> GetGroupsAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions)
         {
             var query = _groupRepository
@@ -388,31 +383,6 @@ namespace HES.Core.Services
             }
 
             return await _groupMembershipRepository.DeleteAsync(groupMembership);
-        }
-
-        public async Task<List<Employee>> GetEmployeesWithPasswordChangeEnabled()
-        {
-            var groups = await _groupRepository
-                .Query()
-                .Include(x => x.GroupMemberships)
-                .ThenInclude(x => x.Employee)
-                .Where(x => x.ChangePasswordWhenExpired == true)
-                .ToListAsync();
-
-            var employees = new HashSet<Employee>();
-
-            foreach (var group in groups)
-            {
-                foreach (var member in group.GroupMemberships)
-                {
-                    if (member.Employee.ActiveDirectoryGuid != null)
-                    {
-                        employees.Add(member.Employee);
-                    }
-                }
-            }
-
-            return employees.ToList();
         }
 
         public void Dispose()

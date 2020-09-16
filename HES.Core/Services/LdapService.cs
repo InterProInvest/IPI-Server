@@ -18,9 +18,9 @@ namespace HES.Core.Services
     public class LdapService : ILdapService, IDisposable
     {
         private const string _syncGroupName = "Hideez Key Owners";
+        private const string _pwdChangeGroupName = "Hideez Auto Password Change";
 
         private readonly IEmployeeService _employeeService;
-        private readonly IAccountService _accountService;
         private readonly IGroupService _groupService;
         private readonly IEmailSenderService _emailSenderService;
         private readonly ILogger<LdapService> _logger;
@@ -28,13 +28,11 @@ namespace HES.Core.Services
         public LdapService(IEmployeeService employeeService,
                            IGroupService groupService,
                            IEmailSenderService emailSenderService,
-                           IAccountService accountService,
                            ILogger<LdapService> logger)
         {
             _employeeService = employeeService;
             _groupService = groupService;
             _emailSenderService = emailSenderService;
-            _accountService = accountService;
             _logger = logger;
         }
 
@@ -201,44 +199,96 @@ namespace HES.Core.Services
 
         public async Task ChangePasswordWhenExpiredAsync(LdapSettings ldapSettings)
         {
-            var employees = await _groupService.GetEmployeesWithPasswordChangeEnabled();
-
-            if (employees.Count == 0)
-                return;
-
-            // Number of days after which the password will be changed
-            int changePwdInterval = 28;
-
             using (var connection = new LdapConnection())
             {
+                //connection.Connect(ldapSettings.Host, 3268);
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
+                var filter = $"(&(objectCategory=group)(name={_pwdChangeGroupName}))";
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE);
 
-                foreach (var employee in employees)
+                var groupResponse = (SearchResponse)connection.SendRequest(searchRequest);
+
+                if (groupResponse.Entries.Count == 0)
+                    return;
+
+                var groupDn = groupResponse.Entries.FirstOrDefault().Dn;
+
+                List<Employee> employees = new List<Employee>();
+                var membersFilter = $"(&(objectCategory=user)(memberOf={groupDn})(givenName=*))";
+                var membersPageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                var membersSearchRequest = new SearchRequest(dn, membersFilter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
                 {
-                    var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
-                    var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                    AttributesOnly = false,
+                    TimeLimit = TimeSpan.Zero,
+                    Controls = { membersPageResultRequestControl }
+                };
 
-                    DateTime pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(user.Entries.First(), "pwdLastSet")));
+                var members = new List<DirectoryEntry>();
 
-                    // Check account password age
-                    var delta = DateTime.UtcNow.Subtract(pwdLastSet).TotalDays;
-                    if (delta >= changePwdInterval)
+                while (true)
+                {
+                    var membersResponse = (SearchResponse)connection.SendRequest(membersSearchRequest);
+
+                    foreach (var control in membersResponse.Controls)
                     {
-                        if (string.IsNullOrWhiteSpace(employee.PrimaryAccountId))
-                            continue;
-
-                        try
+                        if (control is PageResultResponseControl)
                         {
-                            //TODO From communication dll
-                            var password = Guid.NewGuid().ToString();
+                            // Update the cookie for next set
+                            membersPageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                            break;
+                        }
+                    }
 
-                            // Set password
+                    // Add them to our collection
+                    foreach (var entry in membersResponse.Entries)
+                    {
+                        members.Add(entry);
+                    }
+
+                    // Our exit condition is when our cookie is empty
+                    if (membersPageResultRequestControl.Cookie.Length == 0)
+                        break;
+                }
+
+                foreach (var member in members)
+                {
+                    // Find employee
+                    var memberGuid = GetAttributeGUID(member);
+                    var employee = await _employeeService.GetEmployeeByIdAsync(memberGuid, byActiveDirectoryGuid: true);
+
+                    // Not found because they were not added to the group for synchronization
+                    if (employee == null)
+                        continue;
+
+                    // Check if an domain account exists
+                    var memberLogonName = $"{GetFirstDnFromHost(ldapSettings.Host)}\\{TryGetAttribute(member, "sAMAccountName")}";
+
+                    var domainAccount = employee.Accounts.FirstOrDefault(x => x.Login == memberLogonName);
+                    if (domainAccount == null)
+                    {
+                        var password = GeneratePassword();
+
+                        var workstationDomainAccount = new WorkstationDomain()
+                        {
+                            Name = "Domain Account",
+                            Domain = GetFirstDnFromHost(ldapSettings.Host),
+                            UserName = TryGetAttribute(member, "sAMAccountName"),
+                            Password = password,
+                            EmployeeId = employee.Id
+                        };
+
+                        using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                        {
+                            // Create domain account
+                            await _employeeService.CreateWorkstationAccountAsync(workstationDomainAccount);
+
+                            // Update password in active directory
                             await connection.ModifyAsync(new LdapModifyEntry
                             {
-                                Dn = user.Entries.First().Dn,
+                                Dn = member.Dn,
                                 Attributes = new List<LdapModifyAttribute>
                                 {
                                     new LdapModifyAttribute
@@ -250,19 +300,51 @@ namespace HES.Core.Services
                                 }
                             });
 
-                            // Create password update task for hardware vault
-                            var primaryAccount = await _accountService.GetAccountByIdAsync(employee.PrimaryAccountId);
-                            await _employeeService.EditPersonalAccountPwdAsync(primaryAccount, new AccountPassword { Password = password });
+                            transactionScope.Complete();
+                        }
+
+                        // Send notification when pasword changed
+                        await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
+                    }
+                    else
+                    {
+                        int maxPwdAge = ldapSettings.MaxPasswordAge;
+
+                        DateTime pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(member, "pwdLastSet")));
+                        var currentPwdAge = DateTime.UtcNow.Subtract(pwdLastSet).TotalDays;
+
+                        if (currentPwdAge >= maxPwdAge)
+                        {
+                            var password = GeneratePassword();
+
+                            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                            {
+                                // Create domain account
+                                await _employeeService.EditPersonalAccountPwdAsync(domainAccount, new AccountPassword() {Password = password });
+
+                                // Update password in active directory
+                                await connection.ModifyAsync(new LdapModifyEntry
+                                {
+                                    Dn = member.Dn,
+                                    Attributes = new List<LdapModifyAttribute>
+                                    {
+                                        new LdapModifyAttribute
+                                        {
+                                            LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                            Type = "userPassword",
+                                            Values = new List<string> { password }
+                                        }
+                                    }
+                                });
+
+                                transactionScope.Complete();
+                            }
 
                             // Send notification when pasword changed
                             await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee);
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"Error in changing password with employee {employee.FullName}, ex:{ex.Message}");
-                        }
                     }
-                }
+                }           
             }
         }
 

@@ -15,7 +15,7 @@ namespace HES.Core.Interfaces
         IQueryable<Employee> EmployeeQuery();
         Task<List<Employee>> GetEmployeesAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
         Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions);
-        Task<Employee> GetEmployeeByIdAsync(string id, bool asNoTracking = false);
+        Task<Employee> GetEmployeeByIdAsync(string id, bool asNoTracking = false, bool byActiveDirectoryGuid = false);
         Task<IList<string>> GetEmployeeVaultIdsAsync(string employeeId);
         Task<Employee> ImportEmployeeAsync(Employee employee);
         Task SyncEmployeeAsync(List<Employee> impotedEmployees);

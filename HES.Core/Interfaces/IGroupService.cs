@@ -12,7 +12,6 @@ namespace HES.Core.Interfaces
     public interface IGroupService : IDisposable
     {
         IQueryable<Group> Query();
-        Task<bool> GetAutoPasswordChangeStatusAsync();
         Task<List<Group>> GetGroupsAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions);
         Task<int> GetGroupsCountAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions);
         Task<Group> GetGroupByIdAsync(string groupId);
@@ -30,6 +29,5 @@ namespace HES.Core.Interfaces
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
         Task<GroupMembership> RemoveEmployeeFromGroupAsync(string groupMembershipId);
-        Task<List<Employee>> GetEmployeesWithPasswordChangeEnabled();
     }
 }

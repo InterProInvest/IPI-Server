@@ -41,6 +41,7 @@ namespace HES.Web.Pages.Employees
             try
             {
                 await LdapService.SyncUsersAsync(LdapSettings);
+                await LdapService.ChangePasswordWhenExpiredAsync(LdapSettings);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                 await ModalDialogService.CloseAsync();
             }
