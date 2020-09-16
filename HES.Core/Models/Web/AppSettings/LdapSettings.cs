@@ -10,5 +10,9 @@ namespace HES.Core.Models.Web.AppSettings
         public string UserName { get; set; }
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        [Range(1, 180)]
+        public int MaxPasswordAge { get; set; } = 28;
     }
 }

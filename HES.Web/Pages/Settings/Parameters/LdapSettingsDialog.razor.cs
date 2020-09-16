@@ -23,11 +23,21 @@ namespace HES.Web.Pages.Settings.Parameters
 
         public LdapSettings LdapSettings { get; set; }
         public EditContext LdapSettingsContext { get; set; }
-        public bool SkipCredentials { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            LdapSettings = new LdapSettings() { Host = Host };
+            var setting = await AppSettingsService.GetLdapSettingsAsync();
+
+            if (setting == null)
+                LdapSettings = new LdapSettings() { Host = Host };
+
+            else
+                LdapSettings = new LdapSettings()
+                {
+                    Host = Host,
+                    MaxPasswordAge = setting.MaxPasswordAge
+                };
+
             LdapSettingsContext = new EditContext(LdapSettings);
         }
 
@@ -36,21 +46,9 @@ namespace HES.Web.Pages.Settings.Parameters
             try
             {
                 var isValid = LdapSettingsContext.Validate();
-                var hostEmpty = string.IsNullOrWhiteSpace(LdapSettings.Host);
 
-                if (SkipCredentials)
-                {
-                    LdapSettings.UserName = null;
-                    LdapSettings.Password = null;
-
-                    if (!isValid && hostEmpty)
-                        return;
-                }
-                else
-                {            
-                    if (!isValid)
-                        return;
-                }
+                if (!isValid)
+                    return;
 
                 await AppSettingsService.SetLdapSettingsAsync(LdapSettings);
                 ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
