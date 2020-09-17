@@ -4,6 +4,7 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,19 +17,34 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<CompaniesTab> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+
+        public List<Company> Companies { get; set; }
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
-        public List<Company> Companies { get; set; }
-
         protected override async Task OnInitializedAsync()
         {
-            OrgStructureService = ScopedServices.GetRequiredService<IOrgStructureService>();
+            try
+            {
+                OrgStructureService = ScopedServices.GetRequiredService<IOrgStructureService>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetOrgStructure();
-            await LoadCompaniesAsync();
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetOrgStructure();
+                await LoadCompaniesAsync();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task LoadCompaniesAsync()

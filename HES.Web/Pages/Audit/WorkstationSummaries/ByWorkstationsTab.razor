@@ -1,11 +1,7 @@
 ﻿@inherits OwningComponentBase
 @using HES.Core.Models.Web.Audit
 
-@if (MainTableService.Entities == null)
-{
-    <LoadingTab />
-}
-else
+@if (Initialized)
 {
     <TableAction>
         <FilterForm>
@@ -121,4 +117,12 @@ else
                 CurrentPage="MainTableService.CurrentPage"
                 DisplayRows="MainTableService.DataLoadingOptions.Take"
                 DisplayRecords="MainTableService.Entities.Count" />
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

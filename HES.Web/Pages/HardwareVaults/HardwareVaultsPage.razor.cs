@@ -22,38 +22,53 @@ namespace HES.Web.Pages.HardwareVaults
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
 
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
+
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVault, HardwareVaultFilter>>();
-
-            switch (DashboardFilter)
+            try
             {
-                case "LowBattery":
-                    MainTableService.DataLoadingOptions.Filter.Battery = "low";
-                    break;
-                case "VaultLocked":
-                    MainTableService.DataLoadingOptions.Filter.Status = VaultStatus.Locked;
-                    break;
-                case "VaultReady":
-                    MainTableService.DataLoadingOptions.Filter.Status = VaultStatus.Ready;
-                    break;
-                case "LicenseWarning":
-                    MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Warning;
-                    break;
-                case "LicenseCritical":
-                    MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Critical;
-                    break;
-                case "LicenseExpired":
-                    MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Expired;
-                    break;
-            }
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVault, HardwareVaultFilter>>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetHardwareVaults();
-            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVault.Id));
+                switch (DashboardFilter)
+                {
+                    case "LowBattery":
+                        MainTableService.DataLoadingOptions.Filter.Battery = "low";
+                        break;
+                    case "VaultLocked":
+                        MainTableService.DataLoadingOptions.Filter.Status = VaultStatus.Locked;
+                        break;
+                    case "VaultReady":
+                        MainTableService.DataLoadingOptions.Filter.Status = VaultStatus.Ready;
+                        break;
+                    case "LicenseWarning":
+                        MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Warning;
+                        break;
+                    case "LicenseCritical":
+                        MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Critical;
+                        break;
+                    case "LicenseExpired":
+                        MainTableService.DataLoadingOptions.Filter.LicenseStatus = VaultLicenseStatus.Expired;
+                        break;
+                }
+
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetHardwareVaults();
+                await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVault.Id));
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         public async Task ImportVaultsAsync()
@@ -164,7 +179,7 @@ namespace HES.Web.Pages.HardwareVaults
             });
 
             hubConnection.On<string>(RefreshPage.HardwareVaultStateChanged, async (hardwareVaultId) =>
-            {  
+            {
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast($"Hardware Vault {hardwareVaultId} state changed.", ToastLevel.Notify);
             });

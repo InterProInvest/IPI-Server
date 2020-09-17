@@ -2,11 +2,7 @@
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
 @inherits OwningComponentBase
 
-@if (!Initialized)
-{
-    <LoadingPage />
-}
-else
+@if (Initialized)
 {
     <SettingsCard Title="Licensing" Description="API authentication key for ordering licenses and the address of the licensing server.">
         <div class="form-group">
@@ -52,4 +48,12 @@ else
             }
         </div>
     </SettingsCard>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

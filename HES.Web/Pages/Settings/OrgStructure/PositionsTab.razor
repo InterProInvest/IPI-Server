@@ -1,10 +1,6 @@
 ﻿@inherits OwningComponentBase
 
-@if (Positions == null)
-{
-    <LoadingTab />
-}
-else
+@if (Initialized)
 {
     <div class="d-flex justify-content-between mb-2">
         <div class="d-flex align-items-center flex-wrap">
@@ -54,4 +50,12 @@ else
             </tbody>
         </table>
     </div>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

@@ -5,6 +5,7 @@ using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -19,17 +20,33 @@ namespace HES.Web.Pages.Templates
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public ILogger<TemplatesPage> Logger { get; set; }
+
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            TemplateService = ScopedServices.GetRequiredService<ITemplateService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Template, TemplateFilter>>();
+            try
+            {
+                TemplateService = ScopedServices.GetRequiredService<ITemplateService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Template, TemplateFilter>>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetTemplates();
-            await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, ModalDialogService, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetTemplates();
+                await MainTableService.InitializeAsync(TemplateService.GetTemplatesAsync, TemplateService.GetTemplatesCountAsync, ModalDialogService, StateHasChanged, nameof(Template.Name), ListSortDirection.Ascending);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task CreateTemplateAsync()
