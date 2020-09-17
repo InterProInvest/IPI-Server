@@ -4,6 +4,7 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.AppSettings;
+using Hideez.SDK.Communication.Security;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
@@ -65,7 +66,7 @@ namespace HES.Web.Pages.Employees
                 if (LdapSettings?.Password == null)
                     throw new Exception("Active Directory credentials not set in parameters page.");
 
-                var accountPassword = new AccountPassword() { Password = Guid.NewGuid().ToString() }; // TODO generate from Communication.dll
+                var accountPassword = new AccountPassword() { Password = PasswordGenerator.Generate() };
 
                 using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {

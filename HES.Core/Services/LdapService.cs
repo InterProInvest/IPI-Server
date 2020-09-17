@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using Hideez.SDK.Communication.Security;
 using static LdapForNet.Native.Native;
 
 namespace HES.Core.Services
@@ -642,10 +643,10 @@ namespace HES.Core.Services
             var hex = BitConverter.ToString(ba).Insert(0, @"\").Replace("-", @"\");
             return hex;
         }
-        // TODO generate password from Communication.dll
+ 
         private string GeneratePassword()
         {
-            return Guid.NewGuid().ToString();
+            return PasswordGenerator.Generate();
         }
 
         #endregion
