@@ -419,7 +419,7 @@ namespace HES.Core.Services
 
             foreach (var hardwareVaultDto in importDto.HardwareVaultsDto)
             {
-                var hardwareVaultLicense = hardwareVaultLicensesToImport.FirstOrDefault(x => x.HardwareVaultId == hardwareVaultDto.HardwareVaultId);
+                var hardwareVaultLicense = hardwareVaultLicensesToImport.OrderByDescending(x => x.EndDate).FirstOrDefault(x => x.HardwareVaultId == hardwareVaultDto.HardwareVaultId);
 
                 hardwareVaultsToImport.Add(new HardwareVault()
                 {

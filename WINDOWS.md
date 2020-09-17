@@ -94,6 +94,11 @@ Download and install [MySQL](https://dev.mysql.com/downloads/installer/)
     "Password": "<your_email_password>"
   },
 
+  "ServerSettings": {
+    "Name": "HES",
+    "Url": "<url_to_you_hes_site>"
+  },
+  
   "DataProtection": {
     "Password": "<protection_password>"
   },

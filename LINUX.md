@@ -308,6 +308,11 @@ The following is an example of how to open a configuration file for editing, for
     "UserName": "<your_email_name>",
     "Password": "<your_email_password>"
   },
+
+  "ServerSettings": {
+    "Name": "HES",
+    "Url": "<url_to_you_hes_site>"
+  },
   
   "DataProtection": {
     "Password": "<protection_password>"

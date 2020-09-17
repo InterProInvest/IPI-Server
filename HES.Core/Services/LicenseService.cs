@@ -514,10 +514,17 @@ namespace HES.Core.Services
                 var vault = await _hardwareVaultRepository.GetByIdAsync(vaultId);
 
                 if (vault == null)
-                    throw new Exception("Device not found.");
+                    throw new Exception("Hardware vault not found.");
 
                 vault.HasNewLicense = false;
-                vault.LicenseEndDate = hardwareVaultLicense.EndDate;
+                if (vault.LicenseEndDate.HasValue)
+                {
+                    vault.LicenseEndDate = vault.LicenseEndDate < hardwareVaultLicense.EndDate ? hardwareVaultLicense.EndDate : vault.LicenseEndDate;
+                }
+                else
+                {
+                    vault.LicenseEndDate = hardwareVaultLicense.EndDate;
+                }
                 await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.HasNewLicense), nameof(HardwareVault.LicenseEndDate) });
             }
         }
