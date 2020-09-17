@@ -13,8 +13,11 @@ else
             <EmployeeFilterComponent FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <button type="button" @onclick="ImportEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Import employee from AD">
-                Import from AD
+            @*<button type="button" @onclick="ImportEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Import employee from AD">
+                    Import from AD
+                </button>*@
+            <button type="button" @onclick="SyncEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Sync employees from AD">
+                Sync from AD
             </button>
             <button type="button" @onclick="CreateEmployeeAsync" class="btn btn-primary mx-1" title="Create employee">
                 Create employee

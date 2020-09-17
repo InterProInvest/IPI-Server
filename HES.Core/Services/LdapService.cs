@@ -5,24 +5,36 @@ using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.AppSettings;
 using LdapForNet;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using Hideez.SDK.Communication.Security;
 using static LdapForNet.Native.Native;
 
 namespace HES.Core.Services
 {
     public class LdapService : ILdapService, IDisposable
     {
+        private const string _syncGroupName = "Hideez Key Owners";
+        private const string _pwdChangeGroupName = "Hideez Auto Password Change";
+
         private readonly IEmployeeService _employeeService;
         private readonly IGroupService _groupService;
+        private readonly IEmailSenderService _emailSenderService;
+        private readonly ILogger<LdapService> _logger;
 
-        public LdapService(IEmployeeService employeeService, IGroupService groupService)
+        public LdapService(IEmployeeService employeeService,
+                           IGroupService groupService,
+                           IEmailSenderService emailSenderService,
+                           ILogger<LdapService> logger)
         {
             _employeeService = employeeService;
             _groupService = groupService;
+            _emailSenderService = emailSenderService;
+            _logger = logger;
         }
 
         public async Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings)
@@ -50,7 +62,7 @@ namespace HES.Core.Services
                 while (true)
                 {
                     var response = (SearchResponse)connection.SendRequest(searchRequest);
-           
+
                     foreach (var control in response.Controls)
                     {
                         if (control is PageResultResponseControl)
@@ -60,11 +72,11 @@ namespace HES.Core.Services
                             break;
                         }
                     }
-                    
+
                     // Add them to our collection
-                    foreach (var sre in response.Entries)
+                    foreach (var entry in response.Entries)
                     {
-                        entries.Add(sre);
+                        entries.Add(entry);
                     }
 
                     // Our exit condition is when our cookie is empty
@@ -105,7 +117,7 @@ namespace HES.Core.Services
                             var name = GetNameFromDn(groupName);
                             var filterGroup = $"(&(objectCategory=group)(name={name}))";
                             var groupResponse = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filterGroup, LdapSearchScope.LDAP_SCOPE_SUBTREE));
-          
+
                             groups.Add(new Group()
                             {
                                 Id = GetAttributeGUID(groupResponse.Entries.First()),
@@ -125,24 +137,26 @@ namespace HES.Core.Services
             return users.OrderBy(x => x.Employee.FullName).ToList();
         }
 
-        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createGroups)
+        public async Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createAccounts, bool createGroups)
         {
             using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 foreach (var user in users)
                 {
-                    Employee employee = null;
-                    employee = await _employeeService.ImportEmployeeAsync(user.Employee);
+                    var employee = await _employeeService.ImportEmployeeAsync(user.Employee);
 
-                    try
+                    if (createAccounts)
                     {
-                        // The employee may already be in the database, so we get his ID and create an account
-                        user.DomainAccount.EmployeeId = employee.Id;
-                        await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
-                    }
-                    catch (AlreadyExistException)
-                    {
-                        // Ignore if a domain account exists
+                        try
+                        {
+                            // The employee may already be in the database, so we get his ID and create an account
+                            user.DomainAccount.EmployeeId = employee.Id;
+                            await _employeeService.CreateWorkstationAccountAsync(user.DomainAccount);
+                        }
+                        catch (AlreadyExistException)
+                        {
+                            // Ignore if a domain account exists
+                        }
                     }
 
                     if (createGroups && user.Groups != null)
@@ -164,8 +178,9 @@ namespace HES.Core.Services
                 connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
+                var dn = GetDnFromHost(ldapSettings.Host);
                 var objectGUID = GetObjectGuid(employee.ActiveDirectoryGuid);
-                var user = (SearchResponse)connection.SendRequest(new SearchRequest("dc=addc,dc=hideez,dc=com", $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={objectGUID}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
 
                 await connection.ModifyAsync(new LdapModifyEntry
                 {
@@ -180,6 +195,227 @@ namespace HES.Core.Services
                             }
                         }
                 });
+            }
+        }
+
+        public async Task ChangePasswordWhenExpiredAsync(LdapSettings ldapSettings)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+                var filter = $"(&(objectCategory=group)(name={_pwdChangeGroupName}))";
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE);
+
+                var groupResponse = (SearchResponse)connection.SendRequest(searchRequest);
+
+                if (groupResponse.Entries.Count == 0)
+                    return;
+
+                var groupDn = groupResponse.Entries.FirstOrDefault().Dn;
+
+                List<Employee> employees = new List<Employee>();
+                var membersFilter = $"(&(objectCategory=user)(memberOf={groupDn})(givenName=*))";
+                var membersPageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                var membersSearchRequest = new SearchRequest(dn, membersFilter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
+                {
+                    AttributesOnly = false,
+                    TimeLimit = TimeSpan.Zero,
+                    Controls = { membersPageResultRequestControl }
+                };
+
+                var members = new List<DirectoryEntry>();
+
+                while (true)
+                {
+                    var membersResponse = (SearchResponse)connection.SendRequest(membersSearchRequest);
+
+                    foreach (var control in membersResponse.Controls)
+                    {
+                        if (control is PageResultResponseControl)
+                        {
+                            // Update the cookie for next set
+                            membersPageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                            break;
+                        }
+                    }
+
+                    // Add them to our collection
+                    foreach (var entry in membersResponse.Entries)
+                    {
+                        members.Add(entry);
+                    }
+
+                    // Our exit condition is when our cookie is empty
+                    if (membersPageResultRequestControl.Cookie.Length == 0)
+                        break;
+                }
+
+                foreach (var member in members)
+                {
+                    // Find employee
+                    var memberGuid = GetAttributeGUID(member);
+                    var employee = await _employeeService.GetEmployeeByIdAsync(memberGuid, byActiveDirectoryGuid: true);
+
+                    // Not found because they were not added to the group for synchronization
+                    if (employee == null)
+                        continue;
+
+                    // Check if an domain account exists
+                    var memberLogonName = $"{GetFirstDnFromHost(ldapSettings.Host)}\\{TryGetAttribute(member, "sAMAccountName")}";
+
+                    var domainAccount = employee.Accounts.FirstOrDefault(x => x.Login == memberLogonName);
+                    if (domainAccount == null)
+                    {
+                        var password = GeneratePassword();
+
+                        var workstationDomainAccount = new WorkstationDomain()
+                        {
+                            Name = "Domain Account",
+                            Domain = GetFirstDnFromHost(ldapSettings.Host),
+                            UserName = TryGetAttribute(member, "sAMAccountName"),
+                            Password = password,
+                            EmployeeId = employee.Id
+                        };
+
+                        using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                        {
+                            // Create domain account
+                            await _employeeService.CreateWorkstationAccountAsync(workstationDomainAccount);
+
+                            // Update password in active directory
+                            await connection.ModifyAsync(new LdapModifyEntry
+                            {
+                                Dn = member.Dn,
+                                Attributes = new List<LdapModifyAttribute>
+                                {
+                                    new LdapModifyAttribute
+                                    {
+                                        LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                        Type = "userPassword",
+                                        Values = new List<string> { password }
+                                    }
+                                }
+                            });
+
+                            transactionScope.Complete();
+                        }
+
+                        // Send notification when pasword changed
+                        await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee, memberLogonName);
+                    }
+                    else
+                    {
+                        int maxPwdAge = ldapSettings.MaxPasswordAge;
+                        var pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(member, "pwdLastSet")));
+                        var currentPwdAge = DateTime.UtcNow.Subtract(pwdLastSet).TotalDays;
+
+                        if (currentPwdAge >= maxPwdAge)
+                        {
+                            var password = GeneratePassword();
+
+                            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                            {
+                                // Create domain account
+                                await _employeeService.EditPersonalAccountPwdAsync(domainAccount, new AccountPassword() { Password = password });
+
+                                // Update password in active directory
+                                await connection.ModifyAsync(new LdapModifyEntry
+                                {
+                                    Dn = member.Dn,
+                                    Attributes = new List<LdapModifyAttribute>
+                                    {
+                                        new LdapModifyAttribute
+                                        {
+                                            LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                            Type = "userPassword",
+                                            Values = new List<string> { password }
+                                        }
+                                    }
+                                });
+
+                                transactionScope.Complete();
+                            }
+
+                            // Send notification when pasword changed
+                            await _emailSenderService.NotifyWhenPasswordAutoChangedAsync(employee, memberLogonName);
+                        }
+                    }
+                }
+            }
+        }
+
+        public async Task SyncUsersAsync(LdapSettings ldapSettings)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(ldapSettings.Host, 3268);
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+                var filter = $"(&(objectCategory=group)(name={_syncGroupName}))";
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE);
+
+                var response = (SearchResponse)connection.SendRequest(searchRequest);
+
+                if (response.Entries.Count == 0)
+                    return;
+
+                var groupDn = response.Entries.FirstOrDefault().Dn;
+
+                List<Employee> employees = new List<Employee>();
+                var membersFilter = $"(&(objectCategory=user)(memberOf={groupDn})(givenName=*))";
+                var membersPageResultRequestControl = new PageResultRequestControl(500) { IsCritical = true };
+                var membersSearchRequest = new SearchRequest(dn, membersFilter, LdapSearchScope.LDAP_SCOPE_SUBTREE)
+                {
+                    AttributesOnly = false,
+                    TimeLimit = TimeSpan.Zero,
+                    Controls = { membersPageResultRequestControl }
+                };
+
+                var members = new List<DirectoryEntry>();
+
+                while (true)
+                {
+                    var membersResponse = (SearchResponse)connection.SendRequest(membersSearchRequest);
+
+                    foreach (var control in membersResponse.Controls)
+                    {
+                        if (control is PageResultResponseControl)
+                        {
+                            // Update the cookie for next set
+                            membersPageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                            break;
+                        }
+                    }
+
+                    // Add them to our collection
+                    foreach (var entry in membersResponse.Entries)
+                    {
+                        members.Add(entry);
+                    }
+
+                    // Our exit condition is when our cookie is empty
+                    if (membersPageResultRequestControl.Cookie.Length == 0)
+                        break;
+                }
+
+                foreach (var member in members)
+                {
+                    employees.Add(new Employee()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ActiveDirectoryGuid = GetAttributeGUID(member),
+                        FirstName = TryGetAttribute(member, "givenName"),
+                        LastName = TryGetAttribute(member, "sn"),
+                        Email = TryGetAttribute(member, "mail"),
+                        PhoneNumber = TryGetAttribute(member, "telephoneNumber")
+                    });
+                }
+
+                await _employeeService.SyncEmployeeAsync(employees);
             }
         }
 
@@ -264,7 +500,7 @@ namespace HES.Core.Services
                             if (control is PageResultResponseControl)
                             {
                                 // Update the cookie for next set
-                                pageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
+                                membersPageResultRequestControl.Cookie = ((PageResultResponseControl)control).Cookie;
                                 break;
                             }
                         }
@@ -276,7 +512,7 @@ namespace HES.Core.Services
                         }
 
                         // Our exit condition is when our cookie is empty
-                        if (pageResultRequestControl.Cookie.Length == 0)
+                        if (membersPageResultRequestControl.Cookie.Length == 0)
                             break;
                     }
 
@@ -298,7 +534,7 @@ namespace HES.Core.Services
                                 Name = "Domain Account",
                                 Domain = GetFirstDnFromHost(ldapSettings.Host),
                                 UserName = TryGetAttribute(member, "sAMAccountName"),
-                                Password = GeneratePassword(), 
+                                Password = GeneratePassword(),
                                 UpdateInActiveDirectory = true
                             }
                         });
@@ -407,10 +643,10 @@ namespace HES.Core.Services
             var hex = BitConverter.ToString(ba).Insert(0, @"\").Replace("-", @"\");
             return hex;
         }
-        // TODO generate password from Communication.dll
+ 
         private string GeneratePassword()
         {
-            return Guid.NewGuid().ToString();
+            return PasswordGenerator.Generate();
         }
 
         #endregion
@@ -419,6 +655,7 @@ namespace HES.Core.Services
         {
             _employeeService.Dispose();
             _groupService.Dispose();
+            _emailSenderService.Dispose();
         }
     }
 }

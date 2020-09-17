@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Web.Pages.Employees
 {
@@ -94,9 +95,13 @@ namespace HES.Web.Pages.Employees
                             await EmployeeService.CreateWorkstationAccountAsync(WorkstationAccount);
                             break;
                         case WorkstationAccountType.Domain:
-                            await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
-                            if (WorkstationDomain.UpdateActiveDirectoryPassword)
-                                await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, LdapSettings);
+                            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                            {
+                                await EmployeeService.CreateWorkstationAccountAsync(WorkstationDomain);
+                                if (WorkstationDomain.UpdateActiveDirectoryPassword)
+                                    await LdapService.SetUserPasswordAsync(EmployeeId, WorkstationDomain.Password, LdapSettings);
+                                transactionScope.Complete();
+                            }
                             break;
                     }
 

@@ -31,16 +31,28 @@ namespace HES.Web.Pages.Employees
             await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, ModalDialogService, StateHasChanged, nameof(Employee.FullName));
         }
 
-        private async Task ImportEmployeesFromAdAsync()
+        //private async Task ImportEmployeesFromAdAsync()
+        //{
+        //    RenderFragment body = (builder) =>
+        //    {
+        //        builder.OpenComponent(0, typeof(AddEmployee));
+        //        builder.AddAttribute(1, "ConnectionId", hubConnection?.ConnectionId);
+        //        builder.CloseComponent();
+        //    };
+
+        //    await MainTableService.ShowModalAsync("Import from AD", body);
+        //}
+
+        private async Task SyncEmployeesFromAdAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(AddEmployee));
-                builder.AddAttribute(1, "ConnectionId", hubConnection?.ConnectionId);
+                builder.OpenComponent(0, typeof(SyncEmployeesFromAd));
+                builder.AddAttribute(1, nameof(SyncEmployeesFromAd.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Import from AD", body);
+            await MainTableService.ShowModalAsync("Sync from Active Directory", body, ModalDialogSize.Large);
         }
 
         private async Task EmployeeDetailsAsync()

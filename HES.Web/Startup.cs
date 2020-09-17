@@ -5,7 +5,6 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Services;
 using HES.Infrastructure;
-using HES.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -116,6 +115,7 @@ namespace HES.Web
 
             services.AddHostedService<RemoveLogsHostedService>();
             services.AddHostedService<LicenseHostedService>();
+            services.AddHostedService<ActiveDirectoryHostedService>();
 
             services.AddHttpClient().RemoveAll<IHttpMessageHandlerBuilderFilter>();
             services.AddSignalR();
@@ -273,8 +273,6 @@ namespace HES.Web
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseMiddleware<DataProtectionMiddeware>();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
