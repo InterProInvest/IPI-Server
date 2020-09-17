@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class SoftwareVaultService : ISoftwareVaultService
+    public class SoftwareVaultService : ISoftwareVaultService, IDisposable
     {
         private readonly IAsyncRepository<SoftwareVault> _softwareVaultRepository;
         private readonly IAsyncRepository<SoftwareVaultInvitation> _softwareVaultInvitationRepository;
@@ -437,5 +437,10 @@ namespace HES.Core.Services
             return await _softwareVaultInvitationRepository.DeleteAsync(invitation);
         }
 
+        public void Dispose()
+        {
+            _softwareVaultRepository.Dispose();
+            _softwareVaultInvitationRepository.Dispose();
+        }
     }
 }

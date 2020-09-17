@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class OrgStructureService : IOrgStructureService
+    public class OrgStructureService : IOrgStructureService, IDisposable
     {
         private readonly IAsyncRepository<Company> _companyRepository;
         private readonly IAsyncRepository<Department> _departmentRepository;
@@ -38,7 +38,7 @@ namespace HES.Core.Services
 
         public async Task<List<Company>> GetCompaniesAsync()
         {
-            return await _companyRepository.Query().Include(x => x.Departments).OrderBy(c => c.Name).ToListAsync();
+            return await _companyRepository.Query().Include(x => x.Departments).OrderBy(c => c.Name).AsNoTracking().ToListAsync();
         }
 
         public async Task<Company> CreateCompanyAsync(Company company)
@@ -85,14 +85,6 @@ namespace HES.Core.Services
             await _companyRepository.DeleteAsync(company);
         }
 
-        public async Task DetachCompaniesAsync(List<Company> companies)
-        {
-            foreach (var item in companies)
-            {
-                await _companyRepository.DetachedAsync(item);
-            }
-        }
-
         #endregion
 
         #region Department
@@ -108,6 +100,7 @@ namespace HES.Core.Services
                 .Query()
                 .Include(d => d.Company)
                 .OrderBy(c => c.Name)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -184,6 +177,7 @@ namespace HES.Core.Services
             return await _positionRepository
                 .Query()
                 .OrderBy(p => p.Name)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -235,15 +229,13 @@ namespace HES.Core.Services
             await _positionRepository.DeleteAsync(position);
         }
 
-        public async Task DetachPositionsAsync(List<Position> positions)
-        {
-            foreach (var item in positions)
-            {
-                await _positionRepository.DetachedAsync(item);
-            }
-        }
-
         #endregion
 
+        public void Dispose()
+        {
+            _companyRepository.Dispose();
+            _departmentRepository.Dispose();
+            _positionRepository.Dispose();
+        }
     }
 }

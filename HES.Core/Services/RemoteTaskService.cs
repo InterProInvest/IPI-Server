@@ -2,13 +2,11 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
-using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Text;
@@ -16,27 +14,30 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class RemoteTaskService : IRemoteTaskService
+    public class RemoteTaskService : IRemoteTaskService, IDisposable
     {
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IAccountService _accountService;
         private readonly IDataProtectionService _dataProtectionService;
-        private readonly ILogger<RemoteTaskService> _logger;
+        private readonly ILdapService _ldapService;
+        private readonly IAppSettingsService _appSettingsService;
         private readonly IHubContext<RefreshHub> _hubContext;
 
         public RemoteTaskService(IHardwareVaultService hardwareVaultService,
                                  IHardwareVaultTaskService hardwareVaultTaskService,
                                  IAccountService accountService,
                                  IDataProtectionService dataProtectionService,
-                                 ILogger<RemoteTaskService> logger,
+                                 ILdapService ldapService,
+                                 IAppSettingsService appSettingsService,
                                  IHubContext<RefreshHub> hubContext)
         {
             _hardwareVaultService = hardwareVaultService;
             _hardwareVaultTaskService = hardwareVaultTaskService;
             _accountService = accountService;
             _dataProtectionService = dataProtectionService;
-            _logger = logger;
+            _ldapService = ldapService;
+            _appSettingsService = appSettingsService;
             _hubContext = hubContext;
         }
 
@@ -66,36 +67,21 @@ namespace HES.Core.Services
             await _hardwareVaultTaskService.DeleteTaskAsync(task);
         }
 
-        public async Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, TaskOperation operation)
+        public async Task ExecuteRemoteTasks(string vaultId, RemoteDevice remoteDevice, bool primaryAccountOnly)
         {
             _dataProtectionService.Validate();
 
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
 
-            // Execute CRUD tasks only if status Active 
-            if (vault.Status != VaultStatus.Active && (operation == TaskOperation.Create || operation == TaskOperation.Update || operation == TaskOperation.Delete))
-                return;
-
-            // Crete Tasks query 
+            // Tasks query 
             var query = _hardwareVaultTaskService
                 .TaskQuery()
+                .Include(t => t.HardwareVault)
                 .Include(t => t.Account)
                 .Where(t => t.HardwareVaultId == vaultId);
 
-            switch (operation)
-            {
-                // For all task operations
-                case TaskOperation.None:
-                    break;
-                // For setting primary account
-                case TaskOperation.Primary:
-                    query = query.Where(x => x.AccountId == vault.Employee.PrimaryAccountId || x.Operation == TaskOperation.Primary);
-                    break;
-                // For current task operation
-                default:
-                    query = query.Where(x => x.Operation == operation);
-                    break;
-            }
+            if (primaryAccountOnly)
+                query = query.Where(x => x.AccountId == vault.Employee.PrimaryAccountId || x.Operation == TaskOperation.Primary);
 
             query = query.OrderBy(x => x.CreatedAt).AsNoTracking();
 
@@ -109,9 +95,6 @@ namespace HES.Core.Services
                     task.OtpSecret = _dataProtectionService.Decrypt(task.OtpSecret);
                     await ExecuteRemoteTask(remoteDevice, task);
                     await TaskCompleted(task.Id);
-
-                    if (task.Operation == TaskOperation.Wipe)
-                        throw new HideezException(HideezErrorCode.DeviceHasBeenWiped); // Further processing is not possible
                 }
 
                 tasks = await query.ToListAsync();
@@ -126,6 +109,13 @@ namespace HES.Core.Services
             switch (task.Operation)
             {
                 case TaskOperation.Create:
+                    if (task.Account.UpdateInActiveDirectory)
+                    {
+                        var ldapSettings = await _appSettingsService.GetLdapSettingsAsync();
+                        if (ldapSettings?.Password == null)
+                            throw new Exception("ADCredentialsRequired"); // TODO use Communication.dll ex
+                        await _ldapService.SetUserPasswordAsync(task.HardwareVault.EmployeeId, task.Password, ldapSettings);         
+                    }
                     await AddAccountAsync(remoteDevice, task);
                     break;
                 case TaskOperation.Update:
@@ -216,6 +206,15 @@ namespace HES.Core.Services
                 await remoteDevice.Wipe(ConvertUtils.HexStringToBytes(_dataProtectionService.Decrypt(vault.MasterPassword)));
 
             await _hardwareVaultService.UpdateAfterWipeAsync(vault.Id);
+        }
+
+        public void Dispose()
+        {
+            _hardwareVaultService.Dispose();
+            _hardwareVaultTaskService.Dispose();
+            _accountService.Dispose();
+            _ldapService.Dispose();
+            _appSettingsService.Dispose();           
         }
     }
 }

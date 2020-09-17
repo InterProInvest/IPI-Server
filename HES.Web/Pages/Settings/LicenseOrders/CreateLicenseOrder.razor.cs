@@ -139,6 +139,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 };
 
                 await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
                 ToastService.ShowToast("Order created.", ToastLevel.Success);
                 await ModalDialogService.CloseAsync();
             }

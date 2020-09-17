@@ -4,23 +4,50 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class SetAsWorkstationAccount : ComponentBase
+    public partial class SetAsWorkstationAccount : ComponentBase, IDisposable
     {
         [Inject] public IEmployeeService EmployeeService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<DeleteAccount> Logger { get; set; }
         [Inject] IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public EventCallback Refresh { get; set; }
-        [Parameter] public Account Account { get; set; }
+        [Parameter] public string AccountId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
+
+        public Account Account { get; set; }
+        public bool EntityBeingEdited { get; set; }
+        public bool Initialized { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            try
+            {
+                Account = await EmployeeService.GetAccountByIdAsync(AccountId);
+                if (Account == null)
+                    throw new Exception("Account not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(Account.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(Account.Id, Account);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
+        }
 
         private async Task SetAsWorkstationAccountAsync()
         {
@@ -29,8 +56,7 @@ namespace HES.Web.Pages.Employees
                 await EmployeeService.SetAsWorkstationAccountAsync(Account.Employee.Id, Account.Id);
                 var employee = await EmployeeService.GetEmployeeByIdAsync(Account.Employee.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(employee.Id));
-                await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Account changed.", ToastLevel.Success);
+                ToastService.ShowToast("Account setted as primary.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
                 await ModalDialogService.CloseAsync();
             }
@@ -45,6 +71,12 @@ namespace HES.Web.Pages.Employees
         private async Task CloseAsync()
         {
             await ModalDialogService.CloseAsync();
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(Account.Id);
         }
     }
 }

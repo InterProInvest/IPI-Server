@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models.Web.Account
+namespace HES.Core.Models.Web.Accounts
 {
     public class AccountOtp
     {

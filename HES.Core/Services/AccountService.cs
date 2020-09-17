@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class AccountService : IAccountService
+    public class AccountService : IAccountService, IDisposable
     {
         private readonly IAsyncRepository<Account> _accountRepository;
 
@@ -24,17 +24,10 @@ namespace HES.Core.Services
             return _accountRepository.Query();
         }
 
-        public async Task DetachdAccountAsync(Account account)
+        public async Task ReloadAccountAsync(string accountId)
         {
-            await _accountRepository.DetachedAsync(account);
-        }
-
-        public async Task DetachdAccountAsync(List<Account> accounts)
-        {
-            foreach (var item in accounts)
-            {
-                await DetachdAccountAsync(item);
-            }
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            await _accountRepository.ReloadAsync(account);
         }
 
         public Task<Account> GetAccountByIdAsync(string accountId)
@@ -86,6 +79,7 @@ namespace HES.Core.Services
             account.Timestamp = timestamp;
             account.Password = null;
             account.OtpSecret = null;
+            account.UpdateInActiveDirectory = false;
             await _accountRepository.UpdateAsync(account);
         }
 
@@ -131,5 +125,9 @@ namespace HES.Core.Services
             return new StorageId(account.StorageId);
         }
 
+        public void Dispose()
+        {
+            _accountRepository.Dispose();
+        }
     }
 }

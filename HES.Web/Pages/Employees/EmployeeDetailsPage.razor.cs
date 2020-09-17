@@ -1,108 +1,76 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeeDetailsPage : ComponentBase, IDisposable
+    public partial class EmployeeDetailsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IEmployeeService EmployeeService { get; set; }
+        public IEmployeeService EmployeeService { get; set; }
+        public IAppSettingsService AppSettingsService { get; set; }
+        public IMainTableService<Account, AccountFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<EmployeeDetailsPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
-        public List<Account> Accounts { get; set; }
-        public Account SelectedAccount { get; set; }
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
+        public string LdapHost { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadEmployeeAsync();
-            await LoadTableDataAsync();
-            await BreadcrumbsService.SetEmployeeDetails(Employee.FullName);
-            await InitializeHubAsync();
+            try
+            {
+                EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+                AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Account, AccountFilter>>();
+
+                await InitializeHubAsync();
+                await LoadEmployeeAsync();
+                await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
+                await LoadLdapSettingsAsync();
+                await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, ModalDialogService, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task LoadEmployeeAsync()
         {
-            Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+            Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId, true);
+            if (Employee == null)
+                throw new Exception("Employee not found.");
             StateHasChanged();
         }
 
-        #region Main Table
-
-        public int CurrentPage { get; set; } = 1;
-        public int DisplayRows { get; set; } = 10;
-        public int TotalRecords { get; set; }
-        public string SearchText { get; set; } = string.Empty;
-        public string SortedColumn { get; set; } = nameof(Account.Name);
-        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Ascending;
-
-        private async Task LoadTableDataAsync()
+        private async Task LoadLdapSettingsAsync()
         {
-            var currentTotalRows = TotalRecords;
-            TotalRecords = await EmployeeService.GetAccountsCountAsync(SearchText, EmployeeId);
+            var ldapSettings = await AppSettingsService.GetLdapSettingsAsync();
 
-            if (currentTotalRows != TotalRecords)
-                CurrentPage = 1;
-
-            Accounts = await EmployeeService.GetAccountsAsync((CurrentPage - 1) * DisplayRows, DisplayRows, SortedColumn, SortDirection, SearchText, EmployeeId);
-            SelectedAccount = Accounts.Contains(SelectedAccount) ? SelectedAccount : null;
-
-            StateHasChanged();
-        }
-
-        private async Task SelectedItemChangedAsync(Account account)
-        {
-            await InvokeAsync(() =>
+            if (ldapSettings?.Password != null)
             {
-                SelectedAccount = account;
-                StateHasChanged();
-            });
+                LdapHost = ldapSettings.Host.Split(".")[0];
+            }
         }
-
-        private async Task CurrentPageChangedAsync(int currentPage)
-        {
-            CurrentPage = currentPage;
-            await LoadTableDataAsync();
-        }
-
-        private async Task DisplayRowsChangedAsync(int displayRows)
-        {
-            DisplayRows = displayRows;
-            CurrentPage = 1;
-            await LoadTableDataAsync();
-        }
-
-        private async Task SearchTextChangedAsync(string searchText)
-        {
-            SearchText = searchText;
-            await LoadTableDataAsync();
-        }
-
-        private async Task SortedColumnChangedAsync(string columnName)
-        {
-            SortedColumn = columnName;
-            await LoadTableDataAsync();
-        }
-
-        private async Task SortDirectionChangedAsync(ListSortDirection sortDirection)
-        {
-            SortDirection = sortDirection;
-            await LoadTableDataAsync();
-        }
-
-        #endregion
 
         #region Dialogs
 
@@ -111,7 +79,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddHardwareVault));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, StateHasChanged));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadEmployeeAsync));
                 builder.AddAttribute(2, "EmployeeId", EmployeeId);
                 builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
@@ -125,8 +93,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteHardwareVault));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "HardwareVault", hardwareVault);
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadEmployeeAsync));
+                builder.AddAttribute(2, "HardwareVaultId", hardwareVault.Id);
                 builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -152,13 +120,13 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(CreatePersonalAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
+                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, MainTableService.LoadTableDataAsync));
                 builder.AddAttribute(2, "EmployeeId", EmployeeId);
                 builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Create personal account", body, ModalDialogSize.Large);
+            await MainTableService.ShowModalAsync("Create personal account", body, ModalDialogSize.Large);
         }
 
         private async Task OpenDialogAddSharedAccountAsync()
@@ -166,13 +134,12 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(AddSharedAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "EmployeeId", EmployeeId);
-                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, "EmployeeId", EmployeeId);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Add shared account", body, ModalDialogSize.Large);
+            await MainTableService.ShowModalAsync("Add shared account", body, ModalDialogSize.Large);
         }
 
         private async Task OpenDialogSetAsWorkstationAccountAsync()
@@ -180,13 +147,12 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(SetAsWorkstationAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, "AccountId", MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Account", body);
+            await MainTableService.ShowModalAsync("Account", body);
         }
 
         private async Task OpenDialogEditPersonalAccountAsync()
@@ -194,13 +160,12 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPersonalAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(EditPersonalAccount.AccountId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(EditPersonalAccount.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Edit account", body);
+            await MainTableService.ShowModalAsync("Edit account", body);
         }
 
         private async Task OpenDialogEditPersonalAccountPasswordAsync()
@@ -208,13 +173,12 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPersonalAccountPwd));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, "AccountId", MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Edit account password", body);
+            await MainTableService.ShowModalAsync("Edit account password", body);
         }
 
         private async Task OpenDialogEditPersonalAccountOtpAsync()
@@ -222,13 +186,25 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPersonalAccountOtp));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, "AccountId", MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await ModalDialogService.ShowAsync("Edit account otp", body);
+            await MainTableService.ShowModalAsync("Edit account otp", body);
+        }
+
+        private async Task OpenDialogGenerateAdPasswordAsync()
+        {
+            RenderFragment body = (builder) =>
+            {
+                builder.OpenComponent(0, typeof(GenerateAdPassword));
+                builder.AddAttribute(1, nameof(GenerateAdPassword.AccountId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(GenerateAdPassword.ConnectionId), hubConnection?.ConnectionId);
+                builder.CloseComponent();
+            };
+
+            await MainTableService.ShowModalAsync("Generate AD Password", body);
         }
 
         private async Task OpenDialogDeleteAccountAsync()
@@ -236,9 +212,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteAccount));
-                builder.AddAttribute(1, "Refresh", EventCallback.Factory.Create(this, LoadTableDataAsync));
-                builder.AddAttribute(2, "Account", SelectedAccount);
-                builder.AddAttribute(3, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(DeleteAccount.AccountId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(DeleteAccount.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -300,7 +275,7 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(HardwareVaults.ShowActivationCode));
-                builder.AddAttribute(1, nameof(HardwareVaults.ShowActivationCode.HardwareVault), hardwareVault);
+                builder.AddAttribute(1, nameof(HardwareVaults.ShowActivationCode.HardwareVaultId), hardwareVault.Id);
                 builder.CloseComponent();
             };
 
@@ -316,24 +291,20 @@ namespace HES.Web.Pages.Employees
             .Build();
 
             hubConnection.On<string>(RefreshPage.EmployeesDetails, async (employeeId) =>
-            {
-                if (employeeId != EmployeeId)
-                    return;
+             {
+                 if (employeeId != EmployeeId)
+                     return;
 
-                await EmployeeService.DetachEmployeeAsync(Employee);
-                await LoadEmployeeAsync();
-                await EmployeeService.DetachdAccountAsync(Accounts);
-                await LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
-            });
+                 await LoadEmployeeAsync();
+                 await MainTableService.LoadTableDataAsync();
+                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+             });
 
             hubConnection.On<string>(RefreshPage.EmployeesDetailsVaultSynced, async (employeeId) =>
             {
                 if (employeeId != EmployeeId)
                     return;
 
-                await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
-                await EmployeeService.DetachEmployeeAsync(Employee);
                 await LoadEmployeeAsync();
                 ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
             });
@@ -343,8 +314,6 @@ namespace HES.Web.Pages.Employees
                 if (employeeId != EmployeeId)
                     return;
 
-                await EmployeeService.ReloadHardwareVaultsAsync(Employee.HardwareVaults);
-                await EmployeeService.DetachEmployeeAsync(Employee);
                 await LoadEmployeeAsync();
             });
 
@@ -353,7 +322,10 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
+            MainTableService.Dispose();
         }
     }
 }

@@ -2,13 +2,14 @@
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.Group;
 using HES.Core.Models.Web.Groups;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IGroupService
+    public interface IGroupService : IDisposable
     {
         IQueryable<Group> Query();
         Task<List<Group>> GetGroupsAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions);
@@ -19,7 +20,6 @@ namespace HES.Core.Interfaces
         Task CreateGroupRangeAsync(List<Group> groups);
         Task EditGroupAsync(Group group);
         Task UnchangedGroupAsync(Group group);
-        Task DetachGroupsAsync(List<Group> groups);
         Task<Group> DeleteGroupAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(string groupId);
         Task<List<GroupMembership>> GetGruopMembersAsync(DataLoadingOptions<GroupMembershipFilter> dataLoadingOptions);
@@ -29,6 +29,5 @@ namespace HES.Core.Interfaces
         Task AddEmployeesToGroupAsync(IList<string> employeeIds, string groupId);
         Task AddEmployeeToGroupsAsync(string employeeId, IList<string> groupIds);
         Task<GroupMembership> RemoveEmployeeFromGroupAsync(string groupMembershipId);
-        Task DetachGroupMembershipsAsync(List<GroupMembership> groupMemberships);
     }
 }

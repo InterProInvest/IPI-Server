@@ -1,12 +1,13 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Models.Web;
 using HES.Core.Models.Web.LicenseOrders;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface ILicenseService
+    public interface ILicenseService : IDisposable
     {
         Task<List<LicenseOrder>> GetLicenseOrdersAsync();
         Task<List<LicenseOrder>> GetLicenseOrdersAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions);
@@ -18,7 +19,6 @@ namespace HES.Core.Interfaces
         Task DeleteOrderAsync(LicenseOrder licenseOrder);
         Task SendOrderAsync(LicenseOrder licenseOrder);
         Task UpdateLicenseOrdersAsync();
-        Task DetachLicenseOrders(List<LicenseOrder> licenseOrders);
         Task<List<HardwareVaultLicense>> GetLicensesAsync();
         Task<List<HardwareVaultLicense>> GetActiveLicensesAsync(string vaultId);
         Task<List<HardwareVaultLicense>> GetNotAppliedLicensesByHardwareVaultIdAsync(string vaultId);

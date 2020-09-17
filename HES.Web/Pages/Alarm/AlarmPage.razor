@@ -1,0 +1,97 @@
+﻿@page "/Alarm"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
+
+@if (AlarmState == null)
+{
+    <LoadingPage />
+
+}
+else
+{
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-8">
+                <div class="card mb-3">
+                    <div class="card-body text-center">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-md-10 col-xl-8">
+                                <img style="width:120px;" src="/svg/logo-lock.svg" />
+                                <h2>Alarm Button</h2>
+                                <p class="text-muted">
+                                    This button allows you to remotely lock workstations and block the connection of hardware vaults.
+                                </p>
+                                @if (AlarmState.IsAlarm)
+                                {
+                                    <button type="button" @onclick="DisableAlarmAsync" class="btn btn-success" title="Unlock all workstations">
+                                        <img src="/svg/icon-lock-open.svg" />
+                                        Turn Off
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" @onclick="EnableAlarmAsync" class="btn btn-danger" title="Lock all workstations">
+                                        <img src="/svg/icon-lock.svg" />
+                                        Turn On
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">
+                                    Workstations Online
+                                </h6>
+                                <span class="h2 mb-0">
+                                    @WorkstationOnline
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">
+                                    Workstations Count
+                                </h6>
+                                <span class="h2 mb-0">
+                                    @WorkstationCount
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="text-uppercase text-muted mb-2">
+                                    Status
+                                </h6>
+                                <span class="h5 mb-0">
+                                    @if (AlarmState.IsAlarm)
+                                    {
+                                        <span>Enabled by @AlarmState.AdminName @AlarmState.Date.ToLocalTime()</span>
+                                    }
+                                    else
+                                    {
+                                        @if (AlarmState.Date == new DateTime())
+                                        {
+                                            <span>Never used</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Disabled by @AlarmState.AdminName @AlarmState.Date.ToLocalTime()</span>
+                                        }
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

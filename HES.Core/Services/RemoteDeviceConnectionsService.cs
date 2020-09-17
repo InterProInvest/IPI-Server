@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class RemoteDeviceConnectionsService : IRemoteDeviceConnectionsService
+    public class RemoteDeviceConnectionsService : IRemoteDeviceConnectionsService, IDisposable
     {
-        static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
+        private static readonly ConcurrentDictionary<string, DeviceRemoteConnections> _deviceRemoteConnectionsList
             = new ConcurrentDictionary<string, DeviceRemoteConnections>();
         private readonly IHardwareVaultService _hardwareVaultService;
         private readonly IEmployeeService _employeeService;
@@ -180,6 +180,12 @@ namespace HES.Core.Services
             {
                 _logger.LogDebug($"Sync Hardware Vaults - {ex.Message}");
             }
+        }
+
+        public void Dispose()
+        {
+            _hardwareVaultService.Dispose();
+            _employeeService.Dispose();
         }
     }
 }

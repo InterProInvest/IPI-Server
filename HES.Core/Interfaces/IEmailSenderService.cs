@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IEmailSenderService
+    public interface IEmailSenderService : IDisposable
     {
         Task SendLicenseChangedAsync(DateTime createdAt, LicenseOrderStatus status);
         Task SendHardwareVaultLicenseStatus(List<HardwareVault> vaults);

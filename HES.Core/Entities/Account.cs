@@ -42,6 +42,8 @@ namespace HES.Core.Entities
 
         public string OtpSecret { get; set; }
 
+        public bool UpdateInActiveDirectory { get; set; }
+
         public bool Deleted { get; set; }
 
         [Required]

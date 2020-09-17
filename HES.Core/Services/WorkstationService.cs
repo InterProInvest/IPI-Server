@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class WorkstationService : IWorkstationService
+    public class WorkstationService : IWorkstationService, IDisposable
     {
         private readonly IAsyncRepository<Workstation> _workstationRepository;
         private readonly IAsyncRepository<WorkstationProximityVault> _workstationProximityVaultRepository;
@@ -147,7 +147,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetWorkstationsCountAsync(DataLoadingOptions<WorkstationFilter> dataLoadingOptions)
@@ -229,21 +229,21 @@ namespace HES.Core.Services
             return await _workstationRepository.ExistAsync(predicate);
         }
 
-        public async Task AddWorkstationAsync(WorkstationInfo workstationInfo)
+        public async Task AddWorkstationAsync(WorkstationInfoDto workstationInfoDto)
         {
-            if (workstationInfo == null)
+            if (workstationInfoDto == null)
             {
-                throw new ArgumentNullException(nameof(workstationInfo));
+                throw new ArgumentNullException(nameof(workstationInfoDto));
             }
 
             var workstation = new Workstation()
             {
-                Id = workstationInfo.Id,
-                Name = workstationInfo.MachineName,
-                Domain = workstationInfo.Domain,
-                OS = workstationInfo.OsName,
-                ClientVersion = workstationInfo.AppVersion,
-                IP = workstationInfo.IP,
+                Id = workstationInfoDto.Id,
+                Name = workstationInfoDto.MachineName,
+                Domain = workstationInfoDto.Domain,
+                OS = workstationInfoDto.OsName,
+                ClientVersion = workstationInfoDto.AppVersion,
+                IP = workstationInfoDto.IP,
                 LastSeen = DateTime.UtcNow,
                 DepartmentId = null
             };
@@ -251,22 +251,22 @@ namespace HES.Core.Services
             await _workstationRepository.AddAsync(workstation);
         }
 
-        public async Task UpdateWorkstationInfoAsync(WorkstationInfo workstationInfo)
+        public async Task UpdateWorkstationInfoAsync(WorkstationInfoDto workstationInfoDto)
         {
-            if (workstationInfo == null)
+            if (workstationInfoDto == null)
             {
-                throw new ArgumentNullException(nameof(workstationInfo));
+                throw new ArgumentNullException(nameof(workstationInfoDto));
             }
 
-            var workstation = await GetWorkstationByIdAsync(workstationInfo.Id);
+            var workstation = await GetWorkstationByIdAsync(workstationInfoDto.Id);
             if (workstation == null)
             {
                 throw new Exception($"Workstation not found.");
             }
 
-            workstation.ClientVersion = workstationInfo.AppVersion;
-            workstation.OS = workstationInfo.OsName;
-            workstation.IP = workstationInfo.IP;
+            workstation.ClientVersion = workstationInfoDto.AppVersion;
+            workstation.OS = workstationInfoDto.OsName;
+            workstation.IP = workstationInfoDto.IP;
             workstation.LastSeen = DateTime.UtcNow;
 
             string[] properties = { "ClientVersion", "OS", "IP", "LastSeen" };
@@ -345,19 +345,10 @@ namespace HES.Core.Services
             return true;
         }
 
-        public async Task DetachWorkstationsAsync(List<Workstation> workstations)
-        {
-            foreach (var item in workstations)
-            {
-                await _workstationRepository.DetachedAsync(item);
-            }
-        }
-
         public async Task UnchangedWorkstationAsync(Workstation workstation)
         {
             await _workstationRepository.UnchangedAsync(workstation);
         }
-
 
         #endregion
 
@@ -377,62 +368,62 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<List<WorkstationProximityVault>> GetProximityVaultsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string workstationId)
+        public async Task<List<WorkstationProximityVault>> GetProximityVaultsAsync(DataLoadingOptions<WorkstationDetailsFilter> dataLoadingOptions)
         {
             var query = _workstationProximityVaultRepository
                 .Query()
                 .Include(d => d.HardwareVault.Employee.Department.Company)
-                .Where(d => d.WorkstationId == workstationId)
+                .Where(d => d.WorkstationId == dataLoadingOptions.EntityId)
                 .AsQueryable();
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.HardwareVaultId.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.HardwareVaultId.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             // Sort Direction
-            switch (sortColumn)
+            switch (dataLoadingOptions.SortedColumn)
             {
                 case nameof(WorkstationProximityVault.HardwareVault):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultId) : query.OrderByDescending(x => x.HardwareVaultId);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVaultId) : query.OrderByDescending(x => x.HardwareVaultId);
                     break;
                 case nameof(WorkstationProximityVault.HardwareVault.Employee):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.FirstName).ThenBy(x => x.HardwareVault.Employee.LastName) : query.OrderByDescending(x => x.HardwareVault.Employee.FirstName).ThenByDescending(x => x.HardwareVault.Employee.LastName);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.FirstName).ThenBy(x => x.HardwareVault.Employee.LastName) : query.OrderByDescending(x => x.HardwareVault.Employee.FirstName).ThenByDescending(x => x.HardwareVault.Employee.LastName);
                     break;
                 case nameof(WorkstationProximityVault.HardwareVault.Employee.Department.Company):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Company.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Company.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Company.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Company.Name);
                     break;
                 case nameof(WorkstationProximityVault.HardwareVault.Employee.Department):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.HardwareVault.Employee.Department.Name) : query.OrderByDescending(x => x.HardwareVault.Employee.Department.Name);
                     break;
             }
 
-            return await query.Skip(skip).Take(take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
-        public async Task<int> GetProximityVaultsCountAsync(string searchText, string workstationId)
+        public async Task<int> GetProximityVaultsCountAsync(DataLoadingOptions<WorkstationDetailsFilter> dataLoadingOptions)
         {
             var query = _workstationProximityVaultRepository
                             .Query()
                             .Include(d => d.HardwareVault.Employee.Department.Company)
-                            .Where(d => d.WorkstationId == workstationId)
+                            .Where(d => d.WorkstationId == dataLoadingOptions.EntityId)
                             .AsQueryable();
 
             // Search
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
-                query = query.Where(x => x.HardwareVaultId.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Company.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.HardwareVault.Employee.Department.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.HardwareVaultId.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    (x.HardwareVault.Employee.FirstName + " " + x.HardwareVault.Employee.LastName).Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Company.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.HardwareVault.Employee.Department.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();
@@ -489,14 +480,6 @@ namespace HES.Core.Services
             await _workstationProximityVaultRepository.DeleteRangeAsync(allProximity);
         }
 
-        public async Task DetachdProximityVaultsAsync(List<WorkstationProximityVault> workstationProximityVaults)
-        {
-            foreach (var item in workstationProximityVaults)
-            {
-                await _workstationProximityVaultRepository.DetachedAsync(item);
-            }
-        }
-
         public async Task<IReadOnlyList<DeviceProximitySettingsDto>> GetProximitySettingsAsync(string workstationId)
         {
             var workstation = await GetWorkstationByIdAsync(workstationId);
@@ -532,5 +515,11 @@ namespace HES.Core.Services
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _workstationRepository.Dispose();
+            _workstationProximityVaultRepository.Dispose();
+        }
     }
 }

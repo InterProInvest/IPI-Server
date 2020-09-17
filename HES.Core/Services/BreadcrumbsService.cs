@@ -1,5 +1,6 @@
 ﻿using HES.Core.Interfaces;
 using HES.Core.Models.Web.Breadcrumb;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,67 +8,66 @@ namespace HES.Core.Services
 {
     public class BreadcrumbsService : IBreadcrumbsService
     {
+        public event Func<List<Breadcrumb>, Task> OnSet;
         public List<Breadcrumb> Breadcrumbs { get; set; }
 
-        public Task GetBreadcrumbs(out List<Breadcrumb> items)
-        {
-            items = Breadcrumbs;
-            Breadcrumbs = null;
-
-            return Task.CompletedTask;
-        }
-
-        public Task SetDataProtection()
+        public async Task SetDataProtection()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
+                new Breadcrumb () { Active = true, Content = "Settings" },
                 new Breadcrumb () { Active = true, Content = "Data Protection" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetDashboard()
+        public async Task SetDashboard()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Dashboard" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetAdministrators()
+        public async Task SetAdministrators()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Administrators" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
-        
-        public Task SetEmployees()
+
+        public async Task SetEmployees()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Employees" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetTemplates()
+        public async Task SetTemplates()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Templates" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetEmployeeDetails(string name)
+        public async Task SetEmployeeDetails(string name)
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
@@ -75,30 +75,33 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = name}
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetHardwareVaults()
+        public async Task SetHardwareVaults()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Hardware Vaults" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetGroups()
+        public async Task SetGroups()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Groups" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetGroupDetails(string name)
+        public async Task SetGroupDetails(string name)
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
@@ -106,40 +109,82 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = name}
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetLicenseOrders()
+        public async Task SetLicenseOrders()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
+                new Breadcrumb () { Active = true, Content = "Settings" },
                 new Breadcrumb () { Active = true, Content = "License Orders" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetHardwareVaultProfiles()
+        public async Task SetHardwareVaultProfiles()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
+                new Breadcrumb () { Active = true, Content = "Settings" },
                 new Breadcrumb () { Active = true, Content = "Hardware Vault Access Profiles" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetSharedAccounts()
+        public async Task SetSharedAccounts()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Shared Accounts" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetParameters()
+        public async Task SetAuditWorkstationEvents()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Audit" },
+                new Breadcrumb () { Active = true, Content = "Workstation Events" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetAuditWorkstationSessions()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Audit" },
+                new Breadcrumb () { Active = true, Content = "Workstation Sessions" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetAuditSummaries()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Audit" },
+                new Breadcrumb () { Active = true, Content = "Summaries" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetParameters()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
@@ -147,10 +192,11 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "Parameters" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetOrgStructure()
+        public async Task SetOrgStructure()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
@@ -158,20 +204,22 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = "OrgStructure" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetWorkstations()
+        public async Task SetWorkstations()
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
                 new Breadcrumb () { Active = true, Content = "Workstations" }
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
 
-        public Task SetWorkstationDetails(string name)
+        public async Task SetWorkstationDetails(string name)
         {
             Breadcrumbs = new List<Breadcrumb>()
             {
@@ -179,7 +227,118 @@ namespace HES.Core.Services
                 new Breadcrumb () { Active = true, Content = name}
             };
 
-            return Task.CompletedTask;
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetTwoFactorAuthentication()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Two Factor Authentication" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetShowRecoveryCodes()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Show Recovery Codes" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetResetAuthenticator()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Reset Authenticator" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetProfile()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Profile" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetPersonalData()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Personal Data" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetGenerateRecoveryCodes()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Generate Recovery Codes" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetEnableAuthenticator()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Enable Authenticator" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetDisable2fa()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Disable 2FA" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetDeletePersonalData()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Delete Personal Data" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
+        }
+
+        public async Task SetAlarm()
+        {
+            Breadcrumbs = new List<Breadcrumb>()
+            {
+                new Breadcrumb () { Active = true, Content = "Alarm" }
+            };
+
+            if (OnSet != null)
+                await OnSet.Invoke(Breadcrumbs);
         }
     }
 }

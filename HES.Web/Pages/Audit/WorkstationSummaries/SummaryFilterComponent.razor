@@ -1,0 +1,98 @@
+﻿@if (Filter == null)
+{
+    <LoadingText />
+}
+else
+{
+    switch (TabName)
+    {
+        case nameof(ByDaysAndEmployeesTab):
+            <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+                <DataAnnotationsValidator />
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Start Date</label>
+                        <InputDate @bind-Value="Filter.StartDate" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">End Date</label>
+                        <InputDate @bind-Value="Filter.EndDate" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Employee</label>
+                        <InputText @bind-Value="Filter.Employee" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Company</label>
+                        <InputText @bind-Value="Filter.Company" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Department</label>
+                        <InputText @bind-Value="Filter.Department" class="form-control" />
+                    </div>
+                    <div class="col align-self-end text-right form-group">
+                        <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                        <input type="submit" value="Filter" class="btn btn-primary" />
+                    </div>
+                </div>
+            </EditForm>
+            break;
+        case nameof(ByEmployeesTab):
+            <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+                <DataAnnotationsValidator />
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Employee</label>
+                        <InputText @bind-Value="Filter.Employee" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Company</label>
+                        <InputText @bind-Value="Filter.Company" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Department</label>
+                        <InputText @bind-Value="Filter.Department" class="form-control" />
+                    </div>
+                    <div class="col align-self-end text-right form-group">
+                        <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                        <input type="submit" value="Filter" class="btn btn-primary" />
+                    </div>
+                </div>
+            </EditForm>
+            break;
+        case nameof(ByDepartmentsTab):
+            <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+                <DataAnnotationsValidator />
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Company</label>
+                        <InputText @bind-Value="Filter.Company" class="form-control" />
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Department</label>
+                        <InputText @bind-Value="Filter.Department" class="form-control" />
+                    </div>
+                    <div class="col align-self-end text-right form-group">
+                        <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                        <input type="submit" value="Filter" class="btn btn-primary" />
+                    </div>
+                </div>
+            </EditForm>
+            break;
+        case nameof(ByWorkstationsTab):
+            <EditForm Model="Filter" OnValidSubmit="FilteredAsync">
+                <DataAnnotationsValidator />
+                <div class="row">
+                    <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 form-group">
+                        <label class="mb-0 text-gray">Workstation</label>
+                        <InputText @bind-Value="Filter.Workstation" class="form-control" />
+                    </div>             
+                    <div class="col align-self-end text-right form-group">
+                        <button type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
+                        <input type="submit" value="Filter" class="btn btn-primary" />
+                    </div>
+                </div>
+            </EditForm>
+            break;
+    }
+}

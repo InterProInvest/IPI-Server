@@ -3,7 +3,7 @@ using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.HardwareVaults;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;

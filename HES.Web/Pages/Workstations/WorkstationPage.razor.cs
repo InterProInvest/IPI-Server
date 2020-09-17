@@ -4,15 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Workstations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Workstations
 {
-    public partial class WorkstationPage : ComponentBase, IDisposable
+    public partial class WorkstationPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
-        [Inject] public IWorkstationService WorkstationService { get; set; }
+        public IWorkstationService WorkstationService { get; set; }
+        public IMainTableService<Workstation, WorkstationFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -22,6 +24,9 @@ namespace HES.Web.Pages.Workstations
 
         protected override async Task OnInitializedAsync()
         {
+            WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Workstation, WorkstationFilter>>();
+
             switch (DashboardFilter)
             {
                 case "NotApproved":
@@ -32,8 +37,8 @@ namespace HES.Web.Pages.Workstations
                     break;
             }
 
-            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, StateHasChanged, nameof(Workstation.Name));
             await BreadcrumbsService.SetWorkstations();
+            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, ModalDialogService, StateHasChanged, nameof(Workstation.Name));
             await InitializeHubAsync();
         }
 
@@ -42,7 +47,7 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ApproveWorkstation));
-                builder.AddAttribute(1, nameof(ApproveWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ApproveWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(ApproveWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -54,7 +59,7 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(UnapproveWorkstation));
-                builder.AddAttribute(1, nameof(UnapproveWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(UnapproveWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(UnapproveWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -66,7 +71,7 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteWorkstation));
-                builder.AddAttribute(1, nameof(DeleteWorkstation.Workstation), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(DeleteWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
                 builder.AddAttribute(2, nameof(DeleteWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
@@ -77,7 +82,7 @@ namespace HES.Web.Pages.Workstations
         {
             await InvokeAsync(() =>
             {
-                NavigationManager.NavigateTo($"/Workstations/Details?id={MainTableService.SelectedEntity.Id}", true);
+                NavigationManager.NavigateTo($"/Workstations/Details/{MainTableService.SelectedEntity.Id}");
             });
         }
 
@@ -86,8 +91,8 @@ namespace HES.Web.Pages.Workstations
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditWorkstation));
-                builder.AddAttribute(1, nameof(UnapproveWorkstation.Workstation), MainTableService.SelectedEntity);
-                builder.AddAttribute(2, nameof(UnapproveWorkstation.ConnectionId), hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(EditWorkstation.WorkstationId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(EditWorkstation.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
             await MainTableService.ShowModalAsync("Edit Workstation", body);
@@ -101,7 +106,6 @@ namespace HES.Web.Pages.Workstations
 
             hubConnection.On(RefreshPage.Workstations, async () =>
             {
-                await WorkstationService.DetachWorkstationsAsync(MainTableService.Entities);
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -111,7 +115,10 @@ namespace HES.Web.Pages.Workstations
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
+            MainTableService.Dispose();
         }
     }
 }

@@ -1,19 +1,28 @@
-﻿@if (HardwareVault == null)
+﻿@inherits OwningComponentBase
+
+@if (!Initialized)
 {
     <LoadingText />
 }
 else
 {
-    <h5 class="text-gray mb-3 ">You want to remove vault @HardwareVault.Id? When removing the last vault, all accounts will be deleted.</h5>    
-    <div class="form-group">
-        <label class="text-gray">Select the reason</label>
-        <select @bind="Reason" class="form-control">
-            <option valut="@VaultStatusReason.Withdrawal" selected>Withdrawal</option>
-            <option valut="@VaultStatusReason.Broken">Broken</option>
-        </select>
-    </div>
-    <div class="text-right mt-2">
-        <button type="button" class="btn btn-secondary" @onclick="CancelAsync">Cancel</button>
-        <ButtonSpinner Text="Delete" Class="btn btn-danger" Callback="DeleteVaultAsync" />
-    </div>
+    @if (EntityBeingEdited)
+    {
+        <EditedByAnother EntityName="hardware vault" CloseAction="ModalDialogService.CancelAsync" />
+    }
+    else
+    {
+        <h5 class="text-gray mb-3 ">You want to remove vault @HardwareVault.Id? When removing the last vault, all accounts will be deleted.</h5>
+        <div class="form-group">
+            <label class="text-gray">Select the reason</label>
+            <select @bind="Reason" class="form-control">
+                <option valut="@VaultStatusReason.Withdrawal" selected>Withdrawal</option>
+                <option valut="@VaultStatusReason.Broken">Broken</option>
+            </select>
+        </div>
+        <div class="text-right mt-2">
+            <button type="button" class="btn btn-secondary" @onclick="CancelAsync">Cancel</button>
+            <ButtonSpinner Text="Delete" Class="btn btn-danger" Callback="DeleteVaultAsync" />
+        </div>
+    }
 }

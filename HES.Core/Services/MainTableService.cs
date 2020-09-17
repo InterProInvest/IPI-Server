@@ -12,7 +12,7 @@ namespace HES.Core.Services
 {
     public class MainTableService<TItem, TFilter> : IDisposable, IMainTableService<TItem, TFilter> where TItem : class where TFilter : class, new()
     {
-        private readonly IModalDialogService _modalDialogService;
+        private IModalDialogService _modalDialogService;
         private Func<DataLoadingOptions<TFilter>, Task<int>> _getEntitiesCount;
         private Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> _getEntities;
         private Action _stateHasChanged;
@@ -23,18 +23,19 @@ namespace HES.Core.Services
         public int TotalRecords { get; set; }
         public int CurrentPage { get; set; } = 1;
         public string SyncPropName { get; set; }
+        public bool Loading { get; private set; }
 
-        public MainTableService(IModalDialogService modalDialogService)
+        public MainTableService()
         {
-            _modalDialogService = modalDialogService;
             DataLoadingOptions = new DataLoadingOptions<TFilter>();
         }
 
-        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id", string entityId = null)
+        public async Task InitializeAsync(Func<DataLoadingOptions<TFilter>, Task<List<TItem>>> getEntities, Func<DataLoadingOptions<TFilter>, Task<int>> getEntitiesCount, IModalDialogService modalDialogService, Action stateHasChanged, string sortedColumn, ListSortDirection sortDirection = ListSortDirection.Ascending, string syncPropName = "Id", string entityId = null)
         {
             _stateHasChanged = stateHasChanged;
             _getEntities = getEntities;
             _getEntitiesCount = getEntitiesCount;
+            _modalDialogService = modalDialogService;
             _modalDialogService.OnClose += LoadTableDataAsync;
             DataLoadingOptions.SortedColumn = sortedColumn;
             DataLoadingOptions.SortDirection = sortDirection;
@@ -45,17 +46,25 @@ namespace HES.Core.Services
 
         public async Task LoadTableDataAsync()
         {
-            var currentTotalRows = TotalRecords;
-            TotalRecords = await _getEntitiesCount.Invoke(DataLoadingOptions);
+            if (Loading)
+                return;
 
-            if (currentTotalRows != TotalRecords)
-                CurrentPage = 1;
-
-            DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
-            Entities = await _getEntities.Invoke(DataLoadingOptions);
-            SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
-
-            _stateHasChanged?.Invoke();
+            try
+            {
+                Loading = true;
+                _stateHasChanged?.Invoke();
+       
+                TotalRecords = await _getEntitiesCount.Invoke(DataLoadingOptions);
+                SetCurrentPage();
+                DataLoadingOptions.Skip = (CurrentPage - 1) * DataLoadingOptions.Take;
+                Entities = await _getEntities.Invoke(DataLoadingOptions);
+                SelectedEntity = Entities.FirstOrDefault(x => x.GetType().GetProperty(SyncPropName).GetValue(x).ToString() == SelectedEntity?.GetType().GetProperty(SyncPropName).GetValue(SelectedEntity).ToString());
+            }
+            finally
+            {
+                Loading = false;
+                _stateHasChanged?.Invoke();
+            }
         }
 
         public Task SelectedItemChangedAsync(TItem item)
@@ -80,7 +89,7 @@ namespace HES.Core.Services
         public async Task DisplayRowsChangedAsync(int displayRows)
         {
             DataLoadingOptions.Take = displayRows;
-            CurrentPage = 1;
+            SetCurrentPage();
             await LoadTableDataAsync();
         }
 
@@ -107,9 +116,23 @@ namespace HES.Core.Services
             await _modalDialogService.ShowAsync(modalTitle, modalBody, modalSize);
         }
 
+        private void SetCurrentPage()
+        {
+            var totalPages = (int)Math.Ceiling(TotalRecords / (decimal)DataLoadingOptions.Take);
+
+            if (totalPages == 0)
+            {
+                CurrentPage = 1;
+                return;
+            }
+
+            CurrentPage = totalPages < CurrentPage ? totalPages : CurrentPage;
+        }
+
         public void Dispose()
         {
-            _modalDialogService.OnClose -= LoadTableDataAsync;
+            if(_modalDialogService != null)
+                _modalDialogService.OnClose -= LoadTableDataAsync;
         }
     }
 }

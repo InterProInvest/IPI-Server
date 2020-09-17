@@ -4,15 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.Group;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class GroupsPage : ComponentBase
+    public partial class GroupsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
-        [Inject] public IGroupService GroupService { get; set; }
+        public IGroupService GroupService { get; set; }
+        public IMainTableService<Group, GroupFilter> MainTableService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -23,14 +25,17 @@ namespace HES.Web.Pages.Groups
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, StateHasChanged, nameof(Group.Name));
-            await BreadcrumbsService.SetGroups();
+            GroupService = ScopedServices.GetRequiredService<IGroupService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Group, GroupFilter>>();
+
             await InitializeHubAsync();
+            await BreadcrumbsService.SetGroups();
+            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, ModalDialogService, StateHasChanged, nameof(Group.Name));
         }
 
         private Task NavigateToGroupDetails()
         {
-            NavigationManager.NavigateTo($"/Groups/Details?id={MainTableService.SelectedEntity.Id}", true);
+            NavigationManager.NavigateTo($"/Groups/Details/{MainTableService.SelectedEntity.Id}");
             return Task.CompletedTask;
         }
 
@@ -92,7 +97,6 @@ namespace HES.Web.Pages.Groups
 
             hubConnection.On(RefreshPage.Groups, async () =>
             {
-                await GroupService.DetachGroupsAsync(MainTableService.Entities);
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -102,7 +106,10 @@ namespace HES.Web.Pages.Groups
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
+            MainTableService.Dispose();
         }
     }
 }

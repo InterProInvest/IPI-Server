@@ -3,14 +3,16 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.OrgStructure
 {
-    public partial class CompaniesTab : ComponentBase
+    public partial class CompaniesTab : OwningComponentBase, IDisposable
     {
-        [Inject] public IOrgStructureService OrgStructureService { get; set; }
+        public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -22,9 +24,11 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         protected override async Task OnInitializedAsync()
         {
-            await LoadCompaniesAsync();
+            OrgStructureService = ScopedServices.GetRequiredService<IOrgStructureService>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetOrgStructure();
+            await LoadCompaniesAsync();
         }
 
         private async Task LoadCompaniesAsync()
@@ -51,7 +55,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditCompany));
-                builder.AddAttribute(1, nameof(EditCompany.Company), company);
+                builder.AddAttribute(1, nameof(EditCompany.CompanyId), company.Id);
                 builder.AddAttribute(2, nameof(EditCompany.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(EditCompany.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -65,7 +69,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteCompany));
-                builder.AddAttribute(1, nameof(DeleteCompany.Company), company);
+                builder.AddAttribute(1, nameof(DeleteCompany.CompanyId), company.Id);
                 builder.AddAttribute(2, nameof(DeleteCompany.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(DeleteCompany.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -93,7 +97,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditDepartment));
-                builder.AddAttribute(1, nameof(EditDepartment.Department), department);
+                builder.AddAttribute(1, nameof(EditDepartment.DepartmentId), department.Id);
                 builder.AddAttribute(2, nameof(EditDepartment.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(EditDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -107,7 +111,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteDepartment));
-                builder.AddAttribute(1, nameof(DeleteDepartment.Department), department);
+                builder.AddAttribute(1, nameof(DeleteDepartment.DepartmentId), department.Id);
                 builder.AddAttribute(2, nameof(DeleteDepartment.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(DeleteDepartment.Refresh), EventCallback.Factory.Create(this, LoadCompaniesAsync));
                 builder.CloseComponent();
@@ -124,7 +128,6 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             hubConnection.On(RefreshPage.OrgSructureCompanies, async () =>
             {
-                await OrgStructureService.DetachCompaniesAsync(Companies);
                 await LoadCompaniesAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -134,7 +137,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection.State == HubConnectionState.Connected)
+                hubConnection?.DisposeAsync();
         }
     }
 }

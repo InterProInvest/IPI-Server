@@ -4,21 +4,46 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class SendLicenseOrder : ComponentBase
+    public partial class SendLicenseOrder : ComponentBase, IDisposable
     {
-        [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILicenseService LicenseService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
         [Inject] public ILogger<SendLicenseOrder> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
+        [Parameter] public string LicenseOrderId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public LicenseOrder LicenseOrder { get; set; }
+
+        public LicenseOrder LicenseOrder { get; set; }
+        public bool EntityBeingEdited { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            try
+            {
+                LicenseOrder = await LicenseService.GetLicenseOrderByIdAsync(LicenseOrderId);
+                if (LicenseOrder == null)
+                    throw new Exception("License Order not found.");
+
+                EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
+        }
 
         private async Task SendOrderAsync()
         {
@@ -37,9 +62,10 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             }
         }
 
-        private async Task CancelAsync()
+        public void Dispose()
         {
-            await ModalDialogService.CancelAsync();
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(LicenseOrder.Id);
         }
     }
 }

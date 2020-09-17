@@ -1,8 +1,8 @@
-﻿@if (!Initialized)
-{
-    <LoadingPage />
-}
-else
+﻿@page "/Workstations/Details/{WorkstationId}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
+
+@if (Initialized)
 {
     <div class="row align-items-center details-card mb-3">
         <div class="col">
@@ -13,12 +13,12 @@ else
         </div>
     </div>
     <section>
-        @if (WorkstationProximityVaults.Count > 0)
+        @if (MainTableService.Entities.Count > 0)
         {
             <TableAction>
                 <ActionButtons>
                     <h4 class="text-navyblue mr-2">Proximity Vaults</h4>
-                    @if (SelectedEntity != null)
+                    @if (MainTableService.SelectedEntity != null)
                     {
                         <button type="button" @onclick="OpenDialogDeleteHardwareVaultAsync" class="btn btn-light border mx-2" title="Delete hardware vault">
                             <img class="icon-btn" src="/svg/action/delete.svg" />
@@ -27,36 +27,40 @@ else
                     }
                 </ActionButtons>
                 <FilterButtons>
-                    <TableFilter EnableFilterButton="false" SearchTextChanged="SearchTextChangedAsync" />
+                    <TableFilter EnableFilterButton="false" SearchTextChanged="MainTableService.SearchTextChangedAsync" />
                 </FilterButtons>
             </TableAction>
 
-            <MainTable Items="WorkstationProximityVaults" SelectedItem="@SelectedEntity" SelecedItemChanged="SelectedItemChangedAsync">
+            <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" Loading="MainTableService.Loading">
                 <TableHeader>
                     <MainTableHeader Title="Hardware Vault"
                                      TitleWidth="25"
                                      SortColumn="@nameof(WorkstationProximityVault.HardwareVault)"
-                                     CurrentSortedColumn="@SortedColumn"
-                                     SortedColumnChanged="SortedColumnChangedAsync"
-                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                                     CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                                     CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                                     SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                                     SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
                     <MainTableHeader Title="Employee"
                                      TitleWidth="25"
                                      SortColumn="@nameof(WorkstationProximityVault.HardwareVault.Employee)"
-                                     CurrentSortedColumn="@SortedColumn"
-                                     SortedColumnChanged="SortedColumnChangedAsync"
-                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                                     CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                                     CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                                     SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                                     SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
                     <MainTableHeader Title="Company"
                                      TitleWidth="25"
                                      SortColumn="@nameof(WorkstationProximityVault.HardwareVault.Employee.Department.Company)"
-                                     CurrentSortedColumn="@SortedColumn"
-                                     SortedColumnChanged="SortedColumnChangedAsync"
-                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                                     CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                                     CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                                     SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                                     SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
                     <MainTableHeader Title="Department"
                                      TitleWidth="25"
                                      SortColumn="@nameof(WorkstationProximityVault.HardwareVault.Employee.Department)"
-                                     CurrentSortedColumn="@SortedColumn"
-                                     SortedColumnChanged="SortedColumnChangedAsync"
-                                     SortDirectionChanged="SortDirectionChangedAsync" />
+                                     CurrentSortedColumn="@MainTableService.DataLoadingOptions.SortedColumn"
+                                     CurrentSortDirection="@MainTableService.DataLoadingOptions.SortDirection"
+                                     SortedColumnChanged="MainTableService.SortedColumnChangedAsync"
+                                     SortDirectionChanged="MainTableService.SortDirectionChangedAsync" />
                 </TableHeader>
                 <TableRow>
                     <td>
@@ -70,15 +74,23 @@ else
                     </td>
                     <td>
                         @context.HardwareVault.Employee?.Department?.Name
-                    </td>                    
+                    </td>
                 </TableRow>
             </MainTable>
-            <Pagination CurrentPageChanged="CurrentPageChangedAsync"
-                        DisplayRowsChanged="DisplayRowsChangedAsync"
-                        TotalRecords="TotalRecords"
-                        CurrentPage="CurrentPage"
-                        DisplayRows="DisplayRows"
-                        DisplayRecords="WorkstationProximityVaults.Count" />
+            <Pagination CurrentPageChanged="MainTableService.CurrentPageChangedAsync"
+                        DisplayRowsChanged="MainTableService.DisplayRowsChangedAsync"
+                        TotalRecords="MainTableService.TotalRecords"
+                        CurrentPage="MainTableService.CurrentPage"
+                        DisplayRows="MainTableService.DataLoadingOptions.Take"
+                        DisplayRecords="MainTableService.Entities.Count" />
         }
     </section>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

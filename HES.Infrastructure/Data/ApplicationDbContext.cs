@@ -1,5 +1,5 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
+using HES.Core.Models.Web.Audit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,6 +44,11 @@ namespace HES.Infrastructure
             modelBuilder.Entity<Department>().HasMany(x => x.WorkstationSessions).WithOne(p => p.Department).HasForeignKey(p => p.DepartmentId).OnDelete(DeleteBehavior.SetNull);
             // Position
             modelBuilder.Entity<Position>().HasMany(x => x.Employees).WithOne(p => p.Position).HasForeignKey(p => p.PositionId).OnDelete(DeleteBehavior.SetNull);
+            // Summary
+            modelBuilder.Entity<SummaryByDayAndEmployee>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SummaryByEmployees>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SummaryByDepartments>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SummaryByWorkstations>().HasNoKey().ToView(null);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -71,11 +76,9 @@ namespace HES.Infrastructure
         public DbSet<AppSettings> AppSettings { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupMembership> GroupMemberships { get; set; }
-
-
-        public DbQuery<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
-        public DbQuery<SummaryByEmployees> SummaryByEmployees { get; set; }
-        public DbQuery<SummaryByDepartments> SummaryByDepartments { get; set; }
-        public DbQuery<SummaryByWorkstations> SummaryByWorkstations { get; set; }
+        public DbSet<SummaryByDayAndEmployee> SummaryByDayAndEmployee { get; set; }
+        public DbSet<SummaryByEmployees> SummaryByEmployees { get; set; }
+        public DbSet<SummaryByDepartments> SummaryByDepartments { get; set; }
+        public DbSet<SummaryByWorkstations> SummaryByWorkstations { get; set; }
     }
 }

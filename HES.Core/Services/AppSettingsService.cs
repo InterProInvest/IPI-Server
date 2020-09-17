@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class AppSettingsService : IAppSettingsService
+    public class AppSettingsService : IAppSettingsService, IDisposable
     {
         private readonly IAsyncRepository<AppSettings> _appSettingsRepository;
         private readonly IDataProtectionService _dataProtectionService;
@@ -100,6 +100,41 @@ namespace HES.Core.Services
             }
         }
 
+        public async Task<AlarmState> GetAlarmStateAsync()
+        {
+            var alarmState = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Alarm);
+
+            if (alarmState == null)
+                return null;
+
+            return JsonConvert.DeserializeObject<AlarmState>(alarmState.Value);
+        }
+
+        public async Task SetAlarmStateAsync(AlarmState alarmState)
+        {
+            if (alarmState == null)
+                throw new ArgumentNullException(nameof(alarmState));
+
+            var json = JsonConvert.SerializeObject(alarmState);
+
+            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Alarm);
+
+            if (appSettings == null)
+            {
+                appSettings = new AppSettings()
+                {
+                    Id = ServerConstants.Alarm,
+                    Value = json
+                };
+                await _appSettingsRepository.AddAsync(appSettings);
+            }
+            else
+            {
+                appSettings.Value = json;
+                await _appSettingsRepository.UpdateAsync(appSettings);
+            }
+        }
+
         public async Task<ServerSettings> GetServerSettingsAsync()
         {
             var server = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Server);
@@ -173,6 +208,11 @@ namespace HES.Core.Services
                 appSettings.Value = json;
                 await _appSettingsRepository.UpdateAsync(appSettings);
             }
+        }
+
+        public void Dispose()
+        {
+            _appSettingsRepository.Dispose();
         }
     }
 }

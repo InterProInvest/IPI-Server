@@ -2,10 +2,9 @@
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.Employees;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Utilities;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Security;
@@ -20,7 +19,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class EmployeeService : IEmployeeService
+    public class EmployeeService : IEmployeeService, IDisposable
     {
         private readonly IAsyncRepository<Employee> _employeeRepository;
         private readonly IHardwareVaultService _hardwareVaultService;
@@ -57,22 +56,9 @@ namespace HES.Core.Services
             return _employeeRepository.Query();
         }
 
-        public async Task DetachEmployeeAsync(Employee employee)
+        public async Task<Employee> GetEmployeeByIdAsync(string id, bool asNoTracking = false)
         {
-            await _employeeRepository.DetachedAsync(employee);
-        }
-
-        public async Task DetachEmployeeAsync(List<Employee> employee)
-        {
-            foreach (var item in employee)
-            {
-                await DetachEmployeeAsync(item);
-            }
-        }
-
-        public async Task<Employee> GetEmployeeByIdAsync(string id)
-        {
-            return await _employeeRepository
+            var query = _employeeRepository
                 .Query()
                 .Include(e => e.Department.Company)
                 .Include(e => e.Position)
@@ -80,7 +66,12 @@ namespace HES.Core.Services
                 .Include(e => e.SoftwareVaultInvitations)
                 .Include(e => e.HardwareVaults)
                 .ThenInclude(e => e.HardwareVaultProfile)
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .AsQueryable();
+
+            if (asNoTracking)
+                query = query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public Task UnchangedEmployeeAsync(Employee employee)
@@ -182,7 +173,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetEmployeesCountAsync(DataLoadingOptions<EmployeeFilter> dataLoadingOptions)
@@ -412,8 +403,6 @@ namespace HES.Core.Services
             if (vault == null)
                 throw new Exception($"Vault {vault} not found");
 
-            await _hardwareVaultService.ReloadHardwareVault(vault);
-
             if (vault.Status != VaultStatus.Ready)
                 throw new Exception($"Vault {vaultId} in a status that does not allow to reserve.");
 
@@ -462,9 +451,7 @@ namespace HES.Core.Services
             var vault = await _hardwareVaultService.GetVaultByIdAsync(vaultId);
             if (vault == null)
                 throw new Exception($"Vault {vaultId} not found");
-
-            await _hardwareVaultService.ReloadHardwareVault(vault);
-
+               
             if (vault.Status != VaultStatus.Reserved &&
                 vault.Status != VaultStatus.Active &&
                 vault.Status != VaultStatus.Locked &&
@@ -509,26 +496,13 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ReloadHardwareVaultsAsync(List<HardwareVault> hardwareVaults)
-        {
-            await _hardwareVaultService.ReloadHardwareVaults(hardwareVaults);
-        }
-
         #endregion
 
         #region Account
 
-        public async Task DetachdAccountAsync(Account account)
+        public async Task ReloadAccountAsync(string accountId)
         {
-            await _accountService.DetachdAccountAsync(account);
-        }
-
-        public async Task DetachdAccountAsync(List<Account> accounts)
-        {
-            foreach (var item in accounts)
-            {
-                await DetachdAccountAsync(item);
-            }
+            await _accountService.ReloadAccountAsync(accountId);
         }
 
         public async Task<Account> GetAccountByIdAsync(string accountId)
@@ -540,78 +514,78 @@ namespace HES.Core.Services
                 .FirstOrDefaultAsync(x => x.Id == accountId);
         }
 
-        public async Task<List<Account>> GetAccountsAsync(int skip, int take, string sortColumn, ListSortDirection sortDirection, string searchText, string employeeId)
+        public async Task<List<Account>> GetAccountsAsync(DataLoadingOptions<AccountFilter> dataLoadingOptions)
         {
             var query = _accountService
                 .Query()
-                .Include(x => x.Employee.HardwareVaults)
+                .Include(x => x.Employee.HardwareVaults)              
                 .Include(x => x.SharedAccount)
-                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
+                .Where(x => x.EmployeeId == dataLoadingOptions.EntityId && x.Deleted == false)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
                 query = query.Where(x =>
-                                    x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                                    x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Urls.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Apps.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Login.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
-            switch (sortColumn)
+            switch (dataLoadingOptions.SortedColumn)
             {
                 case nameof(Account.Name):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
                     break;
                 case nameof(Account.Urls):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Urls) : query.OrderByDescending(x => x.Urls);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Urls) : query.OrderByDescending(x => x.Urls);
                     break;
                 case nameof(Account.Apps):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Apps) : query.OrderByDescending(x => x.Apps);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Apps) : query.OrderByDescending(x => x.Apps);
                     break;
                 case nameof(Account.Login):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Login) : query.OrderByDescending(x => x.Login);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Login) : query.OrderByDescending(x => x.Login);
                     break;
                 case nameof(Account.Type):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Type) : query.OrderByDescending(x => x.Type);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.Type) : query.OrderByDescending(x => x.Type);
                     break;
                 case nameof(Account.CreatedAt):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.CreatedAt) : query.OrderByDescending(x => x.CreatedAt);
                     break;
                 case nameof(Account.UpdatedAt):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UpdatedAt) : query.OrderByDescending(x => x.UpdatedAt);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.UpdatedAt) : query.OrderByDescending(x => x.UpdatedAt);
                     break;
                 case nameof(Account.PasswordUpdatedAt):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.PasswordUpdatedAt) : query.OrderByDescending(x => x.PasswordUpdatedAt);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.PasswordUpdatedAt) : query.OrderByDescending(x => x.PasswordUpdatedAt);
                     break;
                 case nameof(Account.OtpUpdatedAt):
-                    query = sortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OtpUpdatedAt) : query.OrderByDescending(x => x.OtpUpdatedAt);
+                    query = dataLoadingOptions.SortDirection == ListSortDirection.Ascending ? query.OrderBy(x => x.OtpUpdatedAt) : query.OrderByDescending(x => x.OtpUpdatedAt);
                     break;
             }
 
-            return await query.Skip(skip).Take(take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
-        public async Task<int> GetAccountsCountAsync(string searchText, string employeeId)
+        public async Task<int> GetAccountsCountAsync(DataLoadingOptions<AccountFilter> dataLoadingOptions)
         {
             var query = _accountService
                 .Query()
                 .Include(x => x.Employee.HardwareVaults)
                 .Include(x => x.SharedAccount)
-                .Where(x => x.EmployeeId == employeeId && x.Deleted == false)
+                .Where(x => x.EmployeeId == dataLoadingOptions.EntityId && x.Deleted == false)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (!string.IsNullOrWhiteSpace(dataLoadingOptions.SearchText))
             {
-                searchText = searchText.Trim();
+                dataLoadingOptions.SearchText = dataLoadingOptions.SearchText.Trim();
 
                 query = query.Where(x =>
-                                    x.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Urls.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Apps.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                                    x.Login.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                                    x.Name.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Urls.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Apps.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                    x.Login.Contains(dataLoadingOptions.SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             return await query.CountAsync();
@@ -655,6 +629,7 @@ namespace HES.Core.Services
                 OtpUpdatedAt = Validation.VerifyOtpSecret(personalAccount.OtpSecret) != null ? new DateTime?(DateTime.UtcNow) : null,
                 Password = _dataProtectionService.Encrypt(personalAccount.Password),
                 OtpSecret = _dataProtectionService.Encrypt(personalAccount.OtpSecret),
+                UpdateInActiveDirectory = personalAccount.UpdateInActiveDirectory,
                 EmployeeId = personalAccount.EmployeeId,
                 StorageId = new StorageId().Data
             };
@@ -733,7 +708,8 @@ namespace HES.Core.Services
                 Name = workstationAccount.Name,
                 Login = $"{workstationAccount.Domain}\\{workstationAccount.UserName}",
                 Password = workstationAccount.Password,
-                EmployeeId = workstationAccount.EmployeeId
+                EmployeeId = workstationAccount.EmployeeId,
+                UpdateInActiveDirectory = workstationAccount.UpdateInActiveDirectory
             };
 
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
@@ -1075,5 +1051,16 @@ namespace HES.Core.Services
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _employeeRepository.Dispose();
+            _hardwareVaultService.Dispose();
+            _hardwareVaultTaskService.Dispose();
+            _softwareVaultService.Dispose();
+            _accountService.Dispose();
+            _sharedAccountService.Dispose();
+            _workstationService.Dispose();            
+        }
     }
 }

@@ -1,4 +1,7 @@
-﻿<h1 class="text-navyblue">Data Protection</h1>
+﻿@page "/Settings/DataProtection"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+
+<h1 class="text-navyblue">Data Protection</h1>
 <hr />
 @if (Status == Core.Services.ProtectionStatus.Off)
 {

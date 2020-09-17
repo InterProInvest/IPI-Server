@@ -11,7 +11,6 @@ using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class HardwareVaultService : IHardwareVaultService
+    public class HardwareVaultService : IHardwareVaultService, IDisposable
     {
         private readonly IAsyncRepository<HardwareVault> _hardwareVaultRepository;
         private readonly IAsyncRepository<HardwareVaultActivation> _hardwareVaultActivationRepository;
@@ -36,7 +35,6 @@ namespace HES.Core.Services
         private readonly IAppSettingsService _appSettingsService;
         private readonly IDataProtectionService _dataProtectionService;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<HardwareVaultService> _logger;
 
         public HardwareVaultService(IAsyncRepository<HardwareVault> hardwareVaultRepository,
                                     IAsyncRepository<HardwareVaultActivation> hardwareVaultActivationRepository,
@@ -47,8 +45,7 @@ namespace HES.Core.Services
                                     IWorkstationService workstationService,
                                     IAppSettingsService appSettingsService,
                                     IDataProtectionService dataProtectionService,
-                                    IHttpClientFactory httpClientFactory,
-                                    ILogger<HardwareVaultService> logger)
+                                    IHttpClientFactory httpClientFactory)
         {
             _hardwareVaultRepository = hardwareVaultRepository;
             _hardwareVaultActivationRepository = hardwareVaultActivationRepository;
@@ -60,7 +57,6 @@ namespace HES.Core.Services
             _appSettingsService = appSettingsService;
             _dataProtectionService = dataProtectionService;
             _httpClientFactory = httpClientFactory;
-            _logger = logger;
         }
 
         #region Vault
@@ -78,7 +74,7 @@ namespace HES.Core.Services
                 .Include(d => d.Employee.HardwareVaults)
                 .Include(d => d.Employee.SoftwareVaults)
                 .Include(d => d.HardwareVaultProfile)
-                .FirstOrDefaultAsync(m => m.Id == vaultId);
+                .FirstOrDefaultAsync(d => d.Id == vaultId);
         }
 
         public async Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync()
@@ -99,19 +95,6 @@ namespace HES.Core.Services
                             x.LicenseStatus != VaultLicenseStatus.Expired)
                     .AsNoTracking()
                     .ToListAsync();
-        }
-
-        public async Task DetachVaultAsync(HardwareVault vault)
-        {
-            await _hardwareVaultRepository.DetachedAsync(vault);
-        }
-
-        public async Task DetachVaultsAsync(List<HardwareVault> vaults)
-        {
-            foreach (var item in vaults)
-            {
-                await DetachVaultAsync(item);
-            }
         }
 
         public async Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
@@ -255,7 +238,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> dataLoadingOptions)
@@ -436,7 +419,7 @@ namespace HES.Core.Services
 
             foreach (var hardwareVaultDto in importDto.HardwareVaultsDto)
             {
-                var hardwareVaultLicense = hardwareVaultLicensesToImport.FirstOrDefault(x => x.HardwareVaultId == hardwareVaultDto.HardwareVaultId);
+                var hardwareVaultLicense = hardwareVaultLicensesToImport.OrderByDescending(x => x.EndDate).FirstOrDefault(x => x.HardwareVaultId == hardwareVaultDto.HardwareVaultId);
 
                 hardwareVaultsToImport.Add(new HardwareVault()
                 {
@@ -718,19 +701,6 @@ namespace HES.Core.Services
             }
         }
 
-        public async Task ReloadHardwareVault(HardwareVault hardwareVault)
-        {
-            await _hardwareVaultRepository.ReloadAsync(hardwareVault);
-        }
-
-        public async Task ReloadHardwareVaults(List<HardwareVault> hardwareVaults)
-        {
-            foreach (var item in hardwareVaults)
-            {
-                await _hardwareVaultRepository.ReloadAsync(item);
-            }
-        }
-
         #endregion
 
         #region Vault Profile
@@ -746,24 +716,6 @@ namespace HES.Core.Services
                 .Query()
                 .Include(d => d.HardwareVaults)
                 .FirstOrDefaultAsync(m => m.Id == profileId);
-        }
-
-        public async Task UnchangedProfileAsync(HardwareVaultProfile profile)
-        {
-            await _hardwareVaultProfileRepository.UnchangedAsync(profile);
-        }
-
-        public async Task DetachProfileAsync(HardwareVaultProfile profile)
-        {
-            await _hardwareVaultProfileRepository.DetachedAsync(profile);
-        }
-
-        public async Task DetachProfilesAsync(List<HardwareVaultProfile> profiles)
-        {
-            foreach (var item in profiles)
-            {
-                await DetachProfileAsync(item);
-            }
         }
 
         public async Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions)
@@ -828,7 +780,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions)
@@ -1028,6 +980,23 @@ namespace HES.Core.Services
             };
         }
 
+        public async Task UnchangedProfileAsync(HardwareVaultProfile profile)
+        {
+            await _hardwareVaultProfileRepository.UnchangedAsync(profile);
+        }
+
         #endregion
+
+        public void Dispose()
+        {
+            _hardwareVaultRepository.Dispose();
+            _hardwareVaultActivationRepository.Dispose();
+            _hardwareVaultProfileRepository.Dispose();
+            _licenseService.Dispose();
+            _hardwareVaultTaskService.Dispose();
+            _accountService.Dispose();
+            _workstationService.Dispose();
+            _appSettingsService.Dispose();
+        }
     }
 }

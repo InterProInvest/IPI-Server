@@ -39,7 +39,7 @@ namespace HES.Web.Pages.Settings.Administrators
                 var callBakcUrl = await ApplicationUserService.InviteAdministratorAsync(Invitation.Email, NavigationManager.BaseUri);
                 await EmailSenderService.SendUserInvitationAsync(Invitation.Email, callBakcUrl);
                 ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators, null);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
                 await ModalDialogService.CloseAsync();
             }
             catch (AlreadyExistException ex)

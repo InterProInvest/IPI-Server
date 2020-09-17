@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HES.Core.Models.Web.Account
+namespace HES.Core.Models.Web.Accounts
 {
     public class PersonalAccount
     {
@@ -24,6 +24,8 @@ namespace HES.Core.Models.Web.Account
         public string ConfirmPassword { get; set; }
 
         public string OtpSecret { get; set; }
+
+        public bool UpdateInActiveDirectory { get; set; }
 
         [Required]
         public string EmployeeId { get; set; }

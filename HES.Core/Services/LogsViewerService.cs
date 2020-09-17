@@ -9,9 +9,8 @@ namespace HES.Core.Services
 {
     public class LogsViewerService : ILogsViewerService
     {
-        private readonly string _folderPath;
-
         private readonly IJSRuntime _jSRuntime;
+        private readonly string _folderPath;
 
         public LogsViewerService(IJSRuntime jSRuntime)
         {

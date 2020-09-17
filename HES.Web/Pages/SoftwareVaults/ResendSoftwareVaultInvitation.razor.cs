@@ -3,15 +3,16 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SoftwareVaults
 {
-    public partial class ResendSoftwareVaultInvitation : ComponentBase
+    public partial class ResendSoftwareVaultInvitation : OwningComponentBase, IDisposable
     {
-        [Inject] public ISoftwareVaultService SoftwareVaultService { get; set; }
+        public ISoftwareVaultService SoftwareVaultService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILogger<ResendSoftwareVaultInvitation> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
@@ -26,6 +27,8 @@ namespace HES.Web.Pages.SoftwareVaults
         {
             try
             {
+                SoftwareVaultService = ScopedServices.GetRequiredService<ISoftwareVaultService>();
+
                 ServerSettings = await AppSettingsService.GetServerSettingsAsync();
                 _initialized = true;
             }
@@ -54,6 +57,11 @@ namespace HES.Web.Pages.SoftwareVaults
             {
                 await ModalDialogService.CloseAsync();
             }
+        }
+
+        public void Dispose()
+        {
+            SoftwareVaultService.Dispose();
         }
     }
 }

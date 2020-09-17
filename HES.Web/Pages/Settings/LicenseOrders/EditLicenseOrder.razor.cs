@@ -6,7 +6,7 @@ using HES.Core.Models.Web.LicenseOrders;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -14,18 +14,21 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.LicenseOrders
 {
-    public partial class EditLicenseOrder : ComponentBase
+    public partial class EditLicenseOrder : ComponentBase, IDisposable
     {
-        [Inject] ILicenseService LicenseService { get; set; }
-        [Inject] IHardwareVaultService HardwareVaultService { get; set; }
-        [Inject] IModalDialogService ModalDialogService { get; set; }
-        [Inject] IToastService ToastService { get; set; }
-        [Inject] ILogger<EditLicenseOrder> Logger { get; set; }
+        [Inject] public ILicenseService LicenseService { get; set; }
+        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
+        [Inject] public IToastService ToastService { get; set; }
+        [Inject] public IMemoryCache MemoryCache { get; set; }
+        [Inject] public ILogger<EditLicenseOrder> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public LicenseOrder LicenseOrder { get; set; }
+        [Parameter] public string LicenseOrderId { get; set; }
+         public LicenseOrder LicenseOrder { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public bool EntityBeingEdited { get; set; }
 
         private NewLicenseOrder _newLicenseOrder;
         private RenewLicenseOrder _renewLicenseOrder;
@@ -34,31 +37,48 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         protected override async Task OnInitializedAsync()
         {
-            if (!LicenseOrder.ProlongExistingLicenses)
+            try
             {
-                _newLicenseOrder = new NewLicenseOrder()
-                {
-                    ContactEmail = LicenseOrder.ContactEmail,
-                    Note = LicenseOrder.Note,
-                    StartDate = LicenseOrder.StartDate.Value,
-                    EndDate = LicenseOrder.EndDate,
-                    HardwareVaults = await HardwareVaultService.GetVaultsWithoutLicenseAsync()
-                };
-                _newLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
-            }
-            else
-            {
-                _renewLicenseOrder = new RenewLicenseOrder()
-                {
-                    ContactEmail = LicenseOrder.ContactEmail,
-                    Note = LicenseOrder.Note,
-                    EndDate = LicenseOrder.EndDate,
-                    HardwareVaults = await HardwareVaultService.GetVaultsWithLicenseAsync()
-                };
-                _renewLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
-            }
+                LicenseOrder = await LicenseService.GetLicenseOrderByIdAsync(LicenseOrderId);
+                if (LicenseOrder == null)
+                    throw new Exception("License Order not found.");
 
-            _initialized = true;
+                EntityBeingEdited = MemoryCache.TryGetValue(LicenseOrder.Id, out object _);
+                if (!EntityBeingEdited)
+                    MemoryCache.Set(LicenseOrder.Id, LicenseOrder);
+
+                if (!LicenseOrder.ProlongExistingLicenses)
+                {
+                    _newLicenseOrder = new NewLicenseOrder()
+                    {
+                        ContactEmail = LicenseOrder.ContactEmail,
+                        Note = LicenseOrder.Note,
+                        StartDate = LicenseOrder.StartDate.Value,
+                        EndDate = LicenseOrder.EndDate,
+                        HardwareVaults = await HardwareVaultService.GetVaultsWithoutLicenseAsync()
+                    };
+                    _newLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
+                }
+                else
+                {
+                    _renewLicenseOrder = new RenewLicenseOrder()
+                    {
+                        ContactEmail = LicenseOrder.ContactEmail,
+                        Note = LicenseOrder.Note,
+                        EndDate = LicenseOrder.EndDate,
+                        HardwareVaults = await HardwareVaultService.GetVaultsWithLicenseAsync()
+                    };
+                    _renewLicenseOrder.HardwareVaults.ForEach(x => x.Checked = LicenseOrder.HardwareVaultLicenses.Any(d => d.HardwareVaultId == x.Id));
+                }
+
+                _initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task EditNewLicenseOrderAsync()
@@ -163,6 +183,12 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             {
                 _isBusy = false;
             }
+        }
+
+        public void Dispose()
+        {
+            if (!EntityBeingEdited)
+                MemoryCache.Remove(LicenseOrder.Id);
         }
     }
 }

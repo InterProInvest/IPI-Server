@@ -1,0 +1,16 @@
+﻿@inherits LayoutComponentBase
+
+<RedirectToDataProtectionActivate />
+<div class="d-flex">
+    <div class="custom-sidebar">
+        <NavMenu />
+    </div>
+    <div class="d-flex flex-column custom-main">
+        <NavBar />
+        <div class="custom-content p-4">
+            <ModalDialog />
+            <Toast />
+            @Body
+        </div>
+    </div>
+</div>

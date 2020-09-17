@@ -14,7 +14,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class GroupService : IGroupService
+    public class GroupService : IGroupService, IDisposable
     {
         private readonly IAsyncRepository<Group> _groupRepository;
         private readonly IAsyncRepository<GroupMembership> _groupMembershipRepository;
@@ -82,7 +82,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetGroupsCountAsync(DataLoadingOptions<GroupFilter> dataLoadingOptions)
@@ -181,14 +181,6 @@ namespace HES.Core.Services
         public Task UnchangedGroupAsync(Group group)
         {
             return _groupRepository.UnchangedAsync(group);
-        }
-
-        public async Task DetachGroupsAsync(List<Group> groups)
-        {
-            foreach (var item in groups)
-            {
-                await _groupRepository.DetachedAsync(item);
-            }
         }
 
         public async Task<Group> DeleteGroupAsync(string groupId)
@@ -393,13 +385,11 @@ namespace HES.Core.Services
             return await _groupMembershipRepository.DeleteAsync(groupMembership);
         }
 
-        public async Task DetachGroupMembershipsAsync(List<GroupMembership> groupMemberships)
+        public void Dispose()
         {
-            foreach (var item in groupMemberships)
-            {
-                await _groupMembershipRepository.DetachedAsync(item);
-            }
+            _groupRepository.Dispose();
+            _groupMembershipRepository.Dispose();
+            _employeeRepository.Dispose();
         }
-
     }
 }

@@ -19,7 +19,7 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class LicenseService : ILicenseService
+    public class LicenseService : ILicenseService, IDisposable
     {
         private readonly IAsyncRepository<LicenseOrder> _licenseOrderRepository;
         private readonly IAsyncRepository<HardwareVaultLicense> _hardwareVaultLicenseRepository;
@@ -181,8 +181,9 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
+
         public async Task<int> GetLicenseOrdersCountAsync(DataLoadingOptions<LicenseOrderFilter> dataLoadingOptions)
         {
             var query = _licenseOrderRepository
@@ -251,6 +252,7 @@ namespace HES.Core.Services
         {
             return await _licenseOrderRepository
                 .Query()
+                .Include(x => x.HardwareVaultLicenses)
                 .FirstOrDefaultAsync(x => x.Id == orderId);
         }
 
@@ -375,14 +377,6 @@ namespace HES.Core.Services
                             x.OrderStatus == LicenseOrderStatus.Processing ||
                             x.OrderStatus == LicenseOrderStatus.WaitingForPayment)
                 .ToListAsync();
-        }
-
-        public async Task DetachLicenseOrders(List<LicenseOrder> licenseOrders)
-        {
-            foreach (var item in licenseOrders)
-            {
-                await _licenseOrderRepository.DetachedAsync(item);
-            }
         }
 
         #endregion
@@ -520,10 +514,17 @@ namespace HES.Core.Services
                 var vault = await _hardwareVaultRepository.GetByIdAsync(vaultId);
 
                 if (vault == null)
-                    throw new Exception("Device not found.");
+                    throw new Exception("Hardware vault not found.");
 
                 vault.HasNewLicense = false;
-                vault.LicenseEndDate = hardwareVaultLicense.EndDate;
+                if (vault.LicenseEndDate.HasValue)
+                {
+                    vault.LicenseEndDate = vault.LicenseEndDate < hardwareVaultLicense.EndDate ? hardwareVaultLicense.EndDate : vault.LicenseEndDate;
+                }
+                else
+                {
+                    vault.LicenseEndDate = hardwareVaultLicense.EndDate;
+                }
                 await _hardwareVaultRepository.UpdateOnlyPropAsync(vault, new string[] { nameof(HardwareVault.HasNewLicense), nameof(HardwareVault.LicenseEndDate) });
             }
         }
@@ -585,5 +586,13 @@ namespace HES.Core.Services
         }
 
         #endregion
+        public void Dispose()
+        {
+            _licenseOrderRepository.Dispose();
+            _hardwareVaultLicenseRepository.Dispose();
+            _hardwareVaultRepository.Dispose();
+            _appSettingsService.Dispose();
+            _emailSenderService.Dispose();
+        }
     }
 }

@@ -2,9 +2,8 @@
 using HES.Core.Enums;
 using HES.Core.Exceptions;
 using HES.Core.Interfaces;
-using HES.Core.Models;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.SharedAccounts;
 using HES.Core.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -17,21 +16,21 @@ using System.Transactions;
 
 namespace HES.Core.Services
 {
-    public class SharedAccountService : ISharedAccountService
+    public class SharedAccountService : ISharedAccountService, IDisposable
     {
         private readonly IAsyncRepository<SharedAccount> _sharedAccountRepository;
         private readonly IAccountService _accountService;
-        private readonly IHardwareVaultTaskService _deviceTaskService;
+        private readonly IHardwareVaultTaskService _hardwareVaultTaskService;
         private readonly IDataProtectionService _dataProtectionService;
 
         public SharedAccountService(IAsyncRepository<SharedAccount> sharedAccountRepository,
-                                    IAccountService deviceAccountService,
-                                    IHardwareVaultTaskService deviceTaskService,
+                                    IAccountService accountService,
+                                    IHardwareVaultTaskService hardwareVaultTaskService,
                                     IDataProtectionService dataProtectionService)
         {
             _sharedAccountRepository = sharedAccountRepository;
-            _accountService = deviceAccountService;
-            _deviceTaskService = deviceTaskService;
+            _accountService = accountService;
+            _hardwareVaultTaskService = hardwareVaultTaskService;
             _dataProtectionService = dataProtectionService;
         }
 
@@ -111,7 +110,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetSharedAccountsCountAsync(DataLoadingOptions<SharedAccountsFilter> dataLoadingOptions)
@@ -293,7 +292,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Name), nameof(SharedAccount.Urls), nameof(SharedAccount.Apps), nameof(SharedAccount.Login) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Name), nameof(Account.Urls), nameof(Account.Apps), nameof(Account.Login), nameof(Account.UpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -345,7 +344,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Password), nameof(SharedAccount.PasswordChangedAt) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.UpdatedAt), nameof(Account.PasswordUpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -399,7 +398,7 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.OtpSecret), nameof(SharedAccount.OtpSecretChangedAt) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.UpdatedAt), nameof(Account.OtpUpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
@@ -450,24 +449,18 @@ namespace HES.Core.Services
             {
                 await _sharedAccountRepository.UpdateOnlyPropAsync(sharedAccount, new string[] { nameof(SharedAccount.Deleted) });
                 await _accountService.UpdateOnlyPropAsync(accounts, new string[] { nameof(Account.Deleted), nameof(Account.UpdatedAt) });
-                await _deviceTaskService.AddRangeTasksAsync(tasks);
+                await _hardwareVaultTaskService.AddRangeTasksAsync(tasks);
                 transactionScope.Complete();
             }
 
             return accounts.SelectMany(x => x.Employee.HardwareVaults.Select(s => s.Id)).ToList();
         }
 
-        public async Task DetachSharedAccountAsync(SharedAccount sharedAccount)
+        public void Dispose()
         {
-            await _sharedAccountRepository.DetachedAsync(sharedAccount);
-        }
-
-        public async Task DetachSharedAccountAsync(List<SharedAccount> sharedAccounts)
-        {
-            foreach (var item in sharedAccounts)
-            {
-                await DetachSharedAccountAsync(item);
-            }
+            _sharedAccountRepository.Dispose();
+            _accountService.Dispose();
+            _hardwareVaultTaskService.Dispose();
         }
     }
 }

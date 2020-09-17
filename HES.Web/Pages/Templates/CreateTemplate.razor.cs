@@ -1,7 +1,9 @@
 ﻿using HES.Core.Entities;
 using HES.Core.Enums;
+using HES.Core.Exceptions;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -20,7 +22,7 @@ namespace HES.Web.Pages.Templates
         [Parameter] public string ConnectionId { get; set; }
 
         public Template Template { get; set; } = new Template();
-
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         private async Task CreateTemplateAsync()
         {
@@ -30,6 +32,14 @@ namespace HES.Web.Pages.Templates
                 ToastService.ShowToast("Template created.", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
                 await ModalDialogService.CloseAsync();
+            }
+            catch (AlreadyExistException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(SharedAccount.Name), ex.Message);
+            }
+            catch (IncorrectUrlException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(SharedAccount.Urls), ex.Message);
             }
             catch (Exception ex)
             {

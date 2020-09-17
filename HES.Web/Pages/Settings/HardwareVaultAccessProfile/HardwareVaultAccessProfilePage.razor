@@ -1,4 +1,8 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Settings/HardwareVaultAccessProfile"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -35,7 +39,7 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" Loading="MainTableService.Loading">
         <TableHeader>
             <MainTableHeader Title="Name"
                              TitleWidth="16"

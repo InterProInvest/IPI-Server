@@ -1,4 +1,5 @@
 ﻿using HES.Core.Models.Web.Breadcrumb;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace HES.Core.Interfaces
 {
     public interface IBreadcrumbsService
     {
-        Task GetBreadcrumbs(out List<Breadcrumb> items);
+        event Func<List<Breadcrumb>, Task> OnSet;
         Task SetDashboard();
         Task SetEmployees();
         Task SetEmployeeDetails(string name);
@@ -16,12 +17,25 @@ namespace HES.Core.Interfaces
         Task SetGroups();
         Task SetAdministrators();
         Task SetHardwareVaultProfiles();
-        public Task SetSharedAccounts();
+        Task SetSharedAccounts();
+        Task SetAuditWorkstationEvents();
+        Task SetAuditWorkstationSessions();
+        Task SetAuditSummaries();
         Task SetGroupDetails(string name);
         Task SetLicenseOrders();
         Task SetParameters();
         Task SetOrgStructure();
         Task SetWorkstations();
         Task SetWorkstationDetails(string name);
+        Task SetTwoFactorAuthentication();
+        Task SetShowRecoveryCodes();
+        Task SetResetAuthenticator();
+        Task SetProfile();
+        Task SetPersonalData();
+        Task SetGenerateRecoveryCodes();
+        Task SetEnableAuthenticator();
+        Task SetDisable2fa();
+        Task SetDeletePersonalData();
+        Task SetAlarm();
     }
 }

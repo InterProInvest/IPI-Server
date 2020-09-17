@@ -5,20 +5,19 @@ using HES.Core.Models.Web.HardwareVaults;
 using Hideez.SDK.Communication.Device;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.Remote;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IHardwareVaultService
+    public interface IHardwareVaultService : IDisposable
     {
         IQueryable<HardwareVault> VaultQuery();
         Task<HardwareVault> GetVaultByIdAsync(string id);
         Task<List<HardwareVault>> GetVaultsWithoutLicenseAsync();
         Task<List<HardwareVault>> GetVaultsWithLicenseAsync();
-        Task DetachVaultAsync(HardwareVault vault);
-        Task DetachVaultsAsync(List<HardwareVault> vaults);
         Task<List<HardwareVault>> GetVaultsAsync(DataLoadingOptions<HardwareVaultFilter> options);
         Task<int> GetVaultsCountAsync(DataLoadingOptions<HardwareVaultFilter> options);
         Task ImportVaultsAsync();
@@ -34,14 +33,9 @@ namespace HES.Core.Interfaces
         Task<string> GetVaultActivationCodeAsync(string vaultId);
         Task ActivateVaultAsync(string vaultId);
         Task SuspendVaultAsync(string vaultId, string description);
-        Task VaultCompromisedAsync(string vaultId, VaultStatusReason reason, string description);
-        Task ReloadHardwareVault(HardwareVault hardwareVault);
-        Task ReloadHardwareVaults(List<HardwareVault> hardwareVaults);
-        Task DetachProfileAsync(HardwareVaultProfile profile);
-        Task DetachProfilesAsync(List<HardwareVaultProfile> profiles);
+        Task VaultCompromisedAsync(string vaultId, VaultStatusReason reason, string description);  
         IQueryable<HardwareVaultProfile> ProfileQuery();
         Task<List<HardwareVaultProfile>> GetProfilesAsync();
-        Task UnchangedProfileAsync(HardwareVaultProfile profile);
         Task<List<HardwareVaultProfile>> GetHardwareVaultProfilesAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
         Task<int> GetHardwareVaultProfileCountAsync(DataLoadingOptions<HardwareVaultProfileFilter> dataLoadingOptions);
         Task<HardwareVaultProfile> GetProfileByIdAsync(string profileId);
@@ -51,5 +45,6 @@ namespace HES.Core.Interfaces
         Task DeleteProfileAsync(string id);
         Task ChangeVaultProfileAsync(string vaultId, string profileId);
         Task<AccessParams> GetAccessParamsAsync(string vaultId);
+        Task UnchangedProfileAsync(HardwareVaultProfile profile);
     }
 }

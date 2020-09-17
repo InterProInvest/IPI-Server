@@ -1,15 +1,15 @@
 ﻿using HES.Core.Entities;
-using HES.Core.Models;
 using HES.Core.Models.Web;
-using HES.Core.Models.Web.Account;
+using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.SharedAccounts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface ISharedAccountService
+    public interface ISharedAccountService: IDisposable
     {
         IQueryable<SharedAccount> Query();
         Task UnchangedAsync(SharedAccount account);
@@ -24,8 +24,5 @@ namespace HES.Core.Interfaces
         Task<List<string>> EditSharedAccountPwdAsync(SharedAccount sharedAccount, AccountPassword accountPassword);
         Task<List<string>> EditSharedAccountOtpAsync(SharedAccount sharedAccount, AccountOtp accountOtp);
         Task<List<string>> DeleteSharedAccountAsync(string id);
-        Task DetachSharedAccountAsync(SharedAccount sharedAccount);
-        Task DetachSharedAccountAsync(List<SharedAccount> sharedAccounts);
-
     }
 }

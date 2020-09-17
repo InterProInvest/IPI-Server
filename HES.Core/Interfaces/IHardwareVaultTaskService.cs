@@ -1,11 +1,12 @@
 ﻿using HES.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Core.Interfaces
 {
-    public interface IHardwareVaultTaskService
+    public interface IHardwareVaultTaskService : IDisposable
     {
         IQueryable<HardwareVaultTask> TaskQuery();
         Task<HardwareVaultTask> GetTaskByIdAsync(string id);

@@ -4,15 +4,17 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EmployeesPage : ComponentBase, IDisposable
+    public partial class EmployeesPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
-        [Inject] public IEmployeeService EmployeeService { get; set; }
+        public IEmployeeService EmployeeService { get; set; }
+        public IMainTableService<Employee, EmployeeFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
@@ -21,9 +23,12 @@ namespace HES.Web.Pages.Employees
 
         protected override async Task OnInitializedAsync()
         {
-            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, StateHasChanged, nameof(Employee.FullName));
-            await BreadcrumbsService.SetEmployees();
+            EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Employee, EmployeeFilter>>();
+
             await InitializeHubAsync();
+            await BreadcrumbsService.SetEmployees();
+            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, ModalDialogService, StateHasChanged, nameof(Employee.FullName));
         }
 
         private async Task ImportEmployeesFromAdAsync()
@@ -35,14 +40,14 @@ namespace HES.Web.Pages.Employees
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Import from AD", body);
+            await MainTableService.ShowModalAsync("Import from AD", body, ModalDialogSize.Large);
         }
 
         private async Task EmployeeDetailsAsync()
         {
             await InvokeAsync(() =>
             {
-                NavigationManager.NavigateTo($"/Employees/Details?id={MainTableService.SelectedEntity.Id}", true);
+                NavigationManager.NavigateTo($"/Employees/Details/{MainTableService.SelectedEntity.Id}");
             });
         }
 
@@ -62,8 +67,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditEmployee));
-                builder.AddAttribute(1, nameof(DeleteEmployee.Employee), MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(DeleteEmployee.EmployeeId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(DeleteEmployee.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -75,8 +80,8 @@ namespace HES.Web.Pages.Employees
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeleteEmployee));
-                builder.AddAttribute(1, nameof(DeleteEmployee.Employee), MainTableService.SelectedEntity);
-                builder.AddAttribute(2, "ConnectionId", hubConnection?.ConnectionId);
+                builder.AddAttribute(1, nameof(DeleteEmployee.EmployeeId), MainTableService.SelectedEntity.Id);
+                builder.AddAttribute(2, nameof(DeleteEmployee.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
@@ -91,7 +96,6 @@ namespace HES.Web.Pages.Employees
 
             hubConnection.On(RefreshPage.Employees, async () =>
             {
-                await EmployeeService.DetachEmployeeAsync(MainTableService.Entities);
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -101,7 +105,10 @@ namespace HES.Web.Pages.Employees
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
+            MainTableService.Dispose();
         }
     }
 }

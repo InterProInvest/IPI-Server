@@ -1,4 +1,8 @@
-﻿@if (ServerdCard == null)
+﻿@page "/"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
+
+@if (!Initialized)
 {
     <LoadingPage />
 }

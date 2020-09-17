@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class ApplicationUserService : IApplicationUserService
+    public class ApplicationUserService : IApplicationUserService, IDisposable
     {
         private readonly IAsyncRepository<ApplicationUser> _applicationUserRepository;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -27,15 +27,9 @@ namespace HES.Core.Services
             _userManager = userManager;
         }
 
-        public IQueryable<ApplicationUser> Query()
+        public async Task<ApplicationUser> GetByIdAsync(string userId)
         {
-            return _applicationUserRepository.Query();
-        }
-
-        public async Task ReloadUserAsync(string userId)
-        {
-            var user = await _applicationUserRepository.GetByIdAsync(userId);
-            await _applicationUserRepository.ReloadAsync(user);
+            return await _applicationUserRepository.GetByIdAsync(userId);
         }
 
         public async Task<List<ApplicationUser>> GetAdministratorsAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions)
@@ -66,7 +60,7 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
 
         public async Task<int> GetAdministratorsCountAsync(DataLoadingOptions<ApplicationUserFilter> dataLoadingOptions)
@@ -134,11 +128,6 @@ namespace HES.Core.Services
             return HtmlEncoder.Default.Encode(callbackUrl);
         }
 
-        public async Task<ApplicationUser> GetUserByIdAsync(string id)
-        {
-            return await _applicationUserRepository.GetByIdAsync(id);
-        }
-
         public async Task<ApplicationUser> DeleteUserAsync(string id)
         {
             if (id == null)
@@ -154,14 +143,15 @@ namespace HES.Core.Services
             return user;
         }
 
-        public async Task<IList<ApplicationUser>> GetAllAsync()
-        {
-            return await _applicationUserRepository.Query().ToListAsync();
-        }
-
         public async Task<IList<ApplicationUser>> GetAdministratorsAsync()
         {
             return await _userManager.GetUsersInRoleAsync("Administrator");
+        }
+
+        public void Dispose()
+        {
+            _applicationUserRepository.Dispose();
+            _userManager.Dispose();
         }
     }
 }

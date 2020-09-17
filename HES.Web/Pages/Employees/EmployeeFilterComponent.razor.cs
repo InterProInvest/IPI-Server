@@ -8,7 +8,6 @@ namespace HES.Web.Pages.Employees
 {
     public partial class EmployeeFilterComponent : ComponentBase
     {
-        [Inject] public IEmployeeService EmployeeService { get; set; }
         [Parameter] public Func<EmployeeFilter, Task> FilterChanged { get; set; }
 
         public EmployeeFilter Filter { get; set; }

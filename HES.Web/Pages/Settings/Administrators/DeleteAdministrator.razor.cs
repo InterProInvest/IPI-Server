@@ -18,15 +18,31 @@ namespace HES.Web.Pages.Settings.Administrators
         [Inject] public ILogger<DeleteAdministrator> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        [Parameter] public ApplicationUser ApplicationUser { get; set; }
+        [Parameter] public string ApplicationUserId { get; set; }
+        public ApplicationUser ApplicationUser { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            try
+            {
+                ApplicationUser = await ApplicationUserService.GetByIdAsync(ApplicationUserId);
+                if (ApplicationUser == null)
+                    throw new Exception("User not found.");
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
 
         private async Task DeleteUserAsync()
         {
             try
             {
-                await ApplicationUserService.DeleteUserAsync(ApplicationUser.Id);
+                await ApplicationUserService.DeleteUserAsync(ApplicationUserId);
                 ToastService.ShowToast("Administrator deleted.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators, ApplicationUser.Id);
+                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)

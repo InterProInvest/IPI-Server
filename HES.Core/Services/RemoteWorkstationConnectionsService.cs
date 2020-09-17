@@ -2,12 +2,12 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppSettings;
 using Hideez.SDK.Communication;
 using Hideez.SDK.Communication.HES.DTO;
 using Hideez.SDK.Communication.PasswordManager;
 using Hideez.SDK.Communication.Remote;
 using Hideez.SDK.Communication.Utils;
-using Hideez.SDK.Communication.Workstation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class RemoteWorkstationConnectionsService : IRemoteWorkstationConnectionsService
+    public class RemoteWorkstationConnectionsService : IRemoteWorkstationConnectionsService, IDisposable
     {
         static readonly ConcurrentDictionary<string, IRemoteAppConnection> _workstationConnections
                     = new ConcurrentDictionary<string, IRemoteAppConnection>();
@@ -39,6 +39,8 @@ namespace HES.Core.Services
         private readonly IWorkstationAuditService _workstationAuditService;
         private readonly ILogger<RemoteWorkstationConnectionsService> _logger;
         private readonly IHubContext<RefreshHub> _hubContext;
+        private readonly IAppSettingsService _appSettingsService;
+
 
         public RemoteWorkstationConnectionsService(IServiceProvider services,
                       IRemoteTaskService remoteTaskService,
@@ -50,7 +52,8 @@ namespace HES.Core.Services
                       IDataProtectionService dataProtectionService,
                       IWorkstationAuditService workstationAuditService,
                       ILogger<RemoteWorkstationConnectionsService> logger,
-                      IHubContext<RefreshHub> hubContext)
+                      IHubContext<RefreshHub> hubContext,
+                      IAppSettingsService appSettingsService)
         {
             _services = services;
             _remoteTaskService = remoteTaskService;
@@ -62,6 +65,7 @@ namespace HES.Core.Services
             _dataProtectionService = dataProtectionService;
             _workstationAuditService = workstationAuditService;
             _logger = logger;
+            _appSettingsService = appSettingsService;
             _hubContext = hubContext;
         }
 
@@ -138,7 +142,7 @@ namespace HES.Core.Services
             finally
             {
                 _devicesInProgress.TryRemove(vaultId, out TaskCompletionSource<bool> _);
-                await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged);
+                await _hubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, vaultId);
             }
         }
 
@@ -169,7 +173,7 @@ namespace HES.Core.Services
                     break;
                 case VaultStatus.Active:
                     await CheckPassphraseAsync(remoteDevice, vault.Id);
-                    await CheckTaskAsync(remoteDevice, vault.Id, primaryAccountOnly);
+                    await _remoteTaskService.ExecuteRemoteTasks(vault.Id, remoteDevice, primaryAccountOnly);
                     await _hubContext.Clients.All.SendAsync(RefreshPage.EmployeesDetailsVaultState, vault.EmployeeId);
                     break;
                 case VaultStatus.Locked:
@@ -227,46 +231,34 @@ namespace HES.Core.Services
             await remoteDevice.CheckPassphrase(key);
         }
 
-        private async Task CheckTaskAsync(RemoteDevice remoteDevice, string deviceId, bool primaryAccountOnly)
-        {
-            if (primaryAccountOnly)
-            {
-                await _remoteTaskService.ExecuteRemoteTasks(deviceId, remoteDevice, TaskOperation.Primary);
-            }
-            else
-            {
-                await _remoteTaskService.ExecuteRemoteTasks(deviceId, remoteDevice, TaskOperation.None);
-            }
-        }
-
         #endregion
 
         #region Workstation
 
-        public async Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfo workstationInfo)
+        public async Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfoDto workstationInfoDto)
         {
-            if (workstationInfo == null)
-                throw new ArgumentNullException(nameof(workstationInfo));
+            if (workstationInfoDto == null)
+                throw new ArgumentNullException(nameof(workstationInfoDto));
 
-            _workstationConnections.AddOrUpdate(workstationInfo.Id, remoteAppConnection, (id, oldConnection) =>
+            _workstationConnections.AddOrUpdate(workstationInfoDto.Id, remoteAppConnection, (id, oldConnection) =>
             {
                 return remoteAppConnection;
             });
 
-            if (await _workstationService.ExistAsync(w => w.Id == workstationInfo.Id))
+            if (await _workstationService.ExistAsync(w => w.Id == workstationInfoDto.Id))
             {
                 // Workstation exists, update information
-                await _workstationService.UpdateWorkstationInfoAsync(workstationInfo);
+                await _workstationService.UpdateWorkstationInfoAsync(workstationInfoDto);
             }
             else
             {
                 // Workstation does not exist or name + domain was changed, create new
-                await _workstationService.AddWorkstationAsync(workstationInfo);
-                _logger.LogInformation($"New workstation {workstationInfo.MachineName} was added");
+                await _workstationService.AddWorkstationAsync(workstationInfoDto);
+                _logger.LogInformation($"New workstation {workstationInfoDto.MachineName} was added");
             }
 
-            await UpdateProximitySettingsAsync(workstationInfo.Id, await _workstationService.GetProximitySettingsAsync(workstationInfo.Id));
-            await UpdateRfidStateAsync(workstationInfo.Id, await _workstationService.GetRfidStateAsync(workstationInfo.Id));
+            await UpdateProximitySettingsAsync(workstationInfoDto.Id, await _workstationService.GetProximitySettingsAsync(workstationInfoDto.Id));
+            await UpdateRfidStateAsync(workstationInfoDto.Id, await _workstationService.GetRfidStateAsync(workstationInfoDto.Id));
         }
 
         public async Task OnAppHubDisconnectedAsync(string workstationId)
@@ -285,6 +277,51 @@ namespace HES.Core.Services
         public static bool IsWorkstationConnected(string workstationId)
         {
             return _workstationConnections.ContainsKey(workstationId);
+        }
+
+        public async Task LockAllWorkstationsAsync(ApplicationUser applicationUser)
+        {
+            var state = await _appSettingsService.GetAlarmStateAsync();
+            if (state != null && state.IsAlarm)
+                return;
+
+            if (applicationUser == null)
+                throw new ArgumentNullException(nameof(applicationUser));
+
+            var alarmState = new AlarmState
+            {
+                IsAlarm = true,
+                AdminName = applicationUser.Email,
+                Date = DateTime.UtcNow
+            };
+
+            await _appSettingsService.SetAlarmStateAsync(alarmState);
+
+            foreach (var workstationConnection in _workstationConnections)
+                await workstationConnection.Value.SetAlarmState(true);
+        }
+
+        public async Task UnlockAllWorkstationsAsync(ApplicationUser applicationUser)
+        {
+            var state = await _appSettingsService.GetAlarmStateAsync();
+            if (state != null && !state.IsAlarm)
+                return;
+
+            if (applicationUser == null)
+                throw new ArgumentNullException(nameof(applicationUser));
+
+            var alarmState = new AlarmState
+            {
+                IsAlarm = false,
+                AdminName = applicationUser.Email,
+                Date = DateTime.UtcNow
+            };
+
+            await _appSettingsService.SetAlarmStateAsync(alarmState);
+
+
+            foreach (var workstationConnection in _workstationConnections)
+                await workstationConnection.Value.SetAlarmState(false);
         }
 
         public static int WorkstationsOnlineCount()
@@ -324,6 +361,18 @@ namespace HES.Core.Services
             {
                 await remoteAppConnection.WorkstationUnapproved();
             }
+        }
+
+        public void Dispose()
+        {
+            _remoteTaskService.Dispose();
+            _remoteDeviceConnectionsService.Dispose();
+            _employeeService.Dispose();
+            _accountService.Dispose();
+            _workstationService.Dispose();
+            _hardwareVaultService.Dispose();
+            _workstationAuditService.Dispose();
+            _appSettingsService.Dispose();
         }
 
         #endregion

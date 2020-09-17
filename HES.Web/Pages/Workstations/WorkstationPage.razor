@@ -1,4 +1,9 @@
-﻿@if (MainTableService.Entities == null)
+﻿@page "/Workstations"
+@page "/Workstations/{DashboardFilter}"
+@attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
+@inherits OwningComponentBase
+
+@if (MainTableService.Entities == null)
 {
     <LoadingPage />
 }
@@ -43,7 +48,7 @@ else
             <TableFilter SearchTextChanged="MainTableService.SearchTextChangedAsync" />
         </FilterButtons>
     </TableAction>
-    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="WorkstationDetailsAsync">
+    <MainTable Items="MainTableService.Entities" SelectedItem="MainTableService.SelectedEntity" SelecedItemChanged="MainTableService.SelectedItemChangedAsync" SelecedItemDblClick="WorkstationDetailsAsync" Loading="MainTableService.Loading">
         <TableHeader>
             <MainTableHeader Title="Name"
                              TitleWidth="10"
@@ -140,35 +145,35 @@ else
             </td>
             <td>
                 @if (context.IsOnline)
-                {
+                    {
                     <span class="badge badge-success" title="Workstation is online">
                         Online
                     </span>
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     @context.LastSeen.ToLocalTime()
-                }
+                    }
             </td>
             <td>
                 @if (context.RFID)
-                {
-                <span class="badge badge-success">Yes</span>
-                }
-                else
-                {
-                <span class="badge badge-secondary">No</span>
-                }
+                    {
+                    <span class="badge badge-success">Yes</span>
+                    }
+                    else
+                    {
+                    <span class="badge badge-secondary">No</span>
+                    }
             </td>
             <td>
                 @if (context.Approved)
-                {
-                <span class="badge badge-success">Yes</span>
-                }
-                else
-                {
-                <span class="badge badge-danger">No</span>
-                }
+                    {
+                    <span class="badge badge-success">Yes</span>
+                    }
+                    else
+                    {
+                    <span class="badge badge-danger">No</span>
+                    }
             </td>
         </TableRow>
     </MainTable>

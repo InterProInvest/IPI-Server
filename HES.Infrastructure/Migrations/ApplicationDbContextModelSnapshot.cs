@@ -14,7 +14,7 @@ namespace HES.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.4")
+                .HasAnnotation("ProductVersion", "3.1.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("HES.Core.Entities.Account", b =>
@@ -70,6 +70,9 @@ namespace HES.Infrastructure.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
+
+                    b.Property<bool>("UpdateInActiveDirectory")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -913,128 +916,6 @@ namespace HES.Infrastructure.Migrations
                     b.HasIndex("WorkstationId");
 
                     b.ToTable("WorkstationSessions");
-                });
-
-            modelBuilder.Entity("HES.Core.Models.SummaryByDayAndEmployee", b =>
-                {
-                    b.Property<TimeSpan>("AvgSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<string>("Company")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Department")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Employee")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<int>("SessionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("TotalSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<int>("WorkstationsCount")
-                        .HasColumnType("int");
-
-                    b.ToTable("SummaryByDayAndEmployee");
-                });
-
-            modelBuilder.Entity("HES.Core.Models.SummaryByDepartments", b =>
-                {
-                    b.Property<TimeSpan>("AvgSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<TimeSpan>("AvgTotalDuartionByEmployee")
-                        .HasColumnType("time(6)");
-
-                    b.Property<decimal>("AvgTotalSessionsCountByEmployee")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<string>("Company")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Department")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<int>("EmployeesCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalSessionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("TotalSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<int>("WorkstationsCount")
-                        .HasColumnType("int");
-
-                    b.ToTable("SummaryByDepartments");
-                });
-
-            modelBuilder.Entity("HES.Core.Models.SummaryByEmployees", b =>
-                {
-                    b.Property<decimal>("AvgSessionsCountPerDay")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<TimeSpan>("AvgSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<TimeSpan>("AvgWorkingHoursPerDay")
-                        .HasColumnType("time(6)");
-
-                    b.Property<string>("Company")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Department")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Employee")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<int>("TotalSessionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("TotalSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<int>("WorkingDaysCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WorkstationsCount")
-                        .HasColumnType("int");
-
-                    b.ToTable("SummaryByEmployees");
-                });
-
-            modelBuilder.Entity("HES.Core.Models.SummaryByWorkstations", b =>
-                {
-                    b.Property<TimeSpan>("AvgSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<TimeSpan>("AvgTotalDuartionByEmployee")
-                        .HasColumnType("time(6)");
-
-                    b.Property<decimal>("AvgTotalSessionsCountByEmployee")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<int>("EmployeesCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalSessionsCount")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("TotalSessionsDuration")
-                        .HasColumnType("time(6)");
-
-                    b.Property<string>("Workstation")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.ToTable("SummaryByWorkstations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace HES.Core.Services
 {
-    public class TemplateService : ITemplateService
+    public class TemplateService : ITemplateService, IDisposable
     {
         private readonly IAsyncRepository<Template> _templateRepository;
 
@@ -28,7 +28,7 @@ namespace HES.Core.Services
             return _templateRepository.Query();
         }
 
-        public async Task<Template> GetByIdAsync(dynamic id)
+        public async Task<Template> GetByIdAsync(string id)
         {
             return await _templateRepository.GetByIdAsync(id);
         }
@@ -78,8 +78,9 @@ namespace HES.Core.Services
                     break;
             }
 
-            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).ToListAsync();
+            return await query.Skip(dataLoadingOptions.Skip).Take(dataLoadingOptions.Take).AsNoTracking().ToListAsync();
         }
+
         public async Task<int> GetTemplatesCountAsync(DataLoadingOptions<TemplateFilter> dataLoadingOptions)
         {
             var query = _templateRepository.Query();
@@ -114,19 +115,6 @@ namespace HES.Core.Services
             return await query.CountAsync();
         }
 
-        public async Task DetachTemplateAsync(Template template)
-        {
-            await _templateRepository.DetachedAsync(template);
-        }
-
-        public async Task DetachTemplatesAsync(List<Template> templates)
-        {
-            foreach (var item in templates)
-            {
-                await DetachTemplateAsync(item);
-            }
-        }
-
         public async Task<List<Template>> GetTemplatesAsync()
         {
             return await _templateRepository.Query().ToListAsync();
@@ -135,9 +123,15 @@ namespace HES.Core.Services
         public async Task<Template> CreateTmplateAsync(Template template)
         {
             if (template == null)
-            {
                 throw new ArgumentNullException(nameof(template));
-            }
+
+            var accountExist = await _templateRepository
+              .Query()
+              .Where(x => x.Name == template.Name && x.Id != template.Id)
+              .AnyAsync();
+
+            if (accountExist)
+                throw new AlreadyExistException("Template with current name already exists.");
 
             template.Urls = Validation.VerifyUrls(template.Urls);
 
@@ -153,7 +147,6 @@ namespace HES.Core.Services
         {
             if (template == null)
                 throw new ArgumentNullException(nameof(template));
-
 
             var accountExist = await _templateRepository
                .Query()
@@ -185,6 +178,11 @@ namespace HES.Core.Services
         public async Task<bool> ExistAsync(Expression<Func<Template, bool>> predicate)
         {
             return await _templateRepository.ExistAsync(predicate);
+        }
+
+        public void Dispose()
+        {
+            _templateRepository.Dispose();
         }
     }
 }

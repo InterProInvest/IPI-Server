@@ -3,15 +3,17 @@ using HES.Core.Enums;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.OrgStructure
 {
-    public partial class PositionsTab : ComponentBase
+    public partial class PositionsTab : OwningComponentBase, IDisposable
     {
-        [Inject] public IOrgStructureService OrgStructureService { get; set; }
+        public IOrgStructureService OrgStructureService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -23,12 +25,13 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         private HubConnection hubConnection;
 
-
         protected override async Task OnInitializedAsync()
         {
-            await LoadPositionsAsync();
+            OrgStructureService = ScopedServices.GetRequiredService<IOrgStructureService>();
+
             await InitializeHubAsync();
             await BreadcrumbsService.SetOrgStructure();
+            await LoadPositionsAsync();
         }
 
         private string GetSortIcon()
@@ -81,7 +84,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(EditPosition));
-                builder.AddAttribute(1, nameof(EditPosition.Position), position);
+                builder.AddAttribute(1, nameof(EditPosition.PositionId), position.Id);
                 builder.AddAttribute(2, nameof(EditPosition.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(EditPosition.Refresh), EventCallback.Factory.Create(this, LoadPositionsAsync));
                 builder.CloseComponent();
@@ -95,7 +98,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(DeletePosition));
-                builder.AddAttribute(1, nameof(DeletePosition.Position), position);
+                builder.AddAttribute(1, nameof(DeletePosition.PositionId), position.Id);
                 builder.AddAttribute(2, nameof(DeletePosition.ConnectionId), hubConnection?.ConnectionId);
                 builder.AddAttribute(3, nameof(DeletePosition.Refresh), EventCallback.Factory.Create(this, LoadPositionsAsync));
                 builder.CloseComponent();
@@ -112,7 +115,6 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
             hubConnection.On(RefreshPage.OrgSructurePositions, async () =>
             {
-                await OrgStructureService.DetachPositionsAsync(Positions);
                 await LoadPositionsAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
@@ -122,7 +124,8 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
         }
     }
 }

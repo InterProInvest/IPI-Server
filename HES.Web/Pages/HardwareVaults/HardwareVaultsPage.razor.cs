@@ -4,25 +4,31 @@ using HES.Core.Interfaces;
 using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class HardwareVaultsPage : ComponentBase, IDisposable
+    public partial class HardwareVaultsPage : OwningComponentBase, IDisposable
     {
-        [Inject] public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
+        public IMainTableService<HardwareVault, HardwareVaultFilter> MainTableService { get; set; }
+        [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<HardwareVaultsPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
+
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
+            HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+            MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVault, HardwareVaultFilter>>();
+
             switch (DashboardFilter)
             {
                 case "LowBattery":
@@ -45,11 +51,11 @@ namespace HES.Web.Pages.HardwareVaults
                     break;
             }
 
-            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, StateHasChanged, nameof(HardwareVault.Id));
-            await BreadcrumbsService.SetHardwareVaults();
             await InitializeHubAsync();
+            await BreadcrumbsService.SetHardwareVaults();
+            await MainTableService.InitializeAsync(HardwareVaultService.GetVaultsAsync, HardwareVaultService.GetVaultsCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVault.Id));
         }
-              
+
         public async Task ImportVaultsAsync()
         {
             try
@@ -125,7 +131,7 @@ namespace HES.Web.Pages.HardwareVaults
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(ShowActivationCode));
-                builder.AddAttribute(1, nameof(ShowActivationCode.HardwareVault), MainTableService.SelectedEntity);
+                builder.AddAttribute(1, nameof(ShowActivationCode.HardwareVaultId), MainTableService.SelectedEntity.Id);
                 builder.CloseComponent();
             };
 
@@ -153,24 +159,25 @@ namespace HES.Web.Pages.HardwareVaults
 
             hubConnection.On(RefreshPage.HardwareVaults, async () =>
             {
-                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
                 await MainTableService.LoadTableDataAsync();
                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
             });
 
-            hubConnection.On(RefreshPage.HardwareVaultStateChanged, async () =>
-            {
-                await HardwareVaultService.DetachVaultsAsync(MainTableService.Entities);
+            hubConnection.On<string>(RefreshPage.HardwareVaultStateChanged, async (hardwareVaultId) =>
+            {  
                 await MainTableService.LoadTableDataAsync();
+                ToastService.ShowToast($"Hardware Vault {hardwareVaultId} state changed.", ToastLevel.Notify);
             });
 
             await hubConnection.StartAsync();
         }
 
-
         public void Dispose()
         {
-            _ = hubConnection.DisposeAsync();
+            if (hubConnection?.State == HubConnectionState.Connected)
+                hubConnection.DisposeAsync();
+
+            MainTableService.Dispose();
         }
     }
 }
