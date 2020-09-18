@@ -20,20 +20,33 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] public ILogger<Parameters> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+
         public string ApiAddress { get; set; }
         public string DomainHost { get; set; }
         public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
+            try
+            {
+                AppSettingsService = ScopedServices.GetRequiredService<IAppSettingsService>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetParameters();
-            await LoadDataSettingsAsync();
-            Initialized = true;
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetParameters();
+                await LoadDataSettingsAsync();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task LoadDataSettingsAsync()

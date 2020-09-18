@@ -23,6 +23,9 @@ namespace HES.Web.Pages.Dashboard
         public DashboardCard HardwareVaultsCard { get; set; }
         public DashboardCard WorkstationsCard { get; set; }
         public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
+
 
         protected override async Task OnInitializedAsync()
         {
@@ -38,12 +41,14 @@ namespace HES.Web.Pages.Dashboard
                 EmployeesCard = await DashboardService.GetEmployeesCardAsync();
                 HardwareVaultsCard = await DashboardService.GetHardwareVaultsCardAsync();
                 WorkstationsCard = await DashboardService.GetWorkstationsCardAsync();
+
                 Initialized = true;
             }
             catch (Exception ex)
             {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
             }
         }
 

@@ -2,11 +2,7 @@
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
 @inherits OwningComponentBase
 
-@if (MainTableService.Entities == null)
-{
-    <LoadingPage />
-}
-else
+@if (Initialized)
 {
     <TableAction>
         <FilterForm>
@@ -151,4 +147,12 @@ else
                 CurrentPage="MainTableService.CurrentPage"
                 DisplayRows="MainTableService.DataLoadingOptions.Take"
                 DisplayRecords="MainTableService.Entities.Count" />
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

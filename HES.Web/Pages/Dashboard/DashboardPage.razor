@@ -2,11 +2,7 @@
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
 @inherits OwningComponentBase
 
-@if (!Initialized)
-{
-    <LoadingPage />
-}
-else
+@if (Initialized)
 {
     <div class="row">
         <!-- HES -->
@@ -26,4 +22,12 @@ else
             <Card DashboardCard="WorkstationsCard" />
         </div>
     </div>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

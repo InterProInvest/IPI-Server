@@ -5,6 +5,7 @@ using HES.Core.Models.Web.Workstations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -18,28 +19,44 @@ namespace HES.Web.Pages.Workstations
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public ILogger<WorkstationPage> Logger { get; set; }
         [Parameter] public string DashboardFilter { get; set; }
+
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Workstation, WorkstationFilter>>();
-
-            switch (DashboardFilter)
+            try
             {
-                case "NotApproved":
-                    MainTableService.DataLoadingOptions.Filter.Approved = false;
-                    break;
-                case "Online":
-                    //
-                    break;
-            }
+                WorkstationService = ScopedServices.GetRequiredService<IWorkstationService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Workstation, WorkstationFilter>>();
 
-            await BreadcrumbsService.SetWorkstations();
-            await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, ModalDialogService, StateHasChanged, nameof(Workstation.Name));
-            await InitializeHubAsync();
+                switch (DashboardFilter)
+                {
+                    case "NotApproved":
+                        MainTableService.DataLoadingOptions.Filter.Approved = false;
+                        break;
+                    case "Online":
+                        //
+                        break;
+                }
+
+                await BreadcrumbsService.SetWorkstations();
+                await MainTableService.InitializeAsync(WorkstationService.GetWorkstationsAsync, WorkstationService.GetWorkstationsCountAsync, ModalDialogService, StateHasChanged, nameof(Workstation.Name));
+                await InitializeHubAsync();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task ApproveWorkstationAsync()

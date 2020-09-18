@@ -21,16 +21,31 @@ namespace HES.Web.Pages.Groups
         [Inject] public ILogger<GroupsPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
 
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
+
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            GroupService = ScopedServices.GetRequiredService<IGroupService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Group, GroupFilter>>();
+            try
+            {
+                GroupService = ScopedServices.GetRequiredService<IGroupService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Group, GroupFilter>>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetGroups();
-            await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, ModalDialogService, StateHasChanged, nameof(Group.Name));
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetGroups();
+                await MainTableService.InitializeAsync(GroupService.GetGroupsAsync, GroupService.GetGroupsCountAsync, ModalDialogService, StateHasChanged, nameof(Group.Name));
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private Task NavigateToGroupDetails()

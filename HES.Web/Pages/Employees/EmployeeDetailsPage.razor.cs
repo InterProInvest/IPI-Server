@@ -24,10 +24,10 @@ namespace HES.Web.Pages.Employees
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
+        public string LdapHost { get; set; }
         public bool Initialized { get; set; }
         public bool LoadFailed { get; set; }
         public string ErrorMessage { get; set; }
-        public string LdapHost { get; set; }
 
         private HubConnection hubConnection;
 

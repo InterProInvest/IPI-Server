@@ -40,6 +40,7 @@ namespace HES.Web.Pages.Groups
                 await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
                 await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, ModalDialogService, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
+                
                 Initialized = true;
             }
             catch (Exception ex)
