@@ -205,7 +205,6 @@ namespace HES.Core.Services
             var licenseWarning = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Warning)
-                .AsTracking()
                 .CountAsync();
 
             if (licenseWarning > 0)
@@ -221,7 +220,6 @@ namespace HES.Core.Services
             var licenseCritical = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Critical)
-                .AsTracking()
                 .CountAsync();
 
             if (licenseCritical > 0)
@@ -237,7 +235,6 @@ namespace HES.Core.Services
             var licenseExpired = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Expired)
-                .AsTracking()
                 .CountAsync();
 
             if (licenseExpired > 0)
@@ -322,6 +319,7 @@ namespace HES.Core.Services
         }
 
         #endregion
+
         public void Dispose()
         {
             _employeeService.Dispose();

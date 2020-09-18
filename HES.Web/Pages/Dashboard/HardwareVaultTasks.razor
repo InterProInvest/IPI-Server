@@ -65,13 +65,15 @@ else
                             }
                         </td>
                         <td>
-                            <span>
-                                @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
-                            </span>
-                            @if (item.CreatedAt < DateTime.UtcNow.AddDays(-1))
-                            {
-                                <img src="/svg/notify-warning.svg" class="ml-2" title="Long Pending" />
-                            }
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    @TimeZoneInfo.ConvertTimeFromUtc((DateTime)item.CreatedAt, TimeZoneInfo.Local)
+                                </span>
+                                @if (item.CreatedAt < DateTime.UtcNow.AddDays(-1))
+                                {
+                                    <img src="/svg/notify-warning.svg" class="ml-auto" title="Long Pending" />
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
