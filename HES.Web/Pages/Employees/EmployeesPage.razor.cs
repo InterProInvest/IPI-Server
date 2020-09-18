@@ -43,16 +43,16 @@ namespace HES.Web.Pages.Employees
         //    await MainTableService.ShowModalAsync("Import from AD", body);
         //}
 
-        private async Task SyncEmployeesFromAdAsync()
+        private async Task SyncEmployeesWithAdAsync()
         {
             RenderFragment body = (builder) =>
             {
-                builder.OpenComponent(0, typeof(SyncEmployeesFromAd));
-                builder.AddAttribute(1, nameof(SyncEmployeesFromAd.ConnectionId), hubConnection?.ConnectionId);
+                builder.OpenComponent(0, typeof(SyncEmployeesWithAD));
+                builder.AddAttribute(1, nameof(SyncEmployeesWithAD.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };
 
-            await MainTableService.ShowModalAsync("Sync from Active Directory", body, ModalDialogSize.Large);
+            await MainTableService.ShowModalAsync("Sync with Active Directory", body, ModalDialogSize.Large);
         }
 
         private async Task EmployeeDetailsAsync()

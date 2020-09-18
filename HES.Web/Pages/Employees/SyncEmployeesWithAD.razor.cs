@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class SyncEmployeesFromAd : ComponentBase
+    public partial class SyncEmployeesWithAD : ComponentBase
     {
         [Inject] public ILdapService LdapService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
-        [Inject] public ILogger<SyncEmployeesFromAd> Logger { get; set; }
+        [Inject] public ILogger<SyncEmployeesWithAD> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
