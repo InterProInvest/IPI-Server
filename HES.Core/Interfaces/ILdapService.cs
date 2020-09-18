@@ -8,6 +8,7 @@ namespace HES.Core.Interfaces
 {
     public interface ILdapService : IDisposable
     {
+        Task ValidateCredentialsAsync(LdapSettings ldapSettings);
         Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings);
         Task AddUsersAsync(List<ActiveDirectoryUser> users, bool createAccounts, bool createGroups);
         Task SetUserPasswordAsync(string employeeId, string password, LdapSettings ldapSettings);

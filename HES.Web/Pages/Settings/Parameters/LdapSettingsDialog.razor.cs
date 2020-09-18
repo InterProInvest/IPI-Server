@@ -2,6 +2,7 @@
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR;
@@ -13,6 +14,7 @@ namespace HES.Web.Pages.Settings.Parameters
 {
     public partial class LdapSettingsDialog : ComponentBase
     {
+        [Inject] public ILdapService LdapService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public ILogger<LdapSettingsDialog> Logger { get; set; }
@@ -23,6 +25,7 @@ namespace HES.Web.Pages.Settings.Parameters
 
         public LdapSettings LdapSettings { get; set; }
         public EditContext LdapSettingsContext { get; set; }
+        public ValidationErrorMessage ValidationErrorMessage { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -30,7 +33,6 @@ namespace HES.Web.Pages.Settings.Parameters
 
             if (setting == null)
                 LdapSettings = new LdapSettings() { Host = Host };
-
             else
                 LdapSettings = new LdapSettings()
                 {
@@ -50,10 +52,15 @@ namespace HES.Web.Pages.Settings.Parameters
                 if (!isValid)
                     return;
 
+                await LdapService.ValidateCredentialsAsync(LdapSettings);
                 await AppSettingsService.SetLdapSettingsAsync(LdapSettings);
                 ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
                 await HubContext.Clients.All.SendAsync(RefreshPage.Parameters, ConnectionId);
                 await ModalDialogService.CloseAsync();
+            }
+            catch (LdapForNet.LdapInvalidCredentialsException)
+            {
+                ValidationErrorMessage.DisplayError(nameof(LdapSettings.Password), "Invalid password");
             }
             catch (Exception ex)
             {

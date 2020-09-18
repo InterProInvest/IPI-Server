@@ -37,6 +37,15 @@ namespace HES.Core.Services
             _logger = logger;
         }
 
+        public async Task ValidateCredentialsAsync(LdapSettings ldapSettings)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(ldapSettings.Host, 3268);
+                await connection.BindAsync(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+            }
+        }
+
         public async Task<List<ActiveDirectoryUser>> GetUsersAsync(LdapSettings ldapSettings)
         {
             var users = new List<ActiveDirectoryUser>();
@@ -643,7 +652,7 @@ namespace HES.Core.Services
             var hex = BitConverter.ToString(ba).Insert(0, @"\").Replace("-", @"\");
             return hex;
         }
- 
+
         private string GeneratePassword()
         {
             return PasswordGenerator.Generate();
