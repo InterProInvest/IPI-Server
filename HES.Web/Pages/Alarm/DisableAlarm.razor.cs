@@ -49,7 +49,7 @@ namespace HES.Web.Pages.Alarm
 
             try
             {
-                await RemoteWorkstationConnections.UnlockAllWorkstationsAsync(ApplicationUser);
+                await RemoteWorkstationConnections.UnlockAllWorkstationsAsync(ApplicationUser.Email);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
                 await CallBack.InvokeAsync(this);
                 ToastService.ShowToast("All workstations are unlocked.", ToastLevel.Success);
