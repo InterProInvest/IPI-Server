@@ -28,7 +28,7 @@ namespace HES.Web.Pages.Alarm
         {
             try
             {
-                string userEmail = null ;
+                string userEmail = null;
                 try
                 {
                     var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();

@@ -42,9 +42,6 @@ namespace HES.Web.Pages.Alarm
         private async Task GetAlarmStateAsync()
         {
             AlarmState = await AppSettingsService.GetAlarmStateAsync();
-
-            if (AlarmState == null)
-                AlarmState = new AlarmState();
         }
 
         private async Task EnableAlarmAsync()

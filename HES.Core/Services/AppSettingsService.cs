@@ -109,49 +109,59 @@ namespace HES.Core.Services
 
         public async Task<AlarmState> GetAlarmStateAsync()
         {
-            var isJsonExist = _memoryCache.TryGetValue(ServerConstants.Alarm, out object _);
+            var alarmState = _memoryCache.Get<AlarmState>(ServerConstants.Alarm);
 
-            if (isJsonExist)
-                return _memoryCache.Get<AlarmState>(ServerConstants.Alarm);
+            if (alarmState != null)
+                return alarmState;
+
+            alarmState = new AlarmState();
 
             var _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "alarmstate.json");
 
             if (!File.Exists(_path))
             {
-                _logger.LogError("alarmstate.json file not found");
-                return new AlarmState { IsAlarm = false };
+                _memoryCache.Set(ServerConstants.Alarm, alarmState);
+                return alarmState;
             }
 
             string json = string.Empty;
-            using (var reader = new StreamReader(_path))
+            try
             {
-                json = await reader.ReadToEndAsync();
-            }
+                using (var reader = new StreamReader(_path))
+                {
+                    json = await reader.ReadToEndAsync();
+                }
 
-            if (string.IsNullOrWhiteSpace(json))
+                if (string.IsNullOrWhiteSpace(json))
+                    return alarmState;
+
+                alarmState = JsonConvert.DeserializeObject<AlarmState>(json);
+                _memoryCache.Set(ServerConstants.Alarm, alarmState);
+            }
+            catch (Exception ex)
             {
-                _logger.LogError("alarmstate.json file is empty");
-                return new AlarmState { IsAlarm = false };
+                _logger.LogError(ex.Message);
             }
-
-            var alarmState = JsonConvert.DeserializeObject<AlarmState>(json);
-            _memoryCache.Set(ServerConstants.Alarm, alarmState);
-
+            
             return alarmState;
         }
 
         public async Task SetAlarmStateAsync(AlarmState alarmState)
         {
-            if (alarmState == null)
-                throw new ArgumentNullException(nameof(alarmState));
-
             _memoryCache.Set(ServerConstants.Alarm, alarmState);
 
-            var json = JsonConvert.SerializeObject(alarmState);
-            var _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "alarmstate.json");
-            using (var writer = new StreamWriter(_path, false))
+            try
             {
-                writer.WriteLine(json);
+                var json = JsonConvert.SerializeObject(alarmState);
+                var _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "alarmstate.json");
+                using (var writer = new StreamWriter(_path, false))
+                {
+                    await writer.WriteLineAsync(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
             }
         }
 
