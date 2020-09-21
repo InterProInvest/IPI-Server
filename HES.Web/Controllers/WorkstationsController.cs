@@ -79,7 +79,7 @@ namespace HES.Web.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
-                await _remoteWorkstationConnectionsService.LockAllWorkstationsAsync(user);
+                await _remoteWorkstationConnectionsService.LockAllWorkstationsAsync(user.Email);
                 return Ok();
             }
             catch (Exception ex)

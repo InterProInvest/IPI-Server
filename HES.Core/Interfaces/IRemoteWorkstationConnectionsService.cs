@@ -11,8 +11,8 @@ namespace HES.Core.Interfaces
     {
         void StartUpdateRemoteDevice(IList<string> vaultIds);
         void StartUpdateRemoteDevice(string vaultId);
-        Task LockAllWorkstationsAsync(ApplicationUser applicationUser);
-        Task UnlockAllWorkstationsAsync(ApplicationUser applicationUser);
+        Task LockAllWorkstationsAsync(string userEmail);
+        Task UnlockAllWorkstationsAsync(string userEmail);
         Task UpdateRemoteDeviceAsync(string vaultId, string workstationId, bool primaryAccountOnly);
         Task RegisterWorkstationInfoAsync(IRemoteAppConnection remoteAppConnection, WorkstationInfoDto workstationInfo);
         Task OnAppHubDisconnectedAsync(string workstationId);

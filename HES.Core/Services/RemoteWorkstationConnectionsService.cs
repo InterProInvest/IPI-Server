@@ -279,41 +279,34 @@ namespace HES.Core.Services
             return _workstationConnections.ContainsKey(workstationId);
         }
 
-        public async Task LockAllWorkstationsAsync(ApplicationUser applicationUser)
+        public async Task LockAllWorkstationsAsync(string userEmail)
         {
-            var state = await _appSettingsService.GetAlarmStateAsync();
-            if (state != null && state.IsAlarm)
-                return;
-
-            if (applicationUser == null)
-                throw new ArgumentNullException(nameof(applicationUser));
+            foreach (var workstationConnection in _workstationConnections)
+                await workstationConnection.Value.SetAlarmState(true);
 
             var alarmState = new AlarmState
             {
                 IsAlarm = true,
-                AdminName = applicationUser.Email,
+                AdminName = userEmail ?? "undefined",
                 Date = DateTime.UtcNow
             };
 
             await _appSettingsService.SetAlarmStateAsync(alarmState);
-
-            foreach (var workstationConnection in _workstationConnections)
-                await workstationConnection.Value.SetAlarmState(true);
         }
 
-        public async Task UnlockAllWorkstationsAsync(ApplicationUser applicationUser)
+        public async Task UnlockAllWorkstationsAsync(string userEmail)
         {
             var state = await _appSettingsService.GetAlarmStateAsync();
             if (state != null && !state.IsAlarm)
                 return;
 
-            if (applicationUser == null)
-                throw new ArgumentNullException(nameof(applicationUser));
+            if (string.IsNullOrWhiteSpace(userEmail))
+                throw new ArgumentNullException(nameof(userEmail));
 
             var alarmState = new AlarmState
             {
                 IsAlarm = false,
-                AdminName = applicationUser.Email,
+                AdminName = userEmail,
                 Date = DateTime.UtcNow
             };
 

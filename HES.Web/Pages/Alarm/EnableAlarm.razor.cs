@@ -26,12 +26,20 @@ namespace HES.Web.Pages.Alarm
 
         private async Task EnableAlarmAsync()
         {
-            var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var applicationUser = await UserManager.GetUserAsync(state.User);
-
             try
             {
-                await RemoteWorkstationConnections.LockAllWorkstationsAsync(applicationUser);
+                string userEmail = null;
+                try
+                {
+                    var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                    var applicationUser = await UserManager.GetUserAsync(state.User);
+                    userEmail = applicationUser.Email;
+                }
+                finally
+                {
+                    await RemoteWorkstationConnections.LockAllWorkstationsAsync(userEmail);
+                }
+
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
                 await CallBack.InvokeAsync(this);
                 ToastService.ShowToast("All workstations are locked.", ToastLevel.Success);
