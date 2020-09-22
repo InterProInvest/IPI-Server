@@ -14,6 +14,7 @@ namespace HES.Core.Interfaces
         Task SetUserPasswordAsync(string employeeId, string password, LdapSettings ldapSettings);
         Task ChangePasswordWhenExpiredAsync(LdapSettings ldapSettings);
         Task SyncUsersAsync(LdapSettings ldapSettings);
+        Task AddUserToHideezKeyOwnersAsync(LdapSettings ldapSettings, string activeDirectoryGuid);
         Task<List<ActiveDirectoryGroup>> GetGroupsAsync(LdapSettings ldapSettings);
         Task AddGroupsAsync(List<ActiveDirectoryGroup> groups, bool createEmployees);
     }

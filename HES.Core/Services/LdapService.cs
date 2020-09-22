@@ -27,19 +27,16 @@ namespace HES.Core.Services
         private readonly IGroupService _groupService;
         private readonly IOrgStructureService _orgStructureService;
         private readonly IEmailSenderService _emailSenderService;
-        private readonly ILogger<LdapService> _logger;
 
         public LdapService(IEmployeeService employeeService,
                            IGroupService groupService,
                            IOrgStructureService orgStructureService,
-                           IEmailSenderService emailSenderService,
-                           ILogger<LdapService> logger)
+                           IEmailSenderService emailSenderService)
         {
             _employeeService = employeeService;
             _groupService = groupService;
             _orgStructureService = orgStructureService;
             _emailSenderService = emailSenderService;
-            _logger = logger;
         }
 
         public async Task ValidateCredentialsAsync(LdapSettings ldapSettings)
@@ -216,7 +213,7 @@ namespace HES.Core.Services
         {
             using (var connection = new LdapConnection())
             {
-                connection.Connect(ldapSettings.Host, 3268);         
+                connection.Connect(ldapSettings.Host, 3268);
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
@@ -324,8 +321,9 @@ namespace HES.Core.Services
                     }
                     else
                     {
+                        var user = GetUserByGuid(ldapSettings, memberGuid);
                         int maxPwdAge = ldapSettings.MaxPasswordAge;
-                        var pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(member, "pwdLastSet")));
+                        var pwdLastSet = DateTime.FromFileTimeUtc(long.Parse(TryGetAttribute(user, "pwdLastSet")));
                         var currentPwdAge = DateTime.UtcNow.Subtract(pwdLastSet).TotalDays;
 
                         if (currentPwdAge >= maxPwdAge)
@@ -539,6 +537,50 @@ namespace HES.Core.Services
 
                     transactionScope.Complete();
                 }
+            }
+        }
+
+        public async Task AddUserToHideezKeyOwnersAsync(LdapSettings ldapSettings, string activeDirectoryGuid)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(ldapSettings.Host, 389);
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+                var filter = $"(&(objectCategory=group)(name={_syncGroupName}))";
+                var searchRequest = new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE);
+
+                var response = (SearchResponse)connection.SendRequest(searchRequest);
+
+                if (response.Entries.Count == 0)
+                    return;
+
+                var group = response.Entries.FirstOrDefault();
+                var members = TryGetAttributeArray(group, "member");
+
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, $"(&(objectCategory=user)(objectGUID={GetObjectGuid(activeDirectoryGuid)}))", LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                var distinguishedName = TryGetAttribute(user.Entries.FirstOrDefault(), "distinguishedName");
+
+                var exist = members.Any(x => x.Contains(distinguishedName));
+                if (exist)
+                {
+                    return;
+                }
+
+                await connection.ModifyAsync(new LdapModifyEntry
+                {
+                    Dn = group.Dn,
+                    Attributes = new List<LdapModifyAttribute>
+                    {
+                        new LdapModifyAttribute
+                        {
+                            LdapModOperation = LdapModOperation.LDAP_MOD_ADD,
+                            Type = "member",
+                            Values = new List<string> { distinguishedName }
+                        },
+                    }
+                });
             }
         }
 
