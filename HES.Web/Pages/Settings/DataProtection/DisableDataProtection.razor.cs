@@ -44,14 +44,14 @@ namespace HES.Web.Pages.Settings.DataProtection
                     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
                     await DataProtectionService.DisableProtectionAsync(CurrentPassword.Password);
                     await Refresh.InvokeAsync(this);
-                    ToastService.ShowToast("Data protection disabled.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Data protection disabled.", ToastType.Success);
                     Logger.LogInformation($"Data protection disabled by {authState.User.Identity.Name}");
                 });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
             finally
             {  

@@ -73,12 +73,12 @@ namespace HES.Web.Pages.Settings.Administrators
             {
                 var callBakcUrl = await ApplicationUserService.GetCallBackUrl(MainTableService.SelectedEntity.Email, NavigationManager.BaseUri);
                 await EmailSenderService.SendUserInvitationAsync(MainTableService.SelectedEntity.Email, callBakcUrl);
-                ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Administrator invited.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 
@@ -107,7 +107,7 @@ namespace HES.Web.Pages.Settings.Administrators
             hubConnection.On(RefreshPage.Administrators, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             hubConnection.On(RefreshPage.AdministratorsUpdated, async () =>

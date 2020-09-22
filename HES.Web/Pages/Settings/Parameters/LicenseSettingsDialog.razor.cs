@@ -35,7 +35,7 @@ namespace HES.Web.Pages.Settings.Parameters
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await AppSettingsService.SetLicensingSettingsAsync(LicensingSettings);
-                    ToastService.ShowToast("License settings updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("License settings updated.", ToastType.Success);
                     await HubContext.Clients.All.SendAsync(RefreshPage.Parameters, ConnectionId);
                     await ModalDialogService.CloseAsync();
                 });
@@ -43,7 +43,7 @@ namespace HES.Web.Pages.Settings.Parameters
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

@@ -41,14 +41,14 @@ namespace HES.Web.Pages.Settings.Administrators
             try
             {
                 await ApplicationUserService.DeleteUserAsync(ApplicationUserId);
-                ToastService.ShowToast("Administrator deleted.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Administrator deleted.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

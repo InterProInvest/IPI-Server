@@ -35,7 +35,7 @@ namespace HES.Web.Pages.Settings.Administrators
                 {
                     var callBakcUrl = await ApplicationUserService.InviteAdministratorAsync(Invitation.Email, NavigationManager.BaseUri);
                     await EmailSenderService.SendUserInvitationAsync(Invitation.Email, callBakcUrl);
-                    ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Administrator invited.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
                     await ModalDialogService.CloseAsync();
                 });
@@ -47,7 +47,7 @@ namespace HES.Web.Pages.Settings.Administrators
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }  
         }

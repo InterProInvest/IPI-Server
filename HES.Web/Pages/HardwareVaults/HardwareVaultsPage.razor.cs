@@ -77,12 +77,12 @@ namespace HES.Web.Pages.HardwareVaults
             {
                 await HardwareVaultService.ImportVaultsAsync();
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Vaults imported.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Vaults imported.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 
@@ -175,13 +175,13 @@ namespace HES.Web.Pages.HardwareVaults
             hubConnection.On(RefreshPage.HardwareVaults, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             hubConnection.On<string>(RefreshPage.HardwareVaultStateChanged, async (hardwareVaultId) =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast($"Hardware Vault {hardwareVaultId} state changed.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync($"Hardware Vault {hardwareVaultId} state changed.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

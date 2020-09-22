@@ -53,7 +53,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -71,7 +71,7 @@ namespace HES.Web.Pages.SharedAccounts
                 {
                     var vaults = await SharedAccountService.EditSharedAccountOtpAsync(Account, AccountOtp);
                     RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
-                    ToastService.ShowToast("Account otp updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Account otp updated.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                     await ModalDialogService.CloseAsync();
                 });
@@ -83,7 +83,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

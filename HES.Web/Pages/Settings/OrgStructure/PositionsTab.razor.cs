@@ -132,7 +132,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             hubConnection.On(RefreshPage.OrgSructurePositions, async () =>
             {
                 await LoadPositionsAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

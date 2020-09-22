@@ -35,7 +35,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -46,12 +46,12 @@ namespace HES.Web.Pages.Groups
             {
                 await GroupService.RemoveEmployeeFromGroupAsync(GroupMembership.Id);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.GroupDetails);
-                ToastService.ShowToast("Employee removed.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Employee removed.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
             finally
             {

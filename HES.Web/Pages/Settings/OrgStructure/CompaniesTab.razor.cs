@@ -145,7 +145,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             hubConnection.On(RefreshPage.OrgSructureCompanies, async () =>
             {
                 await LoadCompaniesAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

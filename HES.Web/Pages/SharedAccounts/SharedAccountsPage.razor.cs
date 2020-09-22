@@ -122,7 +122,7 @@ namespace HES.Web.Pages.SharedAccounts
             hubConnection.On(RefreshPage.SharedAccounts, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

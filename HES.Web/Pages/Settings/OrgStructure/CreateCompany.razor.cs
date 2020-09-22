@@ -33,7 +33,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await OrgStructureService.CreateCompanyAsync(Company);
-                    ToastService.ShowToast("Company created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Company created.", ToastType.Success);
                     await Refresh.InvokeAsync(this);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
                     await ModalDialogService.CloseAsync();
@@ -46,7 +46,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

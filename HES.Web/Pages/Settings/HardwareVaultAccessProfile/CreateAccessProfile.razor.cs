@@ -46,7 +46,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await HardwareVaultService.CreateProfileAsync(AccessProfile);
-                    ToastService.ShowToast("Hardware vault profile created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Hardware vault profile created.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
                     await ModalDialogService.CloseAsync();
                 });
@@ -54,7 +54,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

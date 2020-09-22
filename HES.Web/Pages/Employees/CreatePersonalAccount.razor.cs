@@ -63,7 +63,7 @@ namespace HES.Web.Pages.Employees
                     await EmployeeService.CreatePersonalAccountAsync(PersonalAccount);
                     RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
                     await Refresh.InvokeAsync(this);
-                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Account created.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                     await ModalDialogService.CloseAsync();
                 });
@@ -75,7 +75,7 @@ namespace HES.Web.Pages.Employees
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }
@@ -107,7 +107,7 @@ namespace HES.Web.Pages.Employees
 
                     RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(EmployeeId));
                     await Refresh.InvokeAsync(this);
-                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Account created.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                     await ModalDialogService.CloseAsync();
                 });
@@ -119,7 +119,7 @@ namespace HES.Web.Pages.Employees
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

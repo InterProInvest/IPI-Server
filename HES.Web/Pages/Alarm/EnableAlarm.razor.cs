@@ -42,13 +42,13 @@ namespace HES.Web.Pages.Alarm
 
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
                 await CallBack.InvokeAsync(this);
-                ToastService.ShowToast("All workstations are locked.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("All workstations are locked.", ToastType.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

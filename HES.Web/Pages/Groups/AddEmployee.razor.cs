@@ -37,7 +37,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }
@@ -55,14 +55,14 @@ namespace HES.Web.Pages.Groups
                 var employeeIds = Employees.Where(x => x.Value).Select(x => x.Key.Id).ToList();
 
                 await GroupService.AddEmployeesToGroupAsync(employeeIds, GroupId);
-                ToastService.ShowToast("Employee added.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Employee added.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.GroupDetails);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

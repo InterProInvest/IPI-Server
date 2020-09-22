@@ -65,7 +65,7 @@ namespace HES.Web.Pages.Workstations
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -78,7 +78,7 @@ namespace HES.Web.Pages.Workstations
                 {
                     await WorkstationService.ApproveWorkstationAsync(Workstation);
                     await RemoteWorkstationConnectionsService.UpdateRfidStateAsync(Workstation.Id, Workstation.RFID);
-                    ToastService.ShowToast("Workstation updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Workstation updated.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Workstations);
                     await ModalDialogService.CloseAsync();
                 });
@@ -86,7 +86,7 @@ namespace HES.Web.Pages.Workstations
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

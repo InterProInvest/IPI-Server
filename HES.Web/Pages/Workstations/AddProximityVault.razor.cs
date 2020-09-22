@@ -103,14 +103,14 @@ namespace HES.Web.Pages.Workstations
 
                 await WorkstationService.AddProximityVaultAsync(WorkstationId, SelectedHardwareVault.Id);
                 await RemoteWorkstationConnectionsService.UpdateProximitySettingsAsync(WorkstationId, await WorkstationService.GetProximitySettingsAsync(WorkstationId));
-                ToastService.ShowToast("Vault added", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Vault added", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.WorkstationsDetails, WorkstationId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

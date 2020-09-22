@@ -31,13 +31,13 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
 
-                ToastService.ShowToast("Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.", ToastType.Success);
                 NavigationManager.NavigateTo("/Identity/Account/Manage/EnableAuthenticator", false);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

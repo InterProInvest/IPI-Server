@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -50,14 +50,14 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             try
             {
                 await HardwareVaultService.DeleteProfileAsync(AccessProfile.Id);
-                ToastService.ShowToast("Hardware vault profile deleted.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Hardware vault profile deleted.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

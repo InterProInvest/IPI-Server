@@ -47,7 +47,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -59,7 +59,7 @@ namespace HES.Web.Pages.Groups
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await GroupService.EditGroupAsync(Group);
-                    ToastService.ShowToast("Group updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Group updated.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                     await ModalDialogService.CloseAsync();
                 });
@@ -71,7 +71,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

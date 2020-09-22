@@ -51,14 +51,14 @@ namespace HES.Web.Pages.Settings.DataProtection
                     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
                     await DataProtectionService.ChangeProtectionPasswordAsync(CurrentPassword.OldPassword, CurrentPassword.NewPassword);
                     await Refresh.InvokeAsync(this);
-                    ToastService.ShowToast("Data protection password updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Data protection password updated.", ToastType.Success);
                     Logger.LogInformation($"Data protection password updated by {authState.User.Identity.Name}");
                 });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
             finally
             {

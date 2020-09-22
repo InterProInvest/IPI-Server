@@ -29,7 +29,7 @@ namespace HES.Web.Pages.SoftwareVaults
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }
@@ -40,12 +40,12 @@ namespace HES.Web.Pages.SoftwareVaults
             {
                 await SoftwareVaultService.DeleteInvitationAsync(SoftwareVaultInvitation.Id);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Invitation deleted.", ToastLevel.Success);           
+                await ToastService.ShowToastAsync("Invitation deleted.", ToastType.Success);           
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
             finally
             {

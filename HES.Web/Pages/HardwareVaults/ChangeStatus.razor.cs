@@ -46,7 +46,7 @@ namespace HES.Web.Pages.HardwareVaults
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -59,17 +59,17 @@ namespace HES.Web.Pages.HardwareVaults
                 {
                     case VaultStatus.Active:
                         await HardwareVaultService.ActivateVaultAsync(HardwareVault.Id);
-                        ToastService.ShowToast("Vault pending activate.", ToastLevel.Success);
+                        await ToastService.ShowToastAsync("Vault pending activate.", ToastType.Success);
                         break;
                     case VaultStatus.Suspended:
                         await HardwareVaultService.SuspendVaultAsync(HardwareVault.Id, StatusDescription);
-                        ToastService.ShowToast("Vault pending suspend.", ToastLevel.Success);
+                        await ToastService.ShowToastAsync("Vault pending suspend.", ToastType.Success);
                         break;
                     case VaultStatus.Compromised:
                         if (CompromisedIsDisabled)
                             return;
                         await HardwareVaultService.VaultCompromisedAsync(HardwareVault.Id, StatusReason, StatusDescription);
-                        ToastService.ShowToast("Vault compromised.", ToastLevel.Success);
+                        await ToastService.ShowToastAsync("Vault compromised.", ToastType.Success);
                         break;
                 }
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
@@ -79,7 +79,7 @@ namespace HES.Web.Pages.HardwareVaults
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

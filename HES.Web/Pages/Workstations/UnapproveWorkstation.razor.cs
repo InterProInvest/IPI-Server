@@ -45,7 +45,7 @@ namespace HES.Web.Pages.Workstations
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -56,14 +56,14 @@ namespace HES.Web.Pages.Workstations
             {
                 await WorkstationService.UnapproveWorkstationAsync(Workstation.Id);
                 await RemoteWorkstationConnectionsService.UpdateWorkstationApprovedAsync(Workstation.Id, isApproved: false);
-                ToastService.ShowToast("Workstation unapproved.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Workstation unapproved.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Workstations);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

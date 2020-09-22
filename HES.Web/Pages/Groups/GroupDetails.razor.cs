@@ -95,7 +95,7 @@ namespace HES.Web.Pages.Groups
             hubConnection.On(RefreshPage.GroupDetails, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

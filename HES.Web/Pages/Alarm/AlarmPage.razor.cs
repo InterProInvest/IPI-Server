@@ -80,7 +80,7 @@ namespace HES.Web.Pages.Alarm
             {
                 await GetAlarmStateAsync();
                 StateHasChanged();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await _hubConnection.StartAsync();

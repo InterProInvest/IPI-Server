@@ -94,10 +94,10 @@ namespace HES.Web.Pages.Settings.DataProtection
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.DataProtection, () =>
+            hubConnection.On(RefreshPage.DataProtection, async () =>
             {
                 ProtectionStatus();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

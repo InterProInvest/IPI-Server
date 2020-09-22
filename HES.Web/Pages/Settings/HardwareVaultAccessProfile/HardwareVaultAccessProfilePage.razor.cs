@@ -108,7 +108,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             hubConnection.On(RefreshPage.HardwareVaultProfiles, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

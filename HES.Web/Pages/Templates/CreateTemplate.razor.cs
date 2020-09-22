@@ -33,7 +33,7 @@ namespace HES.Web.Pages.Templates
                 {                 
                     await TemplateService.CreateTmplateAsync(Template);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
-                    ToastService.ShowToast("Template created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Template created.", ToastType.Success);
                     await ModalDialogService.CloseAsync();
                 });
             }
@@ -48,7 +48,7 @@ namespace HES.Web.Pages.Templates
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }        

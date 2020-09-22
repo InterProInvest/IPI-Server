@@ -26,14 +26,14 @@ namespace HES.Web.Pages.Workstations
             try
             {   
                 await WorkstationService.DeleteProximityVaultAsync(WorkstationProximityVault.Id);          
-                ToastService.ShowToast("Vault deleted.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Vault deleted.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.WorkstationsDetails, WorkstationId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

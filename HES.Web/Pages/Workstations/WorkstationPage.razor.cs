@@ -124,7 +124,7 @@ namespace HES.Web.Pages.Workstations
             hubConnection.On(RefreshPage.Workstations, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

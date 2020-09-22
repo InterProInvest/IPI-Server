@@ -51,7 +51,7 @@ namespace HES.Web.Pages.SharedAccounts
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await SharedAccountService.CreateSharedAccountAsync(SharedAccount);
-                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Account created.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                     await ModalDialogService.CloseAsync();
                 });
@@ -71,7 +71,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }
@@ -95,7 +95,7 @@ namespace HES.Web.Pages.SharedAccounts
                             break;
                     }
 
-                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Account created.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                     await ModalDialogService.CloseAsync();
                 });
@@ -107,7 +107,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             } 
         }

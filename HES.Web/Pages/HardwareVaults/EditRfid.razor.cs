@@ -45,7 +45,7 @@ namespace HES.Web.Pages.HardwareVaults
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -57,7 +57,7 @@ namespace HES.Web.Pages.HardwareVaults
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await HardwareVaultService.UpdateVaultAsync(HardwareVault);
-                    ToastService.ShowToast("RFID updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("RFID updated.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
                     await ModalDialogService.CloseAsync();
                 });
@@ -65,7 +65,7 @@ namespace HES.Web.Pages.HardwareVaults
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
