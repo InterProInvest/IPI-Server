@@ -28,12 +28,13 @@ else
                     <img class="icon-btn" src="/svg/action/details.svg" />
                     Details
                 </button>
-
-                <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
-                    <img class="icon-btn" src="/svg/action/edit.svg" />
-                    Edit
-                </button>
-
+                @if (MainTableService.SelectedEntity.ActiveDirectoryGuid == null)
+                {
+                    <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
+                        <img class="icon-btn" src="/svg/action/edit.svg" />
+                        Edit
+                    </button>
+                }
                 <button type="button" @onclick="DeleteEmployeeAsync" class="btn btn-light border mx-1" title="Delete employee">
                     <img class="icon-btn" src="/svg/action/delete.svg" />
                     Delete
@@ -106,6 +107,12 @@ else
         <TableRow>
             <td>
                 @context.FullName
+                @if (context.ActiveDirectoryGuid != null)
+                {
+                    <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-primary") ml-1" title="Imported from Active Directory">
+                        AD
+                    </span>
+                }
             </td>
             <td>
                 @context.Email

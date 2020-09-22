@@ -20,6 +20,7 @@ namespace HES.Core.Interfaces
         Task<List<Department>> GetDepartmentsByCompanyIdAsync(string id);
         Task<Department> GetDepartmentByIdAsync(string id);
         Task<Department> CreateDepartmentAsync(Department department);
+        Task<Department> TryAddAndGetDepartmentWithCompanyAsync(string companyName, string departmentName);
         Task EditDepartmentAsync(Department department);
         Task UnchangedDepartmentAsync(Department department);
         Task DeleteDepartmentAsync(string id);
@@ -27,6 +28,7 @@ namespace HES.Core.Interfaces
         Task<List<Position>> GetPositionsAsync();
         Task<Position> GetPositionByIdAsync(string id);
         Task<Position> CreatePositionAsync(Position position);
+        Task<Position> TryAddAndGetPositionAsync(string name);
         Task EditPositionAsync(Position position);
         Task UnchangedPositionAsync(Position position);
         Task DeletePositionAsync(string id);

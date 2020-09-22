@@ -220,7 +220,7 @@
                     <td style="vertical-align:middle">
                         @if (context.Employee.PrimaryAccountId == context.Id)
                                 {
-                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Primary account">
+                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" title="Primary account">
                                 @context.Name
                             </span>
                                 }

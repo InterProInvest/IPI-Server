@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Hideez.SDK.Communication.Security;
 using static LdapForNet.Native.Native;
+using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 
 namespace HES.Core.Services
 {
@@ -23,16 +25,19 @@ namespace HES.Core.Services
 
         private readonly IEmployeeService _employeeService;
         private readonly IGroupService _groupService;
+        private readonly IOrgStructureService _orgStructureService;
         private readonly IEmailSenderService _emailSenderService;
         private readonly ILogger<LdapService> _logger;
 
         public LdapService(IEmployeeService employeeService,
                            IGroupService groupService,
+                           IOrgStructureService orgStructureService,
                            IEmailSenderService emailSenderService,
                            ILogger<LdapService> logger)
         {
             _employeeService = employeeService;
             _groupService = groupService;
+            _orgStructureService = orgStructureService;
             _emailSenderService = emailSenderService;
             _logger = logger;
         }
@@ -211,7 +216,7 @@ namespace HES.Core.Services
         {
             using (var connection = new LdapConnection())
             {
-                connection.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                connection.Connect(ldapSettings.Host, 3268);         
                 connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
 
                 var dn = GetDnFromHost(ldapSettings.Host);
@@ -252,10 +257,7 @@ namespace HES.Core.Services
                     }
 
                     // Add them to our collection
-                    foreach (var entry in membersResponse.Entries)
-                    {
-                        members.Add(entry);
-                    }
+                    members.AddRange(membersResponse.Entries);
 
                     // Our exit condition is when our cookie is empty
                     if (membersPageResultRequestControl.Cookie.Length == 0)
@@ -295,19 +297,24 @@ namespace HES.Core.Services
                             await _employeeService.CreateWorkstationAccountAsync(workstationDomainAccount);
 
                             // Update password in active directory
-                            await connection.ModifyAsync(new LdapModifyEntry
+                            using (var cn = new LdapConnection())
                             {
-                                Dn = member.Dn,
-                                Attributes = new List<LdapModifyAttribute>
+                                cn.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                                cn.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+                                await cn.ModifyAsync(new LdapModifyEntry
                                 {
-                                    new LdapModifyAttribute
+                                    Dn = member.Dn,
+                                    Attributes = new List<LdapModifyAttribute>
                                     {
-                                        LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
-                                        Type = "userPassword",
-                                        Values = new List<string> { password }
+                                        new LdapModifyAttribute
+                                        {
+                                            LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                            Type = "userPassword",
+                                            Values = new List<string> { password }
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
 
                             transactionScope.Complete();
                         }
@@ -331,19 +338,24 @@ namespace HES.Core.Services
                                 await _employeeService.EditPersonalAccountPwdAsync(domainAccount, new AccountPassword() { Password = password });
 
                                 // Update password in active directory
-                                await connection.ModifyAsync(new LdapModifyEntry
+                                using (var cn = new LdapConnection())
                                 {
-                                    Dn = member.Dn,
-                                    Attributes = new List<LdapModifyAttribute>
+                                    cn.Connect(new Uri($"ldaps://{ldapSettings.Host}:636"));
+                                    cn.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+                                    await cn.ModifyAsync(new LdapModifyEntry
                                     {
-                                        new LdapModifyAttribute
+                                        Dn = member.Dn,
+                                        Attributes = new List<LdapModifyAttribute>
                                         {
-                                            LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
-                                            Type = "userPassword",
-                                            Values = new List<string> { password }
+                                            new LdapModifyAttribute
+                                            {
+                                                LdapModOperation = LdapModOperation.LDAP_MOD_REPLACE,
+                                                Type = "userPassword",
+                                                Values = new List<string> { password }
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
 
                                 transactionScope.Complete();
                             }
@@ -401,30 +413,132 @@ namespace HES.Core.Services
                     }
 
                     // Add them to our collection
-                    foreach (var entry in membersResponse.Entries)
-                    {
-                        members.Add(entry);
-                    }
+                    members.AddRange(membersResponse.Entries);
 
                     // Our exit condition is when our cookie is empty
                     if (membersPageResultRequestControl.Cookie.Length == 0)
                         break;
                 }
 
-                foreach (var member in members)
-                {
-                    employees.Add(new Employee()
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        ActiveDirectoryGuid = GetAttributeGUID(member),
-                        FirstName = TryGetAttribute(member, "givenName"),
-                        LastName = TryGetAttribute(member, "sn"),
-                        Email = TryGetAttribute(member, "mail"),
-                        PhoneNumber = TryGetAttribute(member, "telephoneNumber")
-                    });
-                }
+                var membersGuid = new List<string>();
 
-                await _employeeService.SyncEmployeeAsync(employees);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    foreach (var member in members)
+                    {
+                        var activeDirectoryGuid = GetAttributeGUID(member);
+                        var distinguishedName = TryGetAttribute(member, "distinguishedName");
+                        var firstName = TryGetAttribute(member, "givenName");
+                        var lastName = TryGetAttribute(member, "sn") ?? string.Empty;
+                        var email = TryGetAttribute(member, "mail");
+                        var phoneNumber = TryGetAttribute(member, "telephoneNumber");
+                        DateTime.TryParseExact(TryGetAttribute(member, "whenChanged"), "yyyyMMddHHmmss.0Z", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime whenChanged);
+
+                        DirectoryEntry user;
+                        string positionName;
+                        string companyName;
+                        string departmentName;
+
+                        var employeeByGuid = await _employeeService
+                            .EmployeeQuery()
+                            .FirstOrDefaultAsync(x => x.ActiveDirectoryGuid == activeDirectoryGuid);
+
+                        if (employeeByGuid != null && whenChanged != employeeByGuid.WhenChanged)
+                        {
+                            user = GetUserByGuid(ldapSettings, activeDirectoryGuid);
+
+                            employeeByGuid.FirstName = firstName;
+                            employeeByGuid.LastName = lastName;
+                            employeeByGuid.Email = email;
+                            employeeByGuid.PhoneNumber = phoneNumber;
+                            employeeByGuid.WhenChanged = whenChanged;
+
+                            positionName = TryGetAttribute(user, "title");
+                            if (positionName != null)
+                            {
+                                var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
+                                employeeByGuid.PositionId = position.Id;
+                            }
+
+                            companyName = TryGetAttribute(user, "company");
+                            departmentName = TryGetAttribute(user, "department");
+                            if (companyName != null && departmentName != null)
+                            {
+                                var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
+                                employeeByGuid.DepartmentId = department.Id;
+                            }
+
+                            await _employeeService.EditEmployeeAsync(employeeByGuid);
+                            continue;
+                        }
+
+                        var employeeByName = await _employeeService
+                            .EmployeeQuery()
+                            .FirstOrDefaultAsync(x => x.FirstName == firstName && x.LastName == lastName);
+
+                        if (employeeByName != null)
+                        {
+                            user = GetUserByDn(ldapSettings, distinguishedName);
+                            employeeByName.ActiveDirectoryGuid = activeDirectoryGuid;
+                            employeeByName.Email = email;
+                            employeeByName.PhoneNumber = phoneNumber;
+                            employeeByName.WhenChanged = whenChanged;
+
+                            positionName = TryGetAttribute(user, "title");
+                            if (positionName != null)
+                            {
+                                var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
+                                employeeByName.PositionId = position.Id;
+                            }
+
+                            companyName = TryGetAttribute(user, "company");
+                            departmentName = TryGetAttribute(user, "department");
+                            if (companyName != null && departmentName != null)
+                            {
+                                var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
+                                employeeByName.DepartmentId = department.Id;
+                            }
+
+                            await _employeeService.EditEmployeeAsync(employeeByName);
+                            continue;
+                        }
+
+                        user = GetUserByDn(ldapSettings, distinguishedName);
+
+                        var employee = new Employee()
+                        {
+                            FirstName = firstName,
+                            LastName = lastName,
+                            Email = email,
+                            PhoneNumber = phoneNumber,
+                            ActiveDirectoryGuid = activeDirectoryGuid,
+                            WhenChanged = whenChanged
+                        };
+
+                        positionName = TryGetAttribute(user, "title");
+                        if (positionName != null)
+                        {
+                            var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
+                            employee.PositionId = position.Id;
+                        }
+
+                        companyName = TryGetAttribute(user, "company");
+                        departmentName = TryGetAttribute(user, "department");
+                        if (companyName != null && departmentName != null)
+                        {
+                            var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
+                            employee.DepartmentId = department.Id;
+                        }
+
+                        await _employeeService.CreateEmployeeAsync(employee);
+
+                        membersGuid.Add(activeDirectoryGuid);
+                    }
+
+                    await _employeeService.SyncEmployeeAccessAsync(membersGuid);
+
+                    transactionScope.Complete();
+                }
             }
         }
 
@@ -656,6 +770,35 @@ namespace HES.Core.Services
         private string GeneratePassword()
         {
             return PasswordGenerator.Generate();
+        }
+
+        private DirectoryEntry GetUserByGuid(LdapSettings ldapSettings, string guid)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(ldapSettings.Host, 389);
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+                var objectGUID = GetObjectGuid(guid);
+                var filter = $"(&(objectCategory=user)(objectGUID={objectGUID}))";
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                return user.Entries.FirstOrDefault();
+            }
+        }
+
+        private DirectoryEntry GetUserByDn(LdapSettings ldapSettings, string distinguishedName)
+        {
+            using (var connection = new LdapConnection())
+            {
+                connection.Connect(ldapSettings.Host, 389);
+                connection.Bind(LdapAuthType.Simple, CreateLdapCredential(ldapSettings));
+
+                var dn = GetDnFromHost(ldapSettings.Host);
+                var filter = $"(&(objectCategory=user)(distinguishedName={distinguishedName}))";
+                var user = (SearchResponse)connection.SendRequest(new SearchRequest(dn, filter, LdapSearchScope.LDAP_SCOPE_SUBTREE));
+                return user.Entries.FirstOrDefault();
+            }
         }
 
         #endregion

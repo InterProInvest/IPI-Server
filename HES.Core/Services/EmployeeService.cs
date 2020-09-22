@@ -378,8 +378,32 @@ namespace HES.Core.Services
                 var impotedEmployeesGuids = impotedEmployees.Select(d => d.ActiveDirectoryGuid).ToList();
                 currentEmployees.RemoveAll(x => impotedEmployeesGuids.Contains(x.ActiveDirectoryGuid));
 
-                // Removal of employee hardware values from which access was taken away
+                // Removal of employee hardware vaults from which access was taken away
                 foreach (var employee in currentEmployees)
+                    foreach (var hardwareVault in employee.HardwareVaults)
+                        await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
+
+                transactionScope.Complete();
+            }
+        }
+
+        public async Task SyncEmployeeAccessAsync(List<string> membersGuid)
+        {
+            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                // Get all current employees which are imported and have hardwawre vauls
+                var employees = await _employeeRepository
+                    .Query()
+                    .Include(x => x.HardwareVaults)
+                    .Where(x => x.ActiveDirectoryGuid != null && x.HardwareVaults.Count > 0)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                // Get employees whose access to possession of keys was taken away in the active dirictory
+                employees.RemoveAll(x => membersGuid.Contains(x.ActiveDirectoryGuid));
+
+                // Removal of employee hardware vaults from which access was taken away
+                foreach (var employee in employees)
                     foreach (var hardwareVault in employee.HardwareVaults)
                         await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
 
