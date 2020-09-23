@@ -6,9 +6,11 @@ namespace HES.Core.Models.Web.SharedAccounts
     public class WorkstationSharedAccount
     {
         [Required]
+        [Display(Name = "Account Name")]
         public string Name { get; set; }
-
+        
         [Required]
+        [Display(Name = "User Logon Name")]
         public string UserName { get; set; }
 
         [Required]
@@ -17,6 +19,7 @@ namespace HES.Core.Models.Web.SharedAccounts
 
         [Required]
         [DataType(DataType.Password)]
+        [Display(Name = "Confirm Password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 

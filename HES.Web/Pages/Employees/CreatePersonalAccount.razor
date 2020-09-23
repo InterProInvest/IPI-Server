@@ -34,43 +34,43 @@ else
                 <hr />
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Name</label>
+                        <FormLabel For="@(() => PersonalAccount.Name)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.Name" class="form-control text-navyblue" tabindex="1" />
                         <ValidationMessage For="@(() => PersonalAccount.Name)" class="text-danger" />
                     </div>
                     <div class="form-group col">
-                        <label class="control-label text-gray">Login</label>
+                        <FormLabel For="@(() => PersonalAccount.Login)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.Login" class="form-control text-navyblue" tabindex="4" />
                         <ValidationMessage For="@(() => PersonalAccount.Login)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Urls</label>
+                        <FormLabel For="@(() => PersonalAccount.Urls)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.Urls" class="form-control text-navyblue" tabindex="2" />
                         <ValidationMessage For="@(() => PersonalAccount.Urls)" class="text-danger" />
                     </div>
                     <div class="form-group col">
-                        <label class="control-label text-gray">Password</label>
+                        <FormLabel For="@(() => PersonalAccount.Password)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.Password" type="password" class="form-control text-navyblue" tabindex="5" />
                         <ValidationMessage For="@(() => PersonalAccount.Password)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Apps</label>
+                        <FormLabel For="@(() => PersonalAccount.Apps)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.Apps" class="form-control text-navyblue" tabindex="3" />
                         <ValidationMessage For="@(() => PersonalAccount.Apps)" class="text-danger" />
                     </div>
                     <div class="form-group col">
-                        <label class="control-label text-gray">Confirm Password</label>
+                        <FormLabel For="@(() => PersonalAccount.ConfirmPassword)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.ConfirmPassword" type="password" class="form-control text-navyblue" tabindex="6" />
                         <ValidationMessage For="@(() => PersonalAccount.ConfirmPassword)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Otp Secret</label>
+                        <FormLabel For="@(() => PersonalAccount.OtpSecret)" class="text-gray" />
                         <InputText @bind-Value="PersonalAccount.OtpSecret" class="form-control text-navyblue" tabindex="7" />
                         <ValidationMessage For="@(() => PersonalAccount.OtpSecret)" class="text-danger" />
                     </div>
@@ -104,22 +104,22 @@ else
                         <DataAnnotationsValidator />
                         <div class="row">
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Account Name</label>
+                                <FormLabel For="@(() => WorkstationAccount.Name)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationAccount.Name" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationAccount.Name)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
+                                <FormLabel For="@(() => WorkstationAccount.UserName)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationAccount.UserName" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationAccount.UserName)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Password</label>
+                                <FormLabel For="@(() => WorkstationAccount.Password)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationAccount.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationAccount.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Confirm Password</label>
+                                <FormLabel For="@(() => WorkstationAccount.ConfirmPassword)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationAccount.ConfirmPassword)" class="text-danger" />
                             </div>
@@ -135,27 +135,27 @@ else
                         <DataAnnotationsValidator />
                         <div class="row">
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Account Name</label>
+                                <FormLabel For="@(() => WorkstationDomain.Name)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomain.Name" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.Name)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Domain</label>
+                                <FormLabel For="@(() => WorkstationDomain.Domain)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomain.Domain" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.Domain)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
+                                <FormLabel For="@(() => WorkstationDomain.UserName)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomain.UserName" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.UserName)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Password</label>
+                                <FormLabel For="@(() => WorkstationDomain.Password)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomain.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Confirm Password</label>
+                                <FormLabel For="@(() => WorkstationDomain.ConfirmPassword)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomain.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomain.ConfirmPassword)" class="text-danger" />
                             </div>

@@ -5,6 +5,7 @@ namespace HES.Core.Models.Web.Accounts
     public class PersonalAccount
     {
         [Required]
+        [Display(Name = "Name")]
         public string Name { get; set; }
 
         public string Urls { get; set; }
@@ -20,9 +21,11 @@ namespace HES.Core.Models.Web.Accounts
 
         [Required]
         [DataType(DataType.Password)]
+        [Display(Name = "Confirm Password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
+        [Display(Name = "Otp Secret")]
         public string OtpSecret { get; set; }
 
         public bool UpdateInActiveDirectory { get; set; }

@@ -28,22 +28,22 @@ else
                         <div class="row">
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label class="control-label text-gray">Contact Email</label>
+                                    <FormLabel For="@(() => _newLicenseOrder.ContactEmail)" class="text-gray" />
                                     <InputText @bind-Value="_newLicenseOrder.ContactEmail" class="form-control text-navyblue" />
                                     <ValidationMessage For="@(() => _newLicenseOrder.ContactEmail)" class="text-danger" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label text-gray">Note</label>
+                                    <FormLabel For="@(() => _newLicenseOrder.Note)" class="text-gray" />
                                     <InputTextArea @bind-Value="_newLicenseOrder.Note" class="form-control text-navyblue" rows="3" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label text-gray">Start Date</label>
-                                    <InputDate class="form-control" @bind-Value="_newLicenseOrder.StartDate" />
+                                    <FormLabel For="@(() => _newLicenseOrder.StartDate)" class="text-gray" />
+                                    <InputDate @bind-Value="_newLicenseOrder.StartDate" class="form-control text-navyblue" />
                                     <ValidationMessage For="@(() => _newLicenseOrder.StartDate)" class="text-danger" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label text-gray">End Date</label>
-                                    <InputDate class="form-control" @bind-Value="_newLicenseOrder.EndDate" />
+                                    <FormLabel For="@(() => _newLicenseOrder.EndDate)" class="text-gray" />
+                                    <InputDate @bind-Value="_newLicenseOrder.EndDate" class="form-control text-navyblue" />
                                     <ValidationMessage For="@(() => _newLicenseOrder.EndDate)" class="text-danger" />
                                 </div>
                             </div>
@@ -109,17 +109,17 @@ else
                         <div class="row">
                             <div class="col-6">
                                 <div class="form-group">
-                                    <label class="control-label text-gray">Contact Email</label>
+                                    <FormLabel For="@(() => _renewLicenseOrder.ContactEmail)" class="text-gray" />
                                     <InputText @bind-Value="_renewLicenseOrder.ContactEmail" class="form-control text-navyblue" />
                                     <ValidationMessage For="@(() => _renewLicenseOrder.ContactEmail)" class="text-danger" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label text-gray">Note</label>
+                                    <FormLabel For="@(() => _renewLicenseOrder.Note)" class="text-gray" />
                                     <InputTextArea @bind-Value="_renewLicenseOrder.Note" class="form-control text-navyblue" rows="3" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label text-gray">End Date</label>
-                                    <InputDate class="form-control" @bind-Value="_renewLicenseOrder.EndDate" />
+                                    <FormLabel For="@(() => _renewLicenseOrder.EndDate)" class="text-gray" />
+                                    <InputDate @bind-Value="_renewLicenseOrder.EndDate" class="form-control text-navyblue" />
                                     <ValidationMessage For="@(() => _renewLicenseOrder.EndDate)" class="text-danger" />
                                 </div>
                             </div>

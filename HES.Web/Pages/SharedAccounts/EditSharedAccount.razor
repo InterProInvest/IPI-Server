@@ -14,26 +14,26 @@ else
             <DataAnnotationsValidator />
             <ValidationErrorMessage @ref="ValidationErrorMessage" />
             <div class="form-group">
-                <label class="control-label text-gray">Name</label>
-                <InputText class="form-control" @bind-Value="Account.Name" />
+                <FormLabel For="@(() => Account.Name)" class="text-gray" />
+                <InputText @bind-Value="Account.Name" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Account.Name)" class="text-danger" />
             </div>
             @if (Account.Kind != AccountKind.Workstation)
             {
                 <div class="form-group">
-                    <label class="control-label text-gray">Urls</label>
-                    <InputText class="form-control" @bind-Value="Account.Urls" />
+                    <FormLabel For="@(() => Account.Urls)" class="text-gray" />
+                    <InputText @bind-Value="Account.Urls" class="form-control text-navyblue" />
                     <ValidationMessage For="@(() => Account.Urls)" class="text-danger" />
                 </div>
                 <div class="form-group">
-                    <label class="control-label text-gray">Apps</label>
-                    <InputText class="form-control" @bind-Value="Account.Apps" />
+                    <FormLabel For="@(() => Account.Apps)" class="text-gray" />
+                    <InputText @bind-Value="Account.Apps" class="form-control text-navyblue" />
                     <ValidationMessage For="@(() => Account.Apps)" class="text-danger" />
                 </div>
             }
             <div class="form-group">
-                <label class="control-label text-gray">Login</label>
-                <InputText class="form-control" @bind-Value="Account.Login" />
+                <FormLabel For="@(() => Account.Login)" class="text-gray" />
+                <InputText @bind-Value="Account.Login" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Account.Login)" class="text-danger" />
             </div>
             <div class="text-right">

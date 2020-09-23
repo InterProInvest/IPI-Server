@@ -7,12 +7,12 @@ else
     <EditForm Model="@LicensingSettings" OnValidSubmit="@UpdateLicensingSettingsAsync">
         <DataAnnotationsValidator />
         <div class="form-group">
-            <label class="control-label text-gray">Api Address</label>
+            <FormLabel For="@(() => LicensingSettings.ApiAddress)" class="text-gray" />
             <InputText @bind-Value="LicensingSettings.ApiAddress" class="form-control text-navyblue" />
             <ValidationMessage For="@(() => LicensingSettings.ApiAddress)" class="text-danger" />
         </div>
         <div class="form-group">
-            <label class="control-label text-gray">Api Key</label>
+            <FormLabel For="@(() => LicensingSettings.ApiKey)" class="text-gray" />
             <InputText @bind-Value="LicensingSettings.ApiKey" class="form-control text-navyblue" type="password" />
             <ValidationMessage For="@(() => LicensingSettings.ApiKey)" class="text-danger" />
         </div>
