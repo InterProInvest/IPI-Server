@@ -29,6 +29,7 @@ namespace HES.Web.Pages.Employees
         [Parameter] public string AccountId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Employee Employee { get; set; }
         public Account Account { get; set; }
         public LdapSettings LdapSettings { get; set; }
         public ButtonSpinner ButtonSpinner { get; set; }
@@ -51,7 +52,9 @@ namespace HES.Web.Pages.Employees
                 if (!EntityBeingEdited)
                     MemoryCache.Set(Account.Id, Account);
 
+                Employee = await EmployeeService.GetEmployeeByIdAsync(Account.EmployeeId);
                 LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
+
                 _initialized = true;
             }
             catch (Exception ex)

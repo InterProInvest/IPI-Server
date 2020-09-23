@@ -160,7 +160,7 @@ else
                                 <ValidationMessage For="@(() => WorkstationDomain.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
-                        @if (LdapSettings?.Password != null)
+                        @if (Employee.ActiveDirectoryGuid != null && LdapSettings?.Password != null)
                         {
                             <div class="form-group col col-sm-6 offset-md-3">
                                 <div class="custom-control custom-checkbox">

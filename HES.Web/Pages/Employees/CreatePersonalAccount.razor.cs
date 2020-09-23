@@ -32,6 +32,7 @@ namespace HES.Web.Pages.Employees
         [Parameter] public string EmployeeId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
+        public Employee Employee { get; set; }
         public PersonalAccount PersonalAccount { get; set; }
         public List<Template> Templates { get; set; }
         public WorkstationAccountType WorkstationType { get; set; }
@@ -42,16 +43,24 @@ namespace HES.Web.Pages.Employees
         public ButtonSpinner ButtonSpinner { get; set; }
         public ButtonSpinner ButtonSpinnerWorkstationAccount { get; set; }
 
-        private bool _isBusy;
-
         protected override async Task OnInitializedAsync()
         {
-            LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
-            Templates = await TemplateService.GetTemplatesAsync();
-            WorkstationType = WorkstationAccountType.Local;
-            WorkstationAccount = new WorkstationAccount() { EmployeeId = EmployeeId };
-            WorkstationDomain = new WorkstationDomain() { EmployeeId = EmployeeId };
-            PersonalAccount = new PersonalAccount() { EmployeeId = EmployeeId };
+            try
+            {
+                Employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+                LdapSettings = await AppSettingsService.GetLdapSettingsAsync();
+                Templates = await TemplateService.GetTemplatesAsync();
+                WorkstationType = WorkstationAccountType.Local;
+                WorkstationAccount = new WorkstationAccount() { EmployeeId = EmployeeId };
+                WorkstationDomain = new WorkstationDomain() { EmployeeId = EmployeeId };
+                PersonalAccount = new PersonalAccount() { EmployeeId = EmployeeId };
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task CreateAccountAsync()
@@ -76,7 +85,7 @@ namespace HES.Web.Pages.Employees
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 
@@ -120,7 +129,7 @@ namespace HES.Web.Pages.Employees
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
+                await ModalDialogService.CancelAsync();
             }
         }
 
