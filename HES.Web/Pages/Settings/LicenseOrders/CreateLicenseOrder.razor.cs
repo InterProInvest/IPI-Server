@@ -23,7 +23,8 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
 
-        public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ValidationErrorMessage ValidationErrorMessageNewOrder { get; set; }
+        public ValidationErrorMessage ValidationErrorMessageRenewOrder { get; set; }
         public ButtonSpinner ButtonSpinnerNewOrder { get; set; }
         public ButtonSpinner ButtonSpinnerRenewOrder { get; set; }
 
@@ -55,19 +56,19 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 {
                     if (_newLicenseOrder.StartDate < DateTime.Now.Date)
                     {
-                        ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.StartDate), $"Start Date must be at least current date.");
+                        ValidationErrorMessageNewOrder.DisplayError(nameof(NewLicenseOrder.StartDate), $"Start Date must be at least current date.");
                         return;
                     }
 
                     if (_newLicenseOrder.EndDate < _newLicenseOrder.StartDate)
                     {
-                        ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
+                        ValidationErrorMessageNewOrder.DisplayError(nameof(NewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
                         return;
                     }
 
                     if (!_newLicenseOrder.HardwareVaults.Where(x => x.Checked).Any())
                     {
-                        ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
+                        ValidationErrorMessageNewOrder.DisplayError(nameof(NewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
                         return;
                     }
 
@@ -103,13 +104,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                 {
                     if (_renewLicenseOrder.EndDate < DateTime.Now)
                     {
-                        ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
+                        ValidationErrorMessageRenewOrder.DisplayError(nameof(RenewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
                         return;
                     }
 
                     if (!_renewLicenseOrder.HardwareVaults.Where(x => x.Checked).Any())
                     {
-                        ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
+                        ValidationErrorMessageRenewOrder.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
                         return;
                     }
 
@@ -118,7 +119,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                     if (_renewLicenseOrder.EndDate < maxEndDate)
                     {
-                        ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"The selected End Date less than max end date for selected hardware vaults.");
+                        ValidationErrorMessageRenewOrder.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"The selected End Date less than max end date for selected hardware vaults.");
                         return;
                     }
 
