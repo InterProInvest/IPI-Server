@@ -1,6 +1,7 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Core.Models.Web.AppSettings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -21,7 +22,7 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
 
-        public string ApiAddress { get; set; }
+        public LicensingSettings LicensingSettings { get; set; }
         public string DomainHost { get; set; }
         public bool Initialized { get; set; }
         public bool LoadFailed { get; set; }
@@ -51,14 +52,13 @@ namespace HES.Web.Pages.Settings.Parameters
 
         private async Task LoadDataSettingsAsync()
         {
-            ApiAddress = await LoadLicensingSettingsAsync();
+            LicensingSettings = await LoadLicensingSettingsAsync();
             DomainHost = await LoadDomainSettingsAsync();
         }
 
-        private async Task<string> LoadLicensingSettingsAsync()
+        private async Task<LicensingSettings> LoadLicensingSettingsAsync()
         {
-            var licensingSettings = await AppSettingsService.GetLicensingSettingsAsync();
-            return licensingSettings?.ApiAddress;
+            return await AppSettingsService.GetLicensingSettingsAsync();
         }
 
         private async Task OpenDialogLicensingSettingsAsync()
@@ -66,7 +66,7 @@ namespace HES.Web.Pages.Settings.Parameters
             RenderFragment body = (builder) =>
             {
                 builder.OpenComponent(0, typeof(LicenseSettingsDialog));
-                builder.AddAttribute(1, nameof(LicenseSettingsDialog.ApiAddress), ApiAddress);
+                builder.AddAttribute(1, nameof(LicenseSettingsDialog.LicensingSettings), LicensingSettings);
                 builder.AddAttribute(2, nameof(LicenseSettingsDialog.ConnectionId), hubConnection?.ConnectionId);
                 builder.CloseComponent();
             };

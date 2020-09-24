@@ -18,14 +18,15 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] public ILogger<LicenseSettingsDialog> Logger { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public string ApiAddress { get; set; }
+        [Parameter] public LicensingSettings LicensingSettings { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        public LicensingSettings LicensingSettings { get; set; }
         public ButtonSpinner ButtonSpinner { get; set; }
+
+        public string InputType { get; private set; }
 
         protected override void OnInitialized()
         {
-            LicensingSettings = new LicensingSettings() { ApiAddress = ApiAddress };
+            InputType = "Password";
         }
 
         private async Task UpdateLicensingSettingsAsync()
