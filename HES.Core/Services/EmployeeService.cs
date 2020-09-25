@@ -389,26 +389,21 @@ namespace HES.Core.Services
 
         public async Task SyncEmployeeAccessAsync(List<string> membersGuid)
         {
-            using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                // Get all current employees which are imported and have hardwawre vauls
-                var employees = await _employeeRepository
-                    .Query()
-                    .Include(x => x.HardwareVaults)
-                    .Where(x => x.ActiveDirectoryGuid != null && x.HardwareVaults.Count > 0)
-                    .AsNoTracking()
-                    .ToListAsync();
+            // Get all current employees which are imported and have hardwawre vauls
+            var employees = await _employeeRepository
+                .Query()
+                .Include(x => x.HardwareVaults)
+                .Where(x => x.ActiveDirectoryGuid != null && x.HardwareVaults.Count > 0)
+                .AsNoTracking()
+                .ToListAsync();
 
-                // Get employees whose access to possession of keys was taken away in the active dirictory
-                employees.RemoveAll(x => membersGuid.Contains(x.ActiveDirectoryGuid));
+            // Get employees whose access to possession of keys was taken away in the active dirictory
+            employees.RemoveAll(x => membersGuid.Contains(x.ActiveDirectoryGuid));
 
-                // Removal of employee hardware vaults from which access was taken away
-                foreach (var employee in employees)
-                    foreach (var hardwareVault in employee.HardwareVaults)
-                        await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
-
-                transactionScope.Complete();
-            }
+            // Removal of employee hardware vaults from which access was taken away
+            foreach (var employee in employees)
+                foreach (var hardwareVault in employee.HardwareVaults)
+                    await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
         }
 
         public async Task EditEmployeeAsync(Employee employee)

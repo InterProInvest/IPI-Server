@@ -4,17 +4,16 @@ using HES.Core.Interfaces;
 using HES.Core.Models.ActiveDirectory;
 using HES.Core.Models.Web.Accounts;
 using HES.Core.Models.Web.AppSettings;
+using Hideez.SDK.Communication.Security;
 using LdapForNet;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using Hideez.SDK.Communication.Security;
 using static LdapForNet.Native.Native;
-using System.Globalization;
-using Microsoft.EntityFrameworkCore;
 
 namespace HES.Core.Services
 {
@@ -420,104 +419,45 @@ namespace HES.Core.Services
 
                 var membersGuid = new List<string>();
 
-                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                foreach (var member in members)
                 {
-                    foreach (var member in members)
+                    var activeDirectoryGuid = GetAttributeGUID(member);
+                    var distinguishedName = TryGetAttribute(member, "distinguishedName");
+                    var firstName = TryGetAttribute(member, "givenName");
+                    var lastName = TryGetAttribute(member, "sn") ?? string.Empty;
+                    var email = TryGetAttribute(member, "mail");
+                    var phoneNumber = TryGetAttribute(member, "telephoneNumber");
+                    DateTime.TryParseExact(TryGetAttribute(member, "whenChanged"), "yyyyMMddHHmmss.0Z", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime whenChanged);
+
+                    membersGuid.Add(activeDirectoryGuid);
+
+                    DirectoryEntry user;
+                    string positionName;
+                    string companyName;
+                    string departmentName;
+
+                    var employeeByGuid = await _employeeService
+                        .EmployeeQuery()
+                        .FirstOrDefaultAsync(x => x.ActiveDirectoryGuid == activeDirectoryGuid);
+
+                    if (employeeByGuid != null)
                     {
-                        var activeDirectoryGuid = GetAttributeGUID(member);
-                        var distinguishedName = TryGetAttribute(member, "distinguishedName");
-                        var firstName = TryGetAttribute(member, "givenName");
-                        var lastName = TryGetAttribute(member, "sn") ?? string.Empty;
-                        var email = TryGetAttribute(member, "mail");
-                        var phoneNumber = TryGetAttribute(member, "telephoneNumber");
-                        DateTime.TryParseExact(TryGetAttribute(member, "whenChanged"), "yyyyMMddHHmmss.0Z", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime whenChanged);
-
-                        DirectoryEntry user;
-                        string positionName;
-                        string companyName;
-                        string departmentName;
-
-                        var employeeByGuid = await _employeeService
-                            .EmployeeQuery()
-                            .FirstOrDefaultAsync(x => x.ActiveDirectoryGuid == activeDirectoryGuid);
-
-                        if (employeeByGuid != null && whenChanged != employeeByGuid.WhenChanged)
-                        {
-                            user = GetUserByGuid(ldapSettings, activeDirectoryGuid);
-
-                            employeeByGuid.FirstName = firstName;
-                            employeeByGuid.LastName = lastName;
-                            employeeByGuid.Email = email;
-                            employeeByGuid.PhoneNumber = phoneNumber;
-                            employeeByGuid.WhenChanged = whenChanged;
-
-                            positionName = TryGetAttribute(user, "title");
-                            if (positionName != null)
-                            {
-                                var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
-                                employeeByGuid.PositionId = position.Id;
-                            }
-
-                            companyName = TryGetAttribute(user, "company");
-                            departmentName = TryGetAttribute(user, "department");
-                            if (companyName != null && departmentName != null)
-                            {
-                                var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
-                                employeeByGuid.DepartmentId = department.Id;
-                            }
-
-                            await _employeeService.EditEmployeeAsync(employeeByGuid);
+                        if (whenChanged == employeeByGuid.WhenChanged)
                             continue;
-                        }
 
-                        var employeeByName = await _employeeService
-                            .EmployeeQuery()
-                            .FirstOrDefaultAsync(x => x.FirstName == firstName && x.LastName == lastName);
+                        employeeByGuid.FirstName = firstName;
+                        employeeByGuid.LastName = lastName;
+                        employeeByGuid.Email = email;
+                        employeeByGuid.PhoneNumber = phoneNumber;
+                        employeeByGuid.WhenChanged = whenChanged;
 
-                        if (employeeByName != null)
-                        {
-                            user = GetUserByDn(ldapSettings, distinguishedName);
-                            employeeByName.ActiveDirectoryGuid = activeDirectoryGuid;
-                            employeeByName.Email = email;
-                            employeeByName.PhoneNumber = phoneNumber;
-                            employeeByName.WhenChanged = whenChanged;
-
-                            positionName = TryGetAttribute(user, "title");
-                            if (positionName != null)
-                            {
-                                var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
-                                employeeByName.PositionId = position.Id;
-                            }
-
-                            companyName = TryGetAttribute(user, "company");
-                            departmentName = TryGetAttribute(user, "department");
-                            if (companyName != null && departmentName != null)
-                            {
-                                var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
-                                employeeByName.DepartmentId = department.Id;
-                            }
-
-                            await _employeeService.EditEmployeeAsync(employeeByName);
-                            continue;
-                        }
-
-                        user = GetUserByDn(ldapSettings, distinguishedName);
-
-                        var employee = new Employee()
-                        {
-                            FirstName = firstName,
-                            LastName = lastName,
-                            Email = email,
-                            PhoneNumber = phoneNumber,
-                            ActiveDirectoryGuid = activeDirectoryGuid,
-                            WhenChanged = whenChanged
-                        };
+                        user = GetUserByGuid(ldapSettings, activeDirectoryGuid);
 
                         positionName = TryGetAttribute(user, "title");
                         if (positionName != null)
                         {
                             var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
-                            employee.PositionId = position.Id;
+                            employeeByGuid.PositionId = position.Id;
                         }
 
                         companyName = TryGetAttribute(user, "company");
@@ -525,18 +465,76 @@ namespace HES.Core.Services
                         if (companyName != null && departmentName != null)
                         {
                             var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
-                            employee.DepartmentId = department.Id;
+                            employeeByGuid.DepartmentId = department.Id;
                         }
 
-                        await _employeeService.CreateEmployeeAsync(employee);
-
-                        membersGuid.Add(activeDirectoryGuid);
+                        await _employeeService.EditEmployeeAsync(employeeByGuid);
+                        continue;
                     }
 
-                    await _employeeService.SyncEmployeeAccessAsync(membersGuid);
+                    var employeeByName = await _employeeService
+                        .EmployeeQuery()
+                        .FirstOrDefaultAsync(x => x.FirstName == firstName && x.LastName == lastName);
 
-                    transactionScope.Complete();
+                    if (employeeByName != null)
+                    {
+                        employeeByName.ActiveDirectoryGuid = activeDirectoryGuid;
+                        employeeByName.Email = email;
+                        employeeByName.PhoneNumber = phoneNumber;
+                        employeeByName.WhenChanged = whenChanged;
+
+                        user = GetUserByDn(ldapSettings, distinguishedName);
+
+                        positionName = TryGetAttribute(user, "title");
+                        if (positionName != null)
+                        {
+                            var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
+                            employeeByName.PositionId = position.Id;
+                        }
+
+                        companyName = TryGetAttribute(user, "company");
+                        departmentName = TryGetAttribute(user, "department");
+                        if (companyName != null && departmentName != null)
+                        {
+                            var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
+                            employeeByName.DepartmentId = department.Id;
+                        }
+
+                        await _employeeService.EditEmployeeAsync(employeeByName);
+                        continue;
+                    }
+
+                    user = GetUserByDn(ldapSettings, distinguishedName);
+
+                    var employee = new Employee()
+                    {
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Email = email,
+                        PhoneNumber = phoneNumber,
+                        ActiveDirectoryGuid = activeDirectoryGuid,
+                        WhenChanged = whenChanged
+                    };
+
+                    positionName = TryGetAttribute(user, "title");
+                    if (positionName != null)
+                    {
+                        var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
+                        employee.PositionId = position.Id;
+                    }
+
+                    companyName = TryGetAttribute(user, "company");
+                    departmentName = TryGetAttribute(user, "department");
+                    if (companyName != null && departmentName != null)
+                    {
+                        var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
+                        employee.DepartmentId = department.Id;
+                    }
+
+                    await _employeeService.CreateEmployeeAsync(employee);
                 }
+
+                await _employeeService.SyncEmployeeAccessAsync(membersGuid);
             }
         }
 

@@ -13,11 +13,11 @@ namespace HES.Core.HostedServices
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ActiveDirectoryHostedService> _logger;
 
-        private const int _changePasswordIntervalInHours = 12;
         private const int _synchronizationUsersIntervalInHours = 1;
+        private const int _changePasswordIntervalInHours = 12;
 
-        private Timer _changePassworTimer;
         private Timer _synchronizationUsersTimer;
+        private Timer _changePassworTimer;
 
         public ActiveDirectoryHostedService(IServiceProvider services, ILogger<ActiveDirectoryHostedService> logger)
         {
@@ -27,9 +27,31 @@ namespace HES.Core.HostedServices
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _changePassworTimer = new Timer(async (object state) => await ChangePasswordAsync(), null, TimeSpan.Zero, TimeSpan.FromHours(_changePasswordIntervalInHours));
             _synchronizationUsersTimer = new Timer(async (object state) => await SyncUsersAsync(), null, TimeSpan.Zero, TimeSpan.FromHours(_synchronizationUsersIntervalInHours));
+            _changePassworTimer = new Timer(async (object state) => await ChangePasswordAsync(), null, TimeSpan.Zero, TimeSpan.FromHours(_changePasswordIntervalInHours));
             return Task.CompletedTask;
+        }
+
+        private async Task SyncUsersAsync()
+        {
+            try
+            {
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
+
+                    var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
+                    if (ldapSettings?.Password == null)
+                        return;
+
+                    var ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
+                    await ldapService.SyncUsersAsync(ldapSettings);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
 
         private async Task ChangePasswordAsync()
@@ -57,39 +79,17 @@ namespace HES.Core.HostedServices
             }
         }
 
-        private async Task SyncUsersAsync()
-        {
-            try
-            {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var appSettingsService = scope.ServiceProvider.GetRequiredService<IAppSettingsService>();
-
-                    var ldapSettings = await appSettingsService.GetLdapSettingsAsync();
-                    if (ldapSettings?.Password == null)
-                        return;
-
-                    var ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
-                    await ldapService.SyncUsersAsync(ldapSettings);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
-        }
-
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _changePassworTimer?.Change(Timeout.Infinite, 0);
             _synchronizationUsersTimer?.Change(Timeout.Infinite, 0);
+            _changePassworTimer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
-            _changePassworTimer?.Dispose();
             _synchronizationUsersTimer?.Dispose();
+            _changePassworTimer?.Dispose();
         }
     }
 }
