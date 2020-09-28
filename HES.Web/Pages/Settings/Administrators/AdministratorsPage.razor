@@ -15,14 +15,14 @@
                 {
                     <ButtonSpinner Text="Resend invite" Class="btn btn-light border ml-1" Callback="ResendInviteAsync">
                         <Image>
-                            <img class="icon-btn" src="/svg/action/send.svg" />
+                            <img class="icon-btn" src="/svg/icon-send.svg" />
                         </Image>
                     </ButtonSpinner>
                 }
                 if (MainTableService.Entities.Count != 1 && AuthenticationState.User.Identity.Name != MainTableService.SelectedEntity.Email)
                 {
                     <button type="button" @onclick="DeleteAdminAsync" class="btn btn-light border ml-1" title="Delete admin">
-                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        <img class="icon-btn" src="/svg/icon-delete.svg" />
                         Delete
                     </button>
                 }

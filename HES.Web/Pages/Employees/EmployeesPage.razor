@@ -21,17 +21,17 @@
             @if (MainTableService.SelectedEntity != null)
             {
                 <button type="button" @onclick="EmployeeDetailsAsync" class="btn btn-light border mx-1" title="Employee details">
-                    <img class="icon-btn" src="/svg/action/details.svg" />
+                    <img class="icon-btn" src="/svg/icon-details.svg" />
                     Details
                 </button>
 
                 <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
-                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                    <img class="icon-btn" src="/svg/icon-edit.svg" />
                     Edit
                 </button>
 
                 <button type="button" @onclick="DeleteEmployeeAsync" class="btn btn-light border mx-1" title="Delete employee">
-                    <img class="icon-btn" src="/svg/action/delete.svg" />
+                    <img class="icon-btn" src="/svg/icon-delete.svg" />
                     Delete
                 </button>
             }

@@ -776,8 +776,8 @@ div.dataTables_scrollHead table.dataTable {
 
 .icon-hideez.toggled {
     width: 35px;
-    -webkit-mask: url('../svg/hideez-logo.svg');
-    mask: url('../svg/hideez-logo.svg');
+    -webkit-mask: url('../svg/hideez-sidebar-min.svg');
+    mask: url('../svg/hideez-sidebar-min.svg');
 }
 
 @media (max-width: 768px) {
@@ -822,8 +822,8 @@ div.dataTables_scrollHead table.dataTable {
     background: #0E3059;
     width: 24px;
     height: 24px;
-    -webkit-mask: url('../svg/account/bell.svg');
-    mask: url('../svg/account/bell.svg');
+    -webkit-mask: url('../svg/icon-bell.svg');
+    mask: url('../svg/icon-bell.svg');
     transform-origin: top center;
 }
 
@@ -915,15 +915,15 @@ div.dataTables_scrollHead table.dataTable {
     width: 191px;
     height: 34px;
     background: #FFF;
-    -webkit-mask: url('../svg/hideez-full.svg');
-    mask: url('../svg/hideez-full.svg');
+    -webkit-mask: url('../svg/hideez-sidebar.svg');
+    mask: url('../svg/hideez-sidebar.svg');
 }
 
 @media (max-width: 768px) {
     .icon-hideez {
         width: 35px;
-        -webkit-mask: url('../svg/hideez-logo.svg');
-        mask: url('../svg/hideez-logo.svg');
+        -webkit-mask: url('../svg/hideez-sidebar-min.svg');
+        mask: url('../svg/hideez-sidebar-min.svg');
     }
 }
 
@@ -932,32 +932,32 @@ div.dataTables_scrollHead table.dataTable {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-dashboard.svg');
-    mask: url('../svg/sidebar/round-dashboard.svg');
+    -webkit-mask: url('../svg/sidebar-icon-dashboard.svg');
+    mask: url('../svg/sidebar-icon-dashboard.svg');
 }
 
 .icon-employees {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('/svg/sidebar/round-supervisor_account.svg');
-    mask: url('/svg/sidebar/round-supervisor_account.svg');
+    -webkit-mask: url('/svg/sidebar-icon-employees.svg');
+    mask: url('/svg/sidebar-icon-employees.svg');
 }
 
 .icon-computers {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-desktop-windows.svg');
-    mask: url('../svg/sidebar/round-desktop-windows.svg');
+    -webkit-mask: url('../svg/sidebar-icon-workstations.svg');
+    mask: url('../svg/sidebar-icon-workstations.svg');
 }
 
 .icon-groups {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/groups.svg');
-    mask: url('../svg/sidebar/groups.svg');
+    -webkit-mask: url('../svg/sidebar-icon-groups.svg');
+    mask: url('../svg/sidebar-icon-groups.svg');
 }
 
 
@@ -965,48 +965,48 @@ div.dataTables_scrollHead table.dataTable {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-shared_account.svg');
-    mask: url('../svg/sidebar/round-shared_account.svg');
+    -webkit-mask: url('../svg/sidebar-icon-shared-accounts.svg');
+    mask: url('../svg/sidebar-icon-shared-accounts.svg');
 }
 
 .icon-templates {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-list.svg');
-    mask: url('../svg/sidebar/round-list.svg');
+    -webkit-mask: url('../svg/sidebar-icon-templates.svg');
+    mask: url('../svg/sidebar-icon-templates.svg');
 }
 
 .icon-devices {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('/svg/sidebar/round-device.svg');
-    mask: url('/svg/sidebar/round-device.svg');
+    -webkit-mask: url('/svg/sidebar-icon-hardware-vaults.svg');
+    mask: url('/svg/sidebar-icon-hardware-vaults.svg');
 }
 
 .icon-software-vault {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar-software-vault.svg');
-    mask: url('../svg/sidebar-software-vault.svg');
+    -webkit-mask: url('../svg/sidebar-software-vaults.svg');
+    mask: url('../svg/sidebar-software-vaults.svg');
 }
 
 .icon-audit {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-audit.svg');
-    mask: url('../svg/sidebar/round-audit.svg');
+    -webkit-mask: url('../svg/sidebar-icon-audit.svg');
+    mask: url('../svg/sidebar-icon-audit.svg');
 }
 
 .icon-settings {
     width: 24px;
     height: 24px;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/round-settings.svg');
-    mask: url('../svg/sidebar/round-settings.svg');
+    -webkit-mask: url('../svg/sidebar-icon-settings.svg');
+    mask: url('../svg/sidebar-icon-settings.svg');
 }
 
 .icon-arrow {
@@ -1014,8 +1014,8 @@ div.dataTables_scrollHead table.dataTable {
     height: 24px;
     float: right;
     background: #FFF;
-    -webkit-mask: url('../svg/sidebar/arrow_drop.svg');
-    mask: url('../svg/sidebar/arrow_drop.svg');
+    -webkit-mask: url('../svg/sidebar-icon-arrow.svg');
+    mask: url('../svg/sidebar-icon-arrow.svg');
 }
 /*#endregion*/
 

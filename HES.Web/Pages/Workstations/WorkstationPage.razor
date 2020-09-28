@@ -15,27 +15,27 @@
                 @if (!MainTableService.SelectedEntity.Approved)
                 {
                     <button type="button" @onclick="ApproveWorkstationAsync" class="btn btn-light border mx-1" title="Approve workstation">
-                        <img class="icon-btn" src="/svg/action/done.svg" />
+                        <img class="icon-btn" src="/svg/icon-done.svg" />
                         Approve
                     </button>
                 }
                 else
                 {
                     <button type="button" @onclick="UnapproveWorkstationAsync" class="btn btn-light border mx-1" title="Unapprove workstation">
-                        <img class="icon-btn" src="/svg/action/clear.svg" />
+                        <img class="icon-btn" src="/svg/icon-unapprove.svg" />
                         Unapprove
                     </button>
                 }
                 <button type="button" @onclick="WorkstationDetailsAsync" class="btn btn-light border mx-1" title="Workstation details">
-                    <img class="icon-btn" src="/svg/action/details.svg" />
+                    <img class="icon-btn" src="/svg/icon-details.svg" />
                     Details
                 </button>
                 <button type="button" @onclick="EditWorkstationAsync" class="btn btn-light border mx-1" title="Edit workstation">
-                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                    <img class="icon-btn" src="/svg/icon-edit.svg" />
                     Edit
                 </button>
                 <button type="button" @onclick="DeleteWorkstationAsync" class="btn btn-light border mx-1" title="Delete workstation">
-                    <img class="icon-btn" src="/svg/action/delete.svg" />
+                    <img class="icon-btn" src="/svg/icon-delete.svg" />
                     Delete
                 </button>
             }

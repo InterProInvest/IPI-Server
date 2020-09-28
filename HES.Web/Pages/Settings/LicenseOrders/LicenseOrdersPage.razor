@@ -17,20 +17,20 @@
                 if (MainTableService.SelectedEntity.OrderStatus == LicenseOrderStatus.New)
                 {
                     <button type="button" @onclick="SendLicenseOrderAsync" class="btn btn-light border mx-1" title="Send license order">
-                        <img class="icon-btn" src="/svg/action/send.svg" />
+                        <img class="icon-btn" src="/svg/icon-send.svg" />
                         Send
                     </button>
                     <button type="button" @onclick="EditLicenseOrderAsync" class="btn btn-light border mx-1" title="Edit license order">
-                        <img class="icon-btn" src="/svg/action/edit.svg" />
+                        <img class="icon-btn" src="/svg/icon-edit.svg" />
                         Edit
                     </button>
                     <button type="button" @onclick="DeleteLicenseOrderAsync" class="btn btn-light border mx-1" title="Delete license order">
-                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        <img class="icon-btn" src="/svg/icon-delete.svg" />
                         Delete
                     </button>
                 }
                 <button type="button" @onclick="LicenseOrderDetailsAsync" class="btn btn-light border mx-1" title="License order details">
-                    <img class="icon-btn" src="/svg/action/details.svg" />
+                    <img class="icon-btn" src="/svg/icon-details.svg" />
                     Details
                 </button>
             }
