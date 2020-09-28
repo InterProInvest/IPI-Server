@@ -39,6 +39,7 @@ namespace HES.Web.Pages.Employees
         public WorkstationAccount WorkstationAccount { get; set; }
         public WorkstationDomain WorkstationDomain { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ValidationErrorMessage WorkstationValidationErrorMessage { get; set; }
         public LdapSettings LdapSettings { get; set; }
         public ButtonSpinner ButtonSpinner { get; set; }
         public ButtonSpinner ButtonSpinnerWorkstationAccount { get; set; }
@@ -123,7 +124,7 @@ namespace HES.Web.Pages.Employees
             }
             catch (AlreadyExistException ex)
             {
-                ValidationErrorMessage.DisplayError(nameof(PersonalAccount.Name), ex.Message);
+                WorkstationValidationErrorMessage.DisplayError(nameof(WorkstationAccount.Name), ex.Message);
             }
             catch (Exception ex)
             {
