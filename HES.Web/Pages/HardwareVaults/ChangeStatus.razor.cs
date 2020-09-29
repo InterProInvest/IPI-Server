@@ -5,6 +5,7 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -35,6 +36,8 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
                 HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
                 if (HardwareVault == null)
                     throw new Exception("HardwareVault not found.");

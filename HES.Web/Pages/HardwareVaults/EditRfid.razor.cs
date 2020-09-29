@@ -6,15 +6,16 @@ using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class EditRfid : ComponentBase, IDisposable
+    public partial class EditRfid : OwningComponentBase, IDisposable
     {
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public ILogger<EditRfid> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public IMemoryCache MemoryCache { get; set; }
@@ -32,6 +33,8 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
                 ModalDialogService.OnCancel += ModalDialogService_OnCancel;
 
                 HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
