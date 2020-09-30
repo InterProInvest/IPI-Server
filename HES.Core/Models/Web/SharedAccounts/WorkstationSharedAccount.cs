@@ -17,7 +17,7 @@ namespace HES.Core.Models.Web.SharedAccounts
 
         [Required]
         [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [CompareProperty("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
         public WorkstationAccountType Type { get; set; }
