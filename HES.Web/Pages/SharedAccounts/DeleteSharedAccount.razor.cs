@@ -5,15 +5,16 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class DeleteSharedAccount : ComponentBase, IDisposable
+    public partial class DeleteSharedAccount : OwningComponentBase, IDisposable
     {
-        [Inject] public ISharedAccountService SharedAccountService { get; set; }
+        public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
@@ -31,6 +32,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
+                SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+
                 Account = await SharedAccountService.GetSharedAccountByIdAsync(AccountId);
 
                 if (Account == null)

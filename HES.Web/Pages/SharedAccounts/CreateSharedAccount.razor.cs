@@ -7,6 +7,7 @@ using HES.Core.Models.Web.SharedAccounts;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,11 +16,11 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class CreateSharedAccount : ComponentBase
+    public partial class CreateSharedAccount : OwningComponentBase
     {
+        public ISharedAccountService SharedAccountService { get; set; }
+        public ITemplateService TemplateService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] public ISharedAccountService SharedAccountService { get; set; }
-        [Inject] public ITemplateService TemplateService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<CreateSharedAccount> Logger { get; set; }
@@ -37,11 +38,23 @@ namespace HES.Web.Pages.SharedAccounts
 
         protected override async Task OnInitializedAsync()
         {
-            Templates = await TemplateService.GetTemplatesAsync();
-            WorkstationType = WorkstationAccountType.Local;
-            WorkstationSharedAccount = new WorkstationSharedAccount();
-            WorkstationDomainSharedAccount = new WorkstationDomainSharedAccount();
-            SharedAccount = new SharedAccount();
+            try
+            {
+                SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+                TemplateService = ScopedServices.GetRequiredService<ITemplateService>();
+
+                Templates = await TemplateService.GetTemplatesAsync();
+                WorkstationType = WorkstationAccountType.Local;
+                WorkstationSharedAccount = new WorkstationSharedAccount();
+                WorkstationDomainSharedAccount = new WorkstationDomainSharedAccount();
+                SharedAccount = new SharedAccount();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task CreateAccountAsync()
@@ -109,7 +122,7 @@ namespace HES.Web.Pages.SharedAccounts
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            } 
+            }
         }
 
         private void TemplateSelected(ChangeEventArgs e)
