@@ -1,4 +1,4 @@
-Hideez Enterprise Server
+IPI Server
 ========================
 
 The IPI Server is a web application intended to manage the IPI Keys. IPI Key is a hardware security token intended to store users' credentials. It has Bluetooth Low Energy (BLE) interface to connect to host computers. It can be used to unlock and lock Windows PC by BLE proximity (distance between the user and his PC) and as a hardware password manager and One Time Password (OTP) generator. IPI Client application is used to connect and manage IPI Keys on a local PC. IPI Client can lock/unlock your PC and enter your logins, passwords, and OTP into web sites and desktop applications, getting them from the IPI Key. With the IPI Server, you can securely transfer credentials from the web directly to a IPI Key; manage employee list; assign IPI Keys to an employee; securely transfer credentials to the IPI Key; view statistics and audit reports; manage shared accounts and more. To start working with IPI Server, you need:
