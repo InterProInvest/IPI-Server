@@ -82,6 +82,14 @@ namespace HES.Web.Pages.Employees
             {
                 ValidationErrorMessage.DisplayError(nameof(PersonalAccount.Name), ex.Message);
             }
+            catch (IncorrectUrlException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(PersonalAccount.Urls), ex.Message);
+            }
+            catch (IncorrectOtpException ex)
+            {
+                ValidationErrorMessage.DisplayError(nameof(PersonalAccount.OtpSecret), ex.Message);
+            }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
