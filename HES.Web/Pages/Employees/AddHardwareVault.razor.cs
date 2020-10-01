@@ -12,14 +12,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HES.Web.Pages.Employees
 {
     public partial class AddHardwareVault : OwningComponentBase
     {
         IEmployeeService EmployeeService { get; set; }
-        [Inject] IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] IHardwareVaultService HardwareVaultService { get; set; }
+        [Inject] ILdapService LdapService { get; set; }
+        [Inject] IAppSettingsService AppSettingsService { get; set; }
+        [Inject] IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
         [Inject] ILogger<AddHardwareVault> Logger { get; set; }
@@ -90,7 +93,23 @@ namespace HES.Web.Pages.Employees
                     return;
                 }
 
-                await EmployeeService.AddHardwareVaultAsync(EmployeeId, SelectedHardwareVault.Id);
+                using (TransactionScope transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    await EmployeeService.AddHardwareVaultAsync(EmployeeId, SelectedHardwareVault.Id);
+
+                    var ldapSettings = await AppSettingsService.GetLdapSettingsAsync();
+                    if (ldapSettings?.Password != null)
+                    {
+                        var employee = await EmployeeService.GetEmployeeByIdAsync(EmployeeId);
+                        if (employee.ActiveDirectoryGuid != null)
+                        {
+                            await LdapService.AddUserToHideezKeyOwnersAsync(ldapSettings, employee.ActiveDirectoryGuid);
+                        }
+                    }
+
+                    transactionScope.Complete();
+                }
+
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
                 await Refresh.InvokeAsync(this);
                 await ToastService.ShowToastAsync("Vault added", ToastType.Success);

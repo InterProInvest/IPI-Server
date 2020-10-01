@@ -378,13 +378,32 @@ namespace HES.Core.Services
                 var impotedEmployeesGuids = impotedEmployees.Select(d => d.ActiveDirectoryGuid).ToList();
                 currentEmployees.RemoveAll(x => impotedEmployeesGuids.Contains(x.ActiveDirectoryGuid));
 
-                // Removal of employee hardware values from which access was taken away
+                // Removal of employee hardware vaults from which access was taken away
                 foreach (var employee in currentEmployees)
                     foreach (var hardwareVault in employee.HardwareVaults)
                         await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
 
                 transactionScope.Complete();
             }
+        }
+
+        public async Task SyncEmployeeAccessAsync(List<string> membersGuid)
+        {
+            // Get all current employees which are imported and have hardwawre vauls
+            var employees = await _employeeRepository
+                .Query()
+                .Include(x => x.HardwareVaults)
+                .Where(x => x.ActiveDirectoryGuid != null && x.HardwareVaults.Count > 0)
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Get employees whose access to possession of keys was taken away in the active dirictory
+            employees.RemoveAll(x => membersGuid.Contains(x.ActiveDirectoryGuid));
+
+            // Removal of employee hardware vaults from which access was taken away
+            foreach (var employee in employees)
+                foreach (var hardwareVault in employee.HardwareVaults)
+                    await RemoveHardwareVaultAsync(hardwareVault.Id, VaultStatusReason.Withdrawal);
         }
 
         public async Task EditEmployeeAsync(Employee employee)
@@ -769,12 +788,15 @@ namespace HES.Core.Services
             switch (workstationAccount.Type)
             {
                 case WorkstationAccountType.Local:
+                    await ValidateAccountNameAndLoginAsync(workstationAccount.EmployeeId, workstationAccount.Name, $".\\{workstationAccount.UserName}");
                     workstationAccount.UserName = $".\\{workstationAccount.UserName}";
                     break;
                 case WorkstationAccountType.AzureAD:
+                    await ValidateAccountNameAndLoginAsync(workstationAccount.EmployeeId, workstationAccount.Name, $"AzureAD\\{workstationAccount.UserName}");
                     workstationAccount.UserName = $"AzureAD\\{workstationAccount.UserName}";
                     break;
                 case WorkstationAccountType.Microsoft:
+                    await ValidateAccountNameAndLoginAsync(workstationAccount.EmployeeId, workstationAccount.Name, $"@\\{workstationAccount.UserName}");
                     workstationAccount.UserName = $"@\\{workstationAccount.UserName}";
                     break;
             }
@@ -795,6 +817,8 @@ namespace HES.Core.Services
             if (workstationAccount == null)
                 throw new ArgumentNullException(nameof(workstationAccount));
 
+            await ValidateAccountNameAndLoginAsync(workstationAccount.EmployeeId, workstationAccount.Name, $"{workstationAccount.Domain}\\{workstationAccount.UserName}");
+
             var personalAccount = new PersonalAccount()
             {
                 Name = workstationAccount.Name,
@@ -805,6 +829,15 @@ namespace HES.Core.Services
             };
 
             return await CreatePersonalAccountAsync(personalAccount, isWorkstationAccount: true);
+        }
+
+        private async Task ValidateAccountNameAndLoginAsync(string employeeId, string name, string login)
+        {
+            var exist = await _accountService.ExistAsync(x => x.EmployeeId == employeeId &&
+                                            x.Name == name && x.Login == login &&
+                                            x.Deleted == false);
+            if (exist)
+                throw new AlreadyExistException("An account with the same name and login exist.");
         }
 
         public async Task SetAsWorkstationAccountAsync(string employeeId, string accountId)

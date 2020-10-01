@@ -44,6 +44,7 @@ namespace HES.Web.Pages.Employees
                 await BreadcrumbsService.SetEmployeeDetails(Employee?.FullName);
                 await LoadLdapSettingsAsync();
                 await MainTableService.InitializeAsync(EmployeeService.GetAccountsAsync, EmployeeService.GetAccountsCountAsync, ModalDialogService, StateHasChanged, nameof(Account.Name), entityId: EmployeeId);
+                
                 Initialized = true;
             }
             catch (Exception ex)

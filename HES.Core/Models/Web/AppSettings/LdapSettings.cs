@@ -5,9 +5,10 @@ namespace HES.Core.Models.Web.AppSettings
     public class LdapSettings
     {
         [Required]
+        [Display(Name = "Domain Name")]
         public string Host { get; set; }
         [Required]
-        [Display(Name = "User Name")]
+        [Display(Name = "User Logon Name")]
         public string UserName { get; set; }
         [Required]
         public string Password { get; set; }

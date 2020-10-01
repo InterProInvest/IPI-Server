@@ -12,8 +12,8 @@
             @*<button type="button" @onclick="ImportEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Import employee from AD">
                     Import from AD
                 </button>*@
-            <button type="button" @onclick="SyncEmployeesFromAdAsync" class="btn btn-primary mr-1" title="Sync employees from AD">
-                Sync from AD
+            <button type="button" @onclick="SyncEmployeesWithAdAsync" class="btn btn-primary mr-1" title="Sync with AD">
+                Sync with AD
             </button>
             <button type="button" @onclick="CreateEmployeeAsync" class="btn btn-primary mx-1" title="Create employee">
                 Create employee
@@ -24,12 +24,13 @@
                     <img class="icon-btn" src="/svg/icon-details.svg" />
                     Details
                 </button>
-
-                <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
-                    <img class="icon-btn" src="/svg/icon-edit.svg" />
-                    Edit
-                </button>
-
+                @if (MainTableService.SelectedEntity.ActiveDirectoryGuid == null)
+                {
+                    <button type="button" @onclick="EditEmployeeAsync" class="btn btn-light border mx-1" title="Edit employee">
+                        <img class="icon-btn" src="/svg/icon-edit.svg" />
+                        Edit
+                    </button>
+                }
                 <button type="button" @onclick="DeleteEmployeeAsync" class="btn btn-light border mx-1" title="Delete employee">
                     <img class="icon-btn" src="/svg/icon-delete.svg" />
                     Delete
@@ -102,6 +103,12 @@
         <TableRow>
             <td>
                 @context.FullName
+                @if (context.ActiveDirectoryGuid != null)
+                {
+                    <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-primary") ml-1" title="Imported from Active Directory">
+                        AD
+                    </span>
+                }
             </td>
             <td>
                 @context.Email
