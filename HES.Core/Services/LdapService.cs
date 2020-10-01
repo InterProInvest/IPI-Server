@@ -459,6 +459,10 @@ namespace HES.Core.Services
                             var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
                             employeeByGuid.PositionId = position.Id;
                         }
+                        else
+                        {
+                            employeeByGuid.PositionId = null;
+                        }
 
                         companyName = TryGetAttribute(user, "company");
                         departmentName = TryGetAttribute(user, "department");
@@ -466,6 +470,10 @@ namespace HES.Core.Services
                         {
                             var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
                             employeeByGuid.DepartmentId = department.Id;
+                        }
+                        else
+                        {
+                            employeeByGuid.DepartmentId = null;
                         }
 
                         await _employeeService.EditEmployeeAsync(employeeByGuid);
@@ -491,6 +499,10 @@ namespace HES.Core.Services
                             var position = await _orgStructureService.TryAddAndGetPositionAsync(positionName);
                             employeeByName.PositionId = position.Id;
                         }
+                        else
+                        {
+                            employeeByName.PositionId = null;
+                        }
 
                         companyName = TryGetAttribute(user, "company");
                         departmentName = TryGetAttribute(user, "department");
@@ -498,6 +510,10 @@ namespace HES.Core.Services
                         {
                             var department = await _orgStructureService.TryAddAndGetDepartmentWithCompanyAsync(companyName, departmentName);
                             employeeByName.DepartmentId = department.Id;
+                        }
+                        else
+                        {
+                            employeeByName.DepartmentId = null;
                         }
 
                         await _employeeService.EditEmployeeAsync(employeeByName);
