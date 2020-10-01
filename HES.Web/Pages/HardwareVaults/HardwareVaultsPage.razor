@@ -14,7 +14,7 @@ else
             <VaultFilter FilterChanged="MainTableService.FilterChangedAsync" />
         </FilterForm>
         <ActionButtons>
-            <ButtonSpinner Class="btn-primary mr-1" Text="Import Vaults" Callback="ImportVaultsAsync" />
+            <ButtonSpinner Class="btn btn-primary mr-1" Text="Import Vaults" Callback="ImportVaultsAsync" />
             @if (MainTableService.SelectedEntity != null)
             {
                 <button type="button" @onclick="EditRfidAsync" class="btn btn-light border mx-1" title="Edit RFID">

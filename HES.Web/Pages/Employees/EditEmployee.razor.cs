@@ -29,6 +29,7 @@ namespace HES.Web.Pages.Employees
 
         public Employee Employee { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public List<Company> Companies { get; set; }
         public List<Department> Departments { get; set; }
         public List<Position> Positions { get; set; }
@@ -87,10 +88,13 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                await EmployeeService.EditEmployeeAsync(Employee);
-                ToastService.ShowToast("Employee updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await EmployeeService.EditEmployeeAsync(Employee);
+                    ToastService.ShowToast("Employee updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {

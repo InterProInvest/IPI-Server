@@ -23,15 +23,19 @@ namespace HES.Web.Pages.Templates
 
         public Template Template { get; set; } = new Template();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task CreateTemplateAsync()
         {
             try
-            {
-                await TemplateService.CreateTmplateAsync(Template);
-                ToastService.ShowToast("Template created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
-                await ModalDialogService.CloseAsync();
+            {                
+                await ButtonSpinner.SpinAsync(async () =>
+                {                 
+                    await TemplateService.CreateTmplateAsync(Template);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
+                    ToastService.ShowToast("Template created.", ToastLevel.Success);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -47,6 +51,6 @@ namespace HES.Web.Pages.Templates
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
             }
-        }
+        }        
     }
 }

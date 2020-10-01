@@ -32,8 +32,8 @@ else
                 <InputNumber id="filterVaultsCount" @bind-Value="Filter.VaultsCount" class="form-control" />
             </div>
             <div class="col align-self-end text-right form-group">
-                <button id="clearFilter" type="button" class="btn btn-secondary" @onclick="ClearAsync">Clear</button>
-                <input id="submitFilter" type="submit" value="Filter" class="btn btn-primary" />
+                <ButtonSpinner Text="Clear" Class="btn btn-secondary" Callback="ClearAsync" />
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Create" Class="btn btn-primary" />
             </div>
         </div>
     </EditForm>

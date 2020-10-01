@@ -29,7 +29,6 @@ namespace HES.Web.Pages.Groups
         public LdapSettings LdapSettings { get; set; }
         public ActiveDirectoryInitialization ActiveDirectoryInitialization { get; set; }
         public string WarningMessage { get; set; }
-        public bool IsBusy { get; set; }
         public string SearchText { get; set; } = string.Empty;
         public bool IsSortedAscending { get; set; } = true;
         public string CurrentSortColumn { get; set; } = nameof(Group.Name);
@@ -84,13 +83,6 @@ namespace HES.Web.Pages.Groups
 
         private async Task AddAsync()
         {
-            if (IsBusy)
-            {
-                return;
-            }
-
-            IsBusy = true;
-
             try
             {
                 if (!Groups.Any(x => x.Checked))
@@ -109,10 +101,6 @@ namespace HES.Web.Pages.Groups
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
 

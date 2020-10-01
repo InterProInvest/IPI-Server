@@ -83,11 +83,6 @@ namespace HES.Web.Pages.Employees
 
         private async Task AddAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
                 if (!Users.Any(x => x.Checked))
@@ -106,10 +101,6 @@ namespace HES.Web.Pages.Employees
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
 

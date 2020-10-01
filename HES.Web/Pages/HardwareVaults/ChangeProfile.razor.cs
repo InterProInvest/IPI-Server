@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -13,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.HardwareVaults
 {
-    public partial class ChangeProfile : ComponentBase, IDisposable
+    public partial class ChangeProfile : OwningComponentBase, IDisposable
     {
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public ILogger<ChangeProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
@@ -33,6 +34,8 @@ namespace HES.Web.Pages.HardwareVaults
         {
             try
             {
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
                 HardwareVault = await HardwareVaultService.GetVaultByIdAsync(HardwareVaultId);
                 if (HardwareVault == null)
                     throw new Exception("HardwareVault not found.");
@@ -49,12 +52,7 @@ namespace HES.Web.Pages.HardwareVaults
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }     
-        }
-
-        private async Task CloseAsync()
-        {
-            await ModalDialogService.CloseAsync();
+            }
         }
 
         private async Task ChangeProfileAsync()
@@ -64,7 +62,7 @@ namespace HES.Web.Pages.HardwareVaults
                 await HardwareVaultService.ChangeVaultProfileAsync(HardwareVault.Id, SelectedVaultProfileId);
                 ToastService.ShowToast("Vault profile updated", ToastLevel.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaults);
-                await CloseAsync();
+                await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {

@@ -17,11 +17,11 @@ else
             {
                 if (!MainTableService.SelectedEntity.EmailConfirmed)
                 {
-                    <button type="button" @onclick="ResendInviteAsync" class="btn btn-light border ml-1">
-                        <span class="spinner-border spinner-border-sm @(IsBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                        <img class="icon-btn" src="/svg/action/send.svg" />
-                        <span>Resend invite</span>
-                    </button>
+                    <ButtonSpinner Text="Resend invite" Class="btn btn-light border ml-1" Callback="ResendInviteAsync">
+                        <Image>
+                            <img class="icon-btn" src="/svg/action/send.svg" />
+                        </Image>
+                    </ButtonSpinner>
                 }
                 if (MainTableService.Entities.Count != 1 && AuthenticationState.User.Identity.Name != MainTableService.SelectedEntity.Email)
                 {

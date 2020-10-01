@@ -7,6 +7,7 @@ using HES.Core.Models.Web.SharedAccounts;
 using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,11 +16,11 @@ using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class CreateSharedAccount : ComponentBase
+    public partial class CreateSharedAccount : OwningComponentBase
     {
+        public ISharedAccountService SharedAccountService { get; set; }
+        public ITemplateService TemplateService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
-        [Inject] public ISharedAccountService SharedAccountService { get; set; }
-        [Inject] public ITemplateService TemplateService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public ILogger<CreateSharedAccount> Logger { get; set; }
@@ -30,33 +31,43 @@ namespace HES.Web.Pages.SharedAccounts
         public WorkstationSharedAccount WorkstationSharedAccount { get; set; }
         public WorkstationDomainSharedAccount WorkstationDomainSharedAccount { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
+        public ButtonSpinner ButtonSpinnerWorkstationAccount { get; set; }
         public WorkstationAccountType WorkstationType { get; set; }
         public List<Template> Templates { get; set; }
 
-        private bool _isBusy;
-
         protected override async Task OnInitializedAsync()
         {
-            Templates = await TemplateService.GetTemplatesAsync();
-            WorkstationType = WorkstationAccountType.Local;
-            WorkstationSharedAccount = new WorkstationSharedAccount();
-            WorkstationDomainSharedAccount = new WorkstationDomainSharedAccount();
-            SharedAccount = new SharedAccount();
+            try
+            {
+                SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+                TemplateService = ScopedServices.GetRequiredService<ITemplateService>();
+
+                Templates = await TemplateService.GetTemplatesAsync();
+                WorkstationType = WorkstationAccountType.Local;
+                WorkstationSharedAccount = new WorkstationSharedAccount();
+                WorkstationDomainSharedAccount = new WorkstationDomainSharedAccount();
+                SharedAccount = new SharedAccount();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task CreateAccountAsync()
         {
             try
             {
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                await SharedAccountService.CreateSharedAccountAsync(SharedAccount);
-                ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await SharedAccountService.CreateSharedAccountAsync(SharedAccount);
+                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -76,37 +87,31 @@ namespace HES.Web.Pages.SharedAccounts
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
             }
-            finally
-            {
-                _isBusy = false;
-            }
         }
 
         private async Task CreateWorkstationAccountAsync()
         {
             try
             {
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                switch (WorkstationType)
+                await ButtonSpinnerWorkstationAccount.SpinAsync(async () =>
                 {
-                    case WorkstationAccountType.Local:
-                    case WorkstationAccountType.Microsoft:
-                    case WorkstationAccountType.AzureAD:
-                        WorkstationSharedAccount.Type = WorkstationType;
-                        await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationSharedAccount);
-                        break;
-                    case WorkstationAccountType.Domain:
-                        await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationDomainSharedAccount);
-                        break;
-                }
+                    switch (WorkstationType)
+                    {
+                        case WorkstationAccountType.Local:
+                        case WorkstationAccountType.Microsoft:
+                        case WorkstationAccountType.AzureAD:
+                            WorkstationSharedAccount.Type = WorkstationType;
+                            await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationSharedAccount);
+                            break;
+                        case WorkstationAccountType.Domain:
+                            await SharedAccountService.CreateWorkstationSharedAccountAsync(WorkstationDomainSharedAccount);
+                            break;
+                    }
 
-                ToastService.ShowToast("Account created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
-                await ModalDialogService.CloseAsync();
+                    ToastService.ShowToast("Account created.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -117,10 +122,6 @@ namespace HES.Web.Pages.SharedAccounts
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 

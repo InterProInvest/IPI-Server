@@ -1,4 +1,28 @@
-﻿<button type="button" @onclick="ClickHandler" class="btn @Class">
-    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-    <span>@Text</span>
-</button>
+﻿@if (Submit)
+{
+    <button type="submit" class="@Class" disabled="@Disabled">
+        @if (_busy)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        else
+        {
+            @Image
+        }
+        <span>@Text</span>
+    </button>
+}
+else
+{
+    <button type="button" @onclick="ClickHandler" class="@Class" disabled="@Disabled">
+        @if (_busy)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        else
+        {
+            @Image
+        }
+        <span>@Text</span>
+    </button>
+}

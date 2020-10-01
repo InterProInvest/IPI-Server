@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,8 +22,9 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
         [Parameter] public string HardwareVaultProfileId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        public HardwareVaultProfile AccessProfile { get; set; }
 
+        public HardwareVaultProfile AccessProfile { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
         public int InitPinExpirationValue { get; set; }
         public int InitPinLengthValue { get; set; }
@@ -59,10 +61,13 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         {
             try
             {
-                await HardwareVaultService.EditProfileAsync(AccessProfile);
-                ToastService.ShowToast("Hardware vault profile updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await HardwareVaultService.EditProfileAsync(AccessProfile);
+                    ToastService.ShowToast("Hardware vault profile updated.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {

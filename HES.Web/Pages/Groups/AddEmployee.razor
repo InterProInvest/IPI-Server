@@ -60,10 +60,7 @@ else
         }
         <div class="form-group text-right mb-0">
             <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-            <button type="button" @onclick="AddAsync" class="btn btn-primary">
-                <span class="spinner-border spinner-border-sm @(_isBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                <span>Add</span>
-            </button>
+            <ButtonSpinner Text="Add" Class="btn btn-primary" Callback="AddAsync" />
         </div>
     }
 }

@@ -25,22 +25,20 @@ namespace HES.Web.Pages.Settings.Administrators
 
         public Invitation Invitation = new Invitation();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
-        public bool IsBusy { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task InviteAdminAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
-                var callBakcUrl = await ApplicationUserService.InviteAdministratorAsync(Invitation.Email, NavigationManager.BaseUri);
-                await EmailSenderService.SendUserInvitationAsync(Invitation.Email, callBakcUrl);
-                ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    var callBakcUrl = await ApplicationUserService.InviteAdministratorAsync(Invitation.Email, NavigationManager.BaseUri);
+                    await EmailSenderService.SendUserInvitationAsync(Invitation.Email, callBakcUrl);
+                    ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Administrators);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -51,11 +49,7 @@ namespace HES.Web.Pages.Settings.Administrators
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CancelAsync();
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }  
         }
     }
 }

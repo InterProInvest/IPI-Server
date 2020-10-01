@@ -1,6 +1,7 @@
 ﻿using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -39,23 +40,20 @@ namespace HES.Web.Pages.Settings.DataProtection
         [Parameter] public EventCallback Refresh { get; set; }
 
         public CurrentPasswordModel CurrentPassword { get; set; } = new CurrentPasswordModel();
-        public bool IsBusy { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task ChangeDataProtectionPasswordAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
-
-                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-                await DataProtectionService.ChangeProtectionPasswordAsync(CurrentPassword.OldPassword, CurrentPassword.NewPassword);
-                await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Data protection password updated.", ToastLevel.Success);
-                Logger.LogInformation($"Data protection password updated by {authState.User.Identity.Name}");
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                    await DataProtectionService.ChangeProtectionPasswordAsync(CurrentPassword.OldPassword, CurrentPassword.NewPassword);
+                    await Refresh.InvokeAsync(this);
+                    ToastService.ShowToast("Data protection password updated.", ToastLevel.Success);
+                    Logger.LogInformation($"Data protection password updated by {authState.User.Identity.Name}");
+                });
             }
             catch (Exception ex)
             {
@@ -64,8 +62,6 @@ namespace HES.Web.Pages.Settings.DataProtection
             }
             finally
             {
-                IsBusy = false;
-
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.DataProtection);
                 await ModalDialogService.CloseAsync();
             }

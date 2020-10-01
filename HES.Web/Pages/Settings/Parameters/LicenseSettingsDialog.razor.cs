@@ -2,6 +2,7 @@
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ namespace HES.Web.Pages.Settings.Parameters
         [Parameter] public string ApiAddress { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         public LicensingSettings LicensingSettings { get; set; }
-        public bool IsBusy { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -31,25 +32,19 @@ namespace HES.Web.Pages.Settings.Parameters
         {
             try
             {
-                if (IsBusy)
-                    return;
-
-                IsBusy = true;
-
-                await AppSettingsService.SetLicensingSettingsAsync(LicensingSettings);
-                ToastService.ShowToast("License settings updated.", ToastLevel.Success);
-                await HubContext.Clients.All.SendAsync(RefreshPage.Parameters, ConnectionId);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await AppSettingsService.SetLicensingSettingsAsync(LicensingSettings);
+                    ToastService.ShowToast("License settings updated.", ToastLevel.Success);
+                    await HubContext.Clients.All.SendAsync(RefreshPage.Parameters, ConnectionId);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
                 ToastService.ShowToast(ex.Message, ToastLevel.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
     }

@@ -17,10 +17,10 @@
             </button>
         </div>
         <div class="col-auto pl-1 pr-1">
-            <ButtonSpinner Class="btn-primary" Text="Create Personal Account" Callback="OpenDialogCreatePersonalAccountAsync" />
+            <ButtonSpinner Class="btn btn-primary" Text="Create Personal Account" Callback="OpenDialogCreatePersonalAccountAsync" />
         </div>
         <div class="col-auto pl-1">
-            <ButtonSpinner Class="btn-primary" Text="Add Shared Account" Callback="OpenDialogAddSharedAccountAsync" />
+            <ButtonSpinner Class="btn btn-primary" Text="Add Shared Account" Callback="OpenDialogAddSharedAccountAsync" />
         </div>
     </div>
     <section>
@@ -133,7 +133,7 @@
                                     Edit OTP
                                 </button>
                             }
-                            @if (MainTableService.SelectedEntity.Login.Split(@"\")[0].Contains(LdapHost ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                            @if (Employee.ActiveDirectoryGuid != null && MainTableService.SelectedEntity.Login.Split(@"\")[0].Contains(LdapHost ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                             {
                                 <button type="button" @onclick="OpenDialogGenerateAdPasswordAsync" class="btn btn-light border mx-2" title="Generate Active Directory Password">
                                     <img class="icon-btn" src="/svg/icon_random.svg" />
@@ -220,7 +220,7 @@
                     <td style="vertical-align:middle">
                         @if (context.Employee.PrimaryAccountId == context.Id)
                                 {
-                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Primary account">
+                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" title="Primary account">
                                 @context.Name
                             </span>
                                 }

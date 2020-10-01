@@ -134,6 +134,26 @@ namespace HES.Core.Services
             return await _departmentRepository.AddAsync(department);
         }
 
+        public async Task<Department> TryAddAndGetDepartmentWithCompanyAsync(string companyName, string departmentName)
+        {
+            var department = await _departmentRepository
+                .Query()
+                .Include(x => x.Company)
+                .FirstOrDefaultAsync(x => x.Name == departmentName && x.Company.Name == companyName);
+
+            if (department != null)
+                return department;
+
+            var company = await _companyRepository
+                .Query()
+                .FirstOrDefaultAsync(x => x.Name == companyName);
+
+            if (company == null)
+                company = await _companyRepository.AddAsync(new Company() { Name = companyName });
+
+            return await _departmentRepository.AddAsync(new Department() { Name = departmentName, CompanyId = company.Id });
+        }
+
         public async Task EditDepartmentAsync(Department department)
         {
             if (department == null)
@@ -196,6 +216,16 @@ namespace HES.Core.Services
                 throw new AlreadyExistException("Already in use.");
 
             return await _positionRepository.AddAsync(position);
+        }
+
+        public async Task<Position> TryAddAndGetPositionAsync(string name)
+        {
+            var position = await _positionRepository.Query().FirstOrDefaultAsync(x => x.Name == name);
+
+            if (position != null)
+                return position;
+
+            return await _positionRepository.AddAsync(new Position() { Name = name });
         }
 
         public async Task EditPositionAsync(Position position)

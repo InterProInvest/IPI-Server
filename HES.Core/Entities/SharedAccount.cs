@@ -36,7 +36,7 @@ namespace HES.Core.Entities
 
         [NotMapped]
         [Required]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [CompareProperty("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
         [NotMapped]
         public TimeSpan GetPasswordUpdated => (DateTime.UtcNow).Subtract(PasswordChangedAt ?? DateTime.UtcNow);

@@ -25,6 +25,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public Department Department { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -35,11 +36,14 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             try
             {
-                await OrgStructureService.CreateDepartmentAsync(Department);
-                ToastService.ShowToast("Department created.", ToastLevel.Success);
-                await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await OrgStructureService.CreateDepartmentAsync(Department);
+                    ToastService.ShowToast("Department created.", ToastLevel.Success);
+                    await Refresh.InvokeAsync(this);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
