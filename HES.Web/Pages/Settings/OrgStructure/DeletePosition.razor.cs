@@ -45,7 +45,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -57,14 +57,14 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.DeletePositionAsync(Position.Id);
                 await Refresh.InvokeAsync(this);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
-                ToastService.ShowToast("Position removed.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Position removed.", ToastType.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 await ModalDialogService.CancelAsync();
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 

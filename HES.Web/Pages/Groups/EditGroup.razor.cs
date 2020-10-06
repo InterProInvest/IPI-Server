@@ -7,15 +7,16 @@ using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class EditGroup : ComponentBase, IDisposable
+    public partial class EditGroup : OwningComponentBase, IDisposable
     {
-        [Inject] public IGroupService GroupService { get; set; }
+        public IGroupService GroupService { get; set; }
         [Inject] public ILogger<EditGroup> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
@@ -33,6 +34,8 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
+                GroupService = ScopedServices.GetRequiredService<IGroupService>();
+
                 ModalDialogService.OnCancel += ModalDialogService_OnCancel;
 
                 Group = await GroupService.GetGroupByIdAsync(GroupId);
@@ -47,7 +50,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -59,7 +62,7 @@ namespace HES.Web.Pages.Groups
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await GroupService.EditGroupAsync(Group);
-                    ToastService.ShowToast("Group updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Group updated.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                     await ModalDialogService.CloseAsync();
                 });
@@ -71,7 +74,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

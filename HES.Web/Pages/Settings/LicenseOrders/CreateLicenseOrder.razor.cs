@@ -84,14 +84,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
                     var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
                     await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
-                    ToastService.ShowToast("Order created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Order created.", ToastType.Success);
                     await ModalDialogService.CloseAsync();
                 });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }
@@ -134,14 +134,14 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
                     await LicenseService.CreateOrderAsync(licenseOrder, checkedHardwareVaults);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
-                    ToastService.ShowToast("Order created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Order created.", ToastType.Success);
                     await ModalDialogService.CloseAsync();
                 });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

@@ -38,7 +38,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 
                 if (!TwoFactorInfo.Is2faEnabled)
                 {
-                    ToastService.ShowToast($"Cannot disable 2FA for user as it's not currently enabled.", ToastLevel.Error);
+                    await ToastService.ShowToastAsync($"Cannot disable 2FA for user as it's not currently enabled.", ToastType.Error);
                     NavigationManager.NavigateTo("/Identity/Account/Manage/TwoFactorAuthentication", false);
                     return;
                 }
@@ -62,12 +62,12 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
 
-                ToastService.ShowToast("2fa has been disabled. You can reenable 2fa when you setup an authenticator app", ToastLevel.Success);
+                await ToastService.ShowToastAsync("2fa has been disabled. You can reenable 2fa when you setup an authenticator app", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
             finally
             {

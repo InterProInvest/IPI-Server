@@ -3,8 +3,11 @@ using HES.Core.Entities;
 using HES.Core.Interfaces;
 using HES.Core.Models.Web.AppSettings;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace HES.Core.Services
@@ -13,11 +16,15 @@ namespace HES.Core.Services
     {
         private readonly IAsyncRepository<AppSettings> _appSettingsRepository;
         private readonly IDataProtectionService _dataProtectionService;
+        private readonly IMemoryCache _memoryCache;
+        private readonly ILogger<AppSettingsService> _logger;
 
-        public AppSettingsService(IAsyncRepository<AppSettings> appSettingsRepository, IDataProtectionService dataProtectionService)
+        public AppSettingsService(IAsyncRepository<AppSettings> appSettingsRepository, IDataProtectionService dataProtectionService, IMemoryCache memoryCache, ILogger<AppSettingsService> logger)
         {
             _appSettingsRepository = appSettingsRepository;
             _dataProtectionService = dataProtectionService;
+            _memoryCache = memoryCache;
+            _logger = logger;
         }
 
         public async Task<LicensingSettings> GetLicensingSettingsAsync()
@@ -102,36 +109,59 @@ namespace HES.Core.Services
 
         public async Task<AlarmState> GetAlarmStateAsync()
         {
-            var alarmState = await _appSettingsRepository.Query().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ServerConstants.Alarm);
+            var alarmState = _memoryCache.Get<AlarmState>(ServerConstants.Alarm);
 
-            if (alarmState == null)
-                return null;
+            if (alarmState != null)
+                return alarmState;
 
-            return JsonConvert.DeserializeObject<AlarmState>(alarmState.Value);
+            alarmState = new AlarmState();
+
+            var _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "alarmstate.json");
+
+            if (!File.Exists(_path))
+            {
+                _memoryCache.Set(ServerConstants.Alarm, alarmState);
+                return alarmState;
+            }
+
+            string json = string.Empty;
+            try
+            {
+                using (var reader = new StreamReader(_path))
+                {
+                    json = await reader.ReadToEndAsync();
+                }
+
+                if (string.IsNullOrWhiteSpace(json))
+                    return alarmState;
+
+                alarmState = JsonConvert.DeserializeObject<AlarmState>(json);
+                _memoryCache.Set(ServerConstants.Alarm, alarmState);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            
+            return alarmState;
         }
 
         public async Task SetAlarmStateAsync(AlarmState alarmState)
         {
-            if (alarmState == null)
-                throw new ArgumentNullException(nameof(alarmState));
+            _memoryCache.Set(ServerConstants.Alarm, alarmState);
 
-            var json = JsonConvert.SerializeObject(alarmState);
-
-            var appSettings = await _appSettingsRepository.GetByIdAsync(ServerConstants.Alarm);
-
-            if (appSettings == null)
+            try
             {
-                appSettings = new AppSettings()
+                var json = JsonConvert.SerializeObject(alarmState);
+                var _path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "alarmstate.json");
+                using (var writer = new StreamWriter(_path, false))
                 {
-                    Id = ServerConstants.Alarm,
-                    Value = json
-                };
-                await _appSettingsRepository.AddAsync(appSettings);
+                    await writer.WriteLineAsync(json);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                appSettings.Value = json;
-                await _appSettingsRepository.UpdateAsync(appSettings);
+                _logger.LogError(ex.Message);
             }
         }
 

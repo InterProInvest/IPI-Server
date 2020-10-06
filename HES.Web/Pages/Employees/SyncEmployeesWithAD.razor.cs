@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Employees
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -52,13 +52,13 @@ namespace HES.Web.Pages.Employees
                 await LdapService.SyncUsersAsync(LdapSettings);
                 await LdapService.ChangePasswordWhenExpiredAsync(LdapSettings);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
-                ToastService.ShowToast("Users synced.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Users synced.", ToastType.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

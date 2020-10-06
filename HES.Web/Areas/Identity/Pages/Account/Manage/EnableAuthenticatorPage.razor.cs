@@ -69,7 +69,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             }
             catch (Exception ex)
             {
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 
@@ -86,13 +86,13 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 
                 if (!verifyTwoFactorTokenInfo.IsTwoFactorTokenValid)
                 {
-                    ToastService.ShowToast("Verification code is invalid.", ToastLevel.Error);
+                    await ToastService.ShowToastAsync("Verification code is invalid.", ToastType.Error);
                     await LoadSharedKeyAndQrCodeUriAsync();
                     await GenerateQrCodeAsync();
                     return;
                 }
 
-                ToastService.ShowToast("Your authenticator app has been verified.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Your authenticator app has been verified.", ToastType.Success);
 
                 if (verifyTwoFactorTokenInfo.RecoveryCodes != null)
                 {
@@ -106,7 +106,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

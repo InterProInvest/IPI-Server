@@ -1,4 +1,6 @@
-﻿@if (Account == null)
+﻿@inherits OwningComponentBase
+
+@if (Account == null)
 {
     <LoadingText />
 }
@@ -17,7 +19,7 @@ else
                 <h5 class="text-navyblue">@Account.Name</h5>
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">OTP Secret</label>
+                <FormLabel For="@(() => _accountOtp.OtpSecret)" class="text-gray" />
                 <InputText @bind-Value="_accountOtp.OtpSecret" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => _accountOtp.OtpSecret)" class="text-danger" />
             </div>

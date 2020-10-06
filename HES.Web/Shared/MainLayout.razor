@@ -1,6 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@using HES.Web.Components.Toasts
 
 <RedirectToDataProtectionActivate />
+<ToastsWrapper />
 <div class="d-flex">
     <div class="custom-sidebar">
         <NavMenu />
@@ -9,7 +11,6 @@
         <NavBar />
         <div class="custom-content p-4">
             <ModalDialog />
-            <Toast />
             @Body
         </div>
     </div>

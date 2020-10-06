@@ -24,10 +24,10 @@ namespace HES.Web.Pages.Employees
         [Parameter] public string EmployeeId { get; set; }
 
         public Employee Employee { get; set; }
+        public string LdapHost { get; set; }
         public bool Initialized { get; set; }
         public bool LoadFailed { get; set; }
         public string ErrorMessage { get; set; }
-        public string LdapHost { get; set; }
 
         private HubConnection hubConnection;
 
@@ -298,7 +298,7 @@ namespace HES.Web.Pages.Employees
 
                  await LoadEmployeeAsync();
                  await MainTableService.LoadTableDataAsync();
-                 ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                 await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
              });
 
             hubConnection.On<string>(RefreshPage.EmployeesDetailsVaultSynced, async (employeeId) =>
@@ -307,7 +307,7 @@ namespace HES.Web.Pages.Employees
                     return;
 
                 await LoadEmployeeAsync();
-                ToastService.ShowToast("Hardware vault sync completed.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Hardware vault sync completed.", ToastType.Notify);
             });
 
             hubConnection.On<string>(RefreshPage.EmployeesDetailsVaultState, async (employeeId) =>

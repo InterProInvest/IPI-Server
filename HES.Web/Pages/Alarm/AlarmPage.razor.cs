@@ -42,9 +42,6 @@ namespace HES.Web.Pages.Alarm
         private async Task GetAlarmStateAsync()
         {
             AlarmState = await AppSettingsService.GetAlarmStateAsync();
-
-            if (AlarmState == null)
-                AlarmState = new AlarmState();
         }
 
         private async Task EnableAlarmAsync()
@@ -83,7 +80,7 @@ namespace HES.Web.Pages.Alarm
             {
                 await GetAlarmStateAsync();
                 StateHasChanged();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await _hubConnection.StartAsync();

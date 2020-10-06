@@ -54,12 +54,12 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
 
-                ToastService.ShowToast("The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

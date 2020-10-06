@@ -128,7 +128,7 @@ namespace HES.Web.Pages.Employees
                     await CreateAsync();
                     if (SelectedHardwareVault == null)
                     {
-                        ToastService.ShowToast("Employee created.", ToastLevel.Success);
+                        await ToastService.ShowToastAsync("Employee created.", ToastType.Success);
                         await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                         await ModalDialogService.CloseAsync();
                         break;
@@ -138,7 +138,7 @@ namespace HES.Web.Pages.Employees
                     WizardStep = WizardStep.Activation;
                     break;
                 case WizardStep.Activation:
-                    ToastService.ShowToast("Employee created.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("Employee created.", ToastType.Success);
                     await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Employees);
                     await ModalDialogService.CloseAsync();
                     break;
@@ -273,7 +273,7 @@ namespace HES.Web.Pages.Employees
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

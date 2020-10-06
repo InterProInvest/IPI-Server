@@ -18,14 +18,15 @@ namespace HES.Web.Pages.Settings.Parameters
         [Inject] public ILogger<LicenseSettingsDialog> Logger { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
-        [Parameter] public string ApiAddress { get; set; }
+        [Parameter] public LicensingSettings LicensingSettings { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        public LicensingSettings LicensingSettings { get; set; }
         public ButtonSpinner ButtonSpinner { get; set; }
+
+        public string InputType { get; private set; }
 
         protected override void OnInitialized()
         {
-            LicensingSettings = new LicensingSettings() { ApiAddress = ApiAddress };
+            InputType = "Password";
         }
 
         private async Task UpdateLicensingSettingsAsync()
@@ -35,7 +36,7 @@ namespace HES.Web.Pages.Settings.Parameters
                 await ButtonSpinner.SpinAsync(async () =>
                 {
                     await AppSettingsService.SetLicensingSettingsAsync(LicensingSettings);
-                    ToastService.ShowToast("License settings updated.", ToastLevel.Success);
+                    await ToastService.ShowToastAsync("License settings updated.", ToastType.Success);
                     await HubContext.Clients.All.SendAsync(RefreshPage.Parameters, ConnectionId);
                     await ModalDialogService.CloseAsync();
                 });
@@ -43,7 +44,7 @@ namespace HES.Web.Pages.Settings.Parameters
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

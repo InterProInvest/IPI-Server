@@ -2,7 +2,7 @@
     <DataAnnotationsValidator />
     <ValidationErrorMessage @ref="ValidationErrorMessage" />
     <div class="form-group">
-        <label class="control-label text-gray">Email</label>
+        <FormLabel For="@(() => Invitation.Email)" class="text-gray" />
         <InputText @bind-Value="Invitation.Email" class="form-control text-navyblue" />
         <ValidationMessage For="@(() => Invitation.Email)" class="text-danger" />
     </div>

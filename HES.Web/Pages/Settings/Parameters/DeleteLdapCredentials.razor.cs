@@ -26,14 +26,14 @@ namespace HES.Web.Pages.Settings.Parameters
                 ldapSettings.UserName = null;
                 ldapSettings.Password = null;
                 await AppSettingsService.SetLdapSettingsAsync(ldapSettings);
-                ToastService.ShowToast("Domain settings updated.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Domain settings updated.", ToastType.Success);
                 await HubContext.Clients.All.SendAsync(RefreshPage.Parameters, ConnectionId);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

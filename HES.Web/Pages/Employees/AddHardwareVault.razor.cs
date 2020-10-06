@@ -112,7 +112,7 @@ namespace HES.Web.Pages.Employees
 
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(SelectedHardwareVault.Id);
                 await Refresh.InvokeAsync(this);
-                ToastService.ShowToast("Vault added", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Vault added", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, EmployeeId);
                 await HubContext.Clients.All.SendAsync(RefreshPage.HardwareVaultStateChanged, SelectedHardwareVault.Id);
                 await ModalDialogService.CloseAsync();
@@ -121,7 +121,7 @@ namespace HES.Web.Pages.Employees
             {
                 await ModalDialogService.CloseAsync();
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 

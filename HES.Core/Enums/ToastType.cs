@@ -1,6 +1,6 @@
 ﻿namespace HES.Core.Enums
 {
-    public enum ToastLevel
+    public enum ToastType
     {
         Success,
         Notify,

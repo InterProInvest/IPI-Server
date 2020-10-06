@@ -40,7 +40,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -51,13 +51,13 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             {
                 await LicenseService.SendOrderAsync(LicenseOrder);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
-                ToastService.ShowToast("License order has been sent.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("License order has been sent.", ToastType.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

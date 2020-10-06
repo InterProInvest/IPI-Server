@@ -63,12 +63,12 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 
                 await JSRuntime.InvokeVoidAsync("downloadPersonalData", JsonConvert.SerializeObject(personalData));
 
-                ToastService.ShowToast("Download started.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Download started.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

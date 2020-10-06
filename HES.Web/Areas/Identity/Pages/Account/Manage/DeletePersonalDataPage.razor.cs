@@ -80,7 +80,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

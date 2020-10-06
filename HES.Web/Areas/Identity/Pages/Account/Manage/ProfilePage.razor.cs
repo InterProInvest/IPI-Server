@@ -66,12 +66,12 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
    
-                ToastService.ShowToast("Your profile has been updated.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Your profile has been updated.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 
@@ -84,12 +84,12 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
 
-                ToastService.ShowToast("Verification email sent.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Verification email sent.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 
@@ -102,12 +102,12 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(await response.Content.ReadAsStringAsync());
 
-                ToastService.ShowToast("Your password has been changed.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Your password has been changed.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

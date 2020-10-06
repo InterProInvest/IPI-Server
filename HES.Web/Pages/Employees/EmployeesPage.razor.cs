@@ -5,6 +5,7 @@ using HES.Core.Models.Employees;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -17,18 +18,34 @@ namespace HES.Web.Pages.Employees
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<EmployeesPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<Employee, EmployeeFilter>>();
+            try
+            {
+                EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<Employee, EmployeeFilter>>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetEmployees();
-            await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, ModalDialogService, StateHasChanged, nameof(Employee.FullName));
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetEmployees();
+                await MainTableService.InitializeAsync(EmployeeService.GetEmployeesAsync, EmployeeService.GetEmployeesCountAsync, ModalDialogService, StateHasChanged, nameof(Employee.FullName));
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         //private async Task ImportEmployeesFromAdAsync()
@@ -109,7 +126,7 @@ namespace HES.Web.Pages.Employees
             hubConnection.On(RefreshPage.Employees, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

@@ -4,15 +4,16 @@ using HES.Core.Hubs;
 using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Groups
 {
-    public partial class RemoveEmployee : ComponentBase
+    public partial class RemoveEmployee : OwningComponentBase
     {
-        [Inject] public IGroupService GroupService { get; set; }
+        public IGroupService GroupService { get; set; }
         [Inject] public ILogger<RemoveEmployee> Logger { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] IToastService ToastService { get; set; }
@@ -27,6 +28,8 @@ namespace HES.Web.Pages.Groups
         {
             try
             {
+                GroupService = ScopedServices.GetRequiredService<IGroupService>();
+
                 GroupMembership = await GroupService.GetGroupMembershipAsync(EmployeeId, GroupId);
 
                 if (GroupMembership == null)
@@ -35,7 +38,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -46,12 +49,12 @@ namespace HES.Web.Pages.Groups
             {
                 await GroupService.RemoveEmployeeFromGroupAsync(GroupMembership.Id);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.GroupDetails);
-                ToastService.ShowToast("Employee removed.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Employee removed.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
             finally
             {

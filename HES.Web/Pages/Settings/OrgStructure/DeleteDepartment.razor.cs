@@ -44,7 +44,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -56,14 +56,14 @@ namespace HES.Web.Pages.Settings.OrgStructure
                 await OrgStructureService.DeleteDepartmentAsync(Department.Id);
                 await Refresh.InvokeAsync(this);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
-                ToastService.ShowToast("Department removed.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Department removed.", ToastType.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 await ModalDialogService.CancelAsync();
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 

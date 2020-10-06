@@ -10,6 +10,7 @@ namespace HES.Core.Models.Web.Accounts
 
         [Required]
         [DataType(DataType.Password)]
+        [Display(Name = "Confirm Password")]
         [CompareProperty("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
  

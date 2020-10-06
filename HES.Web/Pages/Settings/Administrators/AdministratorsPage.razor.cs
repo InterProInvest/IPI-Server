@@ -5,7 +5,6 @@ using HES.Core.Models.Web.Users;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -27,20 +26,33 @@ namespace HES.Web.Pages.Settings.Administrators
         [Inject] public NavigationManager NavigationManager { get; set; }
 
         public AuthenticationState AuthenticationState { get; set; }
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
-        private bool IsBusy;
 
         protected override async Task OnInitializedAsync()
         {
-            ApplicationUserService = ScopedServices.GetRequiredService<IApplicationUserService>();
-            EmailSenderService = ScopedServices.GetRequiredService<IEmailSenderService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<ApplicationUser, ApplicationUserFilter>>();
+            try
+            {
+                ApplicationUserService = ScopedServices.GetRequiredService<IApplicationUserService>();
+                EmailSenderService = ScopedServices.GetRequiredService<IEmailSenderService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<ApplicationUser, ApplicationUserFilter>>();
 
-            await InitializeHubAsync();
-            AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            await BreadcrumbsService.SetAdministrators();
-            await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, ModalDialogService, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
+                await InitializeHubAsync();
+                AuthenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                await BreadcrumbsService.SetAdministrators();
+                await MainTableService.InitializeAsync(ApplicationUserService.GetAdministratorsAsync, ApplicationUserService.GetAdministratorsCountAsync, ModalDialogService, StateHasChanged, nameof(ApplicationUser.Email), ListSortDirection.Ascending);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task InviteAdminAsync()
@@ -57,24 +69,16 @@ namespace HES.Web.Pages.Settings.Administrators
 
         private async Task ResendInviteAsync()
         {
-            if (IsBusy)
-                return;
-
             try
             {
-                IsBusy = true;
                 var callBakcUrl = await ApplicationUserService.GetCallBackUrl(MainTableService.SelectedEntity.Email, NavigationManager.BaseUri);
                 await EmailSenderService.SendUserInvitationAsync(MainTableService.SelectedEntity.Email, callBakcUrl);
-                ToastService.ShowToast("Administrator invited.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Administrator invited.", ToastType.Success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                IsBusy = false;
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
 
@@ -103,7 +107,7 @@ namespace HES.Web.Pages.Settings.Administrators
             hubConnection.On(RefreshPage.Administrators, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             hubConnection.On(RefreshPage.AdministratorsUpdated, async () =>
