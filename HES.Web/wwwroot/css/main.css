@@ -1095,8 +1095,8 @@ div.dataTables_scrollHead table.dataTable {
 
 .icon-hideez.toggled {
     width: 35px;
-    -webkit-mask: url('../svg/hideez-sidebar-min.svg');
-    mask: url('../svg/hideez-sidebar-min.svg');
+    -webkit-mask: url('../svg/ipi-sidebar-min.svg');
+    mask: url('../svg/ipi-sidebar-min.svg');
 }
 
 @media (max-width: 768px) {
@@ -1234,15 +1234,15 @@ div.dataTables_scrollHead table.dataTable {
     width: 191px;
     height: 34px;
     background: #FFF;
-    -webkit-mask: url('../svg/hideez-sidebar.svg');
-    mask: url('../svg/hideez-sidebar.svg');
+    -webkit-mask: url('../svg/ipi-sidebar.svg');
+    mask: url('../svg/ipi-sidebar.svg');
 }
 
 @media (max-width: 768px) {
     .icon-hideez {
         width: 35px;
-        -webkit-mask: url('../svg/hideez-sidebar-min.svg');
-        mask: url('../svg/hideez-sidebar-min.svg');
+        -webkit-mask: url('../svg/ipi-sidebar-min.svg');
+        mask: url('../svg/ipi-sidebar-min.svg');
     }
 }
 

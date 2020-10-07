@@ -72,11 +72,11 @@ namespace HES.Core.Services
         {
             return new DashboardCard()
             {
-                CardTitle = "Hideez Enterprise Server",
+                CardTitle = "IPI Enterprise Server",
                 CardLogo = "/svg/logo-server.svg",
-                LeftText = "HES version",
+                LeftText = "IPI version",
                 LeftValue = $"{GetServerVersion()}",
-                LeftLink = "https://github.com/HideezGroup/HES",
+                LeftLink = "https://github.com/InterProInvest/IPI-Server",
                 RightText = "Hardware Vault Tasks",
                 RightValue = $"{await GetHardwareVaultTasksCount()}",
                 RightLink = "#",

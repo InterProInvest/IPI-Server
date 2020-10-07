@@ -60,10 +60,10 @@ namespace HES.Core.Services
             {
                 MailMessage mailMessage = new MailMessage(emailSettings.UserName, admin.Email);
                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-                htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+                htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
                 mailMessage.AlternateViews.Add(htmlView);
                 mailMessage.IsBodyHtml = true;
-                mailMessage.Subject = $"Hideez License Order Status Update - {serverSettings.Name}";
+                mailMessage.Subject = $"IPI License Order Status Update - {serverSettings.Name}";
 
                 await SendAsync(mailMessage, emailSettings);
             }
@@ -110,10 +110,10 @@ namespace HES.Core.Services
             {
                 MailMessage mailMessage = new MailMessage(emailSettings.UserName, admin.Email);
                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-                htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+                htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
                 mailMessage.AlternateViews.Add(htmlView);
                 mailMessage.IsBodyHtml = true;
-                mailMessage.Subject = $"Hideez License Status Update - {serverSettings.Name}";
+                mailMessage.Subject = $"IPI License Status Update - {serverSettings.Name}";
 
                 await SendAsync(mailMessage, emailSettings);
             }
@@ -133,10 +133,10 @@ namespace HES.Core.Services
             {
                 MailMessage mailMessage = new MailMessage(emailSettings.UserName, admin.Email);
                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-                htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+                htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
                 mailMessage.AlternateViews.Add(htmlView);
                 mailMessage.IsBodyHtml = true;
-                mailMessage.Subject = $"Action required - Hideez Enterprise Server Status Update - {serverSettings.Name}";
+                mailMessage.Subject = $"Action required - IPI Enterprise Server Status Update - {serverSettings.Name}";
 
                 await SendAsync(mailMessage, emailSettings);
             }
@@ -152,10 +152,10 @@ namespace HES.Core.Services
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
             AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = $"Action required - Invitation to Hideez Enterprise Server - {serverSettings.Name}";
+            mailMessage.Subject = $"Action required - Invitation to IPI Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -170,10 +170,10 @@ namespace HES.Core.Services
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
             AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = $"Action required - Password Reset to Hideez Enterprise Server - {serverSettings.Name}";
+            mailMessage.Subject = $"Action required - Password Reset to IPI Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -188,10 +188,10 @@ namespace HES.Core.Services
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, email);
             AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = $"Action required - Confirm your email to Hideez Enterprise Server - {serverSettings.Name}";
+            mailMessage.Subject = $"Action required - Confirm your email to IPI Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -231,7 +231,7 @@ namespace HES.Core.Services
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = "Hideez Software Vault application";
+            mailMessage.Subject = "IPI Software Vault application";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -246,10 +246,10 @@ namespace HES.Core.Services
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
             AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = $"Activate Hardware Vault - Hideez Enterprise Server - {serverSettings.Name}";
+            mailMessage.Subject = $"Activate Hardware Vault - IPI Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }
@@ -270,10 +270,10 @@ namespace HES.Core.Services
 
             MailMessage mailMessage = new MailMessage(emailSettings.UserName, employee.Email);
             AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlMessage, Encoding.UTF8, MediaTypeNames.Text.Html);
-            htmlView.LinkedResources.Add(CreateImageResource("img_hideez_logo"));
+            htmlView.LinkedResources.Add(CreateImageResource("img_ipi_logo"));
             mailMessage.AlternateViews.Add(htmlView);
             mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = $"Password Auto Changed - Hideez Enterprise Server - {serverSettings.Name}";
+            mailMessage.Subject = $"Password Auto Changed - IPI Enterprise Server - {serverSettings.Name}";
 
             await SendAsync(mailMessage, emailSettings);
         }

@@ -55,7 +55,7 @@ namespace HES.Web.Areas.Identity.Pages.Account
                 //if (role)
                 //{
                 //    resetPasswordUrl = "/Account/External/ResetAccountPassword";
-                //    emailTitle = "Hideez Enterpise Server - Reset Password of SAML IdP account";
+                //    emailTitle = "IPI Enterpise Server - Reset Password of SAML IdP account";
                 //    emailBody = $"Dear {employee.FullName} <br/> Please reset your password by";
                 //}
 
