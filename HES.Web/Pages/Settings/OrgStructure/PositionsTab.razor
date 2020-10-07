@@ -1,10 +1,6 @@
 ﻿@inherits OwningComponentBase
 
-@if (Positions == null)
-{
-    <LoadingTab />
-}
-else
+@if (Initialized)
 {
     <div class="d-flex justify-content-between mb-2">
         <div class="d-flex align-items-center flex-wrap">
@@ -39,11 +35,11 @@ else
                                 </div>
                                 <div class="d-flex align-items-center flex-nowrap">
                                     <button type="button" class="btn btn-light border mx-1" title="Edit department" @onclick="@(async () => await OpenDialogEditPositionAsync(position))">
-                                        <img class="icon-btn" src="/svg/action/edit.svg" />
+                                        <img class="icon-btn" src="/svg/icon-edit.svg" />
                                         Edit
                                     </button>
                                     <button type="button" class="btn btn-light border mx-1" title="Delete department" @onclick="@(async () => await OpenDialogDeletePositionAsync(position))">
-                                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                                        <img class="icon-btn" src="/svg/icon-delete.svg" />
                                         Delete
                                     </button>
                                 </div>
@@ -54,4 +50,12 @@ else
             </tbody>
         </table>
     </div>
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

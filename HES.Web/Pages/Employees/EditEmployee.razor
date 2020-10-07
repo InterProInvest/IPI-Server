@@ -1,4 +1,6 @@
-﻿@if (!Initialized)
+﻿@inherits OwningComponentBase
+
+@if (!Initialized)
 {
     <LoadingText />
 }
@@ -14,22 +16,22 @@ else
             <DataAnnotationsValidator />
             <ValidationErrorMessage @ref="ValidationErrorMessage" />
             <div class="form-group">
-                <label class="control-label text-gray">First Name</label>
+                <FormLabel For="@(() => Employee.FirstName)" class="text-gray" />
                 <InputText @bind-Value="Employee.FirstName" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Employee.FirstName)" class="text-danger" />
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">Last Name</label>
+                <FormLabel For="@(() => Employee.LastName)" class="text-gray" />
                 <InputText @bind-Value="Employee.LastName" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Employee.LastName)" class="text-danger" />
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">Email</label>
+                <FormLabel For="@(() => Employee.Email)" class="text-gray" />
                 <InputText @bind-Value="Employee.Email" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Employee.Email)" class="text-danger" />
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">Phone Number</label>
+                <FormLabel For="@(() => Employee.PhoneNumber)" class="text-gray" />
                 <InputText @bind-Value="Employee.PhoneNumber" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Employee.PhoneNumber)" class="text-danger" />
             </div>
@@ -51,7 +53,7 @@ else
                 </select>
             </div>
             <div class="form-group">
-                <label class="control-label text-gra">Department</label>
+                <FormLabel For="@(() => Employee.DepartmentId)" class="text-gray" />
                 <select @bind="Employee.DepartmentId" class="form-control text-navyblue">
                     @foreach (var item in Departments)
                     {
@@ -60,7 +62,7 @@ else
                 </select>
             </div>
             <div class="form-group">
-                <label class="control-label text-gra">Position</label>
+                <FormLabel For="@(() => Employee.PositionId)" class="text-gray" />
                 <select @bind="Employee.PositionId" class="form-control text-navyblue">
                     <option></option>
                     @foreach (var item in Positions)
@@ -71,7 +73,7 @@ else
             </div>
             <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Save" Class="btn btn-primary" />
             </div>
         </EditForm>
     }

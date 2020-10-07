@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
@@ -31,6 +32,7 @@ namespace HES.Web.Pages.Workstations
         public List<Department> Departments { get; set; }
         public bool Initialized { get; set; }
         public bool EntityBeingEdited { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -63,7 +65,7 @@ namespace HES.Web.Pages.Workstations
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -72,16 +74,19 @@ namespace HES.Web.Pages.Workstations
         {
             try
             {
-                await WorkstationService.ApproveWorkstationAsync(Workstation);
-                await RemoteWorkstationConnectionsService.UpdateRfidStateAsync(Workstation.Id, Workstation.RFID);          
-                ToastService.ShowToast("Workstation updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Workstations);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await WorkstationService.ApproveWorkstationAsync(Workstation);
+                    await RemoteWorkstationConnectionsService.UpdateRfidStateAsync(Workstation.Id, Workstation.RFID);
+                    await ToastService.ShowToastAsync("Workstation updated.", ToastType.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Workstations);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

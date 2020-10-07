@@ -4,6 +4,7 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,21 +18,36 @@ namespace HES.Web.Pages.Settings.OrgStructure
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<PositionsTab> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
 
         public List<Position> Positions { get; set; }
         public string SearchText { get; set; } = string.Empty;
         public bool IsSortedAscending { get; set; } = true;
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            OrgStructureService = ScopedServices.GetRequiredService<IOrgStructureService>();
+            try
+            {
+                OrgStructureService = ScopedServices.GetRequiredService<IOrgStructureService>();
 
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetOrgStructure();
-            await LoadPositionsAsync();
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetOrgStructure();
+                await LoadPositionsAsync();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private string GetSortIcon()
@@ -116,7 +132,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             hubConnection.On(RefreshPage.OrgSructurePositions, async () =>
             {
                 await LoadPositionsAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

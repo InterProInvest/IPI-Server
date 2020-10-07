@@ -155,10 +155,10 @@
                 <nav class="navbar navbar-light bg-light border-bottom shadow-sm">
                     <div class="d-flex align-items-center">
                         <button id="download_btn" class="btn btn-secondary mr-2" title="Download file" @onclick="DownloadFile">
-                            <img src="/svg/logs/download.svg" />
+                            <img src="/svg/icon-download.svg" />
                         </button>
                         @*<button id="delete_btn" class="btn btn-secondary  mr-2" title="Delete file">
-                                <img src="/svg/logs/delete.svg" />
+                                <img src="/svg/icon-delete-white.svg" />
                             </button>*@
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="localTime" @bind="LocalTime">
@@ -174,7 +174,7 @@
                     </div>
                     <div class="form-group has-search-right m-0">
                         <div class="form-control-feedback">
-                            <img class="img-size" src="/svg/action/search.svg" />
+                            <img class="img-size" src="/svg/icon-search.svg" />
                         </div>
                         <input id="searchbox" type="text" class="form-control" placeholder="Search" @oninput="@((e)=> { searchText = (string)e.Value; })">
                     </div>

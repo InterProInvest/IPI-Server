@@ -7,17 +7,13 @@ else
     <EditForm Model="CurrentPassword" OnValidSubmit="DisableDataProtectionAsync">
         <DataAnnotationsValidator />
         <div class="form-group">
-            <label class="control-label text-gray">Password</label>
+            <FormLabel For="@(() => CurrentPassword.Password)" class="text-gray" />
             <InputText @bind-Value="CurrentPassword.Password" type="password" class="form-control text-navyblue" />
             <ValidationMessage For="@(() => CurrentPassword.Password)" class="text-danger" />
         </div>
         <div class="text-right">
-            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>       
-            <button type="submit" class="btn btn-danger">
-                <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-                <span>Disable</span>
-            </button>
-
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
+            <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Disable" Class="btn btn-danger" />
         </div>
     </EditForm>
 }

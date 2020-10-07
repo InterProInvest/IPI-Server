@@ -1,12 +1,8 @@
-﻿@page "/Groups"
+﻿@*@page "/Groups"*@
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
 @inherits OwningComponentBase
 
-@if (MainTableService.Entities == null)
-{
-    <LoadingPage />
-}
-else
+@if (Initialized)
 {
     <TableAction>
         <FilterForm>
@@ -20,15 +16,15 @@ else
                 Create group
             </button>
             <button type="button" class="btn btn-light border mx-1 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Details" @onclick="NavigateToGroupDetails">
-                <img class="icon-btn" src="/svg/action/details.svg" />
+                <img class="icon-btn" src="/svg/icon-details.svg" />
                 Details
             </button>
             <button type="button" class="btn btn-light border mx-1 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Edit Group" @onclick="OpenModalEditGroupAsync">
-                <img class="icon-btn" src="/svg/action/edit.svg" />
+                <img class="icon-btn" src="/svg/icon-edit.svg" />
                 Edit
             </button>
             <button type="button" class="btn btn-light border mx-1 @(MainTableService.SelectedEntity == null ? "d-none" : null)" title="Delete Group" @onclick="OpenModalDeleteGroupAsync">
-                <img class="icon-btn" src="/svg/action/delete.svg" />
+                <img class="icon-btn" src="/svg/icon-delete.svg" />
                 Delete
             </button>
         </ActionButtons>
@@ -78,4 +74,12 @@ else
                 CurrentPage="MainTableService.CurrentPage"
                 DisplayRows="MainTableService.DataLoadingOptions.Take"
                 DisplayRecords="MainTableService.Entities.Count" />
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

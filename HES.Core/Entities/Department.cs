@@ -11,7 +11,7 @@ namespace HES.Core.Entities
         public string Id { get; set; }
 
         [Required]
-        [Display(Name = "Departments")]
+        [Display(Name = "Name")]
         public string Name { get; set; }
 
         [Required]

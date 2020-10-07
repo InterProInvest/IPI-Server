@@ -73,7 +73,7 @@ namespace HES.Core.Services
             return new DashboardCard()
             {
                 CardTitle = "Hideez Enterprise Server",
-                CardLogo = "/svg/dashboard/server.svg",
+                CardLogo = "/svg/logo-server.svg",
                 LeftText = "HES version",
                 LeftValue = $"{GetServerVersion()}",
                 LeftLink = "https://github.com/HideezGroup/HES",
@@ -143,7 +143,7 @@ namespace HES.Core.Services
             return new DashboardCard()
             {
                 CardTitle = "Employees",
-                CardLogo = "/svg/dashboard/employees.svg",
+                CardLogo = "/svg/logo-employees.svg",
                 LeftText = "Registered",
                 LeftValue = $"{await GetEmployeesCountAsync()}",
                 LeftLink = "/Employees",
@@ -205,7 +205,6 @@ namespace HES.Core.Services
             var licenseWarning = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Warning)
-                .AsTracking()
                 .CountAsync();
 
             if (licenseWarning > 0)
@@ -221,7 +220,6 @@ namespace HES.Core.Services
             var licenseCritical = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Critical)
-                .AsTracking()
                 .CountAsync();
 
             if (licenseCritical > 0)
@@ -237,7 +235,6 @@ namespace HES.Core.Services
             var licenseExpired = await _hardwareVaultService
                 .VaultQuery()
                 .Where(d => d.LicenseStatus == VaultLicenseStatus.Expired)
-                .AsTracking()
                 .CountAsync();
 
             if (licenseExpired > 0)
@@ -258,7 +255,7 @@ namespace HES.Core.Services
             return new DashboardCard()
             {
                 CardTitle = "Hardware Vaults",
-                CardLogo = "/svg/dashboard/hardware-vaults.svg",
+                CardLogo = "/svg/logo-hardware-vaults.svg",
                 LeftText = "Registered",
                 LeftValue = $"{await GetHardwareVaultsCountAsync()}",
                 LeftLink = "/HardwareVaults",
@@ -310,7 +307,7 @@ namespace HES.Core.Services
             return new DashboardCard()
             {
                 CardTitle = "Workstations",
-                CardLogo = "/svg/dashboard/workstations.svg",
+                CardLogo = "/svg/logo-workstations.svg",
                 LeftText = "Registered",
                 LeftValue = $"{await GetWorkstationsCountAsync()}",
                 LeftLink = "/Workstations",
@@ -322,6 +319,7 @@ namespace HES.Core.Services
         }
 
         #endregion
+
         public void Dispose()
         {
             _employeeService.Dispose();

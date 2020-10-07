@@ -1,5 +1,6 @@
 ﻿using HES.Core.Interfaces;
 using HES.Core.Models.Web.LicenseOrders;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Parameter] public Func<LicenseOrderFilter, Task> FilterChanged { get; set; }
 
         public LicenseOrderFilter Filter { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -20,7 +22,10 @@ namespace HES.Web.Pages.Settings.LicenseOrders
 
         private async Task FilteredAsync()
         {
-            await FilterChanged.Invoke(Filter);
+            await ButtonSpinner.SpinAsync(async () =>
+            {
+                await FilterChanged.Invoke(Filter);
+            });
         }
 
         private void OnChange_ProlongLicense(ChangeEventArgs args)

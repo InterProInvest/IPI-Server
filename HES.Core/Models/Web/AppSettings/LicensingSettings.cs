@@ -5,9 +5,12 @@ namespace HES.Core.Models.Web.AppSettings
     public class LicensingSettings
     {
         [Required]
+        [Display(Name = "Api Key")]
         public string ApiKey { get; set; }
-        [Required]
+        
         [Url]
+        [Required]
+        [Display(Name = "Api Address")]
         public string ApiAddress { get; set; }
     }
 }

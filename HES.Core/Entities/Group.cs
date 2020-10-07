@@ -13,10 +13,12 @@ namespace HES.Core.Entities
         /// Is Unique <see cref="ApplicationDbContext"/> 
         /// </summary>
         [Required]
+        [Display(Name = "Name")]
         public string Name { get; set; }
         [RegularExpression(@"^[a-z0-9][-a-z0-9.!#$%&'*+-=?^_`{|}~\/]+@([-a-z0-9]+\.)+[a-z]{2,5}$", ErrorMessage = "The Email field is not a valid e-mail address.")]
         public string Email { get; set; }
         public string Description { get; set; }
+        public bool ChangePasswordWhenExpired { get; set; }
         public List<GroupMembership> GroupMemberships { get; set; }
     }
 }

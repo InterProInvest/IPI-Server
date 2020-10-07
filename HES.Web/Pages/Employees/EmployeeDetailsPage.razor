@@ -17,10 +17,10 @@
             </button>
         </div>
         <div class="col-auto pl-1 pr-1">
-            <ButtonSpinner Class="btn-primary" Text="Create Personal Account" Callback="OpenDialogCreatePersonalAccountAsync" />
+            <ButtonSpinner Class="btn btn-primary" Text="Create Personal Account" Callback="OpenDialogCreatePersonalAccountAsync" />
         </div>
         <div class="col-auto pl-1">
-            <ButtonSpinner Class="btn-primary" Text="Add Shared Account" Callback="OpenDialogAddSharedAccountAsync" />
+            <ButtonSpinner Class="btn btn-primary" Text="Add Shared Account" Callback="OpenDialogAddSharedAccountAsync" />
         </div>
     </div>
     <section>
@@ -37,11 +37,11 @@
                         </div>
                         <div>
                             <button type="button" class="btn btn-light border my-1 mr-2" title="Resend invitation" @onclick="@(() => OpenDialogResendInvitationAsync(invitation))">
-                                <img class="icon-btn" src="/svg/action-email.svg" />
+                                <img class="icon-btn" src="/svg/icon-email.svg" />
                                 Resend
                             </button>
                             <button type="button" class="btn btn-light border my-1 mr-2" title="Delete invitation" @onclick="@(() => OpenDialogDeleteInvitationAsync(invitation))">
-                                <img class="icon-btn" src="/svg/action/delete.svg" />
+                                <img class="icon-btn" src="/svg/icon-delete.svg" />
                                 Delete
                             </button>
                         </div>
@@ -56,7 +56,7 @@
                         </div>
                         <div>
                             <button type="button" class="btn btn-light border my-1 mr-2" title="Software Vault Details" @onclick="@(() => OpenDialogSoftwareVaultDetailsAsync(softwareVault))">
-                                <img class="icon-btn" src="/svg/action/details.svg" />
+                                <img class="icon-btn" src="/svg/icon-details.svg" />
                                 Details
                             </button>
                         </div>
@@ -88,11 +88,11 @@
                                 </button>
                             }
                             <button type="button" class="btn btn-light border mx-2" title="Hardware Vault Details" @onclick="@(async () => await OpenDialogHardwareVaultDetailsAsync(hardwareVault))">
-                                <img class="icon-btn" src="/svg/action/details.svg" />
+                                <img class="icon-btn" src="/svg/icon-details.svg" />
                                 Details
                             </button>
                             <button type="button" class="btn btn-light border mx-2" title="Remove hardware vault from employee" @onclick="async () => await OpenDialogRemoveHardwareVaultAsync(hardwareVault)">
-                                <img class="icon-btn" src="/svg/action/delete.svg" />
+                                <img class="icon-btn" src="/svg/icon-delete.svg" />
                                 Remove
                             </button>
                         </div>
@@ -112,28 +112,28 @@
                         @if (MainTableService.SelectedEntity.Employee.PrimaryAccountId != MainTableService.SelectedEntity.Id)
                         {
                             <button type="button" @onclick="OpenDialogSetAsWorkstationAccountAsync" class="btn btn-light border" title="Set as primary account">
-                                <img class="icon-btn" src="/svg/action/star.svg" />
+                                <img class="icon-btn" src="/svg/icon-star.svg" />
                                 Set as primary
                             </button>
                         }
                         @if (MainTableService.SelectedEntity.Type == AccountType.Personal)
                         {
                             <button type="button" @onclick="OpenDialogEditPersonalAccountAsync" class="btn btn-light border mx-2" title="Edit personal account">
-                                <img class="icon-btn" src="/svg/action/edit.svg" />
+                                <img class="icon-btn" src="/svg/icon-edit.svg" />
                                 Edit
                             </button>
                             <button type="button" @onclick="OpenDialogEditPersonalAccountPasswordAsync" class="btn btn-light border mx-2" title="Edit personal account password">
-                                <img class="icon-btn" src="/svg/action/password.svg" />
+                                <img class="icon-btn" src="/svg/icon-password.svg" />
                                 Edit password
                             </button>
                             @if (MainTableService.SelectedEntity.Kind != AccountKind.Workstation)
                             {
                                 <button type="button" @onclick="OpenDialogEditPersonalAccountOtpAsync" class="btn btn-light border mx-2" title="Edit personal account OTP">
-                                    <img class="icon-btn" src="/svg/action/otp.svg" />
+                                    <img class="icon-btn" src="/svg/icon-otp.svg" />
                                     Edit OTP
                                 </button>
                             }
-                            @if (MainTableService.SelectedEntity.Login.Split(@"\")[0].Contains(LdapHost ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                            @if (Employee.ActiveDirectoryGuid != null && MainTableService.SelectedEntity.Login.Split(@"\")[0].Contains(LdapHost ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                             {
                                 <button type="button" @onclick="OpenDialogGenerateAdPasswordAsync" class="btn btn-light border mx-2" title="Generate Active Directory Password">
                                     <img class="icon-btn" src="/svg/icon_random.svg" />
@@ -142,7 +142,7 @@
                             }
                         }
                         <button type="button" @onclick="OpenDialogDeleteAccountAsync" class="btn btn-light border mx-2" title="Delete account">
-                            <img class="icon-btn" src="/svg/action/delete.svg" />
+                            <img class="icon-btn" src="/svg/icon-delete.svg" />
                             Delete
                         </button>
                     }
@@ -220,7 +220,7 @@
                     <td style="vertical-align:middle">
                         @if (context.Employee.PrimaryAccountId == context.Id)
                                 {
-                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" data-toggle="tooltip" data-placement="bottom" title="Primary account">
+                            <span class="badge @(MainTableService.SelectedEntity?.Id == context.Id ? "badge-light":"badge-success") custom-badge" title="Primary account">
                                 @context.Name
                             </span>
                                 }

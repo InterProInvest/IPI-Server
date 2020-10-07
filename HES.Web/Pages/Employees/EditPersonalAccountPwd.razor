@@ -1,4 +1,6 @@
-﻿@if (!_initialized)
+﻿@inherits OwningComponentBase
+
+@if (!_initialized)
 {
     <LoadingText />
 }
@@ -16,16 +18,16 @@ else
                 <h5 class="text-navyblue">@Account.Name</h5>
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">Password</label>
+                <FormLabel For="@(() => _accountPassword.Password)" class="text-gray" />
                 <InputText @bind-Value="_accountPassword.Password" type="password" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => _accountPassword.Password)" class="text-danger" />
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">Confirm Password</label>
+                <FormLabel For="@(() => _accountPassword.ConfirmPassword)" class="text-gray" />
                 <InputText @bind-Value="_accountPassword.ConfirmPassword" type="password" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => _accountPassword.ConfirmPassword)" class="text-danger" />
             </div>
-            @if (LdapSettings != null && Account.Kind == AccountKind.Workstation && Account.Login.Contains(LdapSettings?.Host.Split(".")[0], StringComparison.OrdinalIgnoreCase))
+            @if (Employee.ActiveDirectoryGuid != null && LdapSettings != null && Account.Kind == AccountKind.Workstation && Account.Login.Contains(LdapSettings?.Host.Split(".")[0], StringComparison.OrdinalIgnoreCase))
             {
                 <div class="form-group">
                     <div class="custom-control custom-checkbox">
@@ -36,10 +38,7 @@ else
             }
             <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Save</span>
-                </button>
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Save" Class="btn btn-primary" />
             </div>
         </EditForm>
     }

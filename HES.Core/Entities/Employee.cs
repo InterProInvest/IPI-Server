@@ -25,6 +25,7 @@ namespace HES.Core.Entities
         public string PositionId { get; set; }
         [Display(Name = "Last Seen")]
         public DateTime? LastSeen { get; set; }
+        public DateTime? WhenChanged { get; set; }
         public string PrimaryAccountId { get; set; }
         public string ActiveDirectoryGuid { get; set; }
         public List<Account> Accounts { get; set; }
@@ -46,12 +47,5 @@ namespace HES.Core.Entities
         public string FullName => $"{FirstName} {LastName}";
         [NotMapped]
         public int VaultsCount => (HardwareVaults == null ? 0 : HardwareVaults.Count) + (SoftwareVaults == null ? 0 : SoftwareVaults.Count);
-
-        [NotMapped]
-        [Display(Name = "Company")]
-        public string EmpCompany => Department?.Company?.Name;
-        [NotMapped]
-        [Display(Name = "Department")]
-        public string EmpDepartment => Department?.Name;
     }
 }

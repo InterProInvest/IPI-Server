@@ -7,8 +7,8 @@ else
     <EditForm Model="AccessProfile" OnValidSubmit="CreateProfileAsync">
         <DataAnnotationsValidator />
         <div class="form-group">
-            <label class="control-label text-gray">Name</label>
-            <InputText class="form-control" @bind-Value="AccessProfile.Name" />
+            <FormLabel For="@(() => AccessProfile.Name)" class="text-gray" />
+            <InputText @bind-Value="AccessProfile.Name" class="form-control text-navyblue" />
             <ValidationMessage For="@(() => AccessProfile.Name)" class="text-danger" />
         </div>
         <label class="text-gray">Authorization parameters</label>
@@ -139,8 +139,8 @@ else
             </tbody>
         </table>
         <div class="text-right">
-            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
-            <input type="submit" value="Create" class="btn btn-primary" />
+            <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>       
+            <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Create" Class="btn btn-primary" />
         </div>
     </EditForm>
 }

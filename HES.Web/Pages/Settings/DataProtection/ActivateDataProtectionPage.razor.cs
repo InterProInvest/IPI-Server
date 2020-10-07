@@ -19,7 +19,7 @@ namespace HES.Web.Pages.Settings.DataProtection
 
         public InputModel Input { get; set; } = new InputModel();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
-        public bool IsBusy { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         protected override void OnInitialized()
         {
@@ -31,29 +31,24 @@ namespace HES.Web.Pages.Settings.DataProtection
 
         private async Task ActivateAsync()
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-
             try
             {
-                var result = await DataProtectionService.ActivateProtectionAsync(Input.Password);
-                if (!result)
+                await ButtonSpinner.SpinAsync(async () =>
                 {
-                    ValidationErrorMessage.DisplayError(nameof(InputModel.Password), "Invalid password");
-                    return;
-                }
-                NavigationManager.NavigateTo("");
+                    var result = await DataProtectionService.ActivateProtectionAsync(Input.Password);
+                    if (!result)
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(InputModel.Password), "Invalid password");
+                        return;
+                    }
+                    NavigationManager.NavigateTo("");
+                });
+
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-            }
-            finally
-            {
-                IsBusy = false;
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

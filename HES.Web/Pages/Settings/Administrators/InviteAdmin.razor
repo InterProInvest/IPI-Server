@@ -2,15 +2,12 @@
     <DataAnnotationsValidator />
     <ValidationErrorMessage @ref="ValidationErrorMessage" />
     <div class="form-group">
-        <label class="control-label text-gray">Email</label>
+        <FormLabel For="@(() => Invitation.Email)" class="text-gray" />
         <InputText @bind-Value="Invitation.Email" class="form-control text-navyblue" />
         <ValidationMessage For="@(() => Invitation.Email)" class="text-danger" />
     </div>
     <div class="text-right">
         <button type="button" class="btn btn-secondary" @onclick="@(async () => await  ModalDialogService.CancelAsync())">Cancel</button>
-        <button type="submit" class="btn btn-primary">
-            <span class="spinner-border spinner-border-sm @(IsBusy == true ? "" : "d-none")" role="status" aria-hidden="true"></span>
-            <span>Invite</span>
-        </button>
+        <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Invite" Class="btn btn-primary" />
     </div>
 </EditForm>

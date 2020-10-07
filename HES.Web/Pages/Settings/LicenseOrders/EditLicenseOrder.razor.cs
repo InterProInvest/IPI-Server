@@ -25,9 +25,10 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string ConnectionId { get; set; }
         [Parameter] public string LicenseOrderId { get; set; }
-         public LicenseOrder LicenseOrder { get; set; }
+        public LicenseOrder LicenseOrder { get; set; }
 
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
 
         private NewLicenseOrder _newLicenseOrder;
@@ -76,7 +77,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -85,50 +86,44 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         {
             try
             {
-                if (_newLicenseOrder.StartDate < DateTime.Now.Date)
+                await ButtonSpinner.SpinAsync(async () =>
                 {
-                    ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.StartDate), $"Start Date must be at least current date.");
-                    return;
-                }
+                    if (_newLicenseOrder.StartDate < DateTime.Now.Date)
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.StartDate), $"Start Date must be at least current date.");
+                        return;
+                    }
 
-                if (_newLicenseOrder.EndDate < _newLicenseOrder.StartDate)
-                {
-                    ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
-                    return;
-                }
+                    if (_newLicenseOrder.EndDate < _newLicenseOrder.StartDate)
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
+                        return;
+                    }
 
-                if (!_newLicenseOrder.HardwareVaults.Where(x => x.Checked).Any())
-                {
-                    ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
-                    return;
-                }
+                    if (!_newLicenseOrder.HardwareVaults.Where(x => x.Checked).Any())
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(NewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
+                        return;
+                    }
 
-                if (_isBusy)
-                    return;
+                    LicenseOrder.ContactEmail = _newLicenseOrder.ContactEmail;
+                    LicenseOrder.Note = _newLicenseOrder.Note;
+                    LicenseOrder.ProlongExistingLicenses = false;
+                    LicenseOrder.StartDate = _newLicenseOrder.StartDate.Date;
+                    LicenseOrder.EndDate = _newLicenseOrder.EndDate.Date;
 
-                _isBusy = true;
-
-                LicenseOrder.ContactEmail = _newLicenseOrder.ContactEmail;
-                LicenseOrder.Note = _newLicenseOrder.Note;
-                LicenseOrder.ProlongExistingLicenses = false;
-                LicenseOrder.StartDate = _newLicenseOrder.StartDate.Date;
-                LicenseOrder.EndDate = _newLicenseOrder.EndDate.Date;
-
-                var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
-                await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
-                ToastService.ShowToast("Order created.", ToastLevel.Success);
-                await ModalDialogService.CloseAsync();
+                    var checkedHardwareVaults = _newLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
+                    await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
+                    await ToastService.ShowToastAsync("Order created.", ToastType.Success);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 
@@ -136,52 +131,46 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         {
             try
             {
-                if (_renewLicenseOrder.EndDate < DateTime.Now)
+                await ButtonSpinner.SpinAsync(async () =>
                 {
-                    ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
-                    return;
-                }
+                    if (_renewLicenseOrder.EndDate < DateTime.Now)
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.EndDate), $"End Date must not be less than Start Date.");
+                        return;
+                    }
 
-                if (!_renewLicenseOrder.HardwareVaults.Where(x => x.Checked).Any())
-                {
-                    ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
-                    return;
-                }
+                    if (!_renewLicenseOrder.HardwareVaults.Where(x => x.Checked).Any())
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"Select at least one hardware vault.");
+                        return;
+                    }
 
-                var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
-                var maxEndDate = checkedHardwareVaults.Select(x => x.LicenseEndDate).Max();
+                    var checkedHardwareVaults = _renewLicenseOrder.HardwareVaults.Where(x => x.Checked).ToList();
+                    var maxEndDate = checkedHardwareVaults.Select(x => x.LicenseEndDate).Max();
 
-                if (_renewLicenseOrder.EndDate < maxEndDate)
-                {
-                    ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"The selected End Date less than max end date for selected hardware vaults.");
-                    return;
-                }
+                    if (_renewLicenseOrder.EndDate < maxEndDate)
+                    {
+                        ValidationErrorMessage.DisplayError(nameof(RenewLicenseOrder.HardwareVaults), $"The selected End Date less than max end date for selected hardware vaults.");
+                        return;
+                    }
 
-                if (_isBusy)
-                    return;
+                    LicenseOrder.ContactEmail = _renewLicenseOrder.ContactEmail;
+                    LicenseOrder.Note = _renewLicenseOrder.Note;
+                    LicenseOrder.ProlongExistingLicenses = true;
+                    LicenseOrder.StartDate = null;
+                    LicenseOrder.EndDate = _renewLicenseOrder.EndDate.Date;
 
-                _isBusy = true;
-
-                LicenseOrder.ContactEmail = _renewLicenseOrder.ContactEmail;
-                LicenseOrder.Note = _renewLicenseOrder.Note;
-                LicenseOrder.ProlongExistingLicenses = true;
-                LicenseOrder.StartDate = null;
-                LicenseOrder.EndDate = _renewLicenseOrder.EndDate.Date;
-
-                await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
-                ToastService.ShowToast("Order created.", ToastLevel.Success);
-                await ModalDialogService.CloseAsync();
+                    await LicenseService.EditOrderAsync(LicenseOrder, checkedHardwareVaults);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Licenses);
+                    await ToastService.ShowToastAsync("Order created.", ToastType.Success);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 

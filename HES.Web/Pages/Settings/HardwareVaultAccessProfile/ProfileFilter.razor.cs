@@ -1,4 +1,5 @@
 ﻿using HES.Core.Models.Web.HardwareVaults;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Threading.Tasks;
@@ -10,10 +11,14 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         [Parameter] public Func<HardwareVaultProfileFilter, Task> FilterChanged { get; set; }
 
         public HardwareVaultProfileFilter Filter { get; set; } = new HardwareVaultProfileFilter();
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task FilteredAsync()
         {
-            await FilterChanged.Invoke(Filter);
+            await ButtonSpinner.SpinAsync(async () =>
+            {
+                await FilterChanged.Invoke(Filter);
+            });
         }
 
         private async Task ClearAsync()

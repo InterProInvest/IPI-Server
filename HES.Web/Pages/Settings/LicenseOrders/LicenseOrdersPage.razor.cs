@@ -5,6 +5,7 @@ using HES.Core.Models.Web.LicenseOrders;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -18,18 +19,34 @@ namespace HES.Web.Pages.Settings.LicenseOrders
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<LicenseOrdersPage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            LicenseService = ScopedServices.GetRequiredService<ILicenseService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<LicenseOrder, LicenseOrderFilter>>();
+            try
+            {
+                LicenseService = ScopedServices.GetRequiredService<ILicenseService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<LicenseOrder, LicenseOrderFilter>>();
 
-            await InitializeHubAsync();
-            await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, ModalDialogService, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
-            await BreadcrumbsService.SetLicenseOrders();
+                await InitializeHubAsync();
+                await BreadcrumbsService.SetLicenseOrders();
+                await MainTableService.InitializeAsync(LicenseService.GetLicenseOrdersAsync, LicenseService.GetLicenseOrdersCountAsync, ModalDialogService, StateHasChanged, nameof(LicenseOrder.CreatedAt), ListSortDirection.Descending);
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task CreateLicenseOrderAsync()
@@ -104,7 +121,7 @@ namespace HES.Web.Pages.Settings.LicenseOrders
             hubConnection.On(RefreshPage.Licenses, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

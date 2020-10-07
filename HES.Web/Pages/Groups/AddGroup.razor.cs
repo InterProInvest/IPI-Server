@@ -29,7 +29,6 @@ namespace HES.Web.Pages.Groups
         public LdapSettings LdapSettings { get; set; }
         public ActiveDirectoryInitialization ActiveDirectoryInitialization { get; set; }
         public string WarningMessage { get; set; }
-        public bool IsBusy { get; set; }
         public string SearchText { get; set; } = string.Empty;
         public bool IsSortedAscending { get; set; } = true;
         public string CurrentSortColumn { get; set; } = nameof(Group.Name);
@@ -60,7 +59,7 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -77,20 +76,13 @@ namespace HES.Web.Pages.Groups
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
 
         private async Task AddAsync()
         {
-            if (IsBusy)
-            {
-                return;
-            }
-
-            IsBusy = true;
-
             try
             {
                 if (!Groups.Any(x => x.Checked))
@@ -100,19 +92,15 @@ namespace HES.Web.Pages.Groups
                 }
 
                 await LdapService.AddGroupsAsync(Groups.Where(x => x.Checked).ToList(), CreateEmployees);
-                ToastService.ShowToast("Groups added.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Groups added.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Groups);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
-            }
-            finally
-            {
-                IsBusy = false;
             }
         }
 

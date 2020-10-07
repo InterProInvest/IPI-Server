@@ -39,7 +39,7 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 
                 if (!TwoFactorInfo.Is2faEnabled)
                 {
-                    ToastService.ShowToast($"Cannot generate recovery codes for user because they do not have 2FA enabled.", ToastLevel.Error);
+                    await ToastService.ShowToastAsync($"Cannot generate recovery codes for user because they do not have 2FA enabled.", ToastType.Error);
                     NavigationManager.NavigateTo("/Identity/Account/Manage/TwoFactorAuthentication", false);
                     return;
                 }
@@ -65,14 +65,14 @@ namespace HES.Web.Areas.Identity.Pages.Account.Manage
 
                 var recoveryCodes  = JsonConvert.DeserializeObject<List<string>>(await response.Content.ReadAsStringAsync());            
 
-                ToastService.ShowToast("You have generated new recovery codes.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("You have generated new recovery codes.", ToastType.Success);
 
                 NavigationManager.NavigateTo($"/Identity/Account/Manage/ShowRecoveryCodes/{string.Join("&", recoveryCodes)}", false);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
             }
         }
     }

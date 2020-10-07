@@ -1,4 +1,6 @@
-﻿@if (SharedAccount == null)
+﻿@inherits OwningComponentBase
+
+@if (SharedAccount == null)
 {
     <LoadingText />
 }
@@ -34,53 +36,50 @@ else
                 <hr />
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Name</label>
+                        <FormLabel For="@(() => SharedAccount.Name)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.Name" class="form-control text-navyblue" tabindex="1" />
                         <ValidationMessage For="@(() => SharedAccount.Name)" class="text-danger" />
                     </div>
                     <div class="form-group col">
-                        <label class="control-label text-gray">Login</label>
+                        <FormLabel For="@(() => SharedAccount.Login)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.Login" class="form-control text-navyblue" tabindex="4" />
                         <ValidationMessage For="@(() => SharedAccount.Login)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Urls</label>
+                        <FormLabel For="@(() => SharedAccount.Urls)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.Urls" class="form-control text-navyblue" tabindex="2" />
                         <ValidationMessage For="@(() => SharedAccount.Urls)" class="text-danger" />
                     </div>
                     <div class="form-group col">
-                        <label class="control-label text-gray">Password</label>
+                        <FormLabel For="@(() => SharedAccount.Password)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.Password" type="password" class="form-control text-navyblue" tabindex="5" />
                         <ValidationMessage For="@(() => SharedAccount.Password)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Apps</label>
+                        <FormLabel For="@(() => SharedAccount.Apps)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.Apps" class="form-control text-navyblue" tabindex="3" />
                         <ValidationMessage For="@(() => SharedAccount.Apps)" class="text-danger" />
                     </div>
                     <div class="form-group col">
-                        <label class="control-label text-gray">Confirm Password</label>
+                        <FormLabel For="@(() => SharedAccount.ConfirmPassword)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.ConfirmPassword" type="password" class="form-control text-navyblue" tabindex="6" />
                         <ValidationMessage For="@(() => SharedAccount.ConfirmPassword)" class="text-danger" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col">
-                        <label class="control-label text-gray">Otp Secret</label>
+                        <FormLabel For="@(() => SharedAccount.OtpSecret)" class="text-gray" />
                         <InputText @bind-Value="SharedAccount.OtpSecret" class="form-control text-navyblue" tabindex="7" />
                         <ValidationMessage For="@(() => SharedAccount.OtpSecret)" class="text-danger" />
                     </div>
                 </div>
                 <div class="text-right">
                     <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                        <span>Create</span>
-                    </button>
+                    <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Create" Class="btn btn-primary" />
                 </div>
             </EditForm>
         </div>
@@ -89,7 +88,7 @@ else
                 <div class="col col-sm-6 offset-md-3">
                     <div class="form-group">
                         <label class="control-label text-gray">Select workstation account type</label>
-                        <select class="form-control" @bind="WorkstationType">
+                        <select class="form-control text-navyblue" @bind="WorkstationType">
                             <option selected value="@Core.Enums.WorkstationAccountType.Local">Local</option>
                             <option value="@Core.Enums.WorkstationAccountType.Domain">Domain</option>
                             <option value="@Core.Enums.WorkstationAccountType.AzureAD">AzureAD</option>
@@ -107,32 +106,29 @@ else
                         <DataAnnotationsValidator />
                         <div class="row">
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Account Name</label>
+                                <FormLabel For="@(() => WorkstationSharedAccount.Name)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationSharedAccount.Name" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationSharedAccount.Name)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
+                                <FormLabel For="@(() => WorkstationSharedAccount.UserName)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationSharedAccount.UserName" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationSharedAccount.UserName)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Password</label>
+                                <FormLabel For="@(() => WorkstationSharedAccount.Password)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationSharedAccount.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationSharedAccount.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Confirm Password</label>
+                                <FormLabel For="@(() => WorkstationSharedAccount.ConfirmPassword)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationSharedAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationSharedAccount.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
                         <div class="text-right">
                             <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                                <span>Create</span>
-                            </button>
+                            <ButtonSpinner @ref="ButtonSpinnerWorkstationAccount" Submit="true" Text="Create" Class="btn btn-primary" />
                         </div>
                     </EditForm>
                     break;
@@ -141,37 +137,34 @@ else
                         <DataAnnotationsValidator />
                         <div class="row">
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Account Name</label>
+                                <FormLabel For="@(() => WorkstationDomainSharedAccount.Name)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomainSharedAccount.Name" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomainSharedAccount.Name)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Domain</label>
+                                <FormLabel For="@(() => WorkstationDomainSharedAccount.Domain)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomainSharedAccount.Domain" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomainSharedAccount.Domain)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">User Logon Name</label>
+                                <FormLabel For="@(() => WorkstationDomainSharedAccount.UserName)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomainSharedAccount.UserName" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomainSharedAccount.UserName)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Password</label>
+                                <FormLabel For="@(() => WorkstationDomainSharedAccount.Password)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomainSharedAccount.Password" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomainSharedAccount.Password)" class="text-danger" />
                             </div>
                             <div class="form-group col col-sm-6 offset-md-3">
-                                <label class="control-label text-gray">Confirm Password</label>
+                                <FormLabel For="@(() => WorkstationDomainSharedAccount.ConfirmPassword)" class="text-gray" />
                                 <InputText @bind-Value="WorkstationDomainSharedAccount.ConfirmPassword" type="password" class="form-control text-navyblue" />
                                 <ValidationMessage For="@(() => WorkstationDomainSharedAccount.ConfirmPassword)" class="text-danger" />
                             </div>
                         </div>
                         <div class="text-right">
                             <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                                <span>Create</span>
-                            </button>
+                            <ButtonSpinner @ref="ButtonSpinnerWorkstationAccount" Submit="true" Text="Create" Class="btn btn-primary" />
                         </div>
                     </EditForm>
                     break;

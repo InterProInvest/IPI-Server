@@ -1,4 +1,6 @@
-﻿@if (Account == null)
+﻿@inherits OwningComponentBase
+
+@if (Account == null)
 {
     <LoadingText />
 }
@@ -17,16 +19,13 @@ else
                 <h5 class="text-navyblue">@Account.Name</h5>
             </div>
             <div class="form-group">
-                <label class="control-label text-gray">OTP Secret</label>
+                <FormLabel For="@(() => _accountOtp.OtpSecret)" class="text-gray" />
                 <InputText @bind-Value="_accountOtp.OtpSecret" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => _accountOtp.OtpSecret)" class="text-danger" />
             </div>
             <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm @(_isBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Save</span>
-                </button>
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Save" Class="btn btn-primary" />
             </div>
         </EditForm>
     }

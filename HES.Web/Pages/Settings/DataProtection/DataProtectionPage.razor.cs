@@ -19,15 +19,28 @@ namespace HES.Web.Pages.Settings.DataProtection
         [Inject] public ILogger<DataProtectionPage> Logger { get; set; }
 
         public ProtectionStatus Status { get; set; }
-
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            ProtectionStatus();
-            await InitializeHubAsync();
-            await BreadcrumbsService.SetDataProtection();
+            try
+            {
+                ProtectionStatus();
+                await BreadcrumbsService.SetDataProtection();
+                await InitializeHubAsync();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private void ProtectionStatus()
@@ -81,10 +94,10 @@ namespace HES.Web.Pages.Settings.DataProtection
             .WithUrl(NavigationManager.ToAbsoluteUri("/refreshHub"))
             .Build();
 
-            hubConnection.On(RefreshPage.DataProtection, () =>
+            hubConnection.On(RefreshPage.DataProtection, async () =>
             {
                 ProtectionStatus();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

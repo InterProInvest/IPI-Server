@@ -2,11 +2,7 @@
 @attribute [Authorize(Roles = ApplicationRoles.AdminRole)]
 @inherits OwningComponentBase
 
-@if (MainTableService.Entities == null)
-{
-    <LoadingPage />
-}
-else
+@if (Initialized)
 {
     <TableAction>
         <FilterForm>
@@ -19,17 +15,17 @@ else
             @if (MainTableService.SelectedEntity != null)
             {
                 <button type="button" @onclick="EditProfileAsync" class="btn btn-light border" title="Edit profile">
-                    <img class="icon-btn" src="/svg/action/edit.svg" />
+                    <img class="icon-btn" src="/svg/icon-edit.svg" />
                     Edit
                 </button>
                 <button type="button" @onclick="DetailsProfileAsync" class="btn btn-light border ml-1" title="Details profile">
-                    <img class="icon-btn" src="/svg/action/details.svg" />
+                    <img class="icon-btn" src="/svg/icon-details.svg" />
                     Details
                 </button>
                 @if (MainTableService.SelectedEntity.Id != "default")
                 {
                     <button type="button" @onclick="DeleteProfileAsync" class="btn btn-light border ml-1" title="Delete profile">
-                        <img class="icon-btn" src="/svg/action/delete.svg" />
+                        <img class="icon-btn" src="/svg/icon-delete.svg" />
                         Delete
                     </button>
                 }
@@ -97,4 +93,12 @@ else
                 CurrentPage="MainTableService.CurrentPage"
                 DisplayRows="MainTableService.DataLoadingOptions.Take"
                 DisplayRecords="MainTableService.Entities.Count" />
+}
+else if (LoadFailed)
+{
+    <LoadingFailed ErrorMessage="@ErrorMessage" />
+}
+else
+{
+    <LoadingPage />
 }

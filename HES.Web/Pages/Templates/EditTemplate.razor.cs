@@ -26,6 +26,7 @@ namespace HES.Web.Pages.Templates
 
         public Template Template { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
         public bool Initialized { get; set; }
 
@@ -49,7 +50,7 @@ namespace HES.Web.Pages.Templates
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -58,10 +59,13 @@ namespace HES.Web.Pages.Templates
         {
             try
             {
-                await TemplateService.EditTemplateAsync(Template);
-                ToastService.ShowToast("Template updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await TemplateService.EditTemplateAsync(Template);
+                    await ToastService.ShowToastAsync("Template updated.", ToastType.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -74,8 +78,8 @@ namespace HES.Web.Pages.Templates
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
-                await ModalDialogService.CancelAsync();       
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
+                await ModalDialogService.CancelAsync();
             }
         }
 

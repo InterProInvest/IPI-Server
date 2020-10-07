@@ -14,13 +14,13 @@ else
             <DataAnnotationsValidator />
             <ValidationErrorMessage @ref="ValidationErrorMessage" />
             <div class="form-group">
-                <label class="control-label text-gray">Name</label>
+                <FormLabel For="@(() => Department.Name)" class="text-gray" />
                 <InputText @bind-Value="Department.Name" class="form-control text-navyblue" />
                 <ValidationMessage For="@(() => Department.Name)" class="text-danger" />
             </div>
             <div class="text-right">
                 <button type="button" class="btn btn-secondary" @onclick="@(async () => await ModalDialogService.CancelAsync())">Cancel</button>
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <ButtonSpinner @ref="ButtonSpinner" Submit="true" Text="Save" Class="btn btn-primary" />
             </div>
         </EditForm>
     }

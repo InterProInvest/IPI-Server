@@ -24,16 +24,20 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public Position Position { get; set; } = new Position();
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
 
         private async Task CreateAsync()
         {
             try
             {
-                await OrgStructureService.CreatePositionAsync(Position);
-                ToastService.ShowToast("Position created.", ToastLevel.Success);
-                await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await OrgStructureService.CreatePositionAsync(Position);
+                    await ToastService.ShowToastAsync("Position created.", ToastType.Success);
+                    await Refresh.InvokeAsync(this);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructurePositions);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -42,7 +46,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

@@ -5,15 +5,16 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 {
-    public partial class DeleteProfile : ComponentBase, IDisposable
+    public partial class DeleteProfile : OwningComponentBase, IDisposable
     {
-        [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
+        public IHardwareVaultService HardwareVaultService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IMemoryCache MemoryCache { get; set; }
@@ -29,6 +30,8 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         {
             try
             {
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+
                 AccessProfile = await HardwareVaultService.GetProfileByIdAsync(HardwareVaultProfileId);
                 if (AccessProfile == null)
                     throw new Exception("Hardware Vault Profile not found.");
@@ -40,7 +43,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -50,14 +53,14 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             try
             {
                 await HardwareVaultService.DeleteProfileAsync(AccessProfile.Id);
-                ToastService.ShowToast("Hardware vault profile deleted.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Hardware vault profile deleted.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

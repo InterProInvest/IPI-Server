@@ -8,15 +8,16 @@ using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.Employees
 {
-    public partial class EditPersonalAccountOtp : ComponentBase, IDisposable
+    public partial class EditPersonalAccountOtp : OwningComponentBase, IDisposable
     {
-        [Inject] public IEmployeeService EmployeeService { get; set; }
+        public IEmployeeService EmployeeService { get; set; }
         [Inject] public IAppSettingsService AppSettingsService { get; set; }
         [Inject] public ILdapService LdapService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
@@ -27,18 +28,21 @@ namespace HES.Web.Pages.Employees
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Parameter] public string AccountId { get; set; }
         [Parameter] public string ConnectionId { get; set; }
-        public Account Account { get; set; }
 
+        public Account Account { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
 
         private AccountOtp _accountOtp = new AccountOtp();
-        private bool _isBusy;
+
 
         protected override async Task OnInitializedAsync()
         {
             try
             {
+                EmployeeService = ScopedServices.GetRequiredService<IEmployeeService>();
+
                 ModalDialogService.OnCancel += ModalDialogService_OnCancel;
 
                 Account = await EmployeeService.GetAccountByIdAsync(AccountId);
@@ -52,7 +56,7 @@ namespace HES.Web.Pages.Employees
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -61,16 +65,14 @@ namespace HES.Web.Pages.Employees
         {
             try
             {
-                if (_isBusy)
-                    return;
-
-                _isBusy = true;
-
-                await EmployeeService.EditPersonalAccountOtpAsync(Account, _accountOtp);
-                RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
-                ToastService.ShowToast("Account OTP updated.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await EmployeeService.EditPersonalAccountOtpAsync(Account, _accountOtp);
+                    RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(await EmployeeService.GetEmployeeVaultIdsAsync(Account.EmployeeId));
+                    await ToastService.ShowToastAsync("Account OTP updated.", ToastType.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.EmployeesDetails, Account.EmployeeId);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (IncorrectOtpException ex)
             {
@@ -79,12 +81,8 @@ namespace HES.Web.Pages.Employees
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
-            }
-            finally
-            {
-                _isBusy = false;
             }
         }
 

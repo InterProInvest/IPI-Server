@@ -5,6 +5,7 @@ using HES.Core.Models.Web.HardwareVaults;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -18,18 +19,34 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IBreadcrumbsService BreadcrumbsService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
+        [Inject] public ILogger<HardwareVaultAccessProfilePage> Logger { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
+
+        public bool Initialized { get; set; }
+        public bool LoadFailed { get; set; }
+        public string ErrorMessage { get; set; }
 
         private HubConnection hubConnection;
 
         protected override async Task OnInitializedAsync()
         {
-            HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
-            MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter>>();
+            try
+            {
+                HardwareVaultService = ScopedServices.GetRequiredService<IHardwareVaultService>();
+                MainTableService = ScopedServices.GetRequiredService<IMainTableService<HardwareVaultProfile, HardwareVaultProfileFilter>>();
 
-            await InitializeHubAsync();
-            await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
-            await BreadcrumbsService.SetHardwareVaultProfiles();
+                await InitializeHubAsync();
+                await MainTableService.InitializeAsync(HardwareVaultService.GetHardwareVaultProfilesAsync, HardwareVaultService.GetHardwareVaultProfileCountAsync, ModalDialogService, StateHasChanged, nameof(HardwareVaultProfile.Name), ListSortDirection.Ascending);
+                await BreadcrumbsService.SetHardwareVaultProfiles();
+
+                Initialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                ErrorMessage = ex.Message;
+                Logger.LogError(ex.Message);
+            }
         }
 
         private async Task CreateProfileAsync()
@@ -43,7 +60,6 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
 
             await MainTableService.ShowModalAsync("Create Profile", body, ModalDialogSize.Default);
         }
-
 
         private async Task EditProfileAsync()
         {
@@ -92,7 +108,7 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
             hubConnection.On(RefreshPage.HardwareVaultProfiles, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

@@ -44,7 +44,7 @@ namespace HES.Web.Pages.Templates
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -54,14 +54,14 @@ namespace HES.Web.Pages.Templates
             try
             {
                 await TemplateService.DeleteTemplateAsync(Template.Id);
-                ToastService.ShowToast("Template deleted.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Template deleted.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Templates);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

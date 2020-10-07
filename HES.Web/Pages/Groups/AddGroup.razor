@@ -22,7 +22,7 @@ else
             </div>
             <div class="has-search-right my-2">
                 <div class="form-control-feedback">
-                    <img class="img-size" src="/svg/action/search.svg" />
+                    <img class="img-size" src="/svg/icon-search.svg" />
                 </div>
                 <input type="text" class="form-control" placeholder="Search" @bind="SearchText" @bind:event="oninput" />
             </div>
@@ -70,10 +70,7 @@ else
             </div>
             <div class="text-right mt-3">
                 <button type="button" class="btn btn-secondary btn-min-w" @onclick="@(async () => await ModalDialogService.CloseAsync())">Cancel</button>
-                <button type="button" @onclick="AddAsync" class="btn btn-primary btn-min-w">
-                    <span class="spinner-border spinner-border-sm @(IsBusy == true ? null : "d-none")" role="status" aria-hidden="true"></span>
-                    <span>Add</span>
-                </button>
+                <ButtonSpinner  Text="Add" Class="btn btn-primary" Callback="AddAsync" />      
             </div>
             break;
     }

@@ -2,6 +2,7 @@
 using HES.Core.Enums;
 using HES.Core.Hubs;
 using HES.Core.Interfaces;
+using HES.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,10 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         [Inject] public ILogger<CreateAccessProfile> Logger { get; set; }
         [Inject] public IHubContext<RefreshHub> HubContext { get; set; }
         [Inject] public IHardwareVaultService HardwareVaultService { get; set; }
-        
         [Parameter] public string ConnectionId { get; set; }
 
         public HardwareVaultProfile AccessProfile { get; set; }
-
+        public ButtonSpinner ButtonSpinner { get; set; }
         public int InitPinExpirationValue { get; set; }
         public int InitPinLengthValue { get; set; }
         public int InitPinTryCountValue { get; set; }
@@ -43,22 +43,25 @@ namespace HES.Web.Pages.Settings.HardwareVaultAccessProfile
         {
             try
             {
-                await HardwareVaultService.CreateProfileAsync(AccessProfile);
-                ToastService.ShowToast("Hardware vault profile created.", ToastLevel.Success);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await HardwareVaultService.CreateProfileAsync(AccessProfile);
+                    await ToastService.ShowToastAsync("Hardware vault profile created.", ToastType.Success);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.HardwareVaultProfiles);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
 
         private void OnInputPinExpiration(ChangeEventArgs args)
         {
-            AccessProfile.PinExpirationConverted = Convert.ToInt32((string)args.Value); 
+            AccessProfile.PinExpirationConverted = Convert.ToInt32((string)args.Value);
         }
 
         private void OnInputPinLength(ChangeEventArgs args)

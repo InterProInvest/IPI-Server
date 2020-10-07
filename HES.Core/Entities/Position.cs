@@ -10,6 +10,7 @@ namespace HES.Core.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Required]
+        [Display(Name = "Name")]
         public string Name { get; set; }
 
         public List<Employee> Employees { get; set; }

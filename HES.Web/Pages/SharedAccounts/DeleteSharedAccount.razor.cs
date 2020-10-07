@@ -5,15 +5,16 @@ using HES.Core.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
 namespace HES.Web.Pages.SharedAccounts
 {
-    public partial class DeleteSharedAccount : ComponentBase, IDisposable
+    public partial class DeleteSharedAccount : OwningComponentBase, IDisposable
     {
-        [Inject] public ISharedAccountService SharedAccountService { get; set; }
+        public ISharedAccountService SharedAccountService { get; set; }
         [Inject] public IModalDialogService ModalDialogService { get; set; }
         [Inject] public IToastService ToastService { get; set; }
         [Inject] public IRemoteWorkstationConnectionsService RemoteWorkstationConnectionsService { get; set; }
@@ -31,6 +32,8 @@ namespace HES.Web.Pages.SharedAccounts
         {
             try
             {
+                SharedAccountService = ScopedServices.GetRequiredService<ISharedAccountService>();
+
                 Account = await SharedAccountService.GetSharedAccountByIdAsync(AccountId);
 
                 if (Account == null)
@@ -45,7 +48,7 @@ namespace HES.Web.Pages.SharedAccounts
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -56,14 +59,14 @@ namespace HES.Web.Pages.SharedAccounts
             {
                 var vaults = await SharedAccountService.DeleteSharedAccountAsync(Account.Id);
                 RemoteWorkstationConnectionsService.StartUpdateRemoteDevice(vaults);
-                ToastService.ShowToast("Account deleted.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("Account deleted.", ToastType.Success);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.SharedAccounts);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

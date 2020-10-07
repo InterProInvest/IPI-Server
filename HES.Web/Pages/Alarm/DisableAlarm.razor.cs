@@ -30,35 +30,38 @@ namespace HES.Web.Pages.Alarm
 
         protected override async Task OnInitializedAsync()
         {
-            UserConfirmPassword = string.Empty;
-            var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            ApplicationUser = await UserManager.GetUserAsync(state.User);
+            try
+            {
+                var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                ApplicationUser = await UserManager.GetUserAsync(state.User);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message, ex);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
+                await ModalDialogService.CancelAsync();
+            }
         }
 
         private async Task DisableAlarmAsync()
         {
-            var checkPassword = await UserManager.CheckPasswordAsync(ApplicationUser, UserConfirmPassword);
-
-            if (!checkPassword)
-            {
-                UserConfirmPassword = string.Empty;
-                ToastService.ShowToast("Invalid password", ToastLevel.Error);
-                await ModalDialogService.CloseAsync();
-                return;
-            }
-
             try
             {
-                await RemoteWorkstationConnections.UnlockAllWorkstationsAsync(ApplicationUser);
+                var checkPassword = await UserManager.CheckPasswordAsync(ApplicationUser, UserConfirmPassword);
+
+                if (!checkPassword)
+                    throw new Exception("Invalid password");
+
+                await RemoteWorkstationConnections.UnlockAllWorkstationsAsync(ApplicationUser.Email);
                 await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.Alarm);
                 await CallBack.InvokeAsync(this);
-                ToastService.ShowToast("All workstations are unlocked.", ToastLevel.Success);
+                await ToastService.ShowToastAsync("All workstations are unlocked.", ToastType.Success);
                 await ModalDialogService.CloseAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message, ex);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }

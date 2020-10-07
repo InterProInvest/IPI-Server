@@ -27,8 +27,10 @@ namespace HES.Web.Pages.Settings.OrgStructure
 
         public Company Company { get; set; }
         public ValidationErrorMessage ValidationErrorMessage { get; set; }
+        public ButtonSpinner ButtonSpinner { get; set; }
         public bool EntityBeingEdited { get; set; }
         public bool Initialized { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             try
@@ -48,7 +50,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CancelAsync();
             }
         }
@@ -57,11 +59,14 @@ namespace HES.Web.Pages.Settings.OrgStructure
         {
             try
             {
-                await OrgStructureService.EditCompanyAsync(Company);
-                ToastService.ShowToast("Company updated.", ToastLevel.Success);
-                await Refresh.InvokeAsync(this);
-                await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
-                await ModalDialogService.CloseAsync();
+                await ButtonSpinner.SpinAsync(async () =>
+                {
+                    await OrgStructureService.EditCompanyAsync(Company);
+                    await ToastService.ShowToastAsync("Company updated.", ToastType.Success);
+                    await Refresh.InvokeAsync(this);
+                    await HubContext.Clients.AllExcept(ConnectionId).SendAsync(RefreshPage.OrgSructureCompanies);
+                    await ModalDialogService.CloseAsync();
+                });
             }
             catch (AlreadyExistException ex)
             {
@@ -70,7 +75,7 @@ namespace HES.Web.Pages.Settings.OrgStructure
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                ToastService.ShowToast(ex.Message, ToastLevel.Error);
+                await ToastService.ShowToastAsync(ex.Message, ToastType.Error);
                 await ModalDialogService.CloseAsync();
             }
         }

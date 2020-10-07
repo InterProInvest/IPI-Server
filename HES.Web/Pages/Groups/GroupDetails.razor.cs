@@ -40,6 +40,7 @@ namespace HES.Web.Pages.Groups
                 await LoadGroupAsync();
                 await BreadcrumbsService.SetGroupDetails(Group.Name);
                 await MainTableService.InitializeAsync(GroupService.GetGruopMembersAsync, GroupService.GetGruopMembersCountAsync, ModalDialogService, StateHasChanged, nameof(GroupMembership.Employee.FullName), entityId: GroupId);
+                
                 Initialized = true;
             }
             catch (Exception ex)
@@ -94,7 +95,7 @@ namespace HES.Web.Pages.Groups
             hubConnection.On(RefreshPage.GroupDetails, async () =>
             {
                 await MainTableService.LoadTableDataAsync();
-                ToastService.ShowToast("Page updated by another admin.", ToastLevel.Notify);
+                await ToastService.ShowToastAsync("Page updated by another admin.", ToastType.Notify);
             });
 
             await hubConnection.StartAsync();

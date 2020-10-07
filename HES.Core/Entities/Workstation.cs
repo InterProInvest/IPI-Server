@@ -14,6 +14,7 @@ namespace HES.Core.Entities
         public string Name { get; set; }
         public string Domain { get; set; }
         public string ClientVersion { get; set; }
+        [Display(Name = "Department")]
         public string DepartmentId { get; set; }
         public string OS { get; set; }
         public string IP { get; set; }
